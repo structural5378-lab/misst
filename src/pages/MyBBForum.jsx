@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, MessageSquare, Clock, ChevronRight, RefreshCw, User, Eye } from "lucide-react";
+import { ExternalLink, MessageSquare, Clock, ChevronRight, RefreshCw, User, Eye, UserPlus } from "lucide-react";
+import { Link } from "react-router-dom";
 import PageHeader from "@/components/layout/PageHeader";
 import ThreadReader from "@/components/forum/ThreadReader";
 
@@ -50,9 +51,14 @@ export default function MyBBForum() {
         title="Community Forum"
         showBack
         rightAction={
-          <button onClick={() => refetch()} className="p-2 text-violet-400 hover:text-violet-300">
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-          </button>
+          <div className="flex items-center gap-1">
+            <Link to="/community-forum/register" className="p-2 text-violet-400 hover:text-violet-300">
+              <UserPlus className="w-4 h-4" />
+            </Link>
+            <button onClick={() => refetch()} className="p-2 text-violet-400 hover:text-violet-300">
+              <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+            </button>
+          </div>
         }
       />
 

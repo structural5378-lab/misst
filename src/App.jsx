@@ -29,6 +29,7 @@ import Tools from '@/pages/Tools';
 import Profile from '@/pages/Profile';
 import AddContent from '@/pages/AddContent';
 import MyBBForum from '@/pages/MyBBForum';
+import ForumRegister from '@/pages/ForumRegister';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/add" element={<AddContent />} />
           <Route path="/community-forum" element={<MyBBForum />} />
+          <Route path="/community-forum/register" element={<ForumRegister />} />
         </Route>
       </Route>
 
