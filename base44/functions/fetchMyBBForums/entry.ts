@@ -113,7 +113,9 @@ Deno.serve(async (req) => {
         fid: postFid || 18,
         subject,
         message,
-        username: callsign,
+        bot_username: "Mist Client",
+        bot_password: Deno.env.get("MYBB_BOT_PASSWORD"),
+        checkin_callsign: callsign,
       });
       return Response.json({ ok: true, result: data });
     }
