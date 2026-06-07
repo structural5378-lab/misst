@@ -2,6 +2,39 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const MYBB_BASE = "https://insomniacsgmrs.com";
 
+function parseRSS(xml) {
+  const items = [];
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+  let match;
+  while ((match = itemRegex.exec(xml)) !== null) {
+    const block = match[1];
+    const title = (block.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || block.match(/<title>(.*?)<\/title>/) || [])[1] || "";
+    const link = (block.match(/<link>(.*?)<\/link>/) || [])[1] || "";
+    const description = (block.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/) || block.match(/<description>([\s\S]*?)<\/description>/) || [])[1] || "";
+    const pubDate = (block.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
+    const author = (block.match(/<author>(.*?)<\/author>/) || [])[1] || "";
+    const tidMatch = link.match(/tid=(\d+)/);
+    if (title) {
+      items.push({ title: title.trim(), link: link.trim(), description: description.trim(), pubDate, author: author.trim(), threadId: tidMatch ? tidMatch[1] : null });
+    }
+  }
+  return items;
+}
+
+function stripHtml(html) {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .trim();
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -11,82 +44,60 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { action = "forums", fid, tid, page = 1 } = body;
+    const { action = "recent", fid, tid } = body;
 
-    if (action === "forums") {
-      // Fetch forum list via MyBB's built-in XML feed / stats page
-      // MyBB doesn't have a REST API by default — we scrape the forum index
-      const res = await fetch(`${MYBB_BASE}/misc.php?action=syndication`, {
-        headers: { "User-Agent": "MistApp/1.0" }
-      });
-      const xml = await res.text();
-
-      // Parse RSS items
-      const items = [];
-      const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-      let match;
-      while ((match = itemRegex.exec(xml)) !== null) {
-        const block = match[1];
-        const title = (block.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] || "";
-        const link = (block.match(/<link>(.*?)<\/link>/) || [])[1] || "";
-        const description = (block.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
-        const pubDate = (block.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
-        const author = (block.match(/<author>(.*?)<\/author>/) || [])[1] || "";
-        if (title) {
-          items.push({ title, link, description, pubDate, author });
-        }
-      }
-
-      return Response.json({ threads: items, source: "rss" });
-
-    } else if (action === "threads") {
-      // Fetch threads from a specific forum via RSS
-      const res = await fetch(`${MYBB_BASE}/syndication.php?fid=${fid || 1}&limit=20`, {
-        headers: { "User-Agent": "MistApp/1.0" }
-      });
-      const xml = await res.text();
-
-      const items = [];
-      const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-      let match;
-      while ((match = itemRegex.exec(xml)) !== null) {
-        const block = match[1];
-        const title = (block.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] || "";
-        const link = (block.match(/<link>(.*?)<\/link>/) || [])[1] || "";
-        const description = (block.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
-        const pubDate = (block.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
-        const author = (block.match(/<author>(.*?)<\/author>/) || [])[1] || "";
-        // Extract tid from link
-        const tidMatch = link.match(/tid=(\d+)/);
-        const threadId = tidMatch ? tidMatch[1] : null;
-        if (title) {
-          items.push({ title, link, description, pubDate, author, threadId });
-        }
-      }
-
-      return Response.json({ threads: items, fid, source: "rss" });
-
-    } else if (action === "recent") {
-      // Global recent posts feed
+    // ── Recent posts (global RSS) ──────────────────────────────────────────────
+    if (action === "recent") {
       const res = await fetch(`${MYBB_BASE}/syndication.php?limit=30`, {
         headers: { "User-Agent": "MistApp/1.0" }
       });
       const xml = await res.text();
+      return Response.json({ threads: parseRSS(xml), source: "rss" });
+    }
 
-      const items = [];
-      const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-      let match;
-      while ((match = itemRegex.exec(xml)) !== null) {
-        const block = match[1];
-        const title = (block.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || [])[1] || "";
-        const link = (block.match(/<link>(.*?)<\/link>/) || [])[1] || "";
-        const description = (block.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || [])[1] || "";
-        const pubDate = (block.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
-        const author = (block.match(/<author>(.*?)<\/author>/) || [])[1] || "";
-        if (title) items.push({ title, link, description, pubDate, author });
+    // ── Threads in a specific forum (RSS by fid) ───────────────────────────────
+    if (action === "threads") {
+      const res = await fetch(`${MYBB_BASE}/syndication.php?fid=${fid}&limit=20`, {
+        headers: { "User-Agent": "MistApp/1.0" }
+      });
+      const xml = await res.text();
+      return Response.json({ threads: parseRSS(xml), fid, source: "rss" });
+    }
+
+    // ── Full thread posts (HTML scrape of showthread.php) ─────────────────────
+    if (action === "thread_posts") {
+      const res = await fetch(`${MYBB_BASE}/showthread.php?tid=${tid}&mode=linear`, {
+        headers: { "User-Agent": "MistApp/1.0" }
+      });
+      const html = await res.text();
+
+      // Extract thread title
+      const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+      const threadTitle = titleMatch ? titleMatch[1].replace(" - INSOMNIACS GMRS", "").trim() : "";
+
+      // Extract each post block — MyBB wraps posts in <div id="post_NUM">
+      const posts = [];
+      // Match post containers by their post_NUM id
+      const postRegex = /<div id="post_(\d+)"[\s\S]*?class="postbit[^"]*"([\s\S]*?)(?=<div id="post_\d+"|<div class="thead"|<\/div>\s*<div class="tfoot")/g;
+
+      // Simpler approach: extract by post author and content patterns
+      // Find all post author blocks
+      const authorMatches = [...html.matchAll(/<span class="largetext"><strong><a[^>]*>([^<]+)<\/a><\/strong><\/span>/g)];
+      const contentMatches = [...html.matchAll(/<div class="post_body scaleimages" id="pid_(\d+)">([\s\S]*?)<\/div>/g)];
+      const dateMatches = [...html.matchAll(/<span class="post_date">(.*?)<\/span>/g)];
+
+      for (let i = 0; i < contentMatches.length; i++) {
+        const pid = contentMatches[i][1];
+        const rawContent = contentMatches[i][2];
+        const author = authorMatches[i] ? authorMatches[i][1] : "Unknown";
+        const date = dateMatches[i] ? dateMatches[i][1].trim() : "";
+        const content = stripHtml(rawContent);
+        if (content) {
+          posts.push({ pid, author, date, content });
+        }
       }
 
-      return Response.json({ threads: items, source: "rss" });
+      return Response.json({ threadTitle, posts, tid, source: "scrape" });
     }
 
     return Response.json({ error: "Unknown action" }, { status: 400 });
