@@ -108,8 +108,9 @@ Deno.serve(async (req) => {
         `[i]Checked in via MIST App[/i]`,
       ].filter(l => l !== null).join("\n");
 
-      const data = await bridgeCall("create_post", {
-        fid: postFid || 2,
+      // Target "On-Air Activity" forum (fid 7) by default
+      const data = await bridgeCall("create_thread", {
+        fid: postFid || 7,
         subject,
         message,
         username: callsign,
