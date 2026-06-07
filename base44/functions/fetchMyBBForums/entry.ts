@@ -33,11 +33,15 @@ async function bridgeCall(action, params) {
     },
     body: JSON.stringify({ action, ...params }),
   });
+  const text = await res.text();
   if (!res.ok) {
-    const body = await res.text().catch(() => "(no body)");
-    throw new Error(`Bridge error: ${res.status} — ${body}`);
+    throw new Error(`Bridge error: ${res.status} — ${text}`);
   }
-  return res.json();
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Bridge returned non-JSON: ${text}`);
+  }
 }
 
 Deno.serve(async (req) => {
