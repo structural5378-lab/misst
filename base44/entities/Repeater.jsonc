@@ -1,0 +1,58 @@
+{
+  "name": "Repeater",
+  "type": "object",
+  "properties": {
+    "callsign": {
+      "type": "string",
+      "description": "Repeater callsign (e.g. K4MIA)"
+    },
+    "frequency": {
+      "type": "number",
+      "description": "Frequency in MHz"
+    },
+    "offset": {
+      "type": "string",
+      "description": "Offset (e.g. +5.0 MHz)"
+    },
+    "tone": {
+      "type": "string",
+      "description": "PL tone or DCS code"
+    },
+    "location": {
+      "type": "string",
+      "description": "City, State"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "online",
+        "offline",
+        "busy"
+      ],
+      "default": "online"
+    },
+    "owner_callsign": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "is_favorite": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "callsign",
+    "frequency"
+  ]
+}

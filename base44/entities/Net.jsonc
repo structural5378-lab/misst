@@ -1,0 +1,55 @@
+{
+  "name": "Net",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the net"
+    },
+    "description": {
+      "type": "string"
+    },
+    "schedule": {
+      "type": "string",
+      "description": "e.g. Daily, Mon/Wed/Fri, Weekly"
+    },
+    "time": {
+      "type": "string",
+      "description": "Time with timezone e.g. 8:00 PM EST"
+    },
+    "day_of_week": {
+      "type": "string"
+    },
+    "frequency": {
+      "type": "number"
+    },
+    "repeater_callsign": {
+      "type": "string"
+    },
+    "net_control": {
+      "type": "string"
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "general",
+        "emergency",
+        "technical",
+        "social",
+        "training"
+      ],
+      "default": "general"
+    },
+    "is_favorite": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "name": "Alert",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "emergency",
+        "system"
+      ],
+      "default": "info"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "link": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title"
+  ]
+}

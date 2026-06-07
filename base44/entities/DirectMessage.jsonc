@@ -1,0 +1,28 @@
+{
+  "name": "DirectMessage",
+  "type": "object",
+  "properties": {
+    "sender_id": {
+      "type": "string"
+    },
+    "receiver_id": {
+      "type": "string"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "receiver_name": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "content"
+  ]
+}

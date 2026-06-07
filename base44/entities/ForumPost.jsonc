@@ -1,0 +1,22 @@
+{
+  "name": "ForumPost",
+  "type": "object",
+  "properties": {
+    "thread_id": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_callsign": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "thread_id",
+    "body"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "name": "ForumThread",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "category_id": {
+      "type": "string"
+    },
+    "category_name": {
+      "type": "string"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_callsign": {
+      "type": "string"
+    },
+    "reply_count": {
+      "type": "number",
+      "default": 0
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "last_reply_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "title",
+    "category_id"
+  ]
+}
