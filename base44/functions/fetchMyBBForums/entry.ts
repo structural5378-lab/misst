@@ -97,6 +97,11 @@ Deno.serve(async (req) => {
       return Response.json({ forums: data.forums || [], source: "db" });
     }
 
+    if (action === "debug_insert") {
+      const data = await bridgeCall("debug_insert", { bot_username: body.bot_username || "Mist Client" });
+      return Response.json(data);
+    }
+
     if (action === "post_checkin") {
       const { net_name, callsign, location, signal_report, notes, fid: postFid } = body;
       const subject = `[Online Check-In] ${net_name}`;
