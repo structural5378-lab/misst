@@ -28,6 +28,7 @@ import Alerts from '@/pages/Alerts';
 import Tools from '@/pages/Tools';
 import Profile from '@/pages/Profile';
 import AddContent from '@/pages/AddContent';
+import MyBBForum from '@/pages/MyBBForum';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -78,6 +79,7 @@ const AuthenticatedApp = () => {
           <Route path="/tools" element={<Tools />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/add" element={<AddContent />} />
+          <Route path="/community-forum" element={<MyBBForum />} />
         </Route>
       </Route>
 

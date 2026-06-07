@@ -5,6 +5,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import NetCard from "@/components/nets/NetCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Menu } from "lucide-react";
+import NetCheckInPanel from "@/components/nets/NetCheckInPanel";
 
 export default function Nets() {
   const [tab, setTab] = useState("upcoming");
@@ -39,7 +40,12 @@ export default function Nets() {
           ) : filtered.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-12">No nets found</p>
           ) : (
-            filtered.map((n) => <NetCard key={n.id} net={n} />)
+            filtered.map((n) => (
+              <div key={n.id} className="space-y-2">
+                <NetCard net={n} />
+                <NetCheckInPanel net={n} />
+              </div>
+            ))
           )}
         </div>
       </div>

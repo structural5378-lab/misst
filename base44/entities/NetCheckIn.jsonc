@@ -1,0 +1,33 @@
+{
+  "name": "NetCheckIn",
+  "type": "object",
+  "properties": {
+    "net_id": {
+      "type": "string",
+      "description": "ID of the Net"
+    },
+    "net_name": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "callsign": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "signal_report": {
+      "type": "string",
+      "description": "e.g. 5x5, Q5"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "net_id",
+    "callsign"
+  ]
+}

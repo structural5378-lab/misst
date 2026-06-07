@@ -1,17 +1,54 @@
 {
+  "name": "User",
+  "type": "object",
   "properties": {
     "role": {
       "type": "string",
-      "description": "The role of the user in the app",
       "enum": [
         "admin",
         "user"
-      ]
+      ],
+      "default": "user"
+    },
+    "callsign": {
+      "type": "string",
+      "description": "GMRS callsign e.g. WSEU790"
+    },
+    "location": {
+      "type": "string",
+      "description": "City, State"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short bio"
+    },
+    "radios": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of radio equipment"
+    },
+    "reputation": {
+      "type": "number",
+      "default": 0
+    },
+    "badges": {
+      "type": "number",
+      "default": 0
+    },
+    "forum_count": {
+      "type": "number",
+      "default": 0
+    },
+    "mybb_username": {
+      "type": "string",
+      "description": "Linked MyBB username"
+    },
+    "push_alerts": {
+      "type": "boolean",
+      "default": true,
+      "description": "Opt in to push alerts"
     }
-  },
-  "required": [
-    "role"
-  ],
-  "name": "User",
-  "type": "object"
+  }
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, MapPin, Users, MessageSquare, Wrench, ChevronRight, Zap } from "lucide-react";
+import { Bell, Radio, MapPin, Users, MessageSquare, Wrench, Zap, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
@@ -14,6 +14,7 @@ const quickItems = [
   { icon: MessageSquare, label: "Forum", path: "/forums", bg: "bg-blue-500/15", color: "text-blue-400" },
   { icon: Zap, label: "Alerts", path: "/alerts", bg: "bg-amber-500/15", color: "text-amber-400" },
   { icon: Wrench, label: "Tools", path: "/tools", bg: "bg-orange-500/15", color: "text-orange-400" },
+  { icon: Globe, label: "Forum", path: "/community-forum", bg: "bg-violet-500/15", color: "text-violet-400" },
 ];
 
 export default function Dashboard() {
