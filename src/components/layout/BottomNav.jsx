@@ -4,7 +4,7 @@ import { Home, MessageSquare, Mail, Bell, Plus } from "lucide-react";
 
 const navItems = [
   { icon: Home, label: "Home", path: "/" },
-  { icon: MessageSquare, label: "Forums", path: "/forums" },
+  { icon: MessageSquare, label: "Forum", path: "/community-forum" },
   { icon: null, label: "Add", path: "/add" }, // center action
   { icon: Mail, label: "Messages", path: "/messages" },
   { icon: Bell, label: "Alerts", path: "/alerts" },
