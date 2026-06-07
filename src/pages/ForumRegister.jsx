@@ -22,7 +22,7 @@ export default function ForumRegister() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.username || !form.email || !form.password) {
-      setError("Full name, email, and password are required.");
+      setError("Username, email, and password are required.");
       return;
     }
     setLoading(true);
@@ -87,10 +87,10 @@ export default function ForumRegister() {
 
         <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Full Name</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Username</label>
             <Input
               name="username"
-              placeholder="John Smith"
+              placeholder="e.g. JohnSmith"
               value={form.username}
               onChange={handleChange}
               className="bg-white/[0.04] border-white/[0.1]"

@@ -14,7 +14,7 @@ const quickItems = [
   { icon: MessageSquare, label: "Forum", path: "/forums", bg: "bg-blue-500/15", color: "text-blue-400" },
   { icon: Zap, label: "Alerts", path: "/alerts", bg: "bg-amber-500/15", color: "text-amber-400" },
   { icon: Wrench, label: "Tools", path: "/tools", bg: "bg-orange-500/15", color: "text-orange-400" },
-  { icon: Globe, label: "Forum", path: "/community-forum", bg: "bg-violet-500/15", color: "text-violet-400" },
+  { icon: Globe, label: "Community", path: "/community-forum", bg: "bg-indigo-500/15", color: "text-indigo-400" },
 ];
 
 export default function Dashboard() {
