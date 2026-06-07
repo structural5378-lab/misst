@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe } from "lucide-react";
+import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
@@ -28,6 +29,26 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Net.list("-created_date", 3),
     initialData: [],
   });
+
+  const { data: alerts } = useQuery({
+    queryKey: ["alerts"],
+    queryFn: () => base44.entities.Alert.list("-created_date", 3),
+    initialData: [],
+  });
+
+  const typeIcons = {
+    info: Info,
+    warning: AlertTriangle,
+    emergency: Radio,
+    system: Settings,
+  };
+
+  const typeColors = {
+    info: "bg-primary/10 text-primary",
+    warning: "bg-amber-500/10 text-amber-400",
+    emergency: "bg-red-500/10 text-red-400",
+    system: "bg-muted text-muted-foreground",
+  };
 
   const callsign = user?.callsign || "MIST Member";
   const location = user?.location || "GMRS Community";
@@ -71,6 +92,44 @@ export default function Dashboard() {
       </div>
 
       <div className="px-4 space-y-6 pb-4">
+        {/* Alerts Section */}
+        {alerts.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Bell className="w-4 h-4 text-violet-400" />
+                Important Updates
+              </h3>
+              <Link to="/alerts" className="text-xs text-violet-400 font-medium hover:text-violet-300">View All</Link>
+            </div>
+            <div className="space-y-2">
+              {alerts.map((alert) => {
+                const Icon = typeIcons[alert.type] || Info;
+                const colorClass = typeColors[alert.type] || typeColors.info;
+                return (
+                  <div
+                    key={alert.id}
+                    className={`flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.07] ${!alert.is_read ? "border-l-2 border-l-violet-500" : ""}`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-foreground">{alert.title}</h4>
+                      {alert.message && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{alert.message}</p>
+                      )}
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        {alert.created_date && format(new Date(alert.created_date), "MMM d 'at' h:mm a")}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Stats strip */}
         <div className="grid grid-cols-3 gap-2">
           {[
