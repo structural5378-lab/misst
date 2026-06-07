@@ -1,31 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-const MYBB_BASE = "https://insomniacsgmrs.com";
+const BRIDGE_URL = "https://insomniacsgmrs.com/mist-api.php";
 
-function parseRSS(xml) {
-  const items = [];
-  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-  let match;
-  while ((match = itemRegex.exec(xml)) !== null) {
-    const block = match[1];
-    const title = (block.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || block.match(/<title>(.*?)<\/title>/) || [])[1] || "";
-    const link = (block.match(/<link>(.*?)<\/link>/) || [])[1] || "";
-    const description = (block.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/) || block.match(/<description>([\s\S]*?)<\/description>/) || [])[1] || "";
-    const pubDate = (block.match(/<pubDate>(.*?)<\/pubDate>/) || [])[1] || "";
-    const author = (block.match(/<author>(.*?)<\/author>/) || [])[1] || "";
-    const tidMatch = link.match(/tid=(\d+)/);
-    if (title) {
-      items.push({ title: title.trim(), link: link.trim(), description: description.trim(), pubDate, author: author.trim(), threadId: tidMatch ? tidMatch[1] : null });
-    }
-  }
-  return items;
-}
-
-function stripHtml(html) {
-  return html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
+function stripMyBBCodes(text) {
+  return text
+    .replace(/\[quote[^\]]*\][\s\S]*?\[\/quote\]/gi, "")
+    .replace(/\[[^\]]+\]/g, "")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
@@ -33,6 +13,28 @@ function stripHtml(html) {
     .replace(/&quot;/g, '"')
     .replace(/&#039;/g, "'")
     .trim();
+}
+
+function formatDate(unix) {
+  if (!unix) return "";
+  return new Date(parseInt(unix) * 1000).toLocaleString("en-US", {
+    month: "short", day: "numeric", year: "numeric",
+    hour: "numeric", minute: "2-digit", hour12: true
+  });
+}
+
+async function bridgeCall(action, params) {
+  const secret = Deno.env.get("MIST_BRIDGE_SECRET") || "MIST_BRIDGE_SECRET_KEY_CHANGE_ME";
+  const res = await fetch(BRIDGE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Mist-Secret": secret,
+    },
+    body: JSON.stringify({ action, ...params }),
+  });
+  if (!res.ok) throw new Error(`Bridge error: ${res.status}`);
+  return res.json();
 }
 
 Deno.serve(async (req) => {
@@ -46,58 +48,50 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { action = "recent", fid, tid } = body;
 
-    // ── Recent posts (global RSS) ──────────────────────────────────────────────
     if (action === "recent") {
-      const res = await fetch(`${MYBB_BASE}/syndication.php?limit=30`, {
-        headers: { "User-Agent": "MistApp/1.0" }
-      });
-      const xml = await res.text();
-      return Response.json({ threads: parseRSS(xml), source: "rss" });
+      const data = await bridgeCall("threads", {});
+      const threads = (data.threads || []).map(t => ({
+        threadId: t.tid,
+        title: t.subject,
+        author: t.username,
+        replies: parseInt(t.replies || 0),
+        views: parseInt(t.views || 0),
+        pubDate: formatDate(t.lastpost),
+        link: `https://insomniacsgmrs.com/showthread.php?tid=${t.tid}`,
+      }));
+      return Response.json({ threads, source: "db" });
     }
 
-    // ── Threads in a specific forum (RSS by fid) ───────────────────────────────
     if (action === "threads") {
-      const res = await fetch(`${MYBB_BASE}/syndication.php?fid=${fid}&limit=20`, {
-        headers: { "User-Agent": "MistApp/1.0" }
-      });
-      const xml = await res.text();
-      return Response.json({ threads: parseRSS(xml), fid, source: "rss" });
+      const data = await bridgeCall("threads", { fid });
+      const threads = (data.threads || []).map(t => ({
+        threadId: t.tid,
+        title: t.subject,
+        author: t.username,
+        replies: parseInt(t.replies || 0),
+        views: parseInt(t.views || 0),
+        pubDate: formatDate(t.lastpost),
+        link: `https://insomniacsgmrs.com/showthread.php?tid=${t.tid}`,
+      }));
+      return Response.json({ threads, fid, source: "db" });
     }
 
-    // ── Full thread posts (HTML scrape of showthread.php) ─────────────────────
     if (action === "thread_posts") {
-      const res = await fetch(`${MYBB_BASE}/showthread.php?tid=${tid}&mode=linear`, {
-        headers: { "User-Agent": "MistApp/1.0" }
-      });
-      const html = await res.text();
+      const data = await bridgeCall("posts", { tid });
+      const posts = (data.posts || []).map(p => ({
+        pid: p.pid,
+        author: p.username,
+        date: formatDate(p.dateline),
+        content: stripMyBBCodes(p.message),
+      }));
+      // Get thread title from first post or posts list
+      const threadTitle = data.posts?.[0]?.subject || `Thread #${tid}`;
+      return Response.json({ threadTitle, posts, tid, source: "db" });
+    }
 
-      // Extract thread title
-      const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-      const threadTitle = titleMatch ? titleMatch[1].replace(" - INSOMNIACS GMRS", "").trim() : "";
-
-      // Extract each post block — MyBB wraps posts in <div id="post_NUM">
-      const posts = [];
-      // Match post containers by their post_NUM id
-      const postRegex = /<div id="post_(\d+)"[\s\S]*?class="postbit[^"]*"([\s\S]*?)(?=<div id="post_\d+"|<div class="thead"|<\/div>\s*<div class="tfoot")/g;
-
-      // Simpler approach: extract by post author and content patterns
-      // Find all post author blocks
-      const authorMatches = [...html.matchAll(/<span class="largetext"><strong><a[^>]*>([^<]+)<\/a><\/strong><\/span>/g)];
-      const contentMatches = [...html.matchAll(/<div class="post_body scaleimages" id="pid_(\d+)">([\s\S]*?)<\/div>/g)];
-      const dateMatches = [...html.matchAll(/<span class="post_date">(.*?)<\/span>/g)];
-
-      for (let i = 0; i < contentMatches.length; i++) {
-        const pid = contentMatches[i][1];
-        const rawContent = contentMatches[i][2];
-        const author = authorMatches[i] ? authorMatches[i][1] : "Unknown";
-        const date = dateMatches[i] ? dateMatches[i][1].trim() : "";
-        const content = stripHtml(rawContent);
-        if (content) {
-          posts.push({ pid, author, date, content });
-        }
-      }
-
-      return Response.json({ threadTitle, posts, tid, source: "scrape" });
+    if (action === "forums") {
+      const data = await bridgeCall("forums", {});
+      return Response.json({ forums: data.forums || [], source: "db" });
     }
 
     return Response.json({ error: "Unknown action" }, { status: 400 });
