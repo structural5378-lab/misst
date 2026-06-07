@@ -1,14 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, MessageSquare, Clock, ChevronRight, RefreshCw, User, Eye, UserPlus } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ExternalLink, MessageSquare, Clock, ChevronRight, RefreshCw, User, Eye, UserPlus, LogIn } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import PageHeader from "@/components/layout/PageHeader";
 import ThreadReader from "@/components/forum/ThreadReader";
 
 export default function MyBBForum() {
   const [activeFid, setActiveFid] = useState(null);
   const [selectedThread, setSelectedThread] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then((authed) => {
+      setIsAuthenticated(authed);
+      if (authed) {
+        base44.auth.me().then(setUser).catch(() => {});
+      }
+    });
+  }, []);
 
   // Load forums dynamically
   const { data: forumsData } = useQuery({
@@ -41,6 +53,46 @@ export default function MyBBForum() {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <ThreadReader thread={selectedThread} onBack={() => setSelectedThread(null)} />
+      </div>
+    );
+  }
+
+  // Not authenticated - show sign-in prompt
+  if (isAuthenticated === false) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <PageHeader title="Community Forum" showBack />
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+          <div className="w-16 h-16 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center mb-4">
+            <LogIn className="w-8 h-8 text-violet-400" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground mb-2">Sign In Required</h2>
+          <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+            Please sign in to access the Insomniacs GMRS community forum
+          </p>
+          <button
+            onClick={() => navigate("/login")}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition-colors mb-3"
+          >
+            <LogIn className="w-4 h-4" />
+            Sign In
+          </button>
+          <Link
+            to="/community-forum/register"
+            className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
+          >
+            Don't have an account? Register
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading auth state
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
