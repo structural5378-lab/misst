@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
 
       // Target "On-Air Activity" forum (fid 7) by default
       const data = await bridgeCall("create_thread", {
-        fid: postFid || 7,
+        fid: postFid || 18,
         subject,
         message,
         username: callsign,
