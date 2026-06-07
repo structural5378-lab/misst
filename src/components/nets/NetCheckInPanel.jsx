@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Radio, Users, CheckCircle, Plus } from "lucide-react";
+import { Radio, CheckCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -25,16 +25,29 @@ export default function NetCheckInPanel({ net }) {
   const myCheckIn = checkIns.find((c) => c.user_id === user?.id);
 
   const checkInMutation = useMutation({
-    mutationFn: () =>
-      base44.entities.NetCheckIn.create({
+    mutationFn: async () => {
+      const callsign = user?.callsign || "UNKNOWN";
+      const location = user?.location || "";
+      // Save check-in record
+      await base44.entities.NetCheckIn.create({
         net_id: net.id,
         net_name: net.name,
         user_id: user?.id,
-        callsign: user?.callsign || "UNKNOWN",
-        location: user?.location || "",
+        callsign,
+        location,
         signal_report: signalReport,
         notes,
-      }),
+      });
+      // Post to forum
+      await base44.functions.invoke("fetchMyBBForums", {
+        action: "post_checkin",
+        net_name: net.name,
+        callsign,
+        location,
+        signal_report: signalReport,
+        notes,
+      });
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["checkins", net.id] });
       setShowForm(false);
@@ -51,7 +64,7 @@ export default function NetCheckInPanel({ net }) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Radio className="w-4 h-4 text-violet-400" />
-          <span className="text-sm font-semibold text-foreground">{net.name}</span>
+          <span className="text-sm font-semibold text-foreground">Online Check-Ins</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -124,7 +137,7 @@ export default function NetCheckInPanel({ net }) {
           onClick={() => setShowForm(true)}
         >
           <Plus className="w-3.5 h-3.5 mr-1" />
-          Check In to This Net
+          Online Check-In
         </Button>
       )}
     </div>

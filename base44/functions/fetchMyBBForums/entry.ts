@@ -94,6 +94,29 @@ Deno.serve(async (req) => {
       return Response.json({ forums: data.forums || [], source: "db" });
     }
 
+    if (action === "post_checkin") {
+      const { net_name, callsign, location, signal_report, notes, fid: postFid } = body;
+      const subject = `[Online Check-In] ${net_name}`;
+      const message = [
+        `[b]📡 Online Check-In — ${net_name}[/b]`,
+        ``,
+        `[b]Callsign:[/b] ${callsign}`,
+        location ? `[b]Location:[/b] ${location}` : null,
+        signal_report ? `[b]Signal Report:[/b] ${signal_report}` : null,
+        notes ? `[b]Notes:[/b] ${notes}` : null,
+        ``,
+        `[i]Checked in via MIST App[/i]`,
+      ].filter(l => l !== null).join("\n");
+
+      const data = await bridgeCall("create_post", {
+        fid: postFid || 2,
+        subject,
+        message,
+        username: callsign,
+      });
+      return Response.json({ ok: true, result: data });
+    }
+
     return Response.json({ error: "Unknown action" }, { status: 400 });
 
   } catch (error) {
