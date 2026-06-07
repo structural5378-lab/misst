@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, Radio } from "lucide-react";
+
+const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 import StatusBadge from "@/components/ui/StatusBadge";
 import UserStatsBar from "@/components/dashboard/UserStatsBar";
 import QuickAccessGrid from "@/components/dashboard/QuickAccessGrid";
@@ -28,7 +30,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="px-4 pt-4 pb-2 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-foreground">Dashboard</h1>
+        <img src={LOGO_URL} alt="Insomniacs GMRS" className="h-10 w-auto object-contain" />
         <Link to="/alerts" className="p-2 rounded-full bg-secondary/50 text-muted-foreground hover:text-foreground relative">
           <Bell className="w-5 h-5" />
         </Link>
@@ -38,8 +40,8 @@ export default function Dashboard() {
         {/* User Card */}
         <div className="p-4 rounded-2xl bg-card border border-border/50">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
-              <Radio className="w-7 h-7 text-primary" />
+            <div className="w-14 h-14 rounded-full bg-background border-2 border-primary/30 overflow-hidden flex items-center justify-center">
+              <img src={LOGO_URL} alt="Insomniacs GMRS" className="w-full h-full object-contain" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
