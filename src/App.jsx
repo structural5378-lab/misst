@@ -19,10 +19,7 @@ import Repeaters from '@/pages/Repeaters';
 import RepeaterDetail from '@/pages/RepeaterDetail';
 import MapView from '@/pages/MapView';
 import Nets from '@/pages/Nets';
-import Forums from '@/pages/Forums';
-import ForumCategoryPage from '@/pages/ForumCategory';
-import ThreadView from '@/pages/ThreadView';
-import NewThread from '@/pages/NewThread';
+
 import Messages from '@/pages/Messages';
 import Alerts from '@/pages/Alerts';
 import Tools from '@/pages/Tools';
@@ -71,10 +68,7 @@ const AuthenticatedApp = () => {
           <Route path="/repeaters/:id" element={<RepeaterDetail />} />
           <Route path="/map" element={<MapView />} />
           <Route path="/nets" element={<Nets />} />
-          <Route path="/forums" element={<Forums />} />
-          <Route path="/forums/category/:id" element={<ForumCategoryPage />} />
-          <Route path="/forums/thread/:id" element={<ThreadView />} />
-          <Route path="/forums/new" element={<NewThread />} />
+
           <Route path="/messages" element={<Messages />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/tools" element={<Tools />} />

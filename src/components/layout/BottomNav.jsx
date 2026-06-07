@@ -19,7 +19,7 @@ export default function BottomNav() {
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = path === "/"
             ? location.pathname === "/"
-            : location.pathname.startsWith(path);
+            : location.pathname === path || location.pathname.startsWith(path + "/");
           const isAdd = label === "Add";
 
           return (

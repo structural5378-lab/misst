@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2 } from "lucide-react";
+import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
 import PageHeader from "@/components/layout/PageHeader";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
@@ -132,9 +133,9 @@ export default function Profile() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">MyBB Username (link your forum account)</Label>
+              <Label className="text-xs text-muted-foreground">Forum Username</Label>
               <Input
-                placeholder="e.g. WSEU790"
+                placeholder="Your insomniacsgmrs.com username"
                 value={form.mybb_username}
                 onChange={(e) => setForm((f) => ({ ...f, mybb_username: e.target.value }))}
                 className="h-10 bg-background/50"
@@ -191,9 +192,9 @@ export default function Profile() {
             </div>
 
             {/* Forum Link */}
-            {user?.mybb_username && (
-              <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
-                <h3 className="text-sm font-semibold text-foreground mb-2">Forum Account</h3>
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+              <h3 className="text-sm font-semibold text-foreground mb-2">Forum Account</h3>
+              {user?.mybb_username ? (
                 <a
                   href={`https://insomniacsgmrs.com/member.php?action=profile&username=${user.mybb_username}`}
                   target="_blank"
@@ -202,8 +203,15 @@ export default function Profile() {
                 >
                   {user.mybb_username} on insomniacsgmrs.com →
                 </a>
-              </div>
-            )}
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">No forum account linked yet.</p>
+                  <Link to="/community-forum/register" className="inline-flex items-center gap-1.5 text-xs font-medium text-violet-400 hover:text-violet-300 bg-violet-500/10 border border-violet-500/20 px-3 py-1.5 rounded-lg">
+                    <UserPlus className="w-3.5 h-3.5" /> Register for the Forum
+                  </Link>
+                </div>
+              )}
+            </div>
 
             {/* Member Since */}
             <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
