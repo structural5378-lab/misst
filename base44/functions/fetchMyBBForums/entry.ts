@@ -33,7 +33,10 @@ async function bridgeCall(action, params) {
     },
     body: JSON.stringify({ action, ...params }),
   });
-  if (!res.ok) throw new Error(`Bridge error: ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "(no body)");
+    throw new Error(`Bridge error: ${res.status} — ${body}`);
+  }
   return res.json();
 }
 
