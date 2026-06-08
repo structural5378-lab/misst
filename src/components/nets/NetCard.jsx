@@ -1,6 +1,7 @@
 import React from "react";
-import { Radio, Users, Clock } from "lucide-react";
+import { Radio, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export default function NetCard({ net }) {
   return (
@@ -24,9 +25,17 @@ export default function NetCard({ net }) {
           </div>
         </div>
       </div>
-      <Button size="sm" className="h-8 bg-primary/90 hover:bg-primary text-primary-foreground rounded-full px-5 text-xs font-semibold">
-        Join
-      </Button>
+      <div className="flex flex-col gap-1.5 items-end">
+        <Button size="sm" className="h-8 bg-primary/90 hover:bg-primary text-primary-foreground rounded-full px-5 text-xs font-semibold">
+          Join
+        </Button>
+        <Link
+          to={`/nets/${net.id}/control`}
+          className="text-[10px] text-violet-400 hover:text-violet-300 font-medium"
+        >
+          Net Control →
+        </Link>
+      </div>
     </div>
   );
 }

@@ -26,6 +26,7 @@ import Tools from '@/pages/Tools';
 import Profile from '@/pages/Profile';
 import AddContent from '@/pages/AddContent';
 import MyBBForum from '@/pages/MyBBForum';
+import NetControl from '@/pages/NetControl';
 import ForumRegister from '@/pages/ForumRegister';
 
 // Layout
@@ -75,6 +76,7 @@ const AuthenticatedApp = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/add" element={<AddContent />} />
           <Route path="/community-forum" element={<MyBBForum />} />
+          <Route path="/nets/:netId/control" element={<NetControl />} />
           <Route path="/community-forum/register" element={<ForumRegister />} />
         </Route>
       </Route>
