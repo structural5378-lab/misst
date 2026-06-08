@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2, UserPlus } from "lucide-react";
+import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2, UserPlus, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,7 @@ import PageHeader from "@/components/layout/PageHeader";
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
 export default function Profile() {
+  const { mybbUser, logout: mybbLogout } = useMyBBAuth();
   const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -48,7 +50,7 @@ export default function Profile() {
     setForm((f) => ({ ...f, radios: f.radios.filter((_, idx) => idx !== i) }));
   };
 
-  const callsign = user?.callsign || "MIST Member";
+  const callsign = user?.callsign || mybbUser?.username || "MIST Member";
 
   return (
     <div>
@@ -81,6 +83,16 @@ export default function Profile() {
           </div>
           <h2 className="text-xl font-bold text-foreground">{callsign}</h2>
           <p className="text-xs text-muted-foreground mt-0.5">{user?.location || "GMRS Community"} · GMRS Operator</p>
+          {mybbUser?.role && (
+            <div className={`mt-1.5 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+              mybbUser.role === "admin" ? "bg-amber-500/15 text-amber-400 border border-amber-500/25"
+              : mybbUser.role === "moderator" ? "bg-blue-500/15 text-blue-400 border border-blue-500/25"
+              : "bg-white/[0.05] text-muted-foreground border border-white/[0.08]"
+            }`}>
+              <Shield className="w-3 h-3" />
+              {mybbUser.role.charAt(0).toUpperCase() + mybbUser.role.slice(1)}
+            </div>
+          )}
         </div>
 
         {/* Stats */}
@@ -227,7 +239,7 @@ export default function Profile() {
         <Button
           variant="outline"
           className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-400"
-          onClick={() => base44.auth.logout("/")}
+          onClick={() => { mybbLogout(); window.location.href = "/login"; }}
         >
           <LogOut className="w-4 h-4 mr-2" />
           Sign Out

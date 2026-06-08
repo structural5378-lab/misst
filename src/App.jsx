@@ -31,11 +31,18 @@ import ForumRegister from '@/pages/ForumRegister';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
+import { MyBBAuthProvider, useMyBBAuth } from '@/lib/MyBBAuthContext';
+
+const MyBBProtectedRoute = () => {
+  const { mybbUser } = useMyBBAuth();
+  if (!mybbUser) return <Navigate to="/login" replace />;
+  return <AppLayout />;
+};
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingPublicSettings } = useAuth();
 
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  if (isLoadingPublicSettings) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -46,39 +53,24 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
-    }
-  }
-
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
 
-      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/repeaters" element={<Repeaters />} />
-          <Route path="/repeaters/:id" element={<RepeaterDetail />} />
-          <Route path="/map" element={<MapView />} />
-          <Route path="/nets" element={<Nets />} />
-
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/alerts" element={<Alerts />} />
-          <Route path="/tools" element={<Tools />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/add" element={<AddContent />} />
-          <Route path="/community-forum" element={<MyBBForum />} />
-          <Route path="/nets/:netId/control" element={<NetControl />} />
-          <Route path="/community-forum/register" element={<ForumRegister />} />
-        </Route>
+      <Route element={<MyBBProtectedRoute />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/repeaters" element={<Repeaters />} />
+        <Route path="/repeaters/:id" element={<RepeaterDetail />} />
+        <Route path="/map" element={<MapView />} />
+        <Route path="/nets" element={<Nets />} />
+        <Route path="/messages" element={<Messages />} />
+        <Route path="/alerts" element={<Alerts />} />
+        <Route path="/tools" element={<Tools />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/add" element={<AddContent />} />
+        <Route path="/community-forum" element={<MyBBForum />} />
+        <Route path="/nets/:netId/control" element={<NetControl />} />
+        <Route path="/community-forum/register" element={<ForumRegister />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
@@ -90,12 +82,14 @@ const AuthenticatedApp = () => {
 function App() {
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
+      <MyBBAuthProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <Router>
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
+      </MyBBAuthProvider>
     </AuthProvider>
   )
 }
