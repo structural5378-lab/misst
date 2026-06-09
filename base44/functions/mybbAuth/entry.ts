@@ -63,6 +63,9 @@ Deno.serve(async (req) => {
         role, // "admin" | "moderator" | "member"
         canEdit: isAdmin || isMod,
         avatar: data.avatar || null,
+        postcount: parseInt(data.postcount || 0),
+        reputation: parseInt(data.reputation || 0),
+        threadcount: parseInt(data.threadcount || 0),
       },
     });
   } catch (error) {

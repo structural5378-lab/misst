@@ -142,9 +142,9 @@ export default function Dashboard() {
         {/* Stats strip */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: "Reputation", value: user?.reputation || 0 },
-            { label: "Badges", value: user?.badges || 0 },
-            { label: "Posts", value: user?.forum_count || 0 },
+            { label: "Reputation", value: mybbUser?.reputation ?? 0 },
+            { label: "Threads", value: mybbUser?.threadcount ?? 0 },
+            { label: "Posts", value: mybbUser?.postcount ?? 0 },
           ].map(({ label, value }) => (
             <div key={label} className="flex flex-col items-center py-3 rounded-xl bg-white/[0.03] border border-white/[0.07]">
               <span className="text-xl font-bold text-foreground">{value}</span>
