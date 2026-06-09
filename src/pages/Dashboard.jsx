@@ -88,7 +88,9 @@ export default function Dashboard() {
                 ● Online
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">{location} · GMRS Operator</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {location}{mybbUser?.role ? ` · ${mybbUser.role.charAt(0).toUpperCase() + mybbUser.role.slice(1)}` : " · GMRS Operator"}
+            </p>
             <Link to="/profile" className="text-xs text-violet-400 font-medium hover:text-violet-300 mt-1 inline-block">
               Edit Profile →
             </Link>
