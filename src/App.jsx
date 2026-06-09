@@ -23,6 +23,11 @@ import Nets from '@/pages/Nets';
 import Messages from '@/pages/Messages';
 import Alerts from '@/pages/Alerts';
 import Tools from '@/pages/Tools';
+import AntennaCalculator from '@/pages/tools/AntennaCalculator';
+import FeedlineCalculator from '@/pages/tools/FeedlineCalculator';
+import PLToneLookup from '@/pages/tools/PLToneLookup';
+import FrequencyReference from '@/pages/tools/FrequencyReference';
+import RepeaterSpacing from '@/pages/tools/RepeaterSpacing';
 import Profile from '@/pages/Profile';
 import AddContent from '@/pages/AddContent';
 import MyBBForum from '@/pages/MyBBForum';
@@ -66,6 +71,11 @@ const AuthenticatedApp = () => {
         <Route path="/messages" element={<Messages />} />
         <Route path="/alerts" element={<Alerts />} />
         <Route path="/tools" element={<Tools />} />
+        <Route path="/tools/antenna" element={<AntennaCalculator />} />
+        <Route path="/tools/feedline" element={<FeedlineCalculator />} />
+        <Route path="/tools/pl-tones" element={<PLToneLookup />} />
+        <Route path="/tools/frequencies" element={<FrequencyReference />} />
+        <Route path="/tools/repeater-spacing" element={<RepeaterSpacing />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/add" element={<AddContent />} />
         <Route path="/community-forum" element={<MyBBForum />} />
