@@ -23,7 +23,13 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
+    base44.auth.me().then(async (u) => {
+      setUser(u);
+      // Update last active timestamp
+      if (u?.id) {
+        await base44.auth.updateMe({ last_active: new Date().toISOString() });
+      }
+    }).catch(() => {});
   }, []);
 
   const { data: nets } = useQuery({

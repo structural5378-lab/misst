@@ -49,6 +49,11 @@
       "type": "boolean",
       "default": true,
       "description": "Opt in to push alerts"
+    },
+    "last_active": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last activity timestamp"
     }
   }
 }
