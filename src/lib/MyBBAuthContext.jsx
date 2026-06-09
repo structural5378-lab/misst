@@ -8,7 +8,14 @@ export function MyBBAuthProvider({ children }) {
   const [mybbUser, setMybbUser] = useState(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : null;
+      if (!stored) return null;
+      const parsed = JSON.parse(stored);
+      // If session is missing new fields, force re-login
+      if (parsed && parsed.postcount === undefined) {
+        localStorage.removeItem(STORAGE_KEY);
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }
