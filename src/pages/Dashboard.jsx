@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ const quickItems = [
 ];
 
 export default function Dashboard() {
+  const { mybbUser } = useMyBBAuth();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -50,7 +52,10 @@ export default function Dashboard() {
     system: "bg-muted text-muted-foreground",
   };
 
-  const callsign = user?.callsign || "MIST Member";
+  const callsign = user?.callsign || mybbUser?.username || "MIST Member";
+  const avatarUrl = mybbUser?.uid
+    ? `https://insomniacsgmrs.com/userimages/${mybbUser.uid}.jpg`
+    : LOGO_URL;
   const location = user?.location || "GMRS Community";
 
   return (
@@ -74,7 +79,7 @@ export default function Dashboard() {
         {/* User identity banner */}
         <div className="relative px-4 pb-6 flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl border-2 border-violet-500/40 bg-violet-950/50 overflow-hidden flex items-center justify-center shadow-lg shadow-violet-900/30">
-            <img src={LOGO_URL} alt="avatar" className="w-full h-full object-contain scale-110" />
+            <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; e.target.className = "w-full h-full object-contain scale-110"; }} />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
