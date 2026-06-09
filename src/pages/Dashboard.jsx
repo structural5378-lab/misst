@@ -53,7 +53,9 @@ export default function Dashboard() {
   };
 
   const callsign = user?.callsign || mybbUser?.username || "MIST Member";
-  const avatarUrl = mybbUser?.uid
+  const avatarUrl = mybbUser?.avatar
+    ? `https://insomniacsgmrs.com/${mybbUser.avatar}`
+    : mybbUser?.uid
     ? `https://insomniacsgmrs.com/userimages/${mybbUser.uid}.jpg`
     : LOGO_URL;
   const location = user?.location || "GMRS Community";

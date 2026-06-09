@@ -62,6 +62,7 @@ Deno.serve(async (req) => {
         usergroup,
         role, // "admin" | "moderator" | "member"
         canEdit: isAdmin || isMod,
+        avatar: data.avatar || null,
       },
     });
   } catch (error) {
