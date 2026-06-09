@@ -38,6 +38,15 @@ export default function Dashboard() {
     initialData: [],
   });
 
+  const { data: onlineMembers } = useQuery({
+    queryKey: ["onlineMembers"],
+    queryFn: async () => {
+      const users = await base44.entities.User.list();
+      return users.filter(u => u.last_active && new Date(u.last_active) > new Date(Date.now() - 15 * 60 * 1000));
+    },
+    initialData: [],
+  });
+
   const typeIcons = {
     info: Info,
     warning: AlertTriangle,
@@ -151,6 +160,41 @@ export default function Dashboard() {
               <span className="text-[10px] text-muted-foreground mt-0.5">{label}</span>
             </div>
           ))}
+        </div>
+
+        {/* Online Members */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Users className="w-4 h-4 text-emerald-400" />
+              Online Now
+            </h3>
+            <span className="text-xs text-emerald-400 font-medium">{onlineMembers.length} members</span>
+          </div>
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+            <div className="flex -space-x-2">
+              {onlineMembers.slice(0, 5).map((member) => (
+                <div
+                  key={member.id}
+                  className="w-8 h-8 rounded-full border-2 border-background bg-violet-950/50 overflow-hidden"
+                >
+                  {member.avatar ? (
+                    <img src={member.avatar} alt={member.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-violet-400">
+                      {(member.full_name || member.email || "?").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {onlineMembers.length > 5 && (
+              <span className="text-xs text-muted-foreground">+{onlineMembers.length - 5} more</span>
+            )}
+            {onlineMembers.length === 0 && (
+              <span className="text-xs text-muted-foreground">No members online</span>
+            )}
+          </div>
         </div>
 
         {/* Quick Access */}
