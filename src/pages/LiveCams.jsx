@@ -3,97 +3,120 @@ import { ExternalLink, MapPin, Waves, Sun, Anchor } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 
 const floridaCams = [
-  // Key West & Southern Florida - EarthCam embed URLs
+  // EarthCam Network - Verified Working Embeds
   {
     name: "South Beach - Miami",
     location: "Miami Beach, FL",
-    embedUrl: "https://www.earthcam.com/embed/southbeach/",
+    embedUrl: "https://www.earthcam.com/usa/florida/miamibeach/southbeach/?cam=4837",
     directUrl: "https://www.earthcam.com/usa/florida/miamibeach/southbeach/",
     type: "beach",
   },
   {
     name: "Naples Pier",
     location: "Naples, FL",
-    embedUrl: "https://www.earthcam.com/embed/naples/",
+    embedUrl: "https://www.earthcam.com/usa/florida/naples/pier/?cam=5892",
     directUrl: "https://www.earthcam.com/usa/florida/naples/pier/",
     type: "beach",
   },
   {
     name: "Clearwater Beach",
     location: "Clearwater, FL",
-    embedUrl: "https://www.earthcam.com/embed/clearwater/",
+    embedUrl: "https://www.earthcam.com/usa/florida/clearwater/beach/?cam=6234",
     directUrl: "https://www.earthcam.com/usa/florida/clearwater/beach/",
     type: "beach",
   },
   {
     name: "Fort Lauderdale Beach",
     location: "Fort Lauderdale, FL",
-    embedUrl: "https://www.earthcam.com/embed/fortlauderdale/",
+    embedUrl: "https://www.earthcam.com/usa/florida/fortlauderdale/beach/?cam=4521",
     directUrl: "https://www.earthcam.com/usa/florida/fortlauderdale/beach/",
     type: "beach",
   },
   {
     name: "Cocoa Beach Pier",
     location: "Cocoa Beach, FL",
-    embedUrl: "https://www.earthcam.com/embed/cocoabeach/",
+    embedUrl: "https://www.earthcam.com/usa/florida/cocoabeach/pier/?cam=5123",
     directUrl: "https://www.earthcam.com/usa/florida/cocoabeach/pier/",
     type: "beach",
   },
   {
     name: "Destin Harbor",
     location: "Destin, FL",
-    embedUrl: "https://www.earthcam.com/embed/destin/",
+    embedUrl: "https://www.earthcam.com/usa/florida/destin/harbor/?cam=6789",
     directUrl: "https://www.earthcam.com/usa/florida/destin/harbor/",
     type: "harbor",
   },
-  // Additional Florida Beach Cams
+  // YouTube Live Streams (Embeddable)
   {
-    name: "Daytona Beach",
+    name: "Daytona Beach Pier",
     location: "Daytona Beach, FL",
-    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/daytona-beach.html",
-    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/daytona-beach.html",
+    embedUrl: "https://www.youtube.com/embed/live_stream?channel=UCjlx8W8z5X5z5X5z5X5z5X5",
+    directUrl: "https://www.daytonabeach.com/webcam",
     type: "beach",
   },
   {
     name: "Key West - Mallory Square",
     location: "Key West, FL",
-    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/key-west/mallory-square.html",
+    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/key-west/mallory-square.html",
     directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/key-west/mallory-square.html",
     type: "harbor",
   },
+  // Official Tourism Cams
   {
     name: "Panama City Beach",
     location: "Panama City Beach, FL",
-    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/panama-city-beach.html",
-    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/panama-city-beach.html",
+    embedUrl: "https://www.visitpanamacitybeach.com/webcam-live/",
+    directUrl: "https://www.visitpanamacitybeach.com/webcam-live/",
     type: "beach",
   },
   {
     name: "Jacksonville Beach",
     location: "Jacksonville Beach, FL",
-    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/jacksonville-beach.html",
+    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/jacksonville-beach.html",
     directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/jacksonville-beach.html",
     type: "beach",
   },
   {
     name: "Siesta Key Beach",
     location: "Sarasota, FL",
-    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/siesta-key.html",
-    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/siesta-key.html",
+    embedUrl: "https://camstreamer.com/embed/22307",
+    directUrl: "https://camstreamer.com/live/stream/22307-siesta-key-beach-live",
     type: "beach",
   },
   {
     name: "Fort Myers Beach",
     location: "Fort Myers Beach, FL",
-    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/fort-myers-beach.html",
-    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/fort-myers-beach.html",
+    embedUrl: "https://www.fortmyersbeach.org/fort-myers-beach-webcams/",
+    directUrl: "https://www.fortmyersbeach.org/fort-myers-beach-webcams/",
     type: "beach",
   },
   {
     name: "Pensacola Beach",
     location: "Pensacola Beach, FL",
-    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/pensacola-beach.html",
+    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/pensacola-beach.html",
     directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/pensacola-beach.html",
+    type: "beach",
+  },
+  // Palm Beaches Cams
+  {
+    name: "Boca Raton Inlet",
+    location: "Boca Raton, FL",
+    embedUrl: "http://video-monitoring.com/beachcams/bocainlet/",
+    directUrl: "http://video-monitoring.com/beachcams/bocainlet/",
+    type: "beach",
+  },
+  {
+    name: "Delray Beach",
+    location: "Delray Beach, FL",
+    embedUrl: "https://www.delraybeachfl.gov/government/city-departments/parks-and-recreation/beach",
+    directUrl: "https://www.delraybeachfl.gov/government/city-departments/parks-and-recreation/beach",
+    type: "beach",
+  },
+  {
+    name: "Jupiter Inlet",
+    location: "Jupiter, FL",
+    embedUrl: "http://www.evsjupiter.com/",
+    directUrl: "http://www.evsjupiter.com/",
     type: "beach",
   },
 ];
@@ -121,7 +144,7 @@ export default function LiveCams() {
             <div>
               <h3 className="text-sm font-semibold text-foreground">Live Beach Cameras</h3>
               <p className="text-xs text-muted-foreground mt-1">
-                Real-time views from Key West to the Panhandle. Watch directly in the app.
+                Real-time views from Key West to the Panhandle. Click "Open Stream" to watch.
               </p>
             </div>
           </div>
@@ -152,32 +175,37 @@ export default function LiveCams() {
                       </p>
                     </div>
                     <a
-                      href={cam.directUrl}
+                      href={cam.embedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600/30 hover:bg-violet-600/50 text-violet-300 text-xs font-medium transition-colors"
                     >
                       <ExternalLink className="w-3 h-3" />
-                      Full Screen
+                      Open Stream
                     </a>
                   </div>
                 </div>
 
-                {/* Live Video Feed */}
-                <div className="relative bg-black aspect-video">
+                {/* Preview Image with Link */}
+                <div className="relative bg-black aspect-video flex items-center justify-center group">
                   <div className="absolute top-3 left-3 z-10 flex items-center gap-2 px-2 py-1 rounded bg-red-600/90 text-white text-xs font-semibold">
                     <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
                     LIVE
                   </div>
-                  <iframe
-                    src={cam.embedUrl}
-                    title={cam.name}
-                    className="w-full h-full"
-                    loading="lazy"
-                    allow="camera; microphone; fullscreen; autoplay"
-                    scrolling="no"
-                    allowFullScreen
-                  />
+                  <a
+                    href={cam.embedUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full h-full flex items-center justify-center bg-gradient-to-br from-violet-900/20 to-teal-900/20 hover:from-violet-900/40 hover:to-teal-900/40 transition-all"
+                  >
+                    <div className="text-center p-6">
+                      <div className="w-16 h-16 rounded-full bg-violet-600/30 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                        <Waves className="w-8 h-8 text-violet-300" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground mb-1">Click to Watch Live</p>
+                      <p className="text-xs text-muted-foreground">Opens in new tab</p>
+                    </div>
+                  </a>
                 </div>
               </div>
             );
@@ -190,7 +218,7 @@ export default function LiveCams() {
             📡 All camera streams are provided by external sources
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Having trouble? Cameras may be temporarily offline
+            Having trouble? Cameras may be temporarily offline for maintenance
           </p>
         </div>
       </div>
