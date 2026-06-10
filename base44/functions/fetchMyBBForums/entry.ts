@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
       const { net_name, callsign, location, signal_report, notes, fid: postFid } = body;
       const subject = `[Online Check-In] ${net_name}`;
       const message = [
-        `[b]📡 Online Check-In — ${net_name}[/b]`,
+        `[b]Online Check-In -- ${net_name}[/b]`,
         ``,
         `[b]Callsign:[/b] ${callsign}`,
         location ? `[b]Location:[/b] ${location}` : null,
