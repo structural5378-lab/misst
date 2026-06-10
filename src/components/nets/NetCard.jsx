@@ -26,7 +26,14 @@ export default function NetCard({ net }) {
         </div>
       </div>
       <div className="flex flex-col gap-1.5 items-end">
-        <Button size="sm" className="h-8 bg-primary/90 hover:bg-primary text-primary-foreground rounded-full px-5 text-xs font-semibold">
+        <Button
+          size="sm"
+          className="h-8 bg-primary/90 hover:bg-primary text-primary-foreground rounded-full px-5 text-xs font-semibold"
+          onClick={() => {
+            const el = document.getElementById(`checkin-${net.id}`);
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+        >
           Join
         </Button>
         <Link

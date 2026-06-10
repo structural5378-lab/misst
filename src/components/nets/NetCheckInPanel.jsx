@@ -60,7 +60,7 @@ export default function NetCheckInPanel({ net }) {
   });
 
   return (
-    <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+    <div id={`checkin-${net.id}`} className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Radio className="w-4 h-4 text-violet-400" />
