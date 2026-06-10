@@ -11,8 +11,12 @@ Deno.serve(async (req) => {
 
     const apiKey = Deno.env.get("WEATHER_API_KEY");
     if (!apiKey) {
-      return Response.json({ error: 'Weather API key not configured' }, { status: 500 });
+      console.error('WEATHER_API_KEY secret is not set');
+      return Response.json({ error: 'Weather API key not configured. Please set WEATHER_API_KEY in Settings > Environment Variables.' }, { status: 500 });
     }
+
+    // Log API key status (masked for security)
+    console.log('Weather API key present:', apiKey.length > 0 ? `Key exists (${apiKey.length} chars)` : 'Empty');
 
     // Default to Central Florida (Orlando area)
     const lat = user.location_lat || 28.5383;
@@ -25,8 +29,14 @@ Deno.serve(async (req) => {
     const weather = await weatherRes.json();
     
     if (!weatherRes.ok || weather.cod !== 200) {
-      console.error('Weather API error:', weather);
-      throw new Error(weather.message || 'Failed to fetch weather data');
+      console.error('Weather API error response:', {
+        status: weatherRes.status,
+        statusText: weatherRes.statusText,
+        body: weather
+      });
+      const errorMsg = weather.message || `API returned status ${weatherRes.status}`;
+      console.error('Weather error message:', errorMsg);
+      throw new Error(errorMsg);
     }
 
     // Fetch 5-day forecast
@@ -36,8 +46,14 @@ Deno.serve(async (req) => {
     const forecast = await forecastRes.json();
     
     if (!forecastRes.ok || forecast.cod !== 200) {
-      console.error('Forecast API error:', forecast);
-      throw new Error(forecast.message || 'Failed to fetch forecast data');
+      console.error('Forecast API error response:', {
+        status: forecastRes.status,
+        statusText: forecastRes.statusText,
+        body: forecast
+      });
+      const errorMsg = forecast.message || `API returned status ${forecastRes.status}`;
+      console.error('Forecast error message:', errorMsg);
+      throw new Error(errorMsg);
     }
 
     // Process forecast to get daily summaries
