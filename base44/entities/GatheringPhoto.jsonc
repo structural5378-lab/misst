@@ -1,0 +1,28 @@
+{
+  "name": "GatheringPhoto",
+  "type": "object",
+  "properties": {
+    "photo_url": {
+      "type": "string",
+      "description": "URL of the uploaded photo"
+    },
+    "caption": {
+      "type": "string",
+      "description": "Optional caption for the photo"
+    },
+    "gathering_label": {
+      "type": "string",
+      "description": "Month/Year label e.g. June 2026"
+    },
+    "uploader_name": {
+      "type": "string",
+      "description": "Display name of uploader"
+    },
+    "uploader_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "photo_url"
+  ]
+}
