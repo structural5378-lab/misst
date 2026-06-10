@@ -1,8 +1,9 @@
 import React from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
-import { Bell, Info, AlertTriangle, Radio, Settings } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell, Info, AlertTriangle, Radio, Settings, Trash2 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
+import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { format } from "date-fns";
 
 const typeIcons = {
@@ -20,11 +21,20 @@ const typeColors = {
 };
 
 export default function Alerts() {
+  const { mybbUser } = useMyBBAuth();
+  const queryClient = useQueryClient();
+  const canEdit = mybbUser?.canEdit;
+
   const { data: alerts, isLoading } = useQuery({
     queryKey: ["alerts"],
     queryFn: () => base44.entities.Alert.list("-created_date", 50),
     initialData: [],
   });
+
+  const handleDelete = async (id) => {
+    await base44.entities.Alert.delete(id);
+    queryClient.invalidateQueries({ queryKey: ["alerts"] });
+  };
 
   return (
     <div>
@@ -61,6 +71,14 @@ export default function Alerts() {
                       {alert.created_date && format(new Date(alert.created_date), "MMM d 'at' h:mm a")}
                     </p>
                   </div>
+                  {canEdit && (
+                    <button
+                      onClick={() => handleDelete(alert.id)}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               );
             })}
