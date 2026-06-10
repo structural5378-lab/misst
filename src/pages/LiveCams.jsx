@@ -149,14 +149,14 @@ export default function LiveCams() {
             <div>
               <h3 className="text-sm font-semibold text-foreground">Live Beach Cameras</h3>
               <p className="text-xs text-muted-foreground mt-1">
-                Real-time views from Key West to the Panhandle. Cameras are hosted externally — click to view in new tab.
+                Real-time views from Key West to the Panhandle. Watch directly in the app.
               </p>
             </div>
           </div>
         </div>
 
         {/* Camera Cards */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {floridaCams.map((cam, idx) => {
             const TypeIcon = typeIcons[cam.type] || Waves;
             const colorClass = typeColors[cam.type] || typeColors.beach;
@@ -166,42 +166,44 @@ export default function LiveCams() {
                 key={idx}
                 className="rounded-xl bg-white/[0.03] border border-white/[0.07] hover:border-violet-500/30 hover:bg-violet-500/5 transition-all overflow-hidden"
               >
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-3">
+                {/* Header */}
+                <div className="p-4 border-b border-white/[0.07]">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-lg ${colorClass} flex items-center justify-center`}>
+                      <TypeIcon className="w-4 h-4" />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className={`w-8 h-8 rounded-lg ${colorClass} flex items-center justify-center`}>
-                          <TypeIcon className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-semibold text-foreground">{cam.name}</h4>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <MapPin className="w-2.5 h-2.5" />
-                            {cam.location}
-                          </p>
-                        </div>
-                      </div>
+                      <h4 className="text-sm font-semibold text-foreground">{cam.name}</h4>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="w-2.5 h-2.5" />
+                        {cam.location}
+                      </p>
                     </div>
                     <a
                       href={cam.directUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-violet-600/30 hover:bg-violet-600/50 text-violet-300 text-xs font-medium transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600/30 hover:bg-violet-600/50 text-violet-300 text-xs font-medium transition-colors"
                     >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      Watch Live
+                      <ExternalLink className="w-3 h-3" />
+                      Full Screen
                     </a>
                   </div>
                 </div>
 
-                {/* Embedded Preview (iframe) */}
-                <div className="border-t border-white/[0.07] bg-black/20">
+                {/* Live Video Feed */}
+                <div className="relative bg-black">
+                  <div className="absolute top-3 left-3 z-10 flex items-center gap-2 px-2 py-1 rounded bg-red-600/90 text-white text-xs font-semibold">
+                    <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                    LIVE
+                  </div>
                   <iframe
                     src={cam.embedUrl}
                     title={cam.name}
-                    className="w-full h-48"
+                    className="w-full h-64"
                     loading="lazy"
-                    allow="camera; microphone"
+                    allow="camera; microphone; fullscreen"
+                    scrolling="no"
                   />
                 </div>
               </div>
