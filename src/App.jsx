@@ -47,19 +47,8 @@ const MyBBProtectedRoute = () => {
 };
 
 const AuthenticatedApp = () => {
-  const { isLoadingPublicSettings } = useAuth();
-
-  if (isLoadingPublicSettings) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs text-muted-foreground">Loading Mist...</span>
-        </div>
-      </div>
-    );
-  }
-
+  // This app uses MyBB forum auth — Base44 auth state is intentionally ignored.
+  // MyBBProtectedRoute handles all access control via localStorage session.
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
