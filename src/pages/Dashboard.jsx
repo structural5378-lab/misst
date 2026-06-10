@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Settings } from "lucide-react";
+import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
@@ -19,7 +19,7 @@ const quickItems = [
 ];
 
 export default function Dashboard() {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser, logout: mybbLogout } = useMyBBAuth();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -83,13 +83,20 @@ export default function Dashboard() {
         <div className="absolute inset-0 bg-gradient-to-b from-violet-950/60 via-background/80 to-background" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-violet-600/20 rounded-full blur-3xl" />
 
-        <div className="relative px-4 pt-4 pb-1 flex items-center justify-end">
+        <div className="relative px-4 pt-4 pb-1 flex items-center justify-end gap-2">
           <Link
             to="/alerts"
             className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <Bell className="w-5 h-5" />
           </Link>
+          <button
+            onClick={() => { mybbLogout(); window.location.href = "/login"; }}
+            className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+            title="Sign Out"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
         </div>
 
         {/* User identity banner */}
