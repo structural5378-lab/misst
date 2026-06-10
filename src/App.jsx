@@ -17,6 +17,7 @@ import ResetPassword from '@/pages/ResetPassword';
 import Dashboard from '@/pages/Dashboard';
 import Repeaters from '@/pages/Repeaters';
 import RepeaterDetail from '@/pages/RepeaterDetail';
+import AddRepeater from '@/pages/AddRepeater';
 import MapView from '@/pages/MapView';
 import Nets from '@/pages/Nets';
 
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
       <Route element={<MyBBProtectedRoute />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/repeaters" element={<Repeaters />} />
+        <Route path="/repeaters/add" element={<AddRepeater />} />
         <Route path="/repeaters/:id" element={<RepeaterDetail />} />
         <Route path="/map" element={<MapView />} />
         <Route path="/nets" element={<Nets />} />
