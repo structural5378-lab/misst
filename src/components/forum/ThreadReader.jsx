@@ -94,7 +94,7 @@ export default function ThreadReader({ thread, onBack }) {
       setReplyText("");
       queryClient.invalidateQueries({ queryKey: ["mybb-posts", thread.threadId] });
     } else {
-      setPostError(res.data?.result?.error || "Failed to post reply. Check your forum credentials.");
+      setPostError(res.data?.error || res.data?.result?.error || "Failed to post reply. The forum bridge may not support replies yet.");
     }
     setPosting(false);
   };

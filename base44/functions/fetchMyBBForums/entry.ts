@@ -113,6 +113,9 @@ Deno.serve(async (req) => {
         bot_username: username,
         bot_password: password,
       });
+      if (data.error) {
+        return Response.json({ ok: false, error: data.error, result: data });
+      }
       return Response.json({ ok: true, result: data });
     }
 
@@ -121,12 +124,15 @@ Deno.serve(async (req) => {
       if (!replyTid || !replyMsg || !replyUser || !replyPass) {
         return Response.json({ error: "Missing required fields" }, { status: 400 });
       }
-      const data = await bridgeCall("reply", {
+      const data = await bridgeCall("new_reply", {
         tid: replyTid,
         message: replyMsg,
         bot_username: replyUser,
         bot_password: replyPass,
       });
+      if (data.error) {
+        return Response.json({ ok: false, error: data.error, result: data });
+      }
       return Response.json({ ok: true, result: data });
     }
 
