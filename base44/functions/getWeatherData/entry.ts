@@ -4,7 +4,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    
+
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Weather API key not configured' }, { status: 500 });
     }
 
-    // Default to Florida coordinates (user can customize)
+    // Default to Central Florida (Orlando area)
     const lat = user.location_lat || 28.5383;
     const lon = user.location_lon || -81.3792;
 
@@ -24,42 +24,51 @@ Deno.serve(async (req) => {
     );
     const weather = await weatherRes.json();
 
-    // Fetch tropical cyclone data from NHC (NOAA)
-    const nhcRes = await fetch('https://www.nhc.noaa.gov/cyclones/current.json');
-    let tropicalSystems = [];
-    try {
-      const nhcData = await nhcRes.json();
-      if (nhcData?.active) {
-        tropicalSystems = nhcData.active.map((system) => ({
-          name: system.name,
-          type: system.type,
-          category: system.category,
-          lat: system.lat,
-          lon: system.lon,
-          windSpeed: system.maxWind,
-          pressure: system.pressure,
-          movement: system.movement,
-          advisory: system.advisoryNumber,
-        }));
+    // Fetch 5-day forecast
+    const forecastRes = await fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`
+    );
+    const forecast = await forecastRes.json();
+
+    // Process forecast to get daily summaries
+    const dailyForecast = {};
+    forecast.list.forEach(item => {
+      const date = item.dt_txt.split(' ')[0];
+      if (!dailyForecast[date]) {
+        dailyForecast[date] = {
+          date,
+          temp_max: item.main.temp_max,
+          temp_min: item.main.temp_min,
+          condition: item.weather[0].main,
+          icon: item.weather[0].icon,
+          description: item.weather[0].description
+        };
+      } else {
+        dailyForecast[date].temp_max = Math.max(dailyForecast[date].temp_max, item.main.temp_max);
+        dailyForecast[date].temp_min = Math.min(dailyForecast[date].temp_min, item.main.temp_min);
       }
-    } catch (e) {
-      // NHC API might not be available, continue without tropical data
-      console.log('NHC tropical data unavailable:', e.message);
-    }
+    });
+
+    const forecastArray = Object.values(dailyForecast).slice(0, 5);
 
     return Response.json({
       current: {
-        temp: weather.main?.temp,
-        feelsLike: weather.main?.feels_like,
-        humidity: weather.main?.humidity,
-        windSpeed: weather.wind?.speed,
-        windDir: weather.wind?.deg,
-        pressure: weather.main?.pressure,
-        description: weather.weather?.[0]?.description,
-        icon: weather.weather?.[0]?.icon,
-        city: weather.name,
+        temp: Math.round(weather.main.temp),
+        feels_like: Math.round(weather.main.feels_like),
+        condition: weather.weather[0].main,
+        description: weather.weather[0].description,
+        icon: weather.weather[0].icon,
+        humidity: weather.main.humidity,
+        wind_speed: Math.round(weather.wind.speed),
+        wind_deg: weather.wind.deg,
+        pressure: weather.main.pressure,
+        visibility: Math.round(weather.visibility / 1000),
+        sunrise: weather.sys.sunrise,
+        sunset: weather.sys.sunset,
+        name: weather.name
       },
-      tropical: tropicalSystems,
+      forecast: forecastArray,
+      location: { lat, lon }
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

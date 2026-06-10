@@ -18,6 +18,14 @@
       "type": "string",
       "description": "City, State"
     },
+    "location_lat": {
+      "type": "number",
+      "description": "Latitude for weather data"
+    },
+    "location_lon": {
+      "type": "number",
+      "description": "Longitude for weather data"
+    },
     "bio": {
       "type": "string",
       "description": "Short bio"
