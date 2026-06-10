@@ -8,7 +8,7 @@ const options = [
   { icon: Radio, label: "Add Repeater", desc: "Register a new repeater", path: "/repeaters/add", color: "text-primary", requiresEdit: true },
   { icon: MessageSquare, label: "New Thread", desc: "Start a forum discussion", path: "/forums/new", color: "text-blue-400", requiresEdit: false },
   { icon: Users, label: "Create Net", desc: "Schedule a new net", path: "/nets/create", color: "text-purple-400", requiresEdit: true },
-  { icon: Bell, label: "Post Alert", desc: "Send an alert to the community", path: "/alerts", color: "text-amber-400", requiresEdit: true },
+  { icon: Bell, label: "Post Alert", desc: "Send an alert to the community", path: "/alerts/create", color: "text-amber-400", requiresEdit: true },
 ];
 
 export default function AddContent() {

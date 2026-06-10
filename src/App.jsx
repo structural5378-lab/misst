@@ -35,6 +35,7 @@ import MyBBForum from '@/pages/MyBBForum';
 import NetControl from '@/pages/NetControl';
 import CreateNet from '@/pages/CreateNet';
 import ForumRegister from '@/pages/ForumRegister';
+import CreateAlert from '@/pages/CreateAlert';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -74,6 +75,7 @@ const AuthenticatedApp = () => {
         <Route path="/nets/:netId/control" element={<NetControl />} />
         <Route path="/nets/create" element={<CreateNet />} />
         <Route path="/community-forum/register" element={<ForumRegister />} />
+        <Route path="/alerts/create" element={<CreateAlert />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
