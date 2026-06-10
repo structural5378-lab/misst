@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Settings, LogOut } from "lucide-react";
+import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Settings, LogOut, Cloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import WeatherSection from "@/components/dashboard/WeatherSection";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
@@ -159,6 +160,9 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* Weather Section */}
+        <WeatherSection />
 
         {/* Stats strip */}
         <div className="grid grid-cols-3 gap-2">
