@@ -3,124 +3,96 @@ import { ExternalLink, MapPin, Waves, Sun, Anchor } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 
 const floridaCams = [
-  // Key West & Southern Florida
-  {
-    name: "Key West - Mallory Square",
-    location: "Key West, FL",
-    lat: 24.5551,
-    lng: -81.8077,
-    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/key-west/mallory-square.html",
-    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/key-west/mallory-square.html",
-    type: "harbor",
-  },
+  // Key West & Southern Florida - EarthCam embed URLs
   {
     name: "South Beach - Miami",
     location: "Miami Beach, FL",
-    lat: 25.7617,
-    lng: -80.1918,
-    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/miami-beach/south-beach.html",
-    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/miami-beach/south-beach.html",
-    type: "beach",
-  },
-  {
-    name: "Fort Lauderdale Beach",
-    location: "Fort Lauderdale, FL",
-    lat: 26.1224,
-    lng: -80.1373,
-    embedUrl: "https://www.earthcam.com/usa/florida/fortlauderdale/beach/",
-    directUrl: "https://www.earthcam.com/usa/florida/fortlauderdale/beach/",
-    type: "beach",
-  },
-  // East Coast - Going North
-  {
-    name: "Daytona Beach - Main Street Pier",
-    location: "Daytona Beach, FL",
-    lat: 29.2108,
-    lng: -81.0228,
-    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/daytona-beach/main-street-pier.html",
-    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/daytona-beach/main-street-pier.html",
-    type: "beach",
-  },
-  {
-    name: "Cocoa Beach Pier",
-    location: "Cocoa Beach, FL",
-    lat: 28.3200,
-    lng: -80.6076,
-    embedUrl: "https://www.earthcam.com/usa/florida/cocoabeach/pier/",
-    directUrl: "https://www.earthcam.com/usa/florida/cocoabeach/pier/",
-    type: "beach",
-  },
-  {
-    name: "Jacksonville Beach",
-    location: "Jacksonville Beach, FL",
-    lat: 30.2866,
-    lng: -81.3934,
-    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/jacksonville-beach.html",
-    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/jacksonville-beach.html",
-    type: "beach",
-  },
-  // West Coast - Gulf of Mexico
-  {
-    name: "Clearwater Beach",
-    location: "Clearwater, FL",
-    lat: 27.9659,
-    lng: -82.8001,
-    embedUrl: "https://www.earthcam.com/usa/florida/clearwater/beach/",
-    directUrl: "https://www.earthcam.com/usa/florida/clearwater/beach/",
-    type: "beach",
-  },
-  {
-    name: "Siesta Key Beach",
-    location: "Sarasota, FL",
-    lat: 27.2639,
-    lng: -82.5437,
-    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/siesta-key.html",
-    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/siesta-key.html",
+    embedUrl: "https://www.earthcam.com/embed/southbeach/",
+    directUrl: "https://www.earthcam.com/usa/florida/miamibeach/southbeach/",
     type: "beach",
   },
   {
     name: "Naples Pier",
     location: "Naples, FL",
-    lat: 26.1420,
-    lng: -81.8073,
-    embedUrl: "https://www.earthcam.com/usa/florida/naples/pier/",
+    embedUrl: "https://www.earthcam.com/embed/naples/",
     directUrl: "https://www.earthcam.com/usa/florida/naples/pier/",
     type: "beach",
   },
   {
-    name: "Fort Myers Beach",
-    location: "Fort Myers Beach, FL",
-    lat: 26.4518,
-    lng: -81.9473,
-    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/fort-myers-beach.html",
-    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/fort-myers-beach.html",
+    name: "Clearwater Beach",
+    location: "Clearwater, FL",
+    embedUrl: "https://www.earthcam.com/embed/clearwater/",
+    directUrl: "https://www.earthcam.com/usa/florida/clearwater/beach/",
     type: "beach",
   },
-  // Panhandle & Northern Gulf
+  {
+    name: "Fort Lauderdale Beach",
+    location: "Fort Lauderdale, FL",
+    embedUrl: "https://www.earthcam.com/embed/fortlauderdale/",
+    directUrl: "https://www.earthcam.com/usa/florida/fortlauderdale/beach/",
+    type: "beach",
+  },
+  {
+    name: "Cocoa Beach Pier",
+    location: "Cocoa Beach, FL",
+    embedUrl: "https://www.earthcam.com/embed/cocoabeach/",
+    directUrl: "https://www.earthcam.com/usa/florida/cocoabeach/pier/",
+    type: "beach",
+  },
   {
     name: "Destin Harbor",
     location: "Destin, FL",
-    lat: 30.3935,
-    lng: -86.4958,
-    embedUrl: "https://www.earthcam.com/usa/florida/destin/harbor/",
+    embedUrl: "https://www.earthcam.com/embed/destin/",
     directUrl: "https://www.earthcam.com/usa/florida/destin/harbor/",
+    type: "harbor",
+  },
+  // Additional Florida Beach Cams
+  {
+    name: "Daytona Beach",
+    location: "Daytona Beach, FL",
+    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/daytona-beach.html",
+    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/daytona-beach.html",
+    type: "beach",
+  },
+  {
+    name: "Key West - Mallory Square",
+    location: "Key West, FL",
+    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/key-west/mallory-square.html",
+    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/key-west/mallory-square.html",
     type: "harbor",
   },
   {
     name: "Panama City Beach",
     location: "Panama City Beach, FL",
-    lat: 30.1766,
-    lng: -85.8055,
-    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/panama-city-beach.html",
+    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/panama-city-beach.html",
     directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/panama-city-beach.html",
+    type: "beach",
+  },
+  {
+    name: "Jacksonville Beach",
+    location: "Jacksonville Beach, FL",
+    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/jacksonville-beach.html",
+    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/jacksonville-beach.html",
+    type: "beach",
+  },
+  {
+    name: "Siesta Key Beach",
+    location: "Sarasota, FL",
+    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/siesta-key.html",
+    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/siesta-key.html",
+    type: "beach",
+  },
+  {
+    name: "Fort Myers Beach",
+    location: "Fort Myers Beach, FL",
+    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/fort-myers-beach.html",
+    directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/fort-myers-beach.html",
     type: "beach",
   },
   {
     name: "Pensacola Beach",
     location: "Pensacola Beach, FL",
-    lat: 30.3327,
-    lng: -87.1422,
-    embedUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/pensacola-beach.html",
+    embedUrl: "https://www.skylinewebcams.com/embed/webcam/usa/florida/pensacola-beach.html",
     directUrl: "https://www.skylinewebcams.com/en/webcam/usa/florida/pensacola-beach.html",
     type: "beach",
   },
@@ -192,7 +164,7 @@ export default function LiveCams() {
                 </div>
 
                 {/* Live Video Feed */}
-                <div className="relative bg-black">
+                <div className="relative bg-black aspect-video">
                   <div className="absolute top-3 left-3 z-10 flex items-center gap-2 px-2 py-1 rounded bg-red-600/90 text-white text-xs font-semibold">
                     <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
                     LIVE
@@ -200,10 +172,11 @@ export default function LiveCams() {
                   <iframe
                     src={cam.embedUrl}
                     title={cam.name}
-                    className="w-full h-64"
+                    className="w-full h-full"
                     loading="lazy"
-                    allow="camera; microphone; fullscreen"
+                    allow="camera; microphone; fullscreen; autoplay"
                     scrolling="no"
+                    allowFullScreen
                   />
                 </div>
               </div>
