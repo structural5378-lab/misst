@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { X, Search, Loader2 } from "lucide-react";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 
 export default function NewMessageModal({ currentUser, onSelect, onClose }) {
-  const { mybbUser } = useMyBBAuth();
   const [search, setSearch] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -14,17 +12,8 @@ export default function NewMessageModal({ currentUser, onSelect, onClose }) {
     if (!search.trim()) return;
     setLoading(true);
     setSearched(true);
-    const q = search.toLowerCase().trim();
-    const all = await base44.entities.User.list().catch(() => []);
-    const filtered = all.filter((u) =>
-      u.id !== currentUser.id && (
-        u.full_name?.toLowerCase().includes(q) ||
-        u.callsign?.toLowerCase().includes(q) ||
-        u.mybb_username?.toLowerCase().includes(q) ||
-        u.email?.toLowerCase().includes(q)
-      )
-    );
-    setResults(filtered);
+    const res = await base44.functions.invoke("searchUsers", { query: search.trim() });
+    setResults(res.data?.users || []);
     setLoading(false);
   };
 
