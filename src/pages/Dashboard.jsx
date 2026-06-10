@@ -83,8 +83,7 @@ export default function Dashboard() {
         <div className="absolute inset-0 bg-gradient-to-b from-violet-950/60 via-background/80 to-background" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-violet-600/20 rounded-full blur-3xl" />
 
-        <div className="relative px-4 pt-5 pb-4 flex items-center justify-between">
-          <img src={LOGO_URL} alt="Insomniacs GMRS" className="h-12 w-auto object-contain drop-shadow-lg" />
+        <div className="relative px-4 pt-4 pb-1 flex items-center justify-end">
           <Link
             to="/alerts"
             className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
