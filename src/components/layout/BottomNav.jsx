@@ -1,6 +1,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, MessageSquare, Mail, Bell, Plus } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 
 const navItems = [
   { icon: Home, label: "Home", path: "/" },
@@ -13,6 +15,16 @@ const navItems = [
 export default function BottomNav() {
   const location = useLocation();
 
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ["unread-alerts-badge"],
+    queryFn: async () => {
+      const alerts = await base44.entities.Alert.filter({ is_read: false });
+      return alerts.length;
+    },
+    refetchInterval: 30000,
+    staleTime: 15000,
+  });
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(210,30%,7%)]/95 backdrop-blur-xl border-t border-white/[0.06]">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
@@ -21,6 +33,8 @@ export default function BottomNav() {
             ? location.pathname === "/"
             : location.pathname === path || location.pathname.startsWith(path + "/");
           const isAdd = label === "Add";
+          const isAlerts = label === "Alerts";
+          const hasUnread = isAlerts && unreadCount > 0;
 
           return (
             <Link
@@ -40,7 +54,14 @@ export default function BottomNav() {
                 </div>
               ) : (
                 <>
-                  <Icon className={`w-5 h-5 transition-transform ${isActive ? "scale-110" : ""}`} />
+                  <div className="relative">
+                    <Icon className={`w-5 h-5 transition-transform ${isActive ? "scale-110" : ""}`} />
+                    {hasUnread && (
+                      <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-0.5 leading-none shadow-md">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </div>
                   <span className={`text-[10px] font-medium ${isActive ? "text-violet-400" : ""}`}>
                     {label}
                   </span>
