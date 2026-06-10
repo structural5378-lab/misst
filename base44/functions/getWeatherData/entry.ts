@@ -23,16 +23,26 @@ Deno.serve(async (req) => {
       `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`
     );
     const weather = await weatherRes.json();
+    
+    if (!weatherRes.ok || weather.cod !== 200) {
+      console.error('Weather API error:', weather);
+      throw new Error(weather.message || 'Failed to fetch weather data');
+    }
 
     // Fetch 5-day forecast
     const forecastRes = await fetch(
       `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`
     );
     const forecast = await forecastRes.json();
+    
+    if (!forecastRes.ok || forecast.cod !== 200) {
+      console.error('Forecast API error:', forecast);
+      throw new Error(forecast.message || 'Failed to fetch forecast data');
+    }
 
     // Process forecast to get daily summaries
     const dailyForecast = {};
-    forecast.list.forEach(item => {
+    (forecast.list || []).forEach(item => {
       const date = item.dt_txt.split(' ')[0];
       if (!dailyForecast[date]) {
         dailyForecast[date] = {
