@@ -1,26 +1,32 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
-import { X, Search } from "lucide-react";
+import { X, Search, Loader2 } from "lucide-react";
+import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 
 export default function NewMessageModal({ currentUser, onSelect, onClose }) {
+  const { mybbUser } = useMyBBAuth();
   const [search, setSearch] = useState("");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
 
-  const { data: users = [] } = useQuery({
-    queryKey: ["users-list"],
-    queryFn: () => base44.entities.User.list(),
-  });
-
-  const filtered = users
-    .filter((u) => u.id !== currentUser.id)
-    .filter((u) => {
-      const q = search.toLowerCase();
-      return (
+  const handleSearch = async () => {
+    if (!search.trim()) return;
+    setLoading(true);
+    setSearched(true);
+    const q = search.toLowerCase().trim();
+    const all = await base44.entities.User.list().catch(() => []);
+    const filtered = all.filter((u) =>
+      u.id !== currentUser.id && (
         u.full_name?.toLowerCase().includes(q) ||
         u.callsign?.toLowerCase().includes(q) ||
+        u.mybb_username?.toLowerCase().includes(q) ||
         u.email?.toLowerCase().includes(q)
-      );
-    });
+      )
+    );
+    setResults(filtered);
+    setLoading(false);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -38,24 +44,39 @@ export default function NewMessageModal({ currentUser, onSelect, onClose }) {
 
         {/* Search */}
         <div className="px-4 py-2 border-b border-white/[0.06]">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              autoFocus
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search members..."
-              className="w-full bg-white/[0.05] rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                placeholder="Search by name, callsign, or username..."
+                className="w-full bg-white/[0.05] rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none"
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              className="px-3 py-2 rounded-lg bg-violet-600 text-white text-xs font-medium hover:bg-violet-700 transition-colors shrink-0"
+            >
+              Search
+            </button>
           </div>
         </div>
 
         {/* Members list */}
         <div className="flex-1 overflow-y-auto">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-5 h-5 text-violet-400 animate-spin" />
+            </div>
+          ) : searched && results.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-8">No members found</p>
+          ) : !searched ? (
+            <p className="text-xs text-muted-foreground text-center py-8">Search for a member to start a conversation</p>
           ) : (
-            filtered.map((u) => (
+            results.map((u) => (
               <button
                 key={u.id}
                 onClick={() => onSelect(u)}
@@ -69,6 +90,7 @@ export default function NewMessageModal({ currentUser, onSelect, onClose }) {
                 <div className="text-left">
                   <p className="text-sm font-medium text-foreground">{u.full_name || u.email}</p>
                   {u.callsign && <p className="text-xs text-muted-foreground">{u.callsign}</p>}
+                  {u.mybb_username && <p className="text-xs text-muted-foreground/60">@{u.mybb_username}</p>}
                 </div>
               </button>
             ))

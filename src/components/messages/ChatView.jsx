@@ -3,11 +3,14 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Send } from "lucide-react";
 import { format } from "date-fns";
+import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 
 export default function ChatView({ otherUserId, otherName, currentUser, onBack }) {
+  const { mybbUser } = useMyBBAuth();
   const [text, setText] = useState("");
   const bottomRef = useRef(null);
   const queryClient = useQueryClient();
+  const senderDisplayName = mybbUser?.username || currentUser?.full_name || currentUser?.callsign || "Member";
 
   const { data: messages = [] } = useQuery({
     queryKey: ["chat", otherUserId],
@@ -35,7 +38,7 @@ export default function ChatView({ otherUserId, otherName, currentUser, onBack }
       base44.entities.DirectMessage.create({
         sender_id: currentUser.id,
         receiver_id: otherUserId,
-        sender_name: currentUser.full_name || currentUser.callsign || "Member",
+        sender_name: senderDisplayName,
         receiver_name: otherName,
         content: text.trim(),
         is_read: false,
@@ -53,7 +56,7 @@ export default function ChatView({ otherUserId, otherName, currentUser, onBack }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-[calc(100vh-2.5rem)] bg-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-white/[0.06] px-4 py-3 flex items-center gap-3">
         <button onClick={onBack} className="text-violet-400 hover:text-violet-300 transition-colors">
