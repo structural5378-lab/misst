@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Info, AlertTriangle, Radio, Settings, Trash2 } from "lucide-react";
@@ -24,6 +24,7 @@ export default function Alerts() {
   const { mybbUser } = useMyBBAuth();
   const queryClient = useQueryClient();
   const canEdit = mybbUser?.canEdit;
+  const [deletingIds, setDeletingIds] = useState(new Set());
 
   const { data: alerts, isLoading } = useQuery({
     queryKey: ["alerts"],
@@ -32,8 +33,14 @@ export default function Alerts() {
   });
 
   const handleDelete = async (id) => {
-    await base44.entities.Alert.delete(id);
-    queryClient.invalidateQueries({ queryKey: ["alerts"] });
+    if (deletingIds.has(id)) return;
+    setDeletingIds(prev => new Set(prev).add(id));
+    try {
+      await base44.entities.Alert.delete(id);
+      queryClient.invalidateQueries({ queryKey: ["alerts"] });
+    } catch {
+      setDeletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
+    }
   };
 
   return (
@@ -74,7 +81,8 @@ export default function Alerts() {
                   {canEdit && (
                     <button
                       onClick={() => handleDelete(alert.id)}
-                      className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+                      disabled={deletingIds.has(alert.id)}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0 disabled:opacity-40"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
