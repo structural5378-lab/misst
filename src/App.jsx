@@ -32,6 +32,7 @@ import Profile from '@/pages/Profile';
 import AddContent from '@/pages/AddContent';
 import MyBBForum from '@/pages/MyBBForum';
 import NetControl from '@/pages/NetControl';
+import CreateNet from '@/pages/CreateNet';
 import ForumRegister from '@/pages/ForumRegister';
 
 // Layout
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
         <Route path="/add" element={<AddContent />} />
         <Route path="/community-forum" element={<MyBBForum />} />
         <Route path="/nets/:netId/control" element={<NetControl />} />
+        <Route path="/nets/create" element={<CreateNet />} />
         <Route path="/community-forum/register" element={<ForumRegister />} />
       </Route>
 
