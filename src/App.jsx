@@ -36,6 +36,7 @@ import NetControl from '@/pages/NetControl';
 import CreateNet from '@/pages/CreateNet';
 import ForumRegister from '@/pages/ForumRegister';
 import CreateAlert from '@/pages/CreateAlert';
+import LiveCams from '@/pages/LiveCams';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -76,6 +77,7 @@ const AuthenticatedApp = () => {
         <Route path="/nets/create" element={<CreateNet />} />
         <Route path="/community-forum/register" element={<ForumRegister />} />
         <Route path="/alerts/create" element={<CreateAlert />} />
+        <Route path="/live-cams" element={<LiveCams />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

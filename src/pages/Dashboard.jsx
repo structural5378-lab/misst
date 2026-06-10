@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Settings, LogOut, Cloud } from "lucide-react";
+import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Settings, LogOut, Cloud, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import WeatherSection from "@/components/weather/WeatherSection";
@@ -17,6 +17,7 @@ const quickItems = [
   { icon: Zap, label: "Alerts", path: "/alerts", bg: "bg-amber-500/15", color: "text-amber-400" },
   { icon: Wrench, label: "Tools", path: "/tools", bg: "bg-orange-500/15", color: "text-orange-400" },
   { icon: Globe, label: "Forum", path: "/community-forum", bg: "bg-indigo-500/15", color: "text-indigo-400" },
+  { icon: Sun, label: "Beach Cams", path: "/live-cams", bg: "bg-cyan-500/15", color: "text-cyan-400" },
 ];
 
 export default function Dashboard() {
