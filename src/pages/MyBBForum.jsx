@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, MessageSquare, Clock, ChevronRight, RefreshCw, User, Eye, LogIn, Plus, X, Send } from "lucide-react";
@@ -12,7 +12,6 @@ export default function MyBBForum() {
   const [activeFid, setActiveFid] = useState(null);
   const [selectedThread, setSelectedThread] = useState(null);
   const [showNewThread, setShowNewThread] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const { mybbUser } = useMyBBAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -22,10 +21,6 @@ export default function MyBBForum() {
   const [newBody, setNewBody] = useState("");
   const [posting, setPosting] = useState(false);
   const [postError, setPostError] = useState("");
-
-  useEffect(() => {
-    base44.auth.isAuthenticated().then(setIsAuthenticated);
-  }, []);
 
   const { data: forumsData } = useQuery({
     queryKey: ["mybb-forums"],
@@ -85,7 +80,7 @@ export default function MyBBForum() {
     );
   }
 
-  if (isAuthenticated === false) {
+  if (!mybbUser) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <PageHeader title="Community Forum" showBack />
@@ -108,14 +103,6 @@ export default function MyBBForum() {
             Don't have an account? Register
           </Link>
         </div>
-      </div>
-    );
-  }
-
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
