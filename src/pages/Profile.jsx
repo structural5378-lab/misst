@@ -98,9 +98,9 @@ export default function Profile() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { icon: Star, label: "Reputation", value: user?.reputation || 0 },
-            { icon: Award, label: "Badges", value: user?.badges || 0 },
-            { icon: MessageSquare, label: "Threads", value: user?.forum_count || 0 },
+            { icon: Star, label: "Reputation", value: mybbUser?.reputation ?? 0 },
+            { icon: MessageSquare, label: "Posts", value: mybbUser?.postcount ?? 0 },
+            { icon: Award, label: "Threads", value: mybbUser?.threadcount ?? 0 },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex flex-col items-center py-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
               <span className="text-2xl font-bold text-foreground">{value}</span>
