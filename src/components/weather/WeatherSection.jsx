@@ -16,12 +16,12 @@ const weatherIcons = {
 };
 
 export default function WeatherSection() {
-  const { data: weather, isLoading, error } = useQuery({
+  const { data: weather, isLoading, error, refetch } = useQuery({
     queryKey: ["weather"],
     queryFn: () => base44.functions.invoke("getWeatherData", {}),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
-    retry: 2,
+    retry: 3,
   });
 
   if (isLoading) {
@@ -34,15 +34,24 @@ export default function WeatherSection() {
     );
   }
 
-  if (error || !weather) {
+  if (error || !weather?.current) {
     return (
       <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
-        <p className="text-sm text-muted-foreground text-center py-4">Weather data unavailable</p>
+        <div className="text-center py-6">
+          <Cloud className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-40" />
+          <p className="text-sm text-muted-foreground mb-2">Weather data unavailable</p>
+          <button
+            onClick={() => refetch()}
+            className="text-xs text-violet-400 hover:text-violet-300 font-medium"
+          >
+            Try Again →
+          </button>
+        </div>
       </div>
     );
   }
 
-  const { current, forecast } = weather;
+  const { current, forecast, location } = weather;
   const WeatherIcon = weatherIcons[current.condition] || Cloud;
 
   return (
@@ -50,11 +59,8 @@ export default function WeatherSection() {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <Thermometer className="w-4 h-4 text-violet-400" />
-          Weather - {current.name}
+          Weather - {current.name || "Central Florida"}
         </h3>
-        <Link to="/weather" className="text-xs text-violet-400 font-medium hover:text-violet-300">
-          Full Forecast →
-        </Link>
       </div>
 
       <div className="space-y-3">
@@ -85,25 +91,30 @@ export default function WeatherSection() {
         </div>
 
         {/* 5-Day Forecast */}
-        <div className="grid grid-cols-5 gap-2">
-          {forecast.map((day, idx) => {
-            const DayIcon = weatherIcons[day.condition] || Cloud;
-            const date = new Date(day.date + "T00:00:00");
-            const dayName = idx === 0 ? "Today" : date.toLocaleDateString("en-US", { weekday: "short" });
+        {forecast && forecast.length > 0 && (
+          <div>
+            <h4 className="text-xs font-semibold text-muted-foreground mb-2">5-Day Forecast</h4>
+            <div className="grid grid-cols-5 gap-2">
+              {forecast.map((day, idx) => {
+                const DayIcon = weatherIcons[day.condition] || Cloud;
+                const date = new Date(day.date + "T00:00:00");
+                const dayName = idx === 0 ? "Today" : date.toLocaleDateString("en-US", { weekday: "short" });
 
-            return (
-              <div
-                key={day.date}
-                className="flex flex-col items-center p-2 rounded-lg bg-white/[0.03] border border-white/[0.07]"
-              >
-                <span className="text-[10px] text-muted-foreground mb-1">{dayName}</span>
-                <DayIcon className="w-4 h-4 text-violet-300 mb-1" />
-                <span className="text-xs font-bold text-foreground">{Math.round(day.temp_max)}°</span>
-                <span className="text-[10px] text-muted-foreground">{Math.round(day.temp_min)}°</span>
-              </div>
-            );
-          })}
-        </div>
+                return (
+                  <div
+                    key={day.date}
+                    className="flex flex-col items-center p-2 rounded-lg bg-white/[0.03] border border-white/[0.07]"
+                  >
+                    <span className="text-[10px] text-muted-foreground mb-1">{dayName}</span>
+                    <DayIcon className="w-4 h-4 text-violet-300 mb-1" />
+                    <span className="text-xs font-bold text-foreground">{Math.round(day.temp_max)}°</span>
+                    <span className="text-[10px] text-muted-foreground">{Math.round(day.temp_min)}°</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
