@@ -123,7 +123,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="px-4 space-y-6 pb-4">
+      <div className="px-4 pt-4 space-y-6 pb-4">
         {/* Alerts Section */}
         {alerts.length > 0 && (
           <div>
