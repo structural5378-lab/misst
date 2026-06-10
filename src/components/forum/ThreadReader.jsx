@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ExternalLink, Clock, MessageSquare, Send } from "lucide-react";
+import { ArrowLeft, ExternalLink, Clock, MessageSquare, Send, Bell, BellOff } from "lucide-react";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { Button } from "@/components/ui/button";
 
@@ -63,6 +63,40 @@ export default function ThreadReader({ thread, onBack }) {
   const [replyText, setReplyText] = useState("");
   const [posting, setPosting] = useState(false);
   const [postError, setPostError] = useState("");
+  const [followId, setFollowId] = useState(null);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  // Check if already following on mount
+  useEffect(() => {
+    (async () => {
+      const me = await base44.auth.me().catch(() => null);
+      if (!me) return;
+      const existing = await base44.entities.FollowedThread.filter({
+        user_id: me.id,
+        thread_id: String(thread.threadId),
+      });
+      if (existing?.length > 0) setFollowId(existing[0].id);
+    })();
+  }, [thread.threadId]);
+
+  const handleFollowToggle = async () => {
+    setFollowLoading(true);
+    const me = await base44.auth.me().catch(() => null);
+    if (!me) { setFollowLoading(false); return; }
+    if (followId) {
+      await base44.entities.FollowedThread.delete(followId);
+      setFollowId(null);
+    } else {
+      const record = await base44.entities.FollowedThread.create({
+        user_id: me.id,
+        thread_id: String(thread.threadId),
+        thread_title: thread.title,
+        last_known_reply_count: thread.replies || 0,
+      });
+      setFollowId(record.id);
+    }
+    setFollowLoading(false);
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["mybb-posts", thread.threadId],
@@ -107,6 +141,14 @@ export default function ThreadReader({ thread, onBack }) {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h2 className="text-sm font-bold text-foreground flex-1 line-clamp-1">{threadTitle}</h2>
+        <button
+          onClick={handleFollowToggle}
+          disabled={followLoading}
+          className={`transition-colors ${followId ? "text-violet-400" : "text-muted-foreground hover:text-violet-400"}`}
+          title={followId ? "Unfollow thread" : "Follow thread"}
+        >
+          {followId ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+        </button>
         <a
           href={thread.link}
           target="_blank"

@@ -1,0 +1,27 @@
+{
+  "name": "FollowedThread",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "The app user ID following this thread"
+    },
+    "thread_id": {
+      "type": "string",
+      "description": "MyBB thread ID (tid)"
+    },
+    "thread_title": {
+      "type": "string",
+      "description": "Thread title for display"
+    },
+    "last_known_reply_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Reply count at time of last check"
+    }
+  },
+  "required": [
+    "user_id",
+    "thread_id"
+  ]
+}
