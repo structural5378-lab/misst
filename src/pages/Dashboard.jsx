@@ -7,6 +7,7 @@ import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Se
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import WeatherSection from "@/components/weather/WeatherSection";
+import StormTracker from "@/components/weather/StormTracker";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
@@ -165,8 +166,8 @@ export default function Dashboard() {
         {/* Weather Section */}
         <WeatherSection />
 
-        {/* Weather Section */}
-        <WeatherSection />
+        {/* Storm Tracker */}
+        <StormTracker />
 
         {/* Stats strip */}
         <div className="grid grid-cols-3 gap-2">
