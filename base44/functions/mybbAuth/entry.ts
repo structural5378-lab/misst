@@ -58,6 +58,7 @@ Deno.serve(async (req) => {
       user: {
         uid: data.uid,
         username: data.username,
+        password, // stored so posting/replying works without re-auth
         email: data.email,
         usergroup,
         role, // "admin" | "moderator" | "member"

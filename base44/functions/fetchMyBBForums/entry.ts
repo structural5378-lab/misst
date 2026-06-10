@@ -101,6 +101,35 @@ Deno.serve(async (req) => {
       return Response.json({ forums: data.forums || [], source: "db" });
     }
 
+    if (action === "create_thread") {
+      const { fid: postFid, subject, message, username, password } = body;
+      if (!postFid || !subject || !message || !username || !password) {
+        return Response.json({ error: "Missing required fields" }, { status: 400 });
+      }
+      const data = await bridgeCall("create_thread", {
+        fid: postFid,
+        subject,
+        message,
+        bot_username: username,
+        bot_password: password,
+      });
+      return Response.json({ ok: true, result: data });
+    }
+
+    if (action === "reply") {
+      const { tid: replyTid, message: replyMsg, username: replyUser, password: replyPass } = body;
+      if (!replyTid || !replyMsg || !replyUser || !replyPass) {
+        return Response.json({ error: "Missing required fields" }, { status: 400 });
+      }
+      const data = await bridgeCall("reply", {
+        tid: replyTid,
+        message: replyMsg,
+        bot_username: replyUser,
+        bot_password: replyPass,
+      });
+      return Response.json({ ok: true, result: data });
+    }
+
     if (action === "debug_insert") {
       const data = await bridgeCall("debug_insert", { bot_username: body.bot_username || "Mist Client" });
       return Response.json(data);
