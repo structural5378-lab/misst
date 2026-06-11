@@ -24,11 +24,13 @@ Deno.serve(async (req) => {
     });
 
     const text = await res.text();
+    console.log("Bridge HTTP status:", res.status);
+    console.log("Bridge raw response:", text.slice(0, 500));
     let data;
     try {
       data = JSON.parse(text);
     } catch {
-      return Response.json({ error: "Bridge returned invalid response" }, { status: 502 });
+      return Response.json({ error: "Bridge returned invalid response", raw: text.slice(0, 300) }, { status: 502 });
     }
 
     if (!data.success) {
