@@ -93,13 +93,23 @@ function UploadModal({ onClose, onSuccess, uploaderName }) {
     setUploading(true);
     try {
       for (let i = 0; i < files.length; i++) {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: files[i] });
-        await base44.entities.GatheringPhoto.create({
-          photo_url: file_url,
+        // Convert file to base64 for JSON transport
+        const fileBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(files[i]);
+        });
+
+        const res = await base44.functions.invoke("uploadGalleryPhoto", {
+          fileBase64,
+          fileName: files[i].name,
+          mimeType: files[i].type,
           caption: files.length === 1 ? caption : "",
           gathering_label: gatheringLabel,
           uploader_name: uploaderName,
         });
+        if (!res.data?.success) throw new Error(res.data?.error || "Upload failed");
         setProgress(Math.round(((i + 1) / files.length) * 100));
       }
       onSuccess();
