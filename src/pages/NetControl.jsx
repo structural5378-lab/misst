@@ -1,248 +1,254 @@
-import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Radio, Plus, Trash2, ClipboardList, Signal, FileText, User } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { base44 } from "@/api/base44Client";
+import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Radio, Plus, CheckCircle, XCircle, Clock, Users, Send, StopCircle } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-
-const SIGNAL_PRESETS = ["5x5", "5x4", "5x3", "4x4", "4x3", "3x3", "Q5", "Q4", "Q3"];
+import NetCheckinForm from "@/components/nets/NetCheckinForm";
+import NetCheckinList from "@/components/nets/NetCheckinList";
 
 export default function NetControl() {
   const { netId } = useParams();
   const navigate = useNavigate();
-  const qc = useQueryClient();
+  const { mybbUser } = useMyBBAuth();
+  const queryClient = useQueryClient();
 
-  const [form, setForm] = useState({ callsign: "", signal_report: "5x5", location: "", notes: "" });
-  const [submitting, setSubmitting] = useState(false);
-  const [flash, setFlash] = useState(null); // callsign flashed on success
+  const isAuthorized = mybbUser?.role === "admin" || mybbUser?.role === "moderator";
+
+  const [activeSession, setActiveSession] = useState(null);
+  const [starting, setStarting] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const [posting, setPosting] = useState(false);
+  const [showCheckinForm, setShowCheckinForm] = useState(false);
 
   const { data: net } = useQuery({
     queryKey: ["net", netId],
-    queryFn: async () => {
-      const nets = await base44.entities.Net.filter({ id: netId });
-      return nets[0] || null;
-    },
+    queryFn: () => base44.entities.Net.filter({ id: netId }),
+    select: d => d[0],
     enabled: !!netId,
   });
 
-  const { data: checkIns = [] } = useQuery({
-    queryKey: ["checkins", netId],
-    queryFn: () => base44.entities.NetCheckIn.filter({ net_id: netId }),
-    refetchInterval: 10000,
+  const { data: sessions = [] } = useQuery({
+    queryKey: ["net-sessions", netId],
+    queryFn: () => base44.entities.NetSession.filter({ net_id: netId }, "-started_at", 10),
   });
 
-  const addMutation = useMutation({
-    mutationFn: () =>
-      base44.entities.NetCheckIn.create({
-        net_id: netId,
-        net_name: net?.name || "",
-        callsign: form.callsign.trim().toUpperCase(),
-        location: form.location.trim(),
-        signal_report: form.signal_report,
-        notes: form.notes.trim(),
-      }),
-    onSuccess: () => {
-      setFlash(form.callsign.trim().toUpperCase());
-      setTimeout(() => setFlash(null), 2000);
-      setForm((f) => ({ ...f, callsign: "", location: "", notes: "" }));
-      qc.invalidateQueries({ queryKey: ["checkins", netId] });
-    },
+  const { data: checkins = [], refetch: refetchCheckins } = useQuery({
+    queryKey: ["net-log", activeSession?.id],
+    queryFn: () => base44.entities.NetLog.filter({ session_id: activeSession.id }, "checkin_number", 100),
+    enabled: !!activeSession?.id,
+    refetchInterval: 5000,
   });
 
-  const removeMutation = useMutation({
-    mutationFn: (id) => base44.entities.NetCheckIn.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["checkins", netId] }),
-  });
+  useEffect(() => {
+    const active = sessions.find(s => s.status === "active");
+    setActiveSession(active || null);
+  }, [sessions]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.callsign.trim()) return;
-    addMutation.mutate();
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center p-8">
+          <XCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-foreground">Access Denied</h2>
+          <p className="text-muted-foreground text-sm mt-1">Net Control is restricted to admins and moderators.</p>
+          <Button className="mt-4" onClick={() => navigate("/nets")}>Back to Nets</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const startSession = async () => {
+    if (!net) return;
+    setStarting(true);
+    const session = await base44.entities.NetSession.create({
+      net_id: netId,
+      net_name: net.name,
+      frequency: net.frequency,
+      net_control: mybbUser.username,
+      net_control_uid: mybbUser.uid,
+      status: "active",
+      started_at: new Date().toISOString(),
+      checkin_count: 0,
+    });
+    queryClient.invalidateQueries({ queryKey: ["net-sessions", netId] });
+    setActiveSession(session);
+    setStarting(false);
   };
+
+  const handleCheckin = async (data) => {
+    const count = checkins.length + 1;
+    await base44.entities.NetLog.create({
+      session_id: activeSession.id,
+      net_name: activeSession.net_name,
+      callsign: data.callsign.toUpperCase(),
+      location: data.location || "",
+      signal_report: data.signal_report || "",
+      notes: data.notes || "",
+      checkin_number: count,
+    });
+    await base44.entities.NetSession.update(activeSession.id, { checkin_count: count });
+    refetchCheckins();
+    setShowCheckinForm(false);
+  };
+
+  const endSession = async () => {
+    if (!activeSession) return;
+    setEnding(true);
+    await base44.entities.NetSession.update(activeSession.id, {
+      status: "closed",
+      ended_at: new Date().toISOString(),
+    });
+    queryClient.invalidateQueries({ queryKey: ["net-sessions", netId] });
+    setActiveSession(null);
+    setEnding(false);
+  };
+
+  const postToForum = async (session) => {
+    const logs = await base44.entities.NetLog.filter({ session_id: session.id }, "checkin_number", 200);
+    const started = session.started_at ? format(new Date(session.started_at), "MMM d, yyyy h:mm a") : "Unknown";
+    const ended = session.ended_at ? format(new Date(session.ended_at), "h:mm a") : "Unknown";
+
+    const rows = logs.map(l =>
+      `#${l.checkin_number} | ${l.callsign} | ${l.location || "-"} | ${l.signal_report || "-"} | ${l.notes || "-"}`
+    ).join("\n");
+
+    const message = `[b]Net Session Log[/b]\n[b]Net:[/b] ${session.net_name}\n[b]Frequency:[/b] ${session.frequency} MHz\n[b]Net Control:[/b] ${session.net_control}\n[b]Date:[/b] ${started} – ${ended}\n[b]Total Check-ins:[/b] ${logs.length}\n\n[code]#  | Callsign | Location | Signal | Notes\n${rows}[/code]\n\n73 de ${session.net_control}`;
+
+    setPosting(true);
+    const res = await base44.functions.invoke("fetchMyBBForums", {
+      action: "create_thread",
+      fid: 18,
+      subject: `Net Log: ${session.net_name} – ${started}`,
+      message,
+      bot_username: session.net_control,
+    });
+    if (res.data?.tid) {
+      await base44.entities.NetSession.update(session.id, { forum_thread_id: String(res.data.tid) });
+      queryClient.invalidateQueries({ queryKey: ["net-sessions", netId] });
+    }
+    setPosting(false);
+  };
+
+  const displaySession = activeSession || sessions[0];
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <PageHeader
-        title="Net Control"
-        showBack
-        rightAction={
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs text-emerald-400 font-medium">{checkIns.length} on air</span>
-          </div>
-        }
-      />
+      <PageHeader title="📻 Net Control" showBack />
 
-      <div className="px-4 space-y-4 pt-3">
+      <div className="px-4 py-4 space-y-4">
         {/* Net info */}
         {net && (
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
-            <div className="w-9 h-9 rounded-lg bg-violet-500/20 flex items-center justify-center shrink-0">
-              <Radio className="w-4 h-4 text-violet-400" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">{net.name}</p>
-              <p className="text-xs text-muted-foreground">{net.time} · {net.frequency} MHz</p>
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.07]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center">
+                <Radio className="w-5 h-5 text-violet-400" />
+              </div>
+              <div>
+                <h2 className="font-bold text-foreground">{net.name}</h2>
+                <p className="text-xs text-muted-foreground">{net.frequency} MHz · {net.time}</p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Check-in form */}
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.07] space-y-3">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Plus className="w-4 h-4 text-violet-400" />
-            Log Check-In
-          </h3>
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            {/* Callsign */}
-            <div>
-              <label className="text-xs text-muted-foreground font-medium mb-1 block flex items-center gap-1">
-                <User className="w-3 h-3" /> Callsign *
-              </label>
-              <Input
-                value={form.callsign}
-                onChange={(e) => setForm((f) => ({ ...f, callsign: e.target.value.toUpperCase() }))}
-                placeholder="e.g. WRXX123"
-                className="h-10 bg-background/50 uppercase font-mono tracking-wider text-sm"
-                autoCapitalize="characters"
-              />
-            </div>
-
-            {/* Signal Report */}
-            <div>
-              <label className="text-xs text-muted-foreground font-medium mb-1.5 block flex items-center gap-1">
-                <Signal className="w-3 h-3" /> Signal Report
-              </label>
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {SIGNAL_PRESETS.map((s) => (
-                  <button
-                    type="button"
-                    key={s}
-                    onClick={() => setForm((f) => ({ ...f, signal_report: s }))}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-colors ${
-                      form.signal_report === s
-                        ? "bg-violet-600 text-white"
-                        : "bg-white/[0.05] text-muted-foreground border border-white/[0.08] hover:text-foreground"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
+        {/* Active session controls */}
+        {activeSession ? (
+          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-sm font-semibold text-emerald-400">Session Active</span>
               </div>
-              <Input
-                value={form.signal_report}
-                onChange={(e) => setForm((f) => ({ ...f, signal_report: e.target.value }))}
-                placeholder="Custom signal report"
-                className="h-9 bg-background/50 font-mono text-sm"
-              />
-            </div>
-
-            {/* Location */}
-            <div>
-              <label className="text-xs text-muted-foreground font-medium mb-1 block">
-                Location <span className="text-muted-foreground/50">(optional)</span>
-              </label>
-              <Input
-                value={form.location}
-                onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-                placeholder="City, State"
-                className="h-9 bg-background/50 text-sm"
-              />
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label className="text-xs text-muted-foreground font-medium mb-1 block flex items-center gap-1">
-                <FileText className="w-3 h-3" /> Notes <span className="text-muted-foreground/50">(optional)</span>
-              </label>
-              <textarea
-                value={form.notes}
-                onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                placeholder="Traffic, comments..."
-                rows={2}
-                className="w-full bg-background/50 border border-input rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-violet-500/50 resize-none transition-colors"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              disabled={!form.callsign.trim() || addMutation.isPending}
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white"
-            >
-              {addMutation.isPending ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  Logging...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <Plus className="w-4 h-4" /> Log Check-In
-                </span>
-              )}
-            </Button>
-
-            {flash && (
-              <div className="text-center text-sm text-emerald-400 font-semibold animate-pulse">
-                ✓ {flash} checked in!
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="w-3 h-3" />
+                {activeSession.started_at && format(new Date(activeSession.started_at), "h:mm a")}
               </div>
-            )}
-          </form>
-        </div>
-
-        {/* Roster */}
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 text-violet-400" />
-              Roster
-            </h3>
-            <span className="text-xs text-muted-foreground">{checkIns.length} stations</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Users className="w-3 h-3" />
+              <span>{checkins.length} stations checked in</span>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowCheckinForm(true)}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-1" /> Log Check-in
+              </Button>
+              <Button
+                onClick={endSession}
+                disabled={ending}
+                variant="outline"
+                className="border-red-500/40 text-red-400 hover:bg-red-500/10"
+              >
+                <StopCircle className="w-4 h-4 mr-1" /> End Net
+              </Button>
+            </div>
           </div>
+        ) : (
+          <Button
+            onClick={startSession}
+            disabled={starting}
+            className="w-full bg-violet-600 hover:bg-violet-700 text-white py-6 text-base font-semibold rounded-2xl"
+          >
+            <Radio className="w-5 h-5 mr-2" />
+            {starting ? "Starting…" : "Start Net Session"}
+          </Button>
+        )}
 
-          {checkIns.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-6">No check-ins yet</p>
-          ) : (
-            <div className="space-y-1.5">
-              {checkIns.map((c, i) => (
-                <div
-                  key={c.id}
-                  className="flex items-start justify-between gap-3 px-3 py-2.5 rounded-lg bg-background/40 border border-white/[0.05]"
-                >
-                  <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                    <span className="text-xs text-muted-foreground w-5 shrink-0 mt-0.5 font-mono">{i + 1}.</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-bold text-foreground font-mono">{c.callsign}</span>
-                        <span className="text-xs text-violet-400 font-mono font-medium bg-violet-500/10 px-1.5 py-0.5 rounded">
-                          {c.signal_report}
-                        </span>
-                        {c.location && (
-                          <span className="text-xs text-muted-foreground">{c.location}</span>
-                        )}
-                      </div>
-                      {c.notes && (
-                        <p className="text-xs text-muted-foreground mt-1 truncate">{c.notes}</p>
-                      )}
-                      <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                        {c.created_date && format(new Date(c.created_date), "h:mm a")}
+        {/* Check-in form */}
+        {showCheckinForm && (
+          <NetCheckinForm
+            onSubmit={handleCheckin}
+            onCancel={() => setShowCheckinForm(false)}
+          />
+        )}
+
+        {/* Live check-in list */}
+        {activeSession && checkins.length > 0 && (
+          <NetCheckinList checkins={checkins} />
+        )}
+
+        {/* Past sessions */}
+        {sessions.filter(s => s.status === "closed").length > 0 && (
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-3">Past Sessions</h3>
+            <div className="space-y-2">
+              {sessions.filter(s => s.status === "closed").map(session => (
+                <div key={session.id} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {session.started_at && format(new Date(session.started_at), "MMM d, yyyy h:mm a")}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {session.checkin_count} check-ins · NCS: {session.net_control}
                       </p>
                     </div>
+                    {session.forum_thread_id ? (
+                      <span className="flex items-center gap-1 text-xs text-emerald-400">
+                        <CheckCircle className="w-3.5 h-3.5" /> Posted
+                      </span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        disabled={posting}
+                        onClick={() => postToForum(session)}
+                        className="h-7 text-xs bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300"
+                      >
+                        <Send className="w-3 h-3 mr-1" /> Post to Forum
+                      </Button>
+                    )}
                   </div>
-                  <button
-                    onClick={() => removeMutation.mutate(c.id)}
-                    className="text-muted-foreground hover:text-red-400 transition-colors shrink-0 mt-0.5"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

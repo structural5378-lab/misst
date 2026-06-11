@@ -2,8 +2,11 @@ import React from "react";
 import { Radio, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 
 export default function NetCard({ net }) {
+  const { mybbUser } = useMyBBAuth();
+  const canControl = mybbUser?.role === "admin" || mybbUser?.role === "moderator";
   return (
     <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border/50">
       <div className="flex items-center gap-3">
@@ -36,12 +39,14 @@ export default function NetCard({ net }) {
         >
           Join
         </Button>
-        <Link
-          to={`/nets/${net.id}/control`}
-          className="text-[10px] text-violet-400 hover:text-violet-300 font-medium"
-        >
-          Net Control →
-        </Link>
+        {canControl && (
+          <Link
+            to={`/nets/${net.id}/control`}
+            className="text-[10px] text-violet-400 hover:text-violet-300 font-medium"
+          >
+            Net Control →
+          </Link>
+        )}
       </div>
     </div>
   );

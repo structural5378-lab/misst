@@ -1,0 +1,34 @@
+{
+  "name": "NetLog",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "NetSession ID"
+    },
+    "net_name": {
+      "type": "string"
+    },
+    "callsign": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "signal_report": {
+      "type": "string",
+      "description": "e.g. 5x5, Q5"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "checkin_number": {
+      "type": "number",
+      "description": "Sequential check-in number"
+    }
+  },
+  "required": [
+    "session_id",
+    "callsign"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "name": "NetSession",
+  "type": "object",
+  "properties": {
+    "net_id": {
+      "type": "string"
+    },
+    "net_name": {
+      "type": "string"
+    },
+    "frequency": {
+      "type": "number"
+    },
+    "net_control": {
+      "type": "string",
+      "description": "Callsign of net control operator"
+    },
+    "net_control_uid": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "closed"
+      ],
+      "default": "active"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "checkin_count": {
+      "type": "number",
+      "default": 0
+    },
+    "forum_thread_id": {
+      "type": "string",
+      "description": "MyBB thread ID if log was posted"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "net_name",
+    "net_control"
+  ]
+}
