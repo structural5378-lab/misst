@@ -1,57 +1,54 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit2 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
-import ConversationList from "@/components/messages/ConversationList";
-import ChatView from "@/components/messages/ChatView";
-import NewMessageModal from "@/components/messages/NewMessageModal";
+import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import MyBBConversationList from "@/components/messages/MyBBConversationList";
+import MyBBChatView from "@/components/messages/MyBBChatView";
+import MyBBNewMessageModal from "@/components/messages/MyBBNewMessageModal";
 
 export default function Messages() {
-  const [user, setUser] = useState(null);
-  const [activeChat, setActiveChat] = useState(null); // { userId, name }
+  const { mybbUser } = useMyBBAuth();
+  const [activeThread, setActiveThread] = useState(null); // { pmid, fromUsername }
   const [showCompose, setShowCompose] = useState(false);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
-  }, []);
-
-  const { data: messages = [], isLoading } = useQuery({
-    queryKey: ["messages"],
-    queryFn: () => base44.entities.DirectMessage.list("-created_date", 100),
-    enabled: !!user,
-    refetchInterval: 10000,
+  const { data: pmsData, isLoading, refetch } = useQuery({
+    queryKey: ["mybb-pms", mybbUser?.username],
+    queryFn: async () => {
+      const res = await base44.functions.invoke("mybbMessages", {
+        action: "get_pms",
+        username: mybbUser.username,
+        password: mybbUser.password,
+      });
+      return res.data?.pms || [];
+    },
+    enabled: !!mybbUser?.password,
+    refetchInterval: 15000,
   });
 
-  // Deduplicate into one conversation per contact (most recent message wins)
-  const conversations = useMemo(() => {
-    if (!user) return [];
-    const seen = new Map();
-    for (const msg of messages) {
-      const otherId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
-      if (!seen.has(otherId)) seen.set(otherId, msg);
-    }
-    return Array.from(seen.values());
-  }, [messages, user]);
+  const pms = pmsData || [];
 
-  const handleSelectConversation = (conv) => {
-    const otherId = conv.sender_id === user.id ? conv.receiver_id : conv.sender_id;
-    const otherName = conv.sender_id === user.id ? conv.receiver_name : conv.sender_name;
-    setActiveChat({ userId: otherId, name: otherName });
-  };
-
-  const handleSelectNewUser = (u) => {
-    setShowCompose(false);
-    setActiveChat({ userId: u.id, name: u.full_name || u.email });
-  };
-
-  if (activeChat) {
+  if (!mybbUser?.password) {
     return (
-      <ChatView
-        otherUserId={activeChat.userId}
-        otherName={activeChat.name}
-        currentUser={user}
-        onBack={() => setActiveChat(null)}
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
+        <p className="text-sm text-muted-foreground">Please re-login to access your messages.</p>
+      </div>
+    );
+  }
+
+  if (activeThread) {
+    return (
+      <MyBBChatView
+        pmid={activeThread.pmid}
+        fromUsername={activeThread.fromUsername}
+        subject={activeThread.subject}
+        mybbUser={mybbUser}
+        onBack={() => {
+          setActiveThread(null);
+          queryClient.invalidateQueries({ queryKey: ["mybb-pms", mybbUser?.username] });
+        }}
       />
     );
   }
@@ -75,19 +72,21 @@ export default function Messages() {
           <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <ConversationList
-          conversations={conversations}
-          currentUserId={user?.id}
-          onSelect={handleSelectConversation}
+        <MyBBConversationList
+          pms={pms}
+          onSelect={(pm) => setActiveThread({ pmid: pm.pmid, fromUsername: pm.fromuser, subject: pm.subject })}
           onCompose={() => setShowCompose(true)}
         />
       )}
 
-      {showCompose && user && (
-        <NewMessageModal
-          currentUser={user}
-          onSelect={handleSelectNewUser}
+      {showCompose && (
+        <MyBBNewMessageModal
+          mybbUser={mybbUser}
           onClose={() => setShowCompose(false)}
+          onSent={() => {
+            setShowCompose(false);
+            queryClient.invalidateQueries({ queryKey: ["mybb-pms", mybbUser?.username] });
+          }}
         />
       )}
     </div>
