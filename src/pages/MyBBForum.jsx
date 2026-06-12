@@ -69,7 +69,7 @@ export default function MyBBForum() {
     staleTime: 300000,
   });
 
-  const forums = (forumsData || []).filter(f => parseInt(f.threads) > 0 || parseInt(f.posts) > 0);
+  const forums = forumsData || [];
 
   const { data: recentData, isLoading: recentLoading, refetch: refetchRecent } = useQuery({
     queryKey: ["mybb-threads-recent"],
