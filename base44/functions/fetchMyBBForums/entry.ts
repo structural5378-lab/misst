@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     const { action = "recent", fid, tid } = body;
 
     // Public read-only actions don't require auth
-    const publicActions = ["forums", "recent", "threads", "thread_posts"];
+    const publicActions = ["forums", "recent", "threads", "thread_posts", "online_users"];
     if (!publicActions.includes(action)) {
       const base44 = createClientFromRequest(req);
       const user = await base44.auth.me();
@@ -98,6 +98,16 @@ Deno.serve(async (req) => {
       // Get thread title from first post or posts list
       const threadTitle = data.posts?.[0]?.subject || `Thread #${tid}`;
       return Response.json({ threadTitle, posts, tid, source: "db" });
+    }
+
+    if (action === "online_users") {
+      const data = await bridgeCall("online_users", {});
+      const users = (data.users || []).map(u => ({
+        uid: u.uid,
+        username: u.username,
+        avatar: u.avatar ? `https://insomniacsgmrs.com/${u.avatar}` : null,
+      }));
+      return Response.json({ users, count: users.length });
     }
 
     if (action === "forums") {

@@ -50,10 +50,11 @@ export default function Dashboard() {
   const { data: onlineMembers } = useQuery({
     queryKey: ["onlineMembers"],
     queryFn: async () => {
-      const users = await base44.entities.User.list();
-      return users.filter(u => u.last_active && new Date(u.last_active) > new Date(Date.now() - 15 * 60 * 1000));
+      const res = await base44.functions.invoke("fetchMyBBForums", { action: "online_users" });
+      return res.data?.users || [];
     },
     initialData: [],
+    refetchInterval: 60000,
   });
 
   const typeIcons = {
@@ -193,14 +194,15 @@ export default function Dashboard() {
             <div className="flex -space-x-2">
               {onlineMembers.slice(0, 5).map((member) => (
                 <div
-                  key={member.id}
+                  key={member.uid}
                   className="w-8 h-8 rounded-full border-2 border-background bg-violet-950/50 overflow-hidden"
+                  title={member.username}
                 >
                   {member.avatar ? (
-                    <img src={member.avatar} alt={member.full_name} className="w-full h-full object-cover" />
+                    <img src={member.avatar} alt={member.username} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = "none"; }} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs font-bold text-violet-400">
-                      {(member.full_name || member.email || "?").charAt(0).toUpperCase()}
+                      {(member.username || "?").charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
