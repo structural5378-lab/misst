@@ -1,6 +1,7 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import BottomNav from "./BottomNav";
+import AlertPoller from "./AlertPoller";
 
 export default function AppLayout() {
   return (
@@ -12,6 +13,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
       <BottomNav />
+      <AlertPoller />
     </div>
   );
 }
