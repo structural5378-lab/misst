@@ -102,7 +102,8 @@ Deno.serve(async (req) => {
 
     if (action === "forums") {
       const data = await bridgeCall("forums", {});
-      return Response.json({ forums: data.forums || [], source: "db" });
+      const forums = (data.forums || []).sort((a, b) => parseInt(a.disporder || 0) - parseInt(b.disporder || 0));
+      return Response.json({ forums, source: "db" });
     }
 
     if (action === "create_thread") {
