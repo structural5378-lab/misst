@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, MessageSquare, Clock, ChevronRight, RefreshCw, User, Eye, LogIn, Plus, X, Send } from "lucide-react";
+import { ExternalLink, MessageSquare, Clock, ChevronRight, RefreshCw, User, Eye, LogIn, Plus, X, Send, TrendingUp, Hash } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import PageHeader from "@/components/layout/PageHeader";
 import ThreadReader from "@/components/forum/ThreadReader";
@@ -175,25 +175,34 @@ export default function MyBBForum() {
         <div className="flex gap-2 w-max">
           <button
             onClick={() => setActiveFid(null)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
               activeFid === null ? "bg-violet-600 text-white" : "bg-white/[0.05] text-muted-foreground hover:text-foreground border border-white/[0.08]"
             }`}
           >
-            Recent
+            <TrendingUp className="w-3 h-3" /> Recent
           </button>
           {forums.map((forum) => (
             <button
               key={forum.fid}
               onClick={() => setActiveFid(parseInt(forum.fid))}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                 activeFid === parseInt(forum.fid) ? "bg-violet-600 text-white" : "bg-white/[0.05] text-muted-foreground hover:text-foreground border border-white/[0.08]"
               }`}
             >
-              {forum.name}
+              <Hash className="w-3 h-3" />{forum.name}
             </button>
           ))}
         </div>
       </div>
+
+      {/* Active forum description */}
+      {activeFid && forums.find(f => parseInt(f.fid) === activeFid)?.description && (
+        <div className="px-4 pb-2">
+          <p className="text-xs text-muted-foreground bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2">
+            {forums.find(f => parseInt(f.fid) === activeFid).description}
+          </p>
+        </div>
+      )}
 
       <div className="px-4 space-y-2">
         {isLoading ? (
@@ -210,29 +219,40 @@ export default function MyBBForum() {
             <button
               key={thread.threadId || i}
               onClick={() => setSelectedThread(thread)}
-              className="w-full text-left p-4 rounded-xl bg-white/[0.03] border border-white/[0.07] hover:border-violet-500/30 hover:bg-violet-500/5 transition-all active:scale-[0.99]"
+              className="w-full text-left p-4 rounded-xl bg-white/[0.03] border border-white/[0.07] hover:border-violet-500/30 hover:bg-violet-500/5 transition-all active:scale-[0.99] group"
             >
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start gap-3">
+                {/* Avatar/Icon */}
+                <div className="w-9 h-9 rounded-full bg-violet-900/40 border border-violet-500/20 flex items-center justify-center shrink-0 text-xs font-bold text-violet-300 mt-0.5">
+                  {thread.author ? thread.author.slice(0, 2).toUpperCase() : "?"}
+                </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-semibold text-foreground line-clamp-2">{thread.title}</h4>
-                  <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+                  <h4 className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-violet-200 transition-colors">{thread.title}</h4>
+                  <div className="flex items-center gap-1 mt-1">
                     {thread.author && (
-                      <span className="flex items-center gap-1"><User className="w-2.5 h-2.5" />{thread.author}</span>
+                      <span className="text-[11px] text-violet-300/80 font-medium">{thread.author}</span>
                     )}
-                    {thread.replies !== undefined && (
-                      <span className="flex items-center gap-1"><MessageSquare className="w-2.5 h-2.5" />{thread.replies} replies</span>
-                    )}
-                    {thread.views !== undefined && (
-                      <span className="flex items-center gap-1"><Eye className="w-2.5 h-2.5" />{thread.views} views</span>
+                    {thread.pubDate && (
+                      <span className="text-[10px] text-muted-foreground">· {thread.pubDate}</span>
                     )}
                   </div>
-                  {thread.pubDate && (
-                    <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />{thread.pubDate}
-                    </p>
-                  )}
+                  <div className="flex items-center gap-3 mt-1.5">
+                    {thread.replies !== undefined && (
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <MessageSquare className="w-3 h-3" />{thread.replies}
+                      </span>
+                    )}
+                    {thread.views !== undefined && (
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <Eye className="w-3 h-3" />{thread.views}
+                      </span>
+                    )}
+                    {thread.category && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">{thread.category}</span>
+                    )}
+                  </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-2 group-hover:text-violet-400 transition-colors" />
               </div>
             </button>
           ))

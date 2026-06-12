@@ -137,29 +137,38 @@ export default function ThreadReader({ thread, onBack }) {
     <div className="flex flex-col min-h-screen">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={onBack} className="text-violet-400 hover:text-violet-300">
+        <button onClick={onBack} className="text-violet-400 hover:text-violet-300 p-1 -ml-1">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h2 className="text-sm font-bold text-foreground flex-1 line-clamp-1">{threadTitle}</h2>
         <button
           onClick={handleFollowToggle}
           disabled={followLoading}
-          className={`transition-colors ${followId ? "text-violet-400" : "text-muted-foreground hover:text-violet-400"}`}
+          className={`p-1.5 rounded-lg transition-colors ${followId ? "text-violet-400 bg-violet-500/10" : "text-muted-foreground hover:text-violet-400 hover:bg-violet-500/10"}`}
           title={followId ? "Unfollow thread" : "Follow thread"}
         >
           {followId ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
         </button>
-        <a
-          href={thread.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-muted-foreground hover:text-violet-400 transition-colors"
-        >
-          <ExternalLink className="w-4 h-4" />
-        </a>
+        {thread.link && (
+          <a
+            href={thread.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        )}
       </div>
 
-      <div className="flex-1 px-4 py-4 space-y-3 pb-4">
+      {/* Post count banner */}
+      {posts.length > 0 && (
+        <div className="px-4 pt-3 pb-1">
+          <p className="text-xs text-muted-foreground">{posts.length} post{posts.length !== 1 ? "s" : ""}</p>
+        </div>
+      )}
+
+      <div className="flex-1 px-4 py-2 space-y-3 pb-4">
         {isLoading ? (
           <div className="flex justify-center py-16">
             <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
@@ -175,35 +184,40 @@ export default function ThreadReader({ thread, onBack }) {
           ))
         )}
 
-        {/* Reply Box */}
-        {mybbUser?.password && (
-          <div className="mt-4 rounded-xl border border-white/[0.10] bg-white/[0.03] p-3">
-            <p className="text-xs text-muted-foreground mb-2 font-medium">Reply as <span className="text-violet-300">{mybbUser.username}</span></p>
-            <textarea
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Write your reply... BBCode supported"
-              rows={4}
-              className="w-full bg-transparent border border-white/[0.10] rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-violet-500/50"
-            />
-            {postError && <p className="text-xs text-red-400 mt-1">{postError}</p>}
-            <div className="flex justify-end mt-2">
-              <Button
-                size="sm"
-                onClick={handleReply}
-                disabled={posting || !replyText.trim()}
-                className="bg-violet-600 hover:bg-violet-700 text-white gap-2"
-              >
-                <Send className="w-3.5 h-3.5" />
-                {posting ? "Posting..." : "Post Reply"}
-              </Button>
-            </div>
-          </div>
-        )}
         {mybbUser && !mybbUser.password && (
           <p className="text-center text-xs text-muted-foreground py-3">Re-login to enable posting replies.</p>
         )}
       </div>
+
+      {/* Sticky reply bar */}
+      {mybbUser?.password && (
+        <div className="sticky bottom-0 bg-background/95 backdrop-blur-xl border-t border-border px-4 py-3">
+          {postError && <p className="text-xs text-red-400 mb-2">{postError}</p>}
+          <div className="flex items-end gap-2">
+            <div className="w-7 h-7 rounded-full bg-violet-900/60 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-300 shrink-0 mb-1">
+              {mybbUser.username.slice(0, 2).toUpperCase()}
+            </div>
+            <textarea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Write a reply..."
+              rows={replyText.split("\n").length > 1 ? Math.min(replyText.split("\n").length + 1, 5) : 1}
+              className="flex-1 bg-secondary/50 border border-white/[0.10] rounded-2xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all"
+            />
+            <button
+              onClick={handleReply}
+              disabled={posting || !replyText.trim()}
+              className="w-9 h-9 rounded-full bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-colors mb-0.5"
+            >
+              {posting ? (
+                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 text-white" />
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
