@@ -32,7 +32,7 @@ export default function MyBBNewMessageModal({ mybbUser, onClose, onSent }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4">
-      <div className="w-full max-w-lg bg-card rounded-2xl border border-border/60 p-5 space-y-3">
+      <div className="w-full max-w-lg bg-card rounded-2xl border border-border/60 p-5 space-y-3 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-foreground">New Message</h3>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
@@ -58,7 +58,7 @@ export default function MyBBNewMessageModal({ mybbUser, onClose, onSent }) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Write your message..."
-          rows={5}
+          rows={3}
           className="w-full bg-secondary/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-violet-500/50"
         />
 
