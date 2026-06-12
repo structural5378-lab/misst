@@ -54,7 +54,7 @@ export default function Dashboard() {
       return res.data?.users || [];
     },
     initialData: [],
-    refetchInterval: 60000,
+    refetchInterval: 15000,
   });
 
   const typeIcons = {
