@@ -37,7 +37,10 @@ export default function MyBBChatView({ pmid, fromUsername, subject, mybbUser, on
         password: mybbUser.password,
         pmid,
       }).catch(() => {});
-      return res.data?.messages || res.data?.pm ? (res.data.messages || [res.data.pm]) : [];
+      if (res.data?.error) throw new Error(res.data.error);
+      const thread = res.data?.thread || [];
+      if (thread.length > 0) return thread;
+      return res.data?.pm ? [res.data.pm] : [];
     },
     staleTime: 10000,
     refetchInterval: 15000,
