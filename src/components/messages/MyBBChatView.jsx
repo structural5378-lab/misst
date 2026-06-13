@@ -56,22 +56,26 @@ export default function MyBBChatView({ pmid, fromUsername, subject, mybbUser, on
     if (!replyText.trim()) return;
     setSending(true);
     setSendError("");
-    const res = await base44.functions.invoke("mybbMessages", {
-      action: "send_pm",
-      username: mybbUser.username,
-      password: mybbUser.password,
-      to_username: fromUsername,
-      subject: subject?.startsWith("Re:") ? subject : `Re: ${subject || ""}`,
-      message: replyText.trim(),
-    });
-    if (res.data?.ok || res.data?.success) {
-      setReplyText("");
-      queryClient.invalidateQueries({ queryKey: ["mybb-pm-thread", pmid] });
-      queryClient.invalidateQueries({ queryKey: ["mybb-pms", mybbUser?.username] });
-    } else {
-      setSendError(res.data?.error || "Failed to send. Check your mist-api.php bridge.");
+    try {
+      const res = await base44.functions.invoke("mybbMessages", {
+        action: "send_pm",
+        username: mybbUser.username,
+        password: mybbUser.password,
+        to_username: fromUsername,
+        subject: subject?.startsWith("Re:") ? subject : `Re: ${subject || ""}`,
+        message: replyText.trim(),
+      });
+      if (res.data?.ok || res.data?.success) {
+        setReplyText("");
+        queryClient.invalidateQueries({ queryKey: ["mybb-pms", mybbUser?.username] });
+      } else {
+        setSendError(res.data?.error || "Failed to send.");
+      }
+    } catch (e) {
+      setSendError("Send failed: " + e.message);
+    } finally {
+      setSending(false);
     }
-    setSending(false);
   };
 
   return (

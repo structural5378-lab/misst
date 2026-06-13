@@ -14,20 +14,25 @@ export default function MyBBNewMessageModal({ mybbUser, onClose, onSent }) {
     if (!toUsername.trim() || !message.trim()) return;
     setSending(true);
     setError("");
-    const res = await base44.functions.invoke("mybbMessages", {
-      action: "send_pm",
-      username: mybbUser.username,
-      password: mybbUser.password,
-      to_username: toUsername.trim(),
-      subject: subject.trim() || `Message from ${mybbUser.username}`,
-      message: message.trim(),
-    });
-    if (res.data?.ok || res.data?.success) {
-      onSent();
-    } else {
-      setError(res.data?.error || "Failed to send message.");
+    try {
+      const res = await base44.functions.invoke("mybbMessages", {
+        action: "send_pm",
+        username: mybbUser.username,
+        password: mybbUser.password,
+        to_username: toUsername.trim(),
+        subject: subject.trim() || `Message from ${mybbUser.username}`,
+        message: message.trim(),
+      });
+      if (res.data?.ok || res.data?.success) {
+        onSent();
+      } else {
+        setError(res.data?.error || "Failed to send message.");
+      }
+    } catch (e) {
+      setError("Send failed: " + e.message);
+    } finally {
+      setSending(false);
     }
-    setSending(false);
   };
 
   return (
