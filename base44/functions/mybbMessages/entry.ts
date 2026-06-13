@@ -12,11 +12,10 @@ async function bridgeCall(action, params, secret) {
     body: JSON.stringify({ action, ...params }),
   });
   const text = await res.text();
-  if (!res.ok) throw new Error(`Bridge HTTP ${res.status}: ${text.substring(0, 200)}`);
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`Bridge returned non-JSON: ${text}`);
+    throw new Error(`Bridge returned non-JSON (${res.status}): ${text.substring(0, 200)}`);
   }
 }
 
