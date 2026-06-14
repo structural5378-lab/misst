@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
-import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2, UserPlus, Shield } from "lucide-react";
+import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2, UserPlus, Shield, Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,12 +11,17 @@ import PageHeader from "@/components/layout/PageHeader";
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
 export default function Profile() {
-  const { mybbUser, logout: mybbLogout } = useMyBBAuth();
+  const { mybbUser, login: mybbLogin, logout: mybbLogout } = useMyBBAuth();
   const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({});
   const [newRadio, setNewRadio] = useState("");
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     base44.auth.me().then((u) => {
@@ -50,6 +55,63 @@ export default function Profile() {
     setForm((f) => ({ ...f, radios: f.radios.filter((_, idx) => idx !== i) }));
   };
 
+  // Resize image to 100x100 on canvas and return base64
+  const resizeImage = (file) => new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 100;
+      canvas.height = 100;
+      const ctx = canvas.getContext("2d");
+      // Cover crop: center the image
+      const scale = Math.max(100 / img.width, 100 / img.height);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      ctx.drawImage(img, (100 - w) / 2, (100 - h) / 2, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", 0.92));
+    };
+    img.src = url;
+  });
+
+  const handleAvatarPick = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const dataUrl = await resizeImage(file);
+    setAvatarPreview(dataUrl);
+    setAvatarFile({ dataUrl, name: file.name });
+  };
+
+  const handleAvatarUpload = async () => {
+    if (!avatarFile || !mybbUser) return;
+    setUploadingAvatar(true);
+    setAvatarError("");
+    try {
+      const base64 = avatarFile.dataUrl.split(",")[1];
+      const res = await base44.functions.invoke("uploadAvatar", {
+        fileBase64: base64,
+        fileName: "avatar.jpg",
+        mimeType: "image/jpeg",
+        username: mybbUser.username,
+        password: mybbUser.password,
+      });
+      if (res.data?.success) {
+        const newAvatarUrl = res.data.avatar_url;
+        // Update session with new avatar URL
+        mybbLogin({ ...mybbUser, avatar: newAvatarUrl });
+        setAvatarPreview(null);
+        setAvatarFile(null);
+      } else {
+        setAvatarError(res.data?.error || "Upload failed");
+      }
+    } catch (e) {
+      setAvatarError("Upload failed: " + e.message);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const callsign = user?.callsign || mybbUser?.username || "MIST Member";
 
   return (
@@ -78,13 +140,37 @@ export default function Profile() {
       <div className="px-4 pt-4 space-y-4 pb-6">
         {/* Avatar & Name */}
         <div className="flex flex-col items-center text-center pt-2">
-          <div className="w-20 h-20 rounded-2xl border-2 border-violet-500/40 bg-violet-950/50 overflow-hidden flex items-center justify-center mb-3 shadow-lg shadow-violet-900/30">
-            {mybbUser?.avatar ? (
-              <img src={mybbUser.avatar} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; }} />
-            ) : (
-              <img src={LOGO_URL} alt="avatar" className="w-full h-full object-contain scale-110" />
-            )}
+          <div className="relative mb-3">
+            <div className="w-20 h-20 rounded-2xl border-2 border-violet-500/40 bg-violet-950/50 overflow-hidden flex items-center justify-center shadow-lg shadow-violet-900/30">
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="preview" className="w-full h-full object-cover" />
+              ) : mybbUser?.avatar ? (
+                <img src={mybbUser.avatar} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; }} />
+              ) : (
+                <img src={LOGO_URL} alt="avatar" className="w-full h-full object-contain scale-110" />
+              )}
+            </div>
+            {/* Camera button overlay */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-violet-600 border-2 border-background flex items-center justify-center hover:bg-violet-500 transition-colors"
+            >
+              <Camera className="w-3.5 h-3.5 text-white" />
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarPick} />
           </div>
+          {/* Avatar upload controls */}
+          {avatarPreview && (
+            <div className="flex items-center gap-2 mb-2">
+              <Button size="sm" onClick={handleAvatarUpload} disabled={uploadingAvatar} className="bg-violet-600 hover:bg-violet-700 text-white text-xs h-7 px-3">
+                {uploadingAvatar ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Uploading...</> : "Save Avatar"}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => { setAvatarPreview(null); setAvatarFile(null); }} className="text-xs h-7 text-muted-foreground">
+                Cancel
+              </Button>
+            </div>
+          )}
+          {avatarError && <p className="text-xs text-red-400 mb-1">{avatarError}</p>}
           <h2 className="text-xl font-bold text-foreground">{callsign}</h2>
           <p className="text-xs text-muted-foreground mt-0.5">{user?.location || "GMRS Community"} · GMRS Operator</p>
           {mybbUser?.role && (
