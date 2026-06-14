@@ -4,9 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Radio, CheckCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 
 export default function NetCheckInPanel({ net }) {
   const [user, setUser] = useState(null);
+  const { mybbUser } = useMyBBAuth();
   const [showForm, setShowForm] = useState(false);
   const [signalReport, setSignalReport] = useState("5x5");
   const [notes, setNotes] = useState("");
@@ -26,8 +28,8 @@ export default function NetCheckInPanel({ net }) {
 
   const checkInMutation = useMutation({
     mutationFn: async () => {
-      const callsign = user?.callsign || "UNKNOWN";
-      const location = user?.location || "";
+      const callsign = mybbUser?.username || user?.callsign || "UNKNOWN";
+      const location = user?.location || mybbUser?.location || "";
       // Save check-in record
       await base44.entities.NetCheckIn.create({
         net_id: net.id,
