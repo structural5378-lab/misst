@@ -39,6 +39,7 @@ import CreateAlert from '@/pages/CreateAlert';
 import LiveCams from '@/pages/LiveCams';
 import Gallery from '@/pages/Gallery';
 import Members from '@/pages/Members';
+import Weather from '@/pages/Weather';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -82,6 +83,7 @@ const AuthenticatedApp = () => {
         <Route path="/live-cams" element={<LiveCams />} />
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/members" element={<Members />} />
+        <Route path="/weather" element={<Weather />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
