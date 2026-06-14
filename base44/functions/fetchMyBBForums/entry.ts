@@ -146,6 +146,22 @@ Deno.serve(async (req) => {
       if (data.error) {
         return Response.json({ ok: false, error: data.error, result: data });
       }
+      // Push notification for new thread
+      const pushApiKey = Deno.env.get("PUSHALERT_API_KEY");
+      if (pushApiKey && data.tid) {
+        await fetch("https://api.pushalert.co/rest/v1/send", {
+          method: "POST",
+          headers: {
+            "Authorization": `api_key=${pushApiKey}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            title: `New Thread by ${username}`,
+            message: subject,
+            url: `https://insomniacsgmrs.com/showthread.php?tid=${data.tid}`,
+          }).toString(),
+        }).catch(() => {});
+      }
       return Response.json({ ok: true, result: data });
     }
 
