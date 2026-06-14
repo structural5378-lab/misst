@@ -182,6 +182,47 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, result: data });
     }
 
+    if (action === "post_net_schedule") {
+      const { net_name, frequency, time, day_of_week, description, repeater_callsign, net_control } = body;
+      const subject = `[Net Schedule] ${net_name}`;
+      const lines = [
+        `[b]${net_name}[/b]`,
+        ``,
+        frequency ? `[b]Frequency:[/b] ${frequency} MHz` : null,
+        repeater_callsign ? `[b]Repeater:[/b] ${repeater_callsign}` : null,
+        day_of_week ? `[b]Day:[/b] ${day_of_week}` : null,
+        time ? `[b]Time:[/b] ${time}` : null,
+        net_control ? `[b]Net Control:[/b] ${net_control}` : null,
+        description ? `\n${description}` : null,
+        ``,
+        `[i]Added via MIST App[/i]`,
+      ].filter(l => l !== null).join("\n");
+
+      // Post to Net Schedules forum (fid 7) and also add calendar event
+      const threadResult = await bridgeCall("create_thread", {
+        fid: body.fid || 7,
+        subject,
+        message: lines,
+        bot_username: "Mist Client",
+        bot_password: Deno.env.get("MYBB_BOT_PASSWORD"),
+      });
+
+      // Add to MyBB calendar
+      const today = new Date();
+      const calResult = await bridgeCall("add_calendar_event", {
+        name: net_name,
+        description: lines,
+        startdate: `${today.getMonth() + 1}-${today.getDate()}-${today.getFullYear()}`,
+        enddate: `${today.getMonth() + 1}-${today.getDate()}-${today.getFullYear()}`,
+        repeating: 1,
+        repeating_type: day_of_week ? "weekly" : "daily",
+        bot_username: "Mist Client",
+        bot_password: Deno.env.get("MYBB_BOT_PASSWORD"),
+      }).catch(() => null); // calendar is optional
+
+      return Response.json({ ok: true, thread: threadResult, calendar: calResult });
+    }
+
     return Response.json({ error: "Unknown action" }, { status: 400 });
 
   } catch (error) {
