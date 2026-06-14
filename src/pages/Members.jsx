@@ -128,7 +128,7 @@ function MemberSheet({ member, onClose, onMessage, isSelf }) {
         onClick={e => e.stopPropagation()}
       >
         {/* Banner */}
-        <div className="h-20 bg-gradient-to-br from-violet-900/60 via-indigo-900/60 to-background relative">
+        <div className="h-24 bg-gradient-to-br from-violet-900/60 via-indigo-900/60 to-background relative">
           <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-lg bg-black/30 text-white/70 hover:text-white">
             <X className="w-4 h-4" />
           </button>
@@ -136,7 +136,7 @@ function MemberSheet({ member, onClose, onMessage, isSelf }) {
 
         <div className="px-5 pb-8">
           {/* Avatar */}
-          <div className="flex items-end justify-between -mt-8 mb-4">
+          <div className="flex items-end justify-between mt-4 mb-4">
             <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-violet-500/50 bg-violet-950 shadow-lg shadow-violet-900/40">
               <img src={avatarUrl || LOGO_URL} alt={member.username}
                 className="w-full h-full object-cover" onError={e => { e.target.src = LOGO_URL; }} />
