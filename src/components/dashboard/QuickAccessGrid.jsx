@@ -1,14 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Radio, MapPin, Users, MessageSquare, Calendar, Wrench, Camera } from "lucide-react";
+import { Radio, MapPin, Users, MessageSquare, Wrench, Camera, UserCircle2 } from "lucide-react";
 
 const items = [
   { icon: Radio, label: "Repeaters", path: "/repeaters", color: "text-primary" },
   { icon: MapPin, label: "Map", path: "/map", color: "text-emerald-400" },
   { icon: Users, label: "Nets", path: "/nets", color: "text-purple-400" },
-  { icon: MessageSquare, label: "Forum", path: "/forums", color: "text-blue-400" },
+  { icon: MessageSquare, label: "Forum", path: "/community-forum", color: "text-blue-400" },
   { icon: Camera, label: "Gallery", path: "/gallery", color: "text-pink-400" },
-  { icon: Users, label: "Members", path: "/members", color: "text-cyan-400" },
+  { icon: UserCircle2, label: "Members", path: "/members", color: "text-cyan-400" },
   { icon: Wrench, label: "Tools", path: "/tools", color: "text-orange-400" },
 ];
 
