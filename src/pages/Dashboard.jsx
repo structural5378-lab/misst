@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera } from "lucide-react";
+import { Bell, Radio, MapPin, Users, Wrench, Zap, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
@@ -256,9 +256,9 @@ export default function Dashboard() {
                     <p className="text-xs text-muted-foreground">{net.time} · {net.frequency} MHz</p>
                   </div>
                 </div>
-                <Button size="sm" className="h-7 text-xs bg-violet-600/30 hover:bg-violet-600/50 text-violet-300 border-0">
-                  Join
-                </Button>
+                <Link to="/nets" className="h-7 text-xs bg-violet-600/30 hover:bg-violet-600/50 text-violet-300 border-0 px-3 rounded-md flex items-center gap-1 font-medium">
+                  Join <ChevronRight className="w-3 h-3" />
+                </Link>
               </div>
             ))}
             {nets.length === 0 && (
