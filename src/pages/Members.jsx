@@ -124,7 +124,7 @@ function MemberSheet({ member, onClose, onMessage, isSelf }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full max-w-lg bg-card border border-border rounded-t-2xl overflow-hidden animate-in slide-in-from-bottom-4"
+        className="w-full max-w-lg bg-card border border-border rounded-t-2xl overflow-y-auto max-h-[90vh] animate-in slide-in-from-bottom-4"
         onClick={e => e.stopPropagation()}
       >
         {/* Banner */}
