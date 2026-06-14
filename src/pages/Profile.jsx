@@ -11,7 +11,7 @@ import PageHeader from "@/components/layout/PageHeader";
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
 export default function Profile() {
-  const { mybbUser, login: mybbLogin, logout: mybbLogout } = useMyBBAuth();
+  const { mybbUser, login, logout: mybbLogout } = useMyBBAuth();
   const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -99,7 +99,7 @@ export default function Profile() {
       if (res.data?.success) {
         const newAvatarUrl = res.data.avatar_url;
         // Update session with new avatar URL
-        mybbLogin({ ...mybbUser, avatar: newAvatarUrl });
+        login({ ...mybbUser, avatar: newAvatarUrl });
         setAvatarPreview(null);
         setAvatarFile(null);
       } else {
@@ -145,7 +145,7 @@ export default function Profile() {
               {avatarPreview ? (
                 <img src={avatarPreview} alt="preview" className="w-full h-full object-cover" />
               ) : mybbUser?.avatar ? (
-                <img src={mybbUser.avatar} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; }} />
+                <img src={mybbUser.avatar} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.onerror=null; e.target.src=LOGO_URL; }} />
               ) : (
                 <img src={LOGO_URL} alt="avatar" className="w-full h-full object-contain scale-110" />
               )}

@@ -72,11 +72,7 @@ export default function Dashboard() {
   };
 
   const callsign = user?.callsign || mybbUser?.username || "MIST Member";
-  const avatarUrl = mybbUser?.avatar
-    ? `https://insomniacsgmrs.com/${mybbUser.avatar}`
-    : mybbUser?.uid
-    ? `https://insomniacsgmrs.com/userimages/${mybbUser.uid}.jpg`
-    : LOGO_URL;
+  const avatarUrl = mybbUser?.avatar || LOGO_URL;
   const location = user?.location || "GMRS Community";
 
   return (
