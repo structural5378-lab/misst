@@ -24,13 +24,15 @@ export default function CreateAlert() {
     e.preventDefault();
     if (!title.trim()) return;
     setSaving(true);
-    await base44.entities.Alert.create({
+    const alert = await base44.entities.Alert.create({
       title: title.trim(),
       message: message.trim() || undefined,
       type,
       link: link.trim() || undefined,
       is_read: false,
     });
+    // Fire push notification
+    await base44.functions.invoke("sendAlertNotification", { data: alert });
     navigate("/alerts");
   };
 
