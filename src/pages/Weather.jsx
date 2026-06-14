@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   CloudSun, Wind, Droplets, Eye, Gauge, Sunrise, Sunset,
@@ -83,12 +83,15 @@ export default function Weather() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [gpsStatus, setGpsStatus] = useState("pending"); // pending | granted | denied | default
+  const coordsRef = useRef(null);
 
-  const fetchWeather = async () => {
+  const fetchWeather = async (coords) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await base44.functions.invoke("getWeatherData", {});
+      const payload = coords ? { lat: coords.latitude, lon: coords.longitude } : {};
+      const res = await base44.functions.invoke("getWeatherData", payload);
       if (res.data?.current) {
         setWeather(res.data);
         setLastUpdated(new Date());
@@ -103,10 +106,32 @@ export default function Weather() {
   };
 
   useEffect(() => {
-    fetchWeather();
-    const interval = setInterval(fetchWeather, 5 * 60 * 1000);
+    if (!navigator.geolocation) {
+      setGpsStatus("default");
+      fetchWeather(null);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGpsStatus("granted");
+        coordsRef.current = pos.coords;
+        fetchWeather(pos.coords);
+      },
+      () => {
+        setGpsStatus("denied");
+        fetchWeather(null);
+      },
+      { timeout: 8000 }
+    );
+  }, []);
+
+  // Auto-refresh every 5 min using last known coords
+  useEffect(() => {
+    const interval = setInterval(() => fetchWeather(coordsRef.current), 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleRefresh = () => fetchWeather(coordsRef.current);
 
   const cur = weather?.current;
   const forecast = weather?.forecast || [];
@@ -120,7 +145,7 @@ export default function Weather() {
         title="Weather"
         showBack
         rightAction={
-          <button onClick={fetchWeather} disabled={loading} className="p-2 text-muted-foreground hover:text-foreground disabled:opacity-40">
+          <button onClick={handleRefresh} disabled={loading} className="p-2 text-muted-foreground hover:text-foreground disabled:opacity-40">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
         }
@@ -141,6 +166,18 @@ export default function Weather() {
           <div className="text-center py-24">
             <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
+        )}
+
+        {/* GPS status pill */}
+        {gpsStatus !== "pending" && (
+          <div className={`flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-full w-fit ${
+            gpsStatus === "granted"
+              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
+              : "bg-amber-500/15 text-amber-400 border border-amber-500/25"
+          }`}>
+            <Navigation className="w-3 h-3" />
+            {gpsStatus === "granted" ? "Using your GPS location" : "Using default location (Orlando, FL)"}
           </div>
         )}
 

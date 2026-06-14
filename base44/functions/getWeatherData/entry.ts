@@ -7,9 +7,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Weather API key not configured.' }, { status: 500 });
     }
 
-    // Default to Central Florida (Orlando area)
-    const lat = 28.5383;
-    const lon = -81.3792;
+    // Use provided coords or fall back to Central Florida (Orlando area)
+    let body = {};
+    try { body = await req.json(); } catch (_) {}
+    const lat = body.lat || 28.5383;
+    const lon = body.lon || -81.3792;
 
     // Fetch current weather and forecast in parallel
     const [weatherRes, forecastRes] = await Promise.all([
