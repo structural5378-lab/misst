@@ -79,7 +79,11 @@ export default function Profile() {
         {/* Avatar & Name */}
         <div className="flex flex-col items-center text-center pt-2">
           <div className="w-20 h-20 rounded-2xl border-2 border-violet-500/40 bg-violet-950/50 overflow-hidden flex items-center justify-center mb-3 shadow-lg shadow-violet-900/30">
-            <img src={LOGO_URL} alt="avatar" className="w-full h-full object-contain scale-110" />
+            {mybbUser?.avatar ? (
+              <img src={mybbUser.avatar} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; }} />
+            ) : (
+              <img src={LOGO_URL} alt="avatar" className="w-full h-full object-contain scale-110" />
+            )}
           </div>
           <h2 className="text-xl font-bold text-foreground">{callsign}</h2>
           <p className="text-xs text-muted-foreground mt-0.5">{user?.location || "GMRS Community"} · GMRS Operator</p>

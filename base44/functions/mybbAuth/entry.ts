@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
         usergroup,
         role, // "admin" | "moderator" | "member"
         canEdit: isAdmin || isMod,
-        avatar: data.avatar || null,
+        avatar: data.avatar ? (data.avatar.startsWith("http") ? data.avatar : `https://insomniacsgmrs.com/${data.avatar.replace(/^\//, "")}`) : null,
         postcount: parseInt(data.postcount || 0),
         reputation: parseInt(data.reputation || 0),
         threadcount: parseInt(data.threadcount || 0),
