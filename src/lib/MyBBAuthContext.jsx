@@ -11,7 +11,7 @@ export function MyBBAuthProvider({ children }) {
       if (!stored) return null;
       const parsed = JSON.parse(stored);
       // If session is missing new fields, force re-login
-      if (parsed && (parsed.postcount === undefined || parsed.password === undefined)) {
+      if (parsed && (parsed.postcount === undefined || parsed.password === undefined || parsed.avatar === undefined)) {
         localStorage.removeItem(STORAGE_KEY);
         return null;
       }
