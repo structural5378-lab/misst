@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
 
     const secret = Deno.env.get("MIST_BRIDGE_SECRET") || "";
     const body = await req.json();
-    const { fileBase64, fileName, mimeType, username } = body;
+    const { fileBase64, fileName, mimeType, username, uid } = body;
 
     if (!fileBase64 || !username) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
@@ -29,6 +29,7 @@ Deno.serve(async (req) => {
     const botPassword = Deno.env.get("MYBB_BOT_PASSWORD") || "";
     outForm.append("action", "upload_avatar");
     outForm.append("username", username);
+    if (uid) outForm.append("uid", String(uid));
     outForm.append("bot_password", botPassword);
     outForm.append("file", blob, fileName || "avatar.jpg");
 

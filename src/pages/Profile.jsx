@@ -94,6 +94,7 @@ export default function Profile() {
         fileName: "avatar.jpg",
         mimeType: "image/jpeg",
         username: mybbUser.username,
+        uid: mybbUser.uid,
       });
       if (res.data?.success) {
         const newAvatarUrl = res.data.avatar_url;
