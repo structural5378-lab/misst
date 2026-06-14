@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
     // Send to PHP bridge as a multipart upload
     const outForm = new FormData();
-    const botPassword = Deno.env.get("MYBB_BOT_PASSWORD") || "";
+    const botPassword = Deno.env.get("MYBB_BOT_PASSWORD") || "a415741574157B!";
     outForm.append("action", "upload_avatar");
     outForm.append("username", username);
     if (uid) outForm.append("uid", String(uid));
