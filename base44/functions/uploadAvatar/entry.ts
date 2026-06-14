@@ -10,9 +10,9 @@ Deno.serve(async (req) => {
 
     const secret = Deno.env.get("MIST_BRIDGE_SECRET") || "";
     const body = await req.json();
-    const { fileBase64, fileName, mimeType, username, password } = body;
+    const { fileBase64, fileName, mimeType, username } = body;
 
-    if (!fileBase64 || !username || !password) {
+    if (!fileBase64 || !username) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -26,9 +26,10 @@ Deno.serve(async (req) => {
 
     // Send to PHP bridge as a multipart upload
     const outForm = new FormData();
+    const botPassword = Deno.env.get("MYBB_BOT_PASSWORD") || "";
     outForm.append("action", "upload_avatar");
     outForm.append("username", username);
-    outForm.append("password", password);
+    outForm.append("bot_password", botPassword);
     outForm.append("file", blob, fileName || "avatar.jpg");
 
     const res = await fetch(BRIDGE_URL, {
