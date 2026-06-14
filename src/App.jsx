@@ -38,6 +38,7 @@ import ForumRegister from '@/pages/ForumRegister';
 import CreateAlert from '@/pages/CreateAlert';
 import LiveCams from '@/pages/LiveCams';
 import Gallery from '@/pages/Gallery';
+import Members from '@/pages/Members';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
         <Route path="/alerts/create" element={<CreateAlert />} />
         <Route path="/live-cams" element={<LiveCams />} />
         <Route path="/gallery" element={<Gallery />} />
+        <Route path="/members" element={<Members />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

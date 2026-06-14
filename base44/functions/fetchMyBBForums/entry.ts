@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     const { action = "recent", fid, tid } = body;
 
     // Public read-only actions don't require auth
-    const publicActions = ["forums", "recent", "threads", "thread_posts", "online_users"];
+    const publicActions = ["forums", "recent", "threads", "thread_posts", "online_users", "members"];
     if (!publicActions.includes(action)) {
       const base44 = createClientFromRequest(req);
       const user = await base44.auth.me();
@@ -108,6 +108,21 @@ Deno.serve(async (req) => {
         avatar: u.avatar ? `https://insomniacsgmrs.com/${u.avatar}` : null,
       }));
       return Response.json({ users, count: users.length });
+    }
+
+    if (action === "members") {
+      const data = await bridgeCall("members", {});
+      const members = (data.members || []).map(m => ({
+        uid: m.uid,
+        username: m.username,
+        avatar: m.avatar ? (m.avatar.startsWith("http") ? m.avatar : `https://insomniacsgmrs.com/${m.avatar.replace(/^\//, "")}`) : null,
+        postcount: parseInt(m.postcount || 0),
+        threadcount: parseInt(m.threadcount || 0),
+        reputation: parseInt(m.reputation || 0),
+        usergroup: m.usergroup,
+        role: [4, 6].includes(parseInt(m.usergroup)) ? "admin" : parseInt(m.usergroup) === 6 ? "moderator" : "member",
+      }));
+      return Response.json({ members, count: members.length });
     }
 
     if (action === "forums") {
