@@ -283,8 +283,8 @@ export default function CineplexMode() {
           : { target_lat: lat, target_lon: lon };
         await base44.entities.LocationShare.update(sessionId, field);
       },
-      () => {},
-      { enableHighAccuracy: true, timeout: 10000 }
+      (err) => { console.warn("GPS error:", err.message); },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
