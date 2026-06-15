@@ -39,7 +39,7 @@ export default function SimplexRequestPoller() {
                   onClick={async () => {
                     dismiss();
                     await base44.entities.LocationShare.update(req.id, { status: "active" });
-                    navigate("/cineplex");
+                    navigate(`/cineplex?session=${req.id}&role=target`);
                   }}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold transition-colors"
                 >

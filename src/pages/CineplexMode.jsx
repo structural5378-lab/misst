@@ -250,6 +250,26 @@ export default function CineplexMode() {
 
   const myUID = String(mybbUser?.uid || mybbUser?.username || "");
 
+  // Auto-join from toast notification (role=target means we just accepted via the poller)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session");
+    const role = params.get("role");
+    if (!sessionId) return;
+
+    const joinSession = async () => {
+      const sessions = await base44.entities.LocationShare.filter({ id: sessionId });
+      const s = sessions[0];
+      if (!s || s.status !== "active") return;
+      setSession(s);
+      setStep("live");
+      const isInitiator = role !== "target";
+      startGPS(sessionId, isInitiator);
+      startPolling(sessionId, isInitiator);
+    };
+    joinSession();
+  }, []); // eslint-disable-line
+
   const gpsIntervalRef = useRef(null);
 
   // Push current GPS position to the session record
