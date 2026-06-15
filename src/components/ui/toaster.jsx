@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Toast,
@@ -8,25 +9,42 @@ import {
   ToastViewport,
 } from "@/components/ui/toast";
 
+function AutoDismissToast({ id, title, description, action, duration, dismiss, ...props }) {
+  useEffect(() => {
+    const ms = typeof duration === "number" ? duration : 5000;
+    const t = setTimeout(() => dismiss(id), ms);
+    return () => clearTimeout(t);
+  }, [id, duration]);
+
+  return (
+    <Toast {...props}>
+      <div className="grid gap-1">
+        {title && <ToastTitle>{title}</ToastTitle>}
+        {description && <ToastDescription>{description}</ToastDescription>}
+      </div>
+      {action}
+      <ToastClose onClick={() => dismiss(id)} />
+    </Toast>
+  );
+}
+
 export function Toaster() {
   const { toasts, dismiss } = useToast();
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
-        return (
-          <Toast key={id} {...props}>
-            <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && (
-                <ToastDescription>{description}</ToastDescription>
-              )}
-            </div>
-            {action}
-            <ToastClose onClick={() => dismiss(id)} />
-          </Toast>
-        );
-      })}
+      {toasts.map(({ id, title, description, action, duration, ...props }) => (
+        <AutoDismissToast
+          key={id}
+          id={id}
+          title={title}
+          description={description}
+          action={action}
+          duration={duration}
+          dismiss={dismiss}
+          {...props}
+        />
+      ))}
       <ToastViewport />
     </ToastProvider>
   );
