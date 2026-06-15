@@ -61,7 +61,7 @@ function UserPicker({ onSelect }) {
     <div className="px-4 py-4 space-y-4">
       <div className="p-4 rounded-2xl bg-violet-500/10 border border-violet-500/20 text-center space-y-1">
         <Radio className="w-8 h-8 text-violet-400 mx-auto" />
-        <p className="text-sm font-semibold text-foreground">Cineplex Mode</p>
+        <p className="text-sm font-semibold text-foreground">Simplex Mode</p>
         <p className="text-xs text-muted-foreground">Select a member to share live GPS locations. See how far your radios can reach!</p>
       </div>
 
@@ -363,7 +363,7 @@ export default function CineplexMode() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="Cineplex Mode" showBack />
+      <PageHeader title="Simplex Mode" showBack />
       {step === "pick" && <UserPicker onSelect={handleSelect} />}
       {step === "waiting" && session && <WaitingScreen session={session} onCancel={handleCancel} />}
       {step === "incoming" && session && (

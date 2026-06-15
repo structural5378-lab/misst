@@ -11,7 +11,7 @@ const items = [
   { icon: UserCircle2, label: "Members", path: "/members", color: "text-cyan-400" },
   { icon: Wrench, label: "Tools", path: "/tools", color: "text-orange-400" },
   { icon: CloudSun, label: "Weather", path: "/weather", color: "text-yellow-400" },
-  { icon: SignalHigh, label: "Cineplex", path: "/cineplex", color: "text-emerald-400" },
+  { icon: SignalHigh, label: "Simplex", path: "/cineplex", color: "text-emerald-400" },
 ];
 
 export default function QuickAccessGrid() {
