@@ -1,13 +1,7 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-
 const BRIDGE_URL = "https://insomniacsgmrs.com/mist-api.php";
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
-
     const secret = Deno.env.get("MIST_BRIDGE_SECRET") || "";
     const body = await req.json();
     const { fileBase64, fileName, mimeType, username, uid } = body;
