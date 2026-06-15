@@ -7,6 +7,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import PageHeader from "@/components/layout/PageHeader";
 import { Radio, Search, Loader2, X, Check, MapPin, Signal, Navigation } from "lucide-react";
+import { notifyAccepted, notifyDeclined } from "@/components/simplex/SimplexNotify";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 const FORUM_BASE = "https://insomniacsgmrs.com/";
@@ -270,16 +271,23 @@ export default function CineplexMode() {
   };
 
   // Poll session state
+  const prevStatusRef = useRef(null);
+
   const pollSession = async (sessionId, isInitiator) => {
     const sessions = await base44.entities.LocationShare.filter({ id: sessionId });
     const s = sessions[0];
     if (!s) return;
+    const prev = prevStatusRef.current;
+    prevStatusRef.current = s.status;
+    if (isInitiator && prev === "pending" && s.status === "active") notifyAccepted(s.target_username);
+    if (isInitiator && prev === "pending" && s.status === "declined") notifyDeclined(s.target_username);
     setSession(s);
     if (s.status === "active" && step !== "live") setStep("live");
     if (s.status === "declined" || s.status === "ended") handleEnd(false);
   };
 
   const startPolling = (sessionId, isInitiator) => {
+    prevStatusRef.current = "pending";
     pollRef.current = setInterval(() => pollSession(sessionId, isInitiator), 3000);
   };
 
@@ -291,13 +299,17 @@ export default function CineplexMode() {
   useEffect(() => {
     const unsub = base44.entities.LocationShare.subscribe((event) => {
       if (session && event.data?.id === session.id) {
-        setSession(event.data);
-        if (event.data.status === "active") setStep("live");
-        if (event.data.status === "declined" || event.data.status === "ended") handleEnd(false);
+        const next = event.data;
+        const isInitiator = session.initiator_uid === myUID;
+        if (isInitiator && session.status === "pending" && next.status === "active") notifyAccepted(next.target_username);
+        if (isInitiator && session.status === "pending" && next.status === "declined") notifyDeclined(next.target_username);
+        setSession(next);
+        if (next.status === "active") setStep("live");
+        if (next.status === "declined" || next.status === "ended") handleEnd(false);
       }
     });
     return unsub;
-  }, [session?.id]);
+  }, [session?.id, session?.status]);
 
   // Check for incoming requests on mount
   useEffect(() => {
