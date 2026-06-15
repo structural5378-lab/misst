@@ -242,7 +242,7 @@ export default function CineplexMode() {
   const watchIdRef = useRef(null);
   const pollRef = useRef(null);
 
-  const myUID = mybbUser?.uid || mybbUser?.username;
+  const myUID = String(mybbUser?.uid || mybbUser?.username || "");
 
   // Start GPS tracking
   const startGPS = (sessionId, isInitiator) => {
@@ -315,10 +315,10 @@ export default function CineplexMode() {
     const now = new Date();
     const expires = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();
     const s = await base44.entities.LocationShare.create({
-      initiator_uid: myUID,
+      initiator_uid: String(myUID),
       initiator_username: mybbUser.username,
       initiator_avatar: mybbUser.avatar || "",
-      target_uid: member.uid || member.username,
+      target_uid: String(member.uid || member.username),
       target_username: member.username,
       target_avatar: member.avatar || "",
       status: "pending",
