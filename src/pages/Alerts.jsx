@@ -28,7 +28,10 @@ export default function Alerts() {
 
   const { data: alerts, isLoading } = useQuery({
     queryKey: ["alerts"],
-    queryFn: () => base44.entities.Alert.list("-created_date", 50),
+    queryFn: async () => {
+      const all = await base44.entities.Alert.list("-created_date", 50);
+      return all.filter(a => !a.title?.startsWith("__"));
+    },
     initialData: [],
   });
 
