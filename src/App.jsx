@@ -40,6 +40,7 @@ import LiveCams from '@/pages/LiveCams';
 import Gallery from '@/pages/Gallery';
 import Members from '@/pages/Members';
 import Weather from '@/pages/Weather';
+import CineplexMode from '@/pages/CineplexMode';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -84,6 +85,7 @@ const AuthenticatedApp = () => {
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/members" element={<Members />} />
         <Route path="/weather" element={<Weather />} />
+        <Route path="/cineplex" element={<CineplexMode />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

@@ -1,0 +1,56 @@
+{
+  "name": "LocationShare",
+  "type": "object",
+  "properties": {
+    "initiator_uid": {
+      "type": "string"
+    },
+    "initiator_username": {
+      "type": "string"
+    },
+    "initiator_avatar": {
+      "type": "string"
+    },
+    "initiator_lat": {
+      "type": "number"
+    },
+    "initiator_lon": {
+      "type": "number"
+    },
+    "target_uid": {
+      "type": "string"
+    },
+    "target_username": {
+      "type": "string"
+    },
+    "target_avatar": {
+      "type": "string"
+    },
+    "target_lat": {
+      "type": "number"
+    },
+    "target_lon": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "declined",
+        "ended"
+      ],
+      "default": "pending"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "initiator_uid",
+    "initiator_username",
+    "target_uid",
+    "target_username"
+  ]
+}
