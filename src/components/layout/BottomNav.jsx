@@ -21,7 +21,7 @@ export default function BottomNav() {
     queryKey: ["unread-alerts-badge"],
     queryFn: async () => {
       const alerts = await base44.entities.Alert.filter({ is_read: false });
-      return alerts.length;
+      return alerts.filter(a => !a.title?.startsWith("__")).length;
     },
     refetchInterval: 30000,
     staleTime: 15000,

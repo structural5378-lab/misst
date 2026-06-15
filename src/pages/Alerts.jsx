@@ -35,6 +35,13 @@ export default function Alerts() {
     initialData: [],
   });
 
+  const handleMarkAllRead = async () => {
+    const unread = alerts.filter(a => !a.is_read);
+    await Promise.all(unread.map(a => base44.entities.Alert.update(a.id, { is_read: true })));
+    queryClient.invalidateQueries({ queryKey: ["alerts"] });
+    queryClient.invalidateQueries({ queryKey: ["unread-alerts-badge"] });
+  };
+
   const handleDelete = async (id) => {
     if (deletingIds.has(id)) return;
     setDeletingIds(prev => new Set(prev).add(id));
@@ -48,7 +55,16 @@ export default function Alerts() {
 
   return (
     <div>
-      <PageHeader title="Alerts" />
+      <PageHeader
+        title="Alerts"
+        rightAction={
+          alerts.some(a => !a.is_read) ? (
+            <button onClick={handleMarkAllRead} className="text-xs text-violet-400 hover:text-violet-300 font-medium pr-1">
+              Mark all read
+            </button>
+          ) : null
+        }
+      />
       <div className="px-4 pt-3">
         {isLoading ? (
           <div className="flex justify-center py-12">
