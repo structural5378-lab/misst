@@ -250,8 +250,10 @@ export default function CineplexMode() {
 
   const myUID = String(mybbUser?.uid || mybbUser?.username || "");
 
-  // One-time GPS ping
-  const pingGPS = (sessionId, isInitiator) => {
+  const gpsIntervalRef = useRef(null);
+
+  // Push current GPS position to the session record
+  const pushGPS = (sessionId, isInitiator) => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -266,9 +268,18 @@ export default function CineplexMode() {
     );
   };
 
-  const stopGPS = () => {
-    // no-op: no persistent watch to clear
+  // Start continuous GPS updates every 10s
+  const startGPS = (sessionId, isInitiator) => {
+    pushGPS(sessionId, isInitiator); // immediate first ping
+    gpsIntervalRef.current = setInterval(() => pushGPS(sessionId, isInitiator), 10000);
   };
+
+  const stopGPS = () => {
+    if (gpsIntervalRef.current) { clearInterval(gpsIntervalRef.current); gpsIntervalRef.current = null; }
+  };
+
+  // One-time GPS ping (used for manual Ping button)
+  const pingGPS = (sessionId, isInitiator) => pushGPS(sessionId, isInitiator);
 
   // Poll session state
   const prevStatusRef = useRef(null);
@@ -282,7 +293,7 @@ export default function CineplexMode() {
     if (isInitiator && prev === "pending" && s.status === "active") notifyAccepted(s.target_username);
     if (isInitiator && prev === "pending" && s.status === "declined") notifyDeclined(s.target_username);
     setSession(s);
-    if (s.status === "active" && step !== "live") setStep("live");
+    if (s.status === "active") setStep("live");
     if (s.status === "declined" || s.status === "ended") handleEnd(false);
   };
 
@@ -340,7 +351,7 @@ export default function CineplexMode() {
     });
     setSession(s);
     setStep("waiting");
-    pingGPS(s.id, true);
+    startGPS(s.id, true);
     startPolling(s.id, true);
   };
 
@@ -348,7 +359,7 @@ export default function CineplexMode() {
     await base44.entities.LocationShare.update(session.id, { status: "active" });
     setSession(prev => ({ ...prev, status: "active" }));
     setStep("live");
-    pingGPS(session.id, false);
+    startGPS(session.id, false);
     startPolling(session.id, false);
   };
 
@@ -373,7 +384,7 @@ export default function CineplexMode() {
     setStep("pick");
   };
 
-  useEffect(() => () => { stopGPS(); stopPolling(); }, []);
+  useEffect(() => () => { stopGPS(); stopPolling(); }, []); // eslint-disable-line
 
   return (
     <div className="min-h-screen bg-background">
