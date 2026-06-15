@@ -159,7 +159,7 @@ function IncomingRequest({ session, onAccept, onDecline }) {
 }
 
 // ─── Step 4: Live map ─────────────────────────────────────────────────────────
-function LiveMap({ session, myUID, onEnd }) {
+function LiveMap({ session, myUID, onEnd, onPing }) {
   const isInitiator = session.initiator_uid === myUID;
   const myLat = isInitiator ? session.initiator_lat : session.target_lat;
   const myLon = isInitiator ? session.initiator_lon : session.target_lon;
@@ -196,6 +196,12 @@ function LiveMap({ session, myUID, onEnd }) {
               <Loader2 className="w-3 h-3 animate-spin" /> Waiting for their location…
             </span>
           )}
+          <button
+            onClick={onPing}
+            className="px-3 py-1.5 rounded-lg bg-violet-500/20 text-violet-400 text-xs font-semibold hover:bg-violet-500/30 transition-colors flex items-center gap-1"
+          >
+            <MapPin className="w-3 h-3" /> Ping
+          </button>
           <button
             onClick={onEnd}
             className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-colors"
@@ -239,15 +245,14 @@ export default function CineplexMode() {
   const { mybbUser } = useMyBBAuth();
   const [session, setSession] = useState(null);
   const [step, setStep] = useState("pick"); // pick | waiting | incoming | live
-  const watchIdRef = useRef(null);
   const pollRef = useRef(null);
 
   const myUID = String(mybbUser?.uid || mybbUser?.username || "");
 
-  // Start GPS tracking
-  const startGPS = (sessionId, isInitiator) => {
+  // One-time GPS ping
+  const pingGPS = (sessionId, isInitiator) => {
     if (!navigator.geolocation) return;
-    watchIdRef.current = navigator.geolocation.watchPosition(
+    navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude: lat, longitude: lon } = pos.coords;
         const field = isInitiator
@@ -256,15 +261,12 @@ export default function CineplexMode() {
         await base44.entities.LocationShare.update(sessionId, field);
       },
       () => {},
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 
   const stopGPS = () => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
+    // no-op: no persistent watch to clear
   };
 
   // Poll session state
@@ -326,7 +328,7 @@ export default function CineplexMode() {
     });
     setSession(s);
     setStep("waiting");
-    startGPS(s.id, true);
+    pingGPS(s.id, true);
     startPolling(s.id, true);
   };
 
@@ -334,7 +336,7 @@ export default function CineplexMode() {
     await base44.entities.LocationShare.update(session.id, { status: "active" });
     setSession(prev => ({ ...prev, status: "active" }));
     setStep("live");
-    startGPS(session.id, false);
+    pingGPS(session.id, false);
     startPolling(session.id, false);
   };
 
@@ -370,7 +372,7 @@ export default function CineplexMode() {
         <IncomingRequest session={session} onAccept={handleAccept} onDecline={handleDecline} />
       )}
       {step === "live" && session && (
-        <LiveMap session={session} myUID={myUID} onEnd={() => handleEnd(true)} />
+        <LiveMap session={session} myUID={myUID} onEnd={() => handleEnd(true)} onPing={() => pingGPS(session.id, session.initiator_uid === myUID)} />
       )}
     </div>
   );
