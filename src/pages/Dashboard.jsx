@@ -63,6 +63,16 @@ export default function Dashboard() {
     refetchInterval: 15000,
   });
 
+  const { data: totalMembers } = useQuery({
+    queryKey: ["totalMembers"],
+    queryFn: async () => {
+      const res = await base44.functions.invoke("fetchMyBBForums", { action: "members" });
+      return res.data?.members?.length || 0;
+    },
+    initialData: 0,
+    staleTime: 300000,
+  });
+
   const typeIcons = {
     info: Info,
     warning: AlertTriangle,
@@ -219,6 +229,10 @@ export default function Dashboard() {
             {onlineMembers.length === 0 && (
               <span className="text-xs text-muted-foreground">No members online</span>
             )}
+          </div>
+          <div className="mt-2 flex items-center gap-1.5 px-1">
+            <Users className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs text-amber-400 font-medium">{totalMembers} total members</span>
           </div>
         </div>
 
