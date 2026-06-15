@@ -22,7 +22,8 @@ export default function SimplexRequestPoller() {
         shownRef.current.add(req.id);
 
         const { dismiss } = toast({
-          duration: 30000,
+          duration: 60000,
+          onOpenChange: (open) => { if (!open) dismiss(); },
           title: (
             <div className="flex items-center gap-2">
               <Signal className="w-4 h-4 text-violet-400 shrink-0" />
