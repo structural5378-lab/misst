@@ -67,7 +67,7 @@ export default function Dashboard() {
     queryKey: ["totalMembers"],
     queryFn: async () => {
       const res = await base44.functions.invoke("fetchMyBBForums", { action: "members" });
-      return res.data?.members?.length || 0;
+      return res.data?.count || res.data?.members?.length || 0;
     },
     initialData: 0,
     staleTime: 300000,
