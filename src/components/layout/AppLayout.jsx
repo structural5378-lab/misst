@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import BottomNav from "./BottomNav";
 import AlertPoller from "./AlertPoller";
+import SimplexRequestPoller from "./SimplexRequestPoller";
 
 export default function AppLayout() {
   return (
@@ -14,6 +15,7 @@ export default function AppLayout() {
       </main>
       <BottomNav />
       <AlertPoller />
+      <SimplexRequestPoller />
     </div>
   );
 }
