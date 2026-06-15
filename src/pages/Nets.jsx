@@ -5,10 +5,12 @@ import PageHeader from "@/components/layout/PageHeader";
 import NetCard from "@/components/nets/NetCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Menu } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import NetCheckInPanel from "@/components/nets/NetCheckInPanel";
 
 export default function Nets() {
   const [tab, setTab] = useState("upcoming");
+  const queryClient = useQueryClient();
 
   const { data: nets, isLoading } = useQuery({
     queryKey: ["nets"],
@@ -42,7 +44,7 @@ export default function Nets() {
           ) : (
             filtered.map((n) => (
               <div key={n.id} className="space-y-2">
-                <NetCard net={n} />
+                <NetCard net={n} onDeleted={() => queryClient.invalidateQueries({ queryKey: ["nets"] })} />
                 <NetCheckInPanel net={n} />
               </div>
             ))

@@ -1,12 +1,21 @@
-import React from "react";
-import { Radio, Users } from "lucide-react";
+import React, { useState } from "react";
+import { Radio, Users, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { base44 } from "@/api/base44Client";
 
-export default function NetCard({ net }) {
+export default function NetCard({ net, onDeleted }) {
   const { mybbUser } = useMyBBAuth();
   const canControl = mybbUser?.role === "admin" || mybbUser?.role === "moderator";
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    await base44.entities.Net.delete(net.id);
+    onDeleted?.();
+  };
   return (
     <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border/50">
       <div className="flex items-center gap-3">
@@ -46,6 +55,32 @@ export default function NetCard({ net }) {
           >
             Net Control →
           </Link>
+        )}
+        {canControl && !confirming && (
+          <button
+            onClick={() => setConfirming(true)}
+            className="text-[10px] text-red-400 hover:text-red-300 font-medium flex items-center gap-0.5"
+          >
+            <Trash2 className="w-2.5 h-2.5" /> Delete
+          </button>
+        )}
+        {canControl && confirming && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-[10px] text-red-400 hover:text-red-300 font-semibold"
+            >
+              {deleting ? "..." : "Confirm"}
+            </button>
+            <span className="text-[10px] text-muted-foreground">/</span>
+            <button
+              onClick={() => setConfirming(false)}
+              className="text-[10px] text-muted-foreground hover:text-foreground"
+            >
+              Cancel
+            </button>
+          </div>
         )}
       </div>
     </div>
