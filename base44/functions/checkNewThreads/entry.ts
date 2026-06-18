@@ -71,6 +71,7 @@ Deno.serve(async (req) => {
             title: `New Thread by ${thread.username || "a member"}`,
             message: thread.subject || "A new thread was posted on the forum",
             url: `https://insomniacsgmrs.com/showthread.php?tid=${thread.tid}`,
+            sound: "https://insomniacsgmrs.com/uploads/notification.mp3",
           }).toString(),
         }).catch(() => {});
         notified++;
