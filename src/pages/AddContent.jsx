@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Radio, MessageSquare, Users, Bell, ChevronRight, Lock } from "lucide-react";
+import { Radio, MessageSquare, Users, Bell, ChevronRight, Lock, CalendarDays } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 
@@ -9,6 +9,7 @@ const options = [
   { icon: MessageSquare, label: "New Thread", desc: "Start a forum discussion", path: "/forums/new", color: "text-blue-400", requiresEdit: false },
   { icon: Users, label: "Create Net", desc: "Schedule a new net", path: "/nets/create", color: "text-purple-400", requiresEdit: true },
   { icon: Bell, label: "Post Alert", desc: "Send an alert to the community", path: "/alerts/create", color: "text-amber-400", requiresEdit: true },
+  { icon: CalendarDays, label: "Add Event", desc: "Schedule an event & notify members", path: "/events/create", color: "text-emerald-400", requiresEdit: true },
 ];
 
 export default function AddContent() {
