@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
       notifMessage = description || "Tap to open the app and join.";
     }
 
-    await fetch("https://api.pushalert.co/rest/v1/send", {
+    const paRes = await fetch("https://api.pushalert.co/rest/v1/send", {
       method: "POST",
       headers: {
         "Authorization": `api_key=${apiKey}`,
@@ -35,7 +35,14 @@ Deno.serve(async (req) => {
       }).toString(),
     });
 
-    return Response.json({ ok: true });
+    const paData = await paRes.text();
+    console.log("PushAlert response:", paRes.status, paData);
+
+    if (!paRes.ok) {
+      return Response.json({ error: "PushAlert API failed", status: paRes.status, detail: paData }, { status: 502 });
+    }
+
+    return Response.json({ ok: true, pushalert: paData });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

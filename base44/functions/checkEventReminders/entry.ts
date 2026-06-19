@@ -23,13 +23,12 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Send reminders every 10 minutes up until start (from 60 min down to 0)
-      // Only send if we're within 60 min and the minute mark is a 10-min interval
-      if (minutesUntil > 0 && minutesUntil <= 60 && minutesUntil % 10 === 0) {
+      // Send reminders every ~10 minutes when within 60 min of start
+      if (minutesUntil > 0 && minutesUntil <= 60) {
         const lastReminder = event.last_reminder_at ? new Date(event.last_reminder_at) : null;
-        // Avoid double-sending within the same minute
         const minutesSinceLastReminder = lastReminder ? (now - lastReminder) / 60000 : 999;
-        if (minutesSinceLastReminder < 8) continue;
+        // Only send if at least 9 minutes since last reminder
+        if (minutesSinceLastReminder < 9) continue;
 
         const apiKey = Deno.env.get("PUSHALERT_API_KEY");
         if (apiKey) {
