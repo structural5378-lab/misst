@@ -28,6 +28,20 @@ export default function Dashboard() {
   const { mybbUser, logout: mybbLogout } = useMyBBAuth();
   const [user, setUser] = useState(null);
   const [testingNotif, setTestingNotif] = useState(false);
+  const [notifPermission, setNotifPermission] = useState(() => {
+    try { return Notification.permission; } catch { return "default"; }
+  });
+
+  const handleEnableNotifications = () => {
+    if (window.PushAlertCo) {
+      window.PushAlertCo.triggerOptIn();
+    } else {
+      Notification.requestPermission().then(p => setNotifPermission(p));
+    }
+    setTimeout(() => {
+      try { setNotifPermission(Notification.permission); } catch {}
+    }, 3000);
+  };
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
@@ -99,6 +113,15 @@ export default function Dashboard() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-violet-600/20 rounded-full blur-3xl" />
 
         <div className="relative px-4 pt-4 pb-1 flex items-center justify-end gap-2">
+          {notifPermission !== "granted" && (
+            <button
+              onClick={handleEnableNotifications}
+              className="px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 backdrop-blur-sm text-emerald-400 hover:bg-emerald-500/30 transition-colors text-xs font-semibold flex items-center gap-1.5"
+            >
+              <BellRing className="w-4 h-4" />
+              Enable Alerts
+            </button>
+          )}
           <button
             onClick={async () => {
               setTestingNotif(true);
