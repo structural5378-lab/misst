@@ -33,8 +33,11 @@ export default function Dashboard() {
   });
 
   const handleEnableNotifications = () => {
-    if (window.PushAlertCo) {
-      window.PushAlertCo.triggerOptIn();
+    // PushAlert SDK exposes pa_push object; fall back to native Notification API
+    if (window.pa_push) {
+      window.pa_push.subscribe();
+    } else if (window.PushAlertCo) {
+      window.PushAlertCo.subscribe ? window.PushAlertCo.subscribe() : window.PushAlertCo.triggerOptIn();
     } else {
       Notification.requestPermission().then(p => setNotifPermission(p));
     }
