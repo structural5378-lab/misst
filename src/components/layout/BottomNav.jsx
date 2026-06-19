@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, MessageSquare, Mail, Bell, Plus } from "lucide-react";
+import { Home, MessageSquare, MessageCircle, Bell, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
@@ -9,7 +9,7 @@ const navItems = [
   { icon: Home, label: "Home", path: "/" },
   { icon: MessageSquare, label: "Forum", path: "/community-forum" },
   { icon: null, label: "Add", path: "/add" }, // center action
-  { icon: Mail, label: "Messages", path: "/messages" },
+  { icon: MessageCircle, label: "Chat", path: "/live-chat" },
   { icon: Bell, label: "Alerts", path: "/alerts" },
 ];
 
@@ -27,21 +27,7 @@ export default function BottomNav() {
     staleTime: 15000,
   });
 
-  const { data: unreadMessages = 0 } = useQuery({
-    queryKey: ["unread-messages-badge", mybbUser?.username],
-    queryFn: async () => {
-      const res = await base44.functions.invoke("mybbMessages", {
-        action: "get_pms",
-        username: mybbUser.username,
-        password: mybbUser.password,
-      });
-      const pms = res.data?.pms || [];
-      return pms.filter(pm => pm.readtime === "0" || pm.readtime === 0).length;
-    },
-    enabled: !!mybbUser?.password,
-    refetchInterval: 30000,
-    staleTime: 15000,
-  });
+
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(210,30%,7%)]/95 backdrop-blur-xl border-t border-white/[0.06]">
@@ -52,9 +38,8 @@ export default function BottomNav() {
             : location.pathname === path || location.pathname.startsWith(path + "/");
           const isAdd = label === "Add";
           const isAlerts = label === "Alerts";
-          const isMessages = label === "Messages";
-          const hasUnread = (isAlerts && unreadAlerts > 0) || (isMessages && unreadMessages > 0);
-          const badgeCount = isAlerts ? unreadAlerts : isMessages ? unreadMessages : 0;
+          const hasUnread = isAlerts && unreadAlerts > 0;
+          const badgeCount = isAlerts ? unreadAlerts : 0;
 
           return (
             <Link

@@ -1,0 +1,26 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "sender_uid": {
+      "type": "string"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "sender_avatar": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "sender_uid",
+    "sender_name",
+    "content"
+  ]
+}
