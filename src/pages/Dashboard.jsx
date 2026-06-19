@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, MapPin, Users, Wrench, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera, ChevronRight, UserCircle2, SignalHigh } from "lucide-react";
+import { Bell, Radio, MapPin, Users, Wrench, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera, ChevronRight, UserCircle2, SignalHigh, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
@@ -27,6 +27,7 @@ const quickItems = [
 export default function Dashboard() {
   const { mybbUser, logout: mybbLogout } = useMyBBAuth();
   const [user, setUser] = useState(null);
+  const [testingNotif, setTestingNotif] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
@@ -98,6 +99,20 @@ export default function Dashboard() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-violet-600/20 rounded-full blur-3xl" />
 
         <div className="relative px-4 pt-4 pb-1 flex items-center justify-end gap-2">
+          <button
+            onClick={async () => {
+              setTestingNotif(true);
+              try {
+                await base44.functions.invoke("sendTestNotification", {});
+              } catch(e) {}
+              setTestingNotif(false);
+            }}
+            disabled={testingNotif}
+            className="px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/30 backdrop-blur-sm text-amber-400 hover:bg-amber-500/30 transition-colors text-xs font-semibold flex items-center gap-1.5"
+          >
+            <BellRing className="w-4 h-4" />
+            {testingNotif ? "Sending..." : "Test Notif"}
+          </button>
           <Link
             to="/alerts"
             className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
