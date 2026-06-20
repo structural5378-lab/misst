@@ -44,6 +44,7 @@ import CineplexMode from '@/pages/CineplexMode';
 import CreateEvent from '@/pages/CreateEvent';
 import LiveChat from '@/pages/LiveChat';
 import NewThread from '@/pages/NewThread';
+import ThreadView from '@/pages/ThreadView';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -92,6 +93,7 @@ const AuthenticatedApp = () => {
         <Route path="/events/create" element={<CreateEvent />} />
         <Route path="/live-chat" element={<LiveChat />} />
         <Route path="/forums/new" element={<NewThread />} />
+        <Route path="/forums/thread/:id" element={<ThreadView />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
