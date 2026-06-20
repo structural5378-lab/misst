@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -12,17 +13,13 @@ import { Loader2 } from "lucide-react";
 
 export default function NewThread() {
   const navigate = useNavigate();
+  const { mybbUser } = useMyBBAuth();
   const urlParams = new URLSearchParams(window.location.search);
   const preselectedCategory = urlParams.get("category") || "";
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [categoryId, setCategoryId] = useState(preselectedCategory);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
-  }, []);
 
   const { data: categories } = useQuery({
     queryKey: ["forum-categories"],
@@ -47,8 +44,8 @@ export default function NewThread() {
       body,
       category_id: categoryId,
       category_name: selectedCat?.name || "",
-      author_name: user?.full_name || "Anonymous",
-      author_callsign: user?.callsign || "",
+      author_name: mybbUser?.username || "Anonymous",
+      author_callsign: mybbUser?.username || "",
       reply_count: 0,
     });
   };
