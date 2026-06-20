@@ -43,6 +43,7 @@ import Weather from '@/pages/Weather';
 import CineplexMode from '@/pages/CineplexMode';
 import CreateEvent from '@/pages/CreateEvent';
 import LiveChat from '@/pages/LiveChat';
+import NewThread from '@/pages/NewThread';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -90,6 +91,7 @@ const AuthenticatedApp = () => {
         <Route path="/cineplex" element={<CineplexMode />} />
         <Route path="/events/create" element={<CreateEvent />} />
         <Route path="/live-chat" element={<LiveChat />} />
+        <Route path="/forums/new" element={<NewThread />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
