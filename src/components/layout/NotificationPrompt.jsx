@@ -4,32 +4,40 @@ const STORAGE_KEY = "pa_subscription_prompted";
 
 export default function NotificationPrompt() {
   useEffect(() => {
-    // Only prompt once ever
     if (localStorage.getItem(STORAGE_KEY)) return;
 
+    let attempts = 0;
+    const maxAttempts = 20; // try for up to 20 seconds
+
     const trySubscribe = () => {
-      try {
-        if (window.PushAlertCo?.triggerOptIn) {
-          window.PushAlertCo.triggerOptIn();
-        } else if (window.PushAlertCo?.subscribe) {
-          window.PushAlertCo.subscribe();
-        } else {
-          // Fallback: native browser permission
+      attempts++;
+      const pa = window.PushAlertCo;
+
+      if (pa?.triggerOptIn) {
+        pa.triggerOptIn();
+        localStorage.setItem(STORAGE_KEY, "1");
+        return;
+      }
+      if (pa?.subscribe) {
+        pa.subscribe();
+        localStorage.setItem(STORAGE_KEY, "1");
+        return;
+      }
+
+      // SDK not ready yet — retry
+      if (attempts < maxAttempts) {
+        setTimeout(trySubscribe, 1000);
+      } else {
+        // Last resort: native browser permission
+        if (typeof Notification !== "undefined") {
           Notification.requestPermission();
         }
         localStorage.setItem(STORAGE_KEY, "1");
-      } catch {}
+      }
     };
 
-    // Wait for PushAlert SDK to load, then prompt after a short delay
-    const timer = setTimeout(() => {
-      if (document.readyState === "complete") {
-        trySubscribe();
-      } else {
-        window.addEventListener("load", trySubscribe, { once: true });
-      }
-    }, 3000);
-
+    // Start after 2s to let PushAlert SDK initialize
+    const timer = setTimeout(trySubscribe, 2000);
     return () => clearTimeout(timer);
   }, []);
 
