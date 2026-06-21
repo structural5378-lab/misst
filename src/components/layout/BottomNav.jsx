@@ -89,9 +89,12 @@ export default function BottomNav() {
                 <>
                   <div className="relative">
                     {chatGlow && (
-                      <div className="absolute inset-0 rounded-full bg-violet-400 blur-md opacity-70 scale-150 animate-pulse" />
+                      <>
+                        <div className="absolute inset-0 rounded-full bg-violet-400 blur-xl opacity-90 scale-[2.5] animate-pulse" />
+                        <div className="absolute inset-0 rounded-full bg-white blur-md opacity-40 scale-[1.8] animate-pulse" />
+                      </>
                     )}
-                    <Icon className={`w-5 h-5 transition-transform relative ${isActive ? "scale-110" : ""} ${chatGlow ? "text-violet-300 drop-shadow-[0_0_6px_rgba(167,139,250,0.9)]" : ""}`} />
+                    <Icon className={`w-5 h-5 transition-transform relative ${isActive ? "scale-110" : ""} ${chatGlow ? "text-white scale-125 drop-shadow-[0_0_12px_rgba(255,255,255,1)] drop-shadow-[0_0_20px_rgba(167,139,250,1)]" : ""}`} />
                     {hasUnread && (
                       <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-0.5 leading-none shadow-md">
                         {badgeCount > 9 ? "9+" : badgeCount}
