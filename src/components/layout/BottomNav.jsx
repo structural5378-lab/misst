@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, MessageSquare, MessageCircle, Bell, Plus } from "lucide-react";
+import { Home, MessageSquare, MessageCircle, BellRing, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
@@ -10,18 +10,18 @@ const navItems = [
   { icon: MessageSquare, label: "Forum", path: "/community-forum" },
   { icon: null, label: "Add", path: "/add" }, // center action
   { icon: MessageCircle, label: "Chat", path: "/live-chat" },
-  { icon: Bell, label: "Alerts", path: "/alerts" },
+  { icon: BellRing, label: "Messages", path: "/messages" },
 ];
 
 export default function BottomNav() {
   const location = useLocation();
   const { mybbUser } = useMyBBAuth();
 
-  const { data: unreadAlerts = 0 } = useQuery({
-    queryKey: ["unread-alerts-badge"],
+  const { data: unreadPMs = 0 } = useQuery({
+    queryKey: ["unread-pms-badge"],
     queryFn: async () => {
-      const alerts = await base44.entities.Alert.filter({ is_read: false });
-      return alerts.filter(a => !a.title?.startsWith("__")).length;
+      const res = await base44.functions.invoke("mybbMessages", { action: "get_pms" });
+      return res.data?.unread_count || 0;
     },
     refetchInterval: 30000,
     staleTime: 15000,
@@ -63,10 +63,10 @@ export default function BottomNav() {
             ? location.pathname === "/"
             : location.pathname === path || location.pathname.startsWith(path + "/");
           const isAdd = label === "Add";
-          const isAlerts = label === "Alerts";
+          const isMessages = label === "Messages";
           const isChat = label === "Chat";
-          const hasUnread = isAlerts && unreadAlerts > 0;
-          const badgeCount = isAlerts ? unreadAlerts : 0;
+          const hasUnread = isMessages && unreadPMs > 0;
+          const badgeCount = isMessages ? unreadPMs : 0;
           const chatGlow = isChat && hasNewChat;
 
           return (
