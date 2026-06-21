@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, MapPin, Users, Wrench, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera, ChevronRight, UserCircle2, SignalHigh, BellRing, MessageCircle } from "lucide-react";
+import { Bell, Radio, MapPin, Users, Wrench, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera, ChevronRight, UserCircle2, SignalHigh, BellRing, MessageCircle, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
@@ -66,6 +66,18 @@ export default function Dashboard() {
     initialData: [],
   });
 
+  const { data: latestForumPost } = useQuery({
+    queryKey: ["latestForumPost"],
+    queryFn: async () => {
+      const res = await base44.functions.invoke("fetchMyBBForums", { action: "latest_posts" });
+      return res.data?.posts?.[0] || null;
+    },
+    initialData: null,
+    refetchInterval: 60000,
+  });
+
+  const nextNet = nets.length > 0 ? nets[0] : null;
+
   const { data: alerts } = useQuery({
     queryKey: ["alerts"],
     queryFn: async () => {
@@ -121,7 +133,29 @@ export default function Dashboard() {
         <div className="absolute inset-0 bg-gradient-to-b from-violet-950/60 via-background/80 to-background" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-violet-600/20 rounded-full blur-3xl" />
 
-        <div className="relative px-4 pt-4 pb-1 flex items-center justify-end gap-2">
+        {/* Marquee Section */}
+        <div className="relative px-4 pt-4 pb-2">
+          <div className="w-full bg-violet-950/50 border border-violet-500/20 rounded-xl overflow-hidden backdrop-blur-sm">
+            <div className="flex items-center gap-6 py-2">
+              {latestForumPost && (
+                <div className="flex items-center gap-2 min-w-fit">
+                  <MessageSquare className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">Latest:</span>
+                  <span className="text-xs text-foreground truncate max-w-[150px]">{latestForumPost.subject || latestForumPost.title}</span>
+                </div>
+              )}
+              {nextNet && (
+                <div className="flex items-center gap-2 min-w-fit">
+                  <Radio className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">Next Net:</span>
+                  <span className="text-xs text-emerald-400 font-medium whitespace-nowrap">{nextNet.name} · {nextNet.time}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="relative px-4 pt-1 pb-1 flex items-center justify-end gap-2">
           <Link
             to="/alerts"
             className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
