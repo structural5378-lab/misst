@@ -46,28 +46,34 @@ export default function TestNotifications() {
   };
 
   const handleSubscribe = () => {
-    console.log("Subscribe clicked - checking SDK...", {
-      PushAlertCo: window.PushAlertCo,
-      pa_push: window.pa_push,
-      hasTriggerOptIn: !!window.PushAlertCo?.triggerOptIn,
-      hasSubscribe: !!window.PushAlertCo?.subscribe,
-      hasPaTriggerOptIn: !!window.pa_push?.triggerOptIn,
-      hasPaSubscribe: !!window.pa_push?.subscribe,
-    });
+    console.log("=== PushAlert SDK Debug ===");
+    console.log("PushAlertCo:", window.PushAlertCo);
+    console.log("pa_push:", window.pa_push);
+    console.log("All PushAlertCo keys:", window.PushAlertCo ? Object.keys(window.PushAlertCo) : "not found");
+    console.log("All pa_push keys:", window.pa_push ? Object.keys(window.pa_push) : "not found");
     
-    // Try different SDK method locations
-    if (window.PushAlertCo?.triggerOptIn) {
-      console.log("Calling PushAlertCo.triggerOptIn...");
-      window.PushAlertCo.triggerOptIn();
-    } else if (window.PushAlertCo?.subscribe) {
-      console.log("Calling PushAlertCo.subscribe...");
-      window.PushAlertCo.subscribe();
-    } else if (window.pa_push?.triggerOptIn) {
-      console.log("Calling pa_push.triggerOptIn...");
-      window.pa_push.triggerOptIn();
-    } else if (window.pa_push?.subscribe) {
-      console.log("Calling pa_push.subscribe...");
-      window.pa_push.subscribe();
+    // Try all possible method names
+    const methodsToTry = [
+      () => window.PushAlertCo?.triggerOptIn?.(),
+      () => window.PushAlertCo?.subscribe?.(),
+      () => window.PushAlertCo?.optIn?.(),
+      () => window.PushAlertCo?.push?.(),
+      () => window.pa_push?.triggerOptIn?.(),
+      () => window.pa_push?.subscribe?.(),
+      () => window.pa_push?.optIn?.(),
+      () => window.pa_push?.push?.(),
+    ];
+    
+    for (const method of methodsToTry) {
+      try {
+        const result = method();
+        if (result !== undefined) {
+          console.log("Successfully called method:", method.toString());
+          break;
+        }
+      } catch (e) {
+        console.log("Method failed:", method.toString(), e);
+      }
     }
     
     setTimeout(() => checkStatus(), 3000);

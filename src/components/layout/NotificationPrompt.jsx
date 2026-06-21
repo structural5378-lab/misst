@@ -57,40 +57,52 @@ export default function NotificationPrompt() {
   }, []);
 
   const handleEnable = async () => {
-    console.log("Enable clicked - checking SDK...", {
-      PushAlertCo: window.PushAlertCo,
-      pa_push: window.pa_push,
-      hasTriggerOptIn: !!window.PushAlertCo?.triggerOptIn,
-      hasSubscribe: !!window.PushAlertCo?.subscribe,
-      hasPaTriggerOptIn: !!window.pa_push?.triggerOptIn,
-      hasPaSubscribe: !!window.pa_push?.subscribe,
-    });
+    // Log all available SDK properties for debugging
+    console.log("=== PushAlert SDK Debug ===");
+    console.log("PushAlertCo:", window.PushAlertCo);
+    console.log("pa_push:", window.pa_push);
+    console.log("All PushAlertCo keys:", window.PushAlertCo ? Object.keys(window.PushAlertCo) : "not found");
+    console.log("All pa_push keys:", window.pa_push ? Object.keys(window.pa_push) : "not found");
     
     try {
-      // Try different SDK method locations
-      let subscribed = false;
+      // Try all possible method names
+      const methodsToTry = [
+        () => window.PushAlertCo?.triggerOptIn?.(),
+        () => window.PushAlertCo?.subscribe?.(),
+        () => window.PushAlertCo?.optIn?.(),
+        () => window.PushAlertCo?.push?.(),
+        () => window.pa_push?.triggerOptIn?.(),
+        () => window.pa_push?.subscribe?.(),
+        () => window.pa_push?.optIn?.(),
+        () => window.pa_push?.push?.(),
+      ];
       
-      if (window.PushAlertCo?.triggerOptIn) {
-        console.log("Calling PushAlertCo.triggerOptIn...");
-        window.PushAlertCo.triggerOptIn();
-        subscribed = true;
-      } else if (window.PushAlertCo?.subscribe) {
-        console.log("Calling PushAlertCo.subscribe...");
-        window.PushAlertCo.subscribe();
-        subscribed = true;
-      } else if (window.pa_push?.triggerOptIn) {
-        console.log("Calling pa_push.triggerOptIn...");
-        window.pa_push.triggerOptIn();
-        subscribed = true;
-      } else if (window.pa_push?.subscribe) {
-        console.log("Calling pa_push.subscribe...");
-        window.pa_push.subscribe();
-        subscribed = true;
-      } else if (typeof Notification !== "undefined") {
-        console.log("Falling back to native permission request...");
-        const perm = await Notification.requestPermission();
-        console.log("Native permission:", perm);
-        subscribed = perm === "granted";
+      let called = false;
+      for (const method of methodsToTry) {
+        try {
+          const result = method();
+          if (result !== undefined) {
+            console.log("Successfully called method:", method.toString());
+            called = true;
+            break;
+          }
+        } catch (e) {
+          console.log("Method failed:", method.toString(), e);
+        }
+      }
+      
+      if (!called) {
+        console.log("No SDK method found, trying native permission...");
+        if (typeof Notification !== "undefined") {
+          const perm = await Notification.requestPermission();
+          console.log("Native permission:", perm);
+          if (perm === "granted") {
+            localStorage.setItem("pa_subscription_active", "1");
+            setIsSubscribed(true);
+            setShowButton(false);
+            return;
+          }
+        }
       }
       
       // Mark as prompted
