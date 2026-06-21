@@ -117,29 +117,6 @@ export default function Dashboard() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-violet-600/20 rounded-full blur-3xl" />
 
         <div className="relative px-4 pt-4 pb-1 flex items-center justify-end gap-2">
-          {notifPermission !== "granted" && (
-            <button
-              onClick={handleEnableNotifications}
-              className="px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 backdrop-blur-sm text-emerald-400 hover:bg-emerald-500/30 transition-colors text-xs font-semibold flex items-center gap-1.5"
-            >
-              <BellRing className="w-4 h-4" />
-              Enable Alerts
-            </button>
-          )}
-          <button
-            onClick={async () => {
-              setTestingNotif(true);
-              try {
-                await base44.functions.invoke("sendTestNotification", {});
-              } catch(e) {}
-              setTestingNotif(false);
-            }}
-            disabled={testingNotif}
-            className="px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/30 backdrop-blur-sm text-amber-400 hover:bg-amber-500/30 transition-colors text-xs font-semibold flex items-center gap-1.5"
-          >
-            <BellRing className="w-4 h-4" />
-            {testingNotif ? "Sending..." : "Test Notif"}
-          </button>
           <Link
             to="/alerts"
             className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
