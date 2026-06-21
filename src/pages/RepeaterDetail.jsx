@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Radio, MapPin, Star, Pencil, Trash2, Check, X } from "lucide-react";
+import { Radio, MapPin, Star, Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,20 @@ export default function RepeaterDetail() {
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false);
+
+  const detectGPS = () => {
+    if (!navigator.geolocation) return;
+    setGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm(f => ({ ...f, latitude: pos.coords.latitude.toFixed(6), longitude: pos.coords.longitude.toFixed(6) }));
+        setGpsLoading(false);
+      },
+      () => setGpsLoading(false),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   const { data: repeater, isLoading } = useQuery({
     queryKey: ["repeater", id],
@@ -43,6 +57,8 @@ export default function RepeaterDetail() {
     await base44.entities.Repeater.update(id, {
       ...form,
       frequency: parseFloat(form.frequency),
+      latitude: form.latitude ? parseFloat(form.latitude) : null,
+      longitude: form.longitude ? parseFloat(form.longitude) : null,
     });
     queryClient.invalidateQueries({ queryKey: ["repeater", id] });
     queryClient.invalidateQueries({ queryKey: ["repeaters"] });
@@ -168,6 +184,40 @@ export default function RepeaterDetail() {
               <span className="text-sm">{repeater.location || "Unknown"}</span>
             )}
           </div>
+
+          {editing && (
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-amber-400 flex items-center gap-1.5"><MapPin className="w-3 h-3" /> Coordinates (Simplex Map)</span>
+                <button
+                  type="button"
+                  onClick={detectGPS}
+                  disabled={gpsLoading}
+                  className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 font-medium transition-colors"
+                >
+                  {gpsLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <MapPin className="w-3 h-3" />}
+                  {gpsLoading ? "Detecting…" : "Use My GPS"}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Latitude</p>
+                  <Input name="latitude" type="number" step="0.000001" value={form.latitude || ""} onChange={handleChange} placeholder="e.g. 28.538336" className="h-7 text-sm bg-transparent border-border/50" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Longitude</p>
+                  <Input name="longitude" type="number" step="0.000001" value={form.longitude || ""} onChange={handleChange} placeholder="e.g. -81.379234" className="h-7 text-sm bg-transparent border-border/50" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!editing && (repeater.latitude || repeater.longitude) && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <MapPin className="w-3 h-3 text-amber-400" />
+              <span>{repeater.latitude?.toFixed(5)}, {repeater.longitude?.toFixed(5)}</span>
+            </div>
+          )}
 
           {(repeater.description || editing) && (
             editing ? (
