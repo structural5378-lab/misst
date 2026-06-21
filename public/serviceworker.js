@@ -1,5 +1,1 @@
-// PushAlert Service Worker
-// This file must be served from the root of your domain.
-// It is auto-imported by pushalert-sw-importer.js
-
-importScripts('https://cdn.pushalert.co/sw/pushalert-sw.js');
+importScripts('https://cdn.pushalert.co/sw_a746c2441a9b9b3f3ffb03d0faf44254.js');

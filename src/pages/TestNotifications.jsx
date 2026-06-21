@@ -11,6 +11,7 @@ export default function TestNotifications() {
 
   const checkStatus = () => {
     const pa = window.PushAlertCo || window.pa_push;
+    const swReg = navigator.serviceWorker?.controller ? 'active' : (navigator.serviceWorker?.ready ? 'registered' : 'none');
     const s = {
       sdkLoaded: !!pa,
       hasTriggerOptIn: !!pa?.triggerOptIn,
@@ -19,8 +20,10 @@ export default function TestNotifications() {
       permission: typeof Notification !== "undefined" ? Notification.permission : "unknown",
       prompted: localStorage.getItem("pa_subscription_prompted") === "1",
       active: localStorage.getItem("pa_subscription_active") === "1",
+      serviceWorker: swReg,
     };
     setStatus(s);
+    console.log("Notification status:", s);
     return s;
   };
 
@@ -81,6 +84,10 @@ export default function TestNotifications() {
               {status.hasSubscribe ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-red-400" />}
             </div>
             <div className="flex items-center justify-between">
+              <span>Service Worker:</span>
+              <span className={status.serviceWorker === 'active' ? "text-emerald-400" : status.serviceWorker === 'registered' ? "text-amber-400" : "text-red-400"}>{status.serviceWorker}</span>
+            </div>
+            <div className="flex items-center justify-between">
               <span>Is Subscribed:</span>
               {status.isSubscribed ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-amber-400" />}
             </div>
@@ -116,9 +123,10 @@ export default function TestNotifications() {
           <h4 className="font-semibold text-amber-400 mb-2">⚠️ Important Notes</h4>
           <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
             <li>Push notifications require custom domain (mist.insomniacsgmrs.com)</li>
-            <li>Service worker must be at /serviceworker.js</li>
+            <li>Service worker registered at /sw.js</li>
             <li>Users must explicitly subscribe before receiving notifications</li>
             <li>Test on mobile browser for accurate results</li>
+            <li>Check browser console for detailed logs</li>
           </ul>
         </div>
       </div>

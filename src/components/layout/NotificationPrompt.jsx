@@ -6,6 +6,22 @@ export default function NotificationPrompt() {
   const [showButton, setShowButton] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [swRegistered, setSwRegistered] = useState(false);
+
+  // Register service worker explicitly on mount
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/serviceworker.js')
+        .then(reg => {
+          console.log('Service Worker registered:', reg.scope);
+          setSwRegistered(true);
+        })
+        .catch(err => {
+          console.error('Service Worker registration failed:', err);
+          setSwRegistered(false);
+        });
+    }
+  }, []);
 
   useEffect(() => {
     // Check if already subscribed
@@ -46,9 +62,12 @@ export default function NotificationPrompt() {
     console.log("Attempting to enable notifications...", { pa, hasTriggerOptIn: !!pa?.triggerOptIn, hasSubscribe: !!pa?.subscribe });
     
     try {
+      // Try PushAlert methods first
       if (pa?.triggerOptIn) {
+        console.log("Calling triggerOptIn...");
         pa.triggerOptIn();
       } else if (pa?.subscribe) {
+        console.log("Calling subscribe...");
         pa.subscribe();
       } else {
         console.log("PushAlert SDK not found, trying native...");
@@ -58,23 +77,29 @@ export default function NotificationPrompt() {
         }
       }
       
-      // Mark as prompted (but not necessarily subscribed - user might decline)
+      // Mark as prompted
       localStorage.setItem(STORAGE_KEY, "1");
       
-      // Check subscription status after 3 seconds
-      setTimeout(() => {
+      // Check subscription status multiple times
+      const checkStatus = () => {
         try {
           const isNowSubscribed = window.pa_push?.isSubscribed?.() || localStorage.getItem("pa_subscription_active") === "1";
+          console.log("Subscription check:", { isNowSubscribed, pa_push: !!window.pa_push, pushAlertCo: !!window.PushAlertCo });
           if (isNowSubscribed) {
             localStorage.setItem("pa_subscription_active", "1");
             setIsSubscribed(true);
+            setShowButton(false);
+            return true;
           }
         } catch (e) {
           console.log("Error checking subscription:", e);
         }
-      }, 3000);
+        return false;
+      };
       
-      setShowButton(false);
+      // Check at 2s, 4s, 6s
+      setTimeout(() => { if (!checkStatus()) setTimeout(() => { if (!checkStatus()) setTimeout(checkStatus, 2000); }, 2000); }, 2000);
+      
     } catch (error) {
       console.error("Error enabling notifications:", error);
     }
@@ -91,6 +116,7 @@ export default function NotificationPrompt() {
         hasSubscribe: !!pa?.subscribe,
         isSubscribed: pa?.isSubscribed?.() || localStorage.getItem("pa_subscription_active") === "1",
         permission: typeof Notification !== "undefined" ? Notification.permission : "unknown",
+        swRegistered,
       };
       console.log("Notification status:", status);
       return status;
@@ -99,7 +125,7 @@ export default function NotificationPrompt() {
       delete window.enableNotificationsManual;
       delete window.checkNotificationStatus;
     };
-  }, [handleEnable]);
+  }, [handleEnable, swRegistered]);
 
   if (isSubscribed) return null;
   if (!showButton) return null;

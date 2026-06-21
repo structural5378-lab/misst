@@ -5,6 +5,7 @@ import AlertPoller from "./AlertPoller";
 import SimplexRequestPoller from "./SimplexRequestPoller";
 import NotificationPrompt from "./NotificationPrompt";
 import InstallBanner from "./InstallBanner";
+import NotificationManager from "./NotificationManager";
 import { base44 } from "@/api/base44Client";
 
 export default function AppLayout() {
@@ -46,6 +47,7 @@ export default function AppLayout() {
       <main className="pb-20">
         <Outlet />
       </main>
+      <NotificationManager />
       <BottomNav />
       <AlertPoller />
       <SimplexRequestPoller />
