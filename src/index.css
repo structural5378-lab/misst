@@ -81,6 +81,24 @@
   }
 }
 
+@keyframes chat-flash {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 12px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(167,139,250,1)); }
+  50% { opacity: 0.3; filter: drop-shadow(0 0 2px rgba(167,139,250,0.3)); }
+}
+
+@keyframes glow-flash {
+  0%, 100% { opacity: 0.95; transform: scale(2.5); }
+  50% { opacity: 0.1; transform: scale(1.5); }
+}
+
+.chat-icon-flash {
+  animation: chat-flash 0.6s ease-in-out infinite;
+}
+
+.chat-glow-flash {
+  animation: glow-flash 0.6s ease-in-out infinite;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
