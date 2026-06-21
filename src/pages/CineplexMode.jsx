@@ -30,6 +30,19 @@ function makeIcon(color = "#8b5cf6") {
   });
 }
 
+function makeRepeaterIcon(status = "online") {
+  const color = status === "online" ? "#f59e0b" : status === "busy" ? "#ef4444" : "#6b7280";
+  return L.divIcon({
+    className: "",
+    html: `<div style="width:30px;height:30px;border-radius:6px;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9"/><path d="M7.8 4.7a6.14 6.14 0 0 0-.8 7.5"/><circle cx="12" cy="9" r="2"/><path d="M16.2 4.8a6.14 6.14 0 0 1 .6 7.5"/><path d="M19.1 1.9a10 10 0 0 1 .1 14.2"/><line x1="12" y1="9" x2="12" y2="22"/></svg>
+    </div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -18],
+  });
+}
+
 function haversineKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -169,7 +182,7 @@ function MapRecenter({ lat, lon }) {
 }
 
 // ─── Step 4: Live map ─────────────────────────────────────────────────────────
-function LiveMap({ session, myUID, onEnd, onPing }) {
+function LiveMap({ session, myUID, onEnd, onPing, repeaters }) {
   const isInitiator = session.initiator_uid === myUID;
   const myLat = isInitiator ? session.initiator_lat : session.target_lat;
   const myLon = isInitiator ? session.initiator_lon : session.target_lon;
@@ -222,6 +235,10 @@ function LiveMap({ session, myUID, onEnd, onPing }) {
           >
             <MapPin className="w-3 h-3" /> Ping
           </button>
+          <div className="flex items-center gap-1 text-[10px] text-amber-400">
+            <Radio className="w-3 h-3" />
+            <span className="hidden sm:inline">Repeaters</span>
+          </div>
           <button
             onClick={onEnd}
             className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/30 transition-colors"
@@ -239,6 +256,17 @@ function LiveMap({ session, myUID, onEnd, onPing }) {
             attribution='© OpenStreetMap contributors'
           />
           {centerTarget && <MapRecenter lat={centerTarget.lat} lon={centerTarget.lon} />}
+          {repeaters.filter(r => r.latitude && r.longitude).map(r => (
+            <Marker key={r.id} position={[r.latitude, r.longitude]} icon={makeRepeaterIcon(r.status)}>
+              <Popup>
+                <div style={{ minWidth: 140 }}>
+                  <strong>{r.callsign}</strong><br />
+                  {r.frequency} MHz{r.offset ? ` (${r.offset})` : ""}<br />
+                  {r.tone ? `PL: ${r.tone}` : ""}{r.tone && r.location ? " · " : ""}{r.location || ""}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
           {hasMyPos && (
             <Marker position={[myLat, myLon]} icon={makeIcon("#8b5cf6")}>
               <Popup>You</Popup>
@@ -267,6 +295,12 @@ export default function CineplexMode() {
   const [session, setSession] = useState(null);
   const [step, setStep] = useState("pick"); // pick | waiting | incoming | live
   const pollRef = useRef(null);
+
+  const { data: repeaters = [] } = useQuery({
+    queryKey: ["repeaters-map"],
+    queryFn: () => base44.entities.Repeater.list(),
+    staleTime: 300000,
+  });
 
   const myUID = String(mybbUser?.uid || mybbUser?.username || "");
 
@@ -437,7 +471,7 @@ export default function CineplexMode() {
         <IncomingRequest session={session} onAccept={handleAccept} onDecline={handleDecline} />
       )}
       {step === "live" && session && (
-        <LiveMap session={session} myUID={myUID} onEnd={() => handleEnd(true)} onPing={() => pingGPS(session.id, session.initiator_uid === myUID)} />
+        <LiveMap session={session} myUID={myUID} onEnd={() => handleEnd(true)} onPing={() => pingGPS(session.id, session.initiator_uid === myUID)} repeaters={repeaters} />
       )}
     </div>
   );
