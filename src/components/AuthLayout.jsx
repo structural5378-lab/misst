@@ -1,31 +1,30 @@
 import React from "react";
-export default function AuthLayout({ icon: Icon, title, subtitle, footer, children }) {
+export default function AuthLayout({ title, subtitle, children }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
-      
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
-          {/* Insomniacs GMRS Logo */}
-          <div className="flex flex-col items-center mb-6">
-            <img
-              src="https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png"
-              alt="Insomniacs GMRS"
-              className="w-32 h-32 object-contain mb-2"
-            />
-          </div>
-          
-          <h1 className="text-xl font-bold tracking-tight text-foreground">{title}</h1>
-          {subtitle && <p className="text-muted-foreground text-sm mt-1">{subtitle}</p>}
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Top branding bar */}
+      <div className="w-full bg-violet-950/80 border-b border-violet-500/20 px-4 py-2 flex items-center justify-center">
+        <span className="text-xs font-bold tracking-[0.2em] text-violet-300 uppercase">INSOMNIACSGMRS.COM</span>
+      </div>
+
+      <div className="flex-1 flex flex-col px-5 pt-8 pb-10 max-w-lg mx-auto w-full">
+        {/* Logo + heading */}
+        <div className="flex flex-col items-start mb-8">
+          <img
+            src="https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png"
+            alt="Insomniacs GMRS"
+            className="w-16 h-16 object-contain mb-4"
+          />
+          <h1 className="text-3xl font-bold text-foreground leading-tight">{title}</h1>
+          {subtitle && <p className="text-base text-muted-foreground mt-1 leading-snug">{subtitle}</p>}
         </div>
-        <div className="bg-card rounded-2xl shadow-lg border border-border/50 p-6">
+
+        {/* Form card */}
+        <div className="bg-card rounded-2xl border border-border/50 p-5 shadow-xl">
           {children}
         </div>
-        {footer && (
-          <p className="text-center text-sm text-muted-foreground mt-6">{footer}</p>
-        )}
-        <p className="text-center text-xs text-muted-foreground/50 mt-8">
+
+        <p className="text-center text-xs text-muted-foreground/40 mt-8">
           Stay Connected. Build Community.
         </p>
       </div>

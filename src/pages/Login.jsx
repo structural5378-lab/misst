@@ -35,21 +35,20 @@ export default function Login() {
 
   return (
     <AuthLayout
-      icon={LogIn}
-      title="Welcome back"
+      title="Welcome Back"
       subtitle="Sign in with your Insomniacs GMRS forum account"
     >
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {error}
+        <div className="mb-5 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+          ⚠️ {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="username">Forum Username</Label>
+          <Label htmlFor="username" className="text-base font-semibold text-foreground">Forum Username</Label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               id="username"
               type="text"
@@ -58,16 +57,16 @@ export default function Login() {
               placeholder="Your forum username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="pl-10 h-12"
+              className="pl-12 h-14 text-base rounded-xl border-border/60 focus:border-violet-500"
               required
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-base font-semibold text-foreground">Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               id="password"
               type="password"
@@ -75,38 +74,42 @@ export default function Login() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12"
+              className="pl-12 h-14 text-base rounded-xl border-border/60 focus:border-violet-500"
               required
             />
           </div>
         </div>
 
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+        <Button
+          type="submit"
+          className="w-full h-14 text-base font-bold rounded-xl mt-2"
+          disabled={loading}
+        >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
               Signing in...
             </>
           ) : (
             <>
-              <Radio className="w-4 h-4 mr-2" />
-              Sign In with Forum Account
+              <Radio className="w-5 h-5 mr-2" />
+              Sign In
             </>
           )}
         </Button>
       </form>
 
-      <p className="text-center text-xs text-muted-foreground mt-5">
-        Don't have an account?{" "}
+      <div className="mt-6 pt-5 border-t border-border/40 text-center">
+        <p className="text-sm text-muted-foreground mb-2">Don't have an account yet?</p>
         <a
           href="https://insomniacsgmrs.com/member.php?action=register"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline font-medium"
+          className="inline-block w-full py-3.5 rounded-xl border border-violet-500/40 text-violet-400 font-semibold text-base hover:bg-violet-500/10 transition-colors"
         >
-          Register on the forum
+          Register on the Forum
         </a>
-      </p>
+      </div>
     </AuthLayout>
   );
 }
