@@ -173,12 +173,12 @@ export default function Dashboard() {
 
         {/* User identity banner */}
         <div className="relative px-4 pb-6 flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl border-2 border-violet-500/40 bg-violet-950/50 overflow-hidden flex items-center justify-center shadow-lg shadow-violet-900/30">
+          <div className="w-20 h-20 rounded-2xl border-2 border-violet-500/40 bg-violet-950/50 overflow-hidden flex items-center justify-center shadow-lg shadow-violet-900/30">
             <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; e.target.className = "w-full h-full object-contain scale-110"; }} />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-foreground">{callsign}</span>
+              <span className="text-xl font-bold text-foreground">{callsign}</span>
               <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 ● Online
               </span>
