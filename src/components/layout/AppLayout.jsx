@@ -36,7 +36,14 @@ export default function AppLayout() {
     <div className="min-h-screen bg-background">
       <div className="w-full bg-violet-950/80 border-b border-violet-500/20 backdrop-blur-sm px-4 py-2">
         <div className="flex items-center justify-between max-w-md mx-auto">
-          <span className="text-xs font-bold tracking-[0.2em] text-violet-300 uppercase">MISST CLIENT</span>
+          <div className="flex items-center gap-2">
+            <img
+              src="https://media.base44.com/images/public/6a24d788be1af31b2258fab2/ef2f5095f_EA7D7629-51E2-49DA-AE8B-4017441D651F.png"
+              alt="Logo"
+              className="w-5 h-5 object-contain"
+            />
+            <span className="text-xs font-bold tracking-[0.2em] text-violet-300 uppercase">MISST CLIENT</span>
+          </div>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span>{formatDate(dateTime)}</span>
             <span className="text-violet-400">{formatTime(dateTime)}</span>
