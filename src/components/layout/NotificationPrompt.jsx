@@ -5,75 +5,115 @@ const STORAGE_KEY = "pa_subscription_prompted";
 export default function NotificationPrompt() {
   const [showButton, setShowButton] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {
+    // Check if already subscribed
+    try {
+      const subscribed = localStorage.getItem("pa_subscription_active") === "1";
+      setIsSubscribed(subscribed);
+      if (subscribed) return;
+    } catch {}
+
     if (localStorage.getItem(STORAGE_KEY)) return;
 
-    // Poll for SDK availability for up to 20 seconds
+    // Poll for SDK availability for up to 10 seconds
+    let pollCount = 0;
     const pollInterval = setInterval(() => {
+      pollCount++;
       const pa = window.PushAlertCo || window.pa_push;
+      
       if (pa?.triggerOptIn || pa?.subscribe) {
         clearInterval(pollInterval);
         setSdkReady(true);
-        // Try auto-subscribe
-        if (pa.triggerOptIn) {
-          pa.triggerOptIn();
-        } else if (pa.subscribe) {
-          pa.subscribe();
-        }
-        localStorage.setItem(STORAGE_KEY, "1");
-        setShowButton(false);
+        // Don't auto-subscribe - show button instead
+        setShowButton(true);
+      } else if (pollCount >= 20) {
+        // After 10 seconds, give up and show button anyway
+        clearInterval(pollInterval);
+        setShowButton(true);
       }
     }, 500);
 
-    // Fallback: show manual button after 2 seconds if SDK not ready
-    const timeout = setTimeout(() => {
-      clearInterval(pollInterval);
-      const pa = window.PushAlertCo || window.pa_push;
-      if (pa?.triggerOptIn || pa?.subscribe) {
-        setSdkReady(true);
-      } else {
-        setShowButton(true);
-      }
-    }, 2000);
-
     return () => {
       clearInterval(pollInterval);
-      clearTimeout(timeout);
     };
   }, []);
 
-  const handleEnable = () => {
+  const handleEnable = async () => {
     const pa = window.PushAlertCo || window.pa_push;
-    if (pa?.triggerOptIn) {
-      pa.triggerOptIn();
-    } else if (pa?.subscribe) {
-      pa.subscribe();
-    } else if (typeof Notification !== "undefined") {
-      Notification.requestPermission();
+    
+    console.log("Attempting to enable notifications...", { pa, hasTriggerOptIn: !!pa?.triggerOptIn, hasSubscribe: !!pa?.subscribe });
+    
+    try {
+      if (pa?.triggerOptIn) {
+        pa.triggerOptIn();
+      } else if (pa?.subscribe) {
+        pa.subscribe();
+      } else {
+        console.log("PushAlert SDK not found, trying native...");
+        if (typeof Notification !== "undefined") {
+          const perm = await Notification.requestPermission();
+          console.log("Native permission:", perm);
+        }
+      }
+      
+      // Mark as prompted (but not necessarily subscribed - user might decline)
+      localStorage.setItem(STORAGE_KEY, "1");
+      
+      // Check subscription status after 3 seconds
+      setTimeout(() => {
+        try {
+          const isNowSubscribed = window.pa_push?.isSubscribed?.() || localStorage.getItem("pa_subscription_active") === "1";
+          if (isNowSubscribed) {
+            localStorage.setItem("pa_subscription_active", "1");
+            setIsSubscribed(true);
+          }
+        } catch (e) {
+          console.log("Error checking subscription:", e);
+        }
+      }, 3000);
+      
+      setShowButton(false);
+    } catch (error) {
+      console.error("Error enabling notifications:", error);
     }
-    localStorage.setItem(STORAGE_KEY, "1");
-    setShowButton(false);
   };
 
   // Expose manual trigger for Dashboard
   useEffect(() => {
     window.enableNotificationsManual = handleEnable;
-    return () => { delete window.enableNotificationsManual; };
+    window.checkNotificationStatus = () => {
+      const pa = window.PushAlertCo || window.pa_push;
+      const status = {
+        sdkLoaded: !!pa,
+        hasTriggerOptIn: !!pa?.triggerOptIn,
+        hasSubscribe: !!pa?.subscribe,
+        isSubscribed: pa?.isSubscribed?.() || localStorage.getItem("pa_subscription_active") === "1",
+        permission: typeof Notification !== "undefined" ? Notification.permission : "unknown",
+      };
+      console.log("Notification status:", status);
+      return status;
+    };
+    return () => { 
+      delete window.enableNotificationsManual;
+      delete window.checkNotificationStatus;
+    };
   }, [handleEnable]);
 
+  if (isSubscribed) return null;
   if (!showButton) return null;
 
   return (
     <div className="fixed bottom-24 left-4 right-4 z-50">
       <div className="bg-violet-600 text-white rounded-xl p-4 shadow-lg">
-        <p className="text-sm font-semibold mb-2">Enable Notifications</p>
-        <p className="text-xs text-white/90 mb-3">Stay updated with important alerts and community news.</p>
+        <p className="text-sm font-semibold mb-2">🔔 Enable Notifications</p>
+        <p className="text-xs text-white/90 mb-3">Get alerts for new messages, location requests, and community updates - even when the app is closed.</p>
         <button
           onClick={handleEnable}
-          className="w-full bg-white text-violet-600 text-sm font-semibold py-2.5 rounded-lg hover:bg-white/90 transition-colors"
+          className="w-full bg-white text-violet-600 text-sm font-semibold py-3 rounded-lg hover:bg-white/90 transition-colors"
         >
-          Enable Notifications
+          Enable Push Notifications
         </button>
       </div>
     </div>
