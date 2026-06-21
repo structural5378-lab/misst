@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Bell, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 
 export default function TestNotifications() {
@@ -21,13 +21,11 @@ export default function TestNotifications() {
       active: localStorage.getItem("pa_subscription_active") === "1",
     };
     setStatus(s);
-    console.log("Notification status:", s);
     return s;
   };
 
   useEffect(() => {
     checkStatus();
-    // Auto-check every 2 seconds for 10 seconds to catch SDK loading
     const interval = setInterval(() => checkStatus(), 2000);
     setTimeout(() => clearInterval(interval), 10000);
   }, []);
@@ -117,8 +115,8 @@ export default function TestNotifications() {
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
           <h4 className="font-semibold text-amber-400 mb-2">⚠️ Important Notes</h4>
           <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-            <li>Push notifications require the custom domain (mist.insomniacsgmrs.com)</li>
-            <li>Service worker must be accessible at /serviceworker.js</li>
+            <li>Push notifications require custom domain (mist.insomniacsgmrs.com)</li>
+            <li>Service worker must be at /serviceworker.js</li>
             <li>Users must explicitly subscribe before receiving notifications</li>
             <li>Test on mobile browser for accurate results</li>
           </ul>

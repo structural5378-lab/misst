@@ -45,7 +45,7 @@ import CreateEvent from '@/pages/CreateEvent';
 import LiveChat from '@/pages/LiveChat';
 import NewThread from '@/pages/NewThread';
 import ThreadView from '@/pages/ThreadView';
-import TestNotifications from '@/pages/TestNotifications';
+import TestNotifications from '@/pages/TestNotifications.jsx';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
