@@ -190,24 +190,6 @@ export default function Dashboard() {
               <Link to="/profile" className="text-xs text-violet-400 font-medium hover:text-violet-300">
                 Edit Profile →
               </Link>
-              <button
-                onClick={() => {
-                  handleEnableNotifications();
-                  setTimeout(() => {
-                    if (window.checkNotificationStatus) {
-                      const status = window.checkNotificationStatus();
-                      console.log("Notification debug:", status);
-                      alert(`Notification Status:\nSDK: ${status.sdkLoaded ? 'Yes' : 'No'}\nSubscribed: ${status.isSubscribed ? 'Yes' : 'No'}\nPermission: ${status.permission}`);
-                    }
-                  }, 3000);
-                }}
-                className="text-xs text-emerald-400 font-medium hover:text-emerald-300"
-              >
-                Enable Notifications
-              </button>
-              <Link to="/test-notifications" className="text-xs text-amber-400 font-medium hover:text-amber-300">
-                · Test
-              </Link>
             </div>
           </div>
         </div>
