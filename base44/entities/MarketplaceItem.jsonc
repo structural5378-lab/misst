@@ -1,0 +1,81 @@
+{
+  "name": "MarketplaceItem",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "amazon",
+        "ebay",
+        "community",
+        "other"
+      ],
+      "default": "community"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "seller_name": {
+      "type": "string"
+    },
+    "seller_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "electronics",
+        "radio_gear",
+        "accessories",
+        "clothing",
+        "home",
+        "other"
+      ],
+      "default": "other"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "new",
+        "like_new",
+        "good",
+        "fair",
+        "for_parts"
+      ],
+      "default": "good"
+    },
+    "is_available": {
+      "type": "boolean",
+      "default": true
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    },
+    "posted_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "title",
+    "price",
+    "seller_name"
+  ]
+}

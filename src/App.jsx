@@ -46,6 +46,7 @@ import LiveChat from '@/pages/LiveChat';
 import NewThread from '@/pages/NewThread';
 import ThreadView from '@/pages/ThreadView';
 import TestNotifications from '@/pages/TestNotifications.jsx';
+import Shopping from '@/pages/Shopping';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -96,6 +97,7 @@ const AuthenticatedApp = () => {
         <Route path="/forums/new" element={<NewThread />} />
         <Route path="/forums/thread/:id" element={<ThreadView />} />
         <Route path="/test-notifications" element={<TestNotifications />} />
+        <Route path="/shopping" element={<Shopping />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
