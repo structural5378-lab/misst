@@ -24,6 +24,7 @@ const quickItems = [
   { icon: UserCircle2, label: "Members", path: "/members", bg: "bg-cyan-500/15", color: "text-cyan-400" },
   { icon: SignalHigh, label: "Simplex", path: "/cineplex", bg: "bg-emerald-500/15", color: "text-emerald-400" },
   { icon: MessageCircle, label: "Live Chat", path: "/live-chat", bg: "bg-violet-500/15", color: "text-violet-400" },
+  { icon: BellRing, label: "Messages", path: "/messages", bg: "bg-rose-500/15", color: "text-rose-400" },
 ];
 
 export default function Dashboard() {

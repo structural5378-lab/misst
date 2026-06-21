@@ -4,52 +4,24 @@ const STORAGE_KEY = "pa_subscription_prompted";
 
 export default function NotificationPrompt() {
   const [showButton, setShowButton] = useState(false);
-  const [sdkReady, setSdkReady] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem(STORAGE_KEY)) return;
 
-    let attempts = 0;
-    const maxAttempts = 20;
-
-    const trySubscribe = () => {
-      attempts++;
+    const timer = setTimeout(() => {
       const pa = window.PushAlertCo;
-
       if (pa?.triggerOptIn) {
         pa.triggerOptIn();
         localStorage.setItem(STORAGE_KEY, "1");
         setShowButton(false);
-        return;
-      }
-      if (pa?.subscribe) {
+      } else if (pa?.subscribe) {
         pa.subscribe();
         localStorage.setItem(STORAGE_KEY, "1");
         setShowButton(false);
-        return;
-      }
-
-      if (attempts < maxAttempts) {
-        setTimeout(trySubscribe, 1000);
-      } else {
-        if (typeof Notification !== "undefined") {
-          Notification.requestPermission();
-        }
-        localStorage.setItem(STORAGE_KEY, "1");
-        setShowButton(false);
-      }
-    };
-
-    const timer = setTimeout(() => {
-      const pa = window.PushAlertCo;
-      if (pa?.triggerOptIn || pa?.subscribe) {
-        setSdkReady(true);
-        trySubscribe();
       } else {
         setShowButton(true);
       }
-    }, 3000);
-
+    }, 2000);
     return () => clearTimeout(timer);
   }, []);
 
