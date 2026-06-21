@@ -275,8 +275,10 @@ export default function CineplexMode() {
   // Push current GPS position to the session record
   const pushGPS = (sessionId, isInitiator) => {
     if (!navigator.geolocation) return;
+    // Cache permission state — browser remembers the grant so no re-prompt
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        localStorage.setItem("gps_permission_granted", "1");
         const { latitude: lat, longitude: lon } = pos.coords;
         const field = isInitiator
           ? { initiator_lat: lat, initiator_lon: lon }

@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import BottomNav from "./BottomNav";
 import AlertPoller from "./AlertPoller";
 import SimplexRequestPoller from "./SimplexRequestPoller";
+import NotificationPrompt from "./NotificationPrompt";
 
 export default function AppLayout() {
   return (
@@ -16,6 +17,7 @@ export default function AppLayout() {
       <BottomNav />
       <AlertPoller />
       <SimplexRequestPoller />
+      <NotificationPrompt />
     </div>
   );
 }
