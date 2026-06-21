@@ -57,48 +57,55 @@ export default function NotificationPrompt() {
   }, []);
 
   const handleEnable = async () => {
-    const pa = window.PushAlertCo || window.pa_push;
-    
-    console.log("Attempting to enable notifications...", { pa, hasTriggerOptIn: !!pa?.triggerOptIn, hasSubscribe: !!pa?.subscribe });
+    console.log("Enable clicked - checking SDK...", {
+      PushAlertCo: window.PushAlertCo,
+      pa_push: window.pa_push,
+      hasTriggerOptIn: !!window.PushAlertCo?.triggerOptIn,
+      hasSubscribe: !!window.PushAlertCo?.subscribe,
+      hasPaTriggerOptIn: !!window.pa_push?.triggerOptIn,
+      hasPaSubscribe: !!window.pa_push?.subscribe,
+    });
     
     try {
-      // Try PushAlert methods first
-      if (pa?.triggerOptIn) {
-        console.log("Calling triggerOptIn...");
-        pa.triggerOptIn();
-      } else if (pa?.subscribe) {
-        console.log("Calling subscribe...");
-        pa.subscribe();
-      } else {
-        console.log("PushAlert SDK not found, trying native...");
-        if (typeof Notification !== "undefined") {
-          const perm = await Notification.requestPermission();
-          console.log("Native permission:", perm);
-        }
+      // Try different SDK method locations
+      let subscribed = false;
+      
+      if (window.PushAlertCo?.triggerOptIn) {
+        console.log("Calling PushAlertCo.triggerOptIn...");
+        window.PushAlertCo.triggerOptIn();
+        subscribed = true;
+      } else if (window.PushAlertCo?.subscribe) {
+        console.log("Calling PushAlertCo.subscribe...");
+        window.PushAlertCo.subscribe();
+        subscribed = true;
+      } else if (window.pa_push?.triggerOptIn) {
+        console.log("Calling pa_push.triggerOptIn...");
+        window.pa_push.triggerOptIn();
+        subscribed = true;
+      } else if (window.pa_push?.subscribe) {
+        console.log("Calling pa_push.subscribe...");
+        window.pa_push.subscribe();
+        subscribed = true;
+      } else if (typeof Notification !== "undefined") {
+        console.log("Falling back to native permission request...");
+        const perm = await Notification.requestPermission();
+        console.log("Native permission:", perm);
+        subscribed = perm === "granted";
       }
       
       // Mark as prompted
       localStorage.setItem(STORAGE_KEY, "1");
       
-      // Check subscription status multiple times
-      const checkStatus = () => {
-        try {
-          const isNowSubscribed = window.pa_push?.isSubscribed?.() || localStorage.getItem("pa_subscription_active") === "1";
-          console.log("Subscription check:", { isNowSubscribed, pa_push: !!window.pa_push, pushAlertCo: !!window.PushAlertCo });
-          if (isNowSubscribed) {
-            localStorage.setItem("pa_subscription_active", "1");
-            setIsSubscribed(true);
-            setShowButton(false);
-            return true;
-          }
-        } catch (e) {
-          console.log("Error checking subscription:", e);
+      // Check subscription status after delay
+      setTimeout(() => {
+        const isNowSubscribed = window.pa_push?.isSubscribed?.() || localStorage.getItem("pa_subscription_active") === "1";
+        console.log("Post-enable check:", { isNowSubscribed });
+        if (isNowSubscribed) {
+          localStorage.setItem("pa_subscription_active", "1");
+          setIsSubscribed(true);
+          setShowButton(false);
         }
-        return false;
-      };
-      
-      // Check at 2s, 4s, 6s
-      setTimeout(() => { if (!checkStatus()) setTimeout(() => { if (!checkStatus()) setTimeout(checkStatus, 2000); }, 2000); }, 2000);
+      }, 3000);
       
     } catch (error) {
       console.error("Error enabling notifications:", error);

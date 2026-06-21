@@ -46,12 +46,30 @@ export default function TestNotifications() {
   };
 
   const handleSubscribe = () => {
-    const pa = window.PushAlertCo || window.pa_push;
-    if (pa?.triggerOptIn) {
-      pa.triggerOptIn();
-    } else if (pa?.subscribe) {
-      pa.subscribe();
+    console.log("Subscribe clicked - checking SDK...", {
+      PushAlertCo: window.PushAlertCo,
+      pa_push: window.pa_push,
+      hasTriggerOptIn: !!window.PushAlertCo?.triggerOptIn,
+      hasSubscribe: !!window.PushAlertCo?.subscribe,
+      hasPaTriggerOptIn: !!window.pa_push?.triggerOptIn,
+      hasPaSubscribe: !!window.pa_push?.subscribe,
+    });
+    
+    // Try different SDK method locations
+    if (window.PushAlertCo?.triggerOptIn) {
+      console.log("Calling PushAlertCo.triggerOptIn...");
+      window.PushAlertCo.triggerOptIn();
+    } else if (window.PushAlertCo?.subscribe) {
+      console.log("Calling PushAlertCo.subscribe...");
+      window.PushAlertCo.subscribe();
+    } else if (window.pa_push?.triggerOptIn) {
+      console.log("Calling pa_push.triggerOptIn...");
+      window.pa_push.triggerOptIn();
+    } else if (window.pa_push?.subscribe) {
+      console.log("Calling pa_push.subscribe...");
+      window.pa_push.subscribe();
     }
+    
     setTimeout(() => checkStatus(), 3000);
   };
 
