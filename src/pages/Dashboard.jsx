@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
 import PropagationGauge from "@/components/dashboard/PropagationGauge";
+import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
@@ -103,6 +104,8 @@ export default function Dashboard() {
     emergency: "bg-red-500/10 text-red-400",
     system: "bg-muted text-muted-foreground",
   };
+
+  const [showOnlineSheet, setShowOnlineSheet] = useState(false);
 
   const callsign = user?.callsign || mybbUser?.username || "MIST Member";
   const avatarUrl = mybbUser?.avatar || LOGO_URL;
@@ -220,9 +223,16 @@ export default function Dashboard() {
               <Users className="w-4 h-4 text-emerald-400" />
               Online Now
             </h3>
-            <span className="text-xs text-emerald-400 font-medium">{onlineMembers.length} members</span>
+            {totalMembers != null && (
+              <span className="text-xs text-amber-400 font-medium flex items-center gap-1">
+                <Users className="w-3 h-3" />{totalMembers} total
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+          <button
+            onClick={() => setShowOnlineSheet(true)}
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.07] hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all active:scale-[0.99] text-left"
+          >
             <div className="flex -space-x-2">
               {onlineMembers.slice(0, 5).map((member) => (
                 <div
@@ -240,20 +250,25 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            {onlineMembers.length > 5 && (
-              <span className="text-xs text-muted-foreground">+{onlineMembers.length - 5} more</span>
-            )}
-            {onlineMembers.length === 0 && (
-              <span className="text-xs text-muted-foreground">No members online</span>
-            )}
-          </div>
-          {totalMembers != null && (
-            <div className="mt-2 flex items-center gap-1.5 px-1">
-              <Users className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-xs text-amber-400 font-medium">{totalMembers} total members</span>
+            <div className="flex-1">
+              {onlineMembers.length === 0 ? (
+                <span className="text-xs text-muted-foreground">No members online</span>
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  {onlineMembers.length > 5 ? `+${onlineMembers.length - 5} more · ` : ""}
+                  <span className="text-emerald-400 font-medium">{onlineMembers.length} online</span>
+                </span>
+              )}
             </div>
-          )}
+            <span className="text-xs font-semibold text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+              View All
+            </span>
+          </button>
         </div>
+
+        {showOnlineSheet && (
+          <OnlineMembersSheet members={onlineMembers} onClose={() => setShowOnlineSheet(false)} />
+        )}
 
         {/* Quick Access */}
         <div>
