@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, MessageSquare, MessageCircle, Bell, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -27,6 +27,32 @@ export default function BottomNav() {
     staleTime: 15000,
   });
 
+  const [hasNewChat, setHasNewChat] = React.useState(false);
+  const isOnChat = location.pathname === "/live-chat";
+
+  // Clear glow when user is on the chat page
+  React.useEffect(() => {
+    if (isOnChat) {
+      localStorage.setItem("chat_last_seen", Date.now().toString());
+      setHasNewChat(false);
+    }
+  }, [isOnChat]);
+
+  // Subscribe to new chat messages
+  React.useEffect(() => {
+    const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
+      if (event.type === "create" && !isOnChat) {
+        const myUid = String(mybbUser?.uid || mybbUser?.username || "");
+        const senderUid = String(event.data?.sender_uid || "");
+        // Only glow if someone else posted
+        if (senderUid !== myUid) {
+          setHasNewChat(true);
+        }
+      }
+    });
+    return unsubscribe;
+  }, [isOnChat, mybbUser]);
+
 
 
   return (
@@ -38,8 +64,10 @@ export default function BottomNav() {
             : location.pathname === path || location.pathname.startsWith(path + "/");
           const isAdd = label === "Add";
           const isAlerts = label === "Alerts";
+          const isChat = label === "Chat";
           const hasUnread = isAlerts && unreadAlerts > 0;
           const badgeCount = isAlerts ? unreadAlerts : 0;
+          const chatGlow = isChat && hasNewChat;
 
           return (
             <Link
@@ -60,7 +88,10 @@ export default function BottomNav() {
               ) : (
                 <>
                   <div className="relative">
-                    <Icon className={`w-5 h-5 transition-transform ${isActive ? "scale-110" : ""}`} />
+                    {chatGlow && (
+                      <div className="absolute inset-0 rounded-full bg-violet-400 blur-md opacity-70 scale-150 animate-pulse" />
+                    )}
+                    <Icon className={`w-5 h-5 transition-transform relative ${isActive ? "scale-110" : ""} ${chatGlow ? "text-violet-300 drop-shadow-[0_0_6px_rgba(167,139,250,0.9)]" : ""}`} />
                     {hasUnread && (
                       <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-0.5 leading-none shadow-md">
                         {badgeCount > 9 ? "9+" : badgeCount}
