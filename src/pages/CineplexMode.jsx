@@ -269,12 +269,22 @@ function LiveMap({ session, myUID, onEnd, onPing, repeaters }) {
           ))}
           {hasMyPos && (
             <Marker position={[myLat, myLon]} icon={makeIcon("#8b5cf6")}>
-              <Popup>You</Popup>
+              <Popup>
+                <div className="text-sm">
+                  <strong>You</strong>
+                  {distMi && <p className="text-xs text-muted-foreground mt-1">{distMi} mi away</p>}
+                </div>
+              </Popup>
             </Marker>
           )}
           {hasTheirPos && (
             <Marker position={[theirLat, theirLon]} icon={makeIcon("#10b981")}>
-              <Popup>{theirName}</Popup>
+              <Popup>
+                <div className="text-sm">
+                  <strong>{theirName}</strong>
+                  {distMi && <p className="text-xs text-muted-foreground mt-1">{distMi} mi away</p>}
+                </div>
+              </Popup>
             </Marker>
           )}
           {hasMyPos && hasTheirPos && (
