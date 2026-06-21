@@ -42,7 +42,7 @@ export default function AppLayout() {
               alt="Logo"
               className="w-5 h-5 object-contain"
             />
-            <span className="text-xs font-bold tracking-[0.2em] text-violet-300 uppercase">MISST CLIENT</span>
+            <span className="text-xs font-bold tracking-[0.2em] text-violet-300 uppercase">MISST</span>
           </div>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span>{formatDate(dateTime)}</span>
