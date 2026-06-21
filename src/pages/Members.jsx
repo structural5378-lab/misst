@@ -54,13 +54,13 @@ function ComposeModal({ recipient, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
       <div
-        className="w-full max-w-lg bg-card border border-border rounded-t-2xl p-5 pb-8 space-y-4 animate-in slide-in-from-bottom-4"
+        className="w-full max-w-lg bg-card border border-border rounded-2xl p-5 space-y-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between sticky top-0 bg-card pb-2 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl overflow-hidden border border-violet-500/30 bg-violet-950/50">
               <img src={normalizeAvatar(recipient.avatar) || LOGO_URL} alt={recipient.username}
@@ -97,7 +97,7 @@ function ComposeModal({ recipient, onClose }) {
               value={message}
               onChange={e => setMessage(e.target.value)}
               placeholder={`Write a message to ${recipient.username}...`}
-              rows={5}
+              rows={4}
               className="w-full bg-secondary border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-violet-500 resize-none"
             />
             {error && <p className="text-xs text-red-400">{error}</p>}
