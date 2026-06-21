@@ -51,7 +51,7 @@ export default function NewThread() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-background pb-24">
       <PageHeader title="New Thread" showBack />
       <form onSubmit={handleSubmit} className="px-4 pt-4 space-y-4">
         <div className="space-y-2">
