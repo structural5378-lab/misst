@@ -4,29 +4,47 @@ const STORAGE_KEY = "pa_subscription_prompted";
 
 export default function NotificationPrompt() {
   const [showButton, setShowButton] = useState(false);
+  const [sdkReady, setSdkReady] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem(STORAGE_KEY)) return;
 
-    const timer = setTimeout(() => {
-      const pa = window.PushAlertCo;
-      if (pa?.triggerOptIn) {
-        pa.triggerOptIn();
+    // Poll for SDK availability for up to 20 seconds
+    const pollInterval = setInterval(() => {
+      const pa = window.PushAlertCo || window.pa_push;
+      if (pa?.triggerOptIn || pa?.subscribe) {
+        clearInterval(pollInterval);
+        setSdkReady(true);
+        // Try auto-subscribe
+        if (pa.triggerOptIn) {
+          pa.triggerOptIn();
+        } else if (pa.subscribe) {
+          pa.subscribe();
+        }
         localStorage.setItem(STORAGE_KEY, "1");
         setShowButton(false);
-      } else if (pa?.subscribe) {
-        pa.subscribe();
-        localStorage.setItem(STORAGE_KEY, "1");
-        setShowButton(false);
+      }
+    }, 500);
+
+    // Fallback: show manual button after 2 seconds if SDK not ready
+    const timeout = setTimeout(() => {
+      clearInterval(pollInterval);
+      const pa = window.PushAlertCo || window.pa_push;
+      if (pa?.triggerOptIn || pa?.subscribe) {
+        setSdkReady(true);
       } else {
         setShowButton(true);
       }
     }, 2000);
-    return () => clearTimeout(timer);
+
+    return () => {
+      clearInterval(pollInterval);
+      clearTimeout(timeout);
+    };
   }, []);
 
   const handleEnable = () => {
-    const pa = window.PushAlertCo;
+    const pa = window.PushAlertCo || window.pa_push;
     if (pa?.triggerOptIn) {
       pa.triggerOptIn();
     } else if (pa?.subscribe) {
@@ -37,6 +55,12 @@ export default function NotificationPrompt() {
     localStorage.setItem(STORAGE_KEY, "1");
     setShowButton(false);
   };
+
+  // Expose manual trigger for Dashboard
+  useEffect(() => {
+    window.enableNotificationsManual = handleEnable;
+    return () => { delete window.enableNotificationsManual; };
+  }, [handleEnable]);
 
   if (!showButton) return null;
 

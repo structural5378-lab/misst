@@ -47,6 +47,7 @@ export default function Dashboard() {
     setTimeout(() => {
       try { setNotifPermission(Notification.permission); } catch {}
     }, 3000);
+    localStorage.removeItem("pa_subscription_prompted");
   };
 
   useEffect(() => {
@@ -151,9 +152,17 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground mt-0.5">
               {location}{mybbUser?.role ? ` · ${mybbUser.role.charAt(0).toUpperCase() + mybbUser.role.slice(1)}` : " · GMRS Operator"}
             </p>
-            <Link to="/profile" className="text-xs text-violet-400 font-medium hover:text-violet-300 mt-1 inline-block">
-              Edit Profile →
-            </Link>
+            <div className="flex items-center gap-2 mt-1">
+              <Link to="/profile" className="text-xs text-violet-400 font-medium hover:text-violet-300">
+                Edit Profile →
+              </Link>
+              <button
+                onClick={handleEnableNotifications}
+                className="text-xs text-emerald-400 font-medium hover:text-emerald-300"
+              >
+                Enable Notifications
+              </button>
+            </div>
           </div>
         </div>
       </div>
