@@ -155,7 +155,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="relative px-4 pt-1 pb-1 flex items-center justify-end gap-2">
+        <div className="relative px-4 pt-2 pb-1 flex items-center justify-end gap-2">
           <Link
             to="/alerts"
             className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
