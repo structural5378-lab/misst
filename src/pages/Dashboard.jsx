@@ -155,22 +155,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="relative px-4 pt-0 pb-3 flex items-center justify-end gap-2">
-          <Link
-            to="/alerts"
-            className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Bell className="w-5 h-5" />
-          </Link>
-          <button
-            onClick={() => { mybbLogout(); window.location.href = "/login"; }}
-            className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
-            title="Sign Out"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
-
         {/* User identity banner */}
         <div className="relative px-4 pb-6 flex items-center gap-4">
           <div className="w-20 h-20 rounded-2xl border-2 border-violet-500/40 bg-violet-950/50 overflow-hidden flex items-center justify-center shadow-lg shadow-violet-900/30">
@@ -191,6 +175,21 @@ export default function Dashboard() {
                 Edit Profile →
               </Link>
             </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Link
+              to="/alerts"
+              className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Bell className="w-5 h-5" />
+            </Link>
+            <button
+              onClick={() => { mybbLogout(); window.location.href = "/login"; }}
+              className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>
