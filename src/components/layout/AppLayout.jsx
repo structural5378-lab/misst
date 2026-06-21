@@ -4,6 +4,7 @@ import BottomNav from "./BottomNav";
 import AlertPoller from "./AlertPoller";
 import SimplexRequestPoller from "./SimplexRequestPoller";
 import NotificationPrompt from "./NotificationPrompt";
+import InstallBanner from "./InstallBanner";
 
 export default function AppLayout() {
   return (
@@ -18,6 +19,7 @@ export default function AppLayout() {
       <AlertPoller />
       <SimplexRequestPoller />
       <NotificationPrompt />
+      <InstallBanner />
     </div>
   );
 }
