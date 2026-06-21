@@ -28,7 +28,9 @@ export default function BottomNav() {
   });
 
   const [hasNewChat, setHasNewChat] = React.useState(false);
+  const [hasNewPMs, setHasNewPMs] = React.useState(false);
   const isOnChat = location.pathname === "/live-chat";
+  const isOnMessages = location.pathname === "/messages";
 
   // Clear glow when user is on the chat page
   React.useEffect(() => {
@@ -37,6 +39,21 @@ export default function BottomNav() {
       setHasNewChat(false);
     }
   }, [isOnChat]);
+
+  // Clear PM glow when user is on the messages page
+  React.useEffect(() => {
+    if (isOnMessages) {
+      localStorage.setItem("pms_last_seen", Date.now().toString());
+      setHasNewPMs(false);
+    }
+  }, [isOnMessages]);
+
+  // Set PM glow when unread count increases
+  React.useEffect(() => {
+    if (unreadPMs > 0 && !isOnMessages) {
+      setHasNewPMs(true);
+    }
+  }, [unreadPMs, isOnMessages]);
 
   // Subscribe to new chat messages
   React.useEffect(() => {
@@ -68,6 +85,7 @@ export default function BottomNav() {
           const hasUnread = isMessages && unreadPMs > 0;
           const badgeCount = isMessages ? unreadPMs : 0;
           const chatGlow = isChat && hasNewChat;
+          const pmGlow = isMessages && hasNewPMs;
 
           return (
             <Link
@@ -88,13 +106,13 @@ export default function BottomNav() {
               ) : (
                 <>
                   <div className="relative">
-                    {chatGlow && (
+                    {(chatGlow || pmGlow) && (
                       <>
                         <div className="absolute inset-0 rounded-full bg-violet-400 blur-xl chat-glow-flash" style={{borderRadius:'50%'}} />
                         <div className="absolute inset-0 rounded-full bg-white blur-md opacity-50 chat-glow-flash" style={{borderRadius:'50%'}} />
                       </>
                     )}
-                    <Icon className={`w-5 h-5 transition-transform relative ${isActive ? "scale-110" : ""} ${chatGlow ? "text-white scale-125 chat-icon-flash" : ""}`} />
+                    <Icon className={`w-5 h-5 transition-transform relative ${isActive ? "scale-110" : ""} ${(chatGlow || pmGlow) ? "text-white scale-125 chat-icon-flash" : ""}`} />
                     {hasUnread && (
                       <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-0.5 leading-none shadow-md">
                         {badgeCount > 9 ? "9+" : badgeCount}
