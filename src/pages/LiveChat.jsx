@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { Send, Image, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { format, isToday, isYesterday } from "date-fns";
+import { format, isToday, isYesterday, subMinutes } from "date-fns";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
@@ -96,6 +96,20 @@ export default function LiveChat() {
 
   const myUid = String(mybbUser?.uid);
 
+  // Derive "online" members from messages sent in the last 10 minutes
+  const onlineMembers = useMemo(() => {
+    const cutoff = subMinutes(new Date(), 10);
+    const seen = new Map();
+    messages.forEach((msg) => {
+      if (new Date(msg.created_date) >= cutoff) {
+        if (!seen.has(msg.sender_uid)) {
+          seen.set(msg.sender_uid, { uid: msg.sender_uid, name: msg.sender_name, avatar: msg.sender_avatar });
+        }
+      }
+    });
+    return Array.from(seen.values());
+  }, [messages]);
+
   // Group messages: show avatar/name only when sender changes
   const grouped = messages.map((msg, i) => {
     const prev = messages[i - 1];
@@ -119,6 +133,22 @@ export default function LiveChat() {
           <p className="text-[11px] text-emerald-400">● Live</p>
         </div>
       </div>
+
+      {/* Online members strip */}
+      {onlineMembers.length > 0 && (
+        <div className="px-4 py-2 border-b border-border bg-background/60 flex items-center gap-2 overflow-x-auto shrink-0">
+          <span className="text-[11px] text-muted-foreground shrink-0">Active:</span>
+          {onlineMembers.map((m) => (
+            <div key={m.uid} className="flex items-center gap-1.5 shrink-0">
+              <div className="relative">
+                <Avatar src={m.avatar} name={m.name} size="w-6 h-6" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-background" />
+              </div>
+              <span className="text-[11px] text-foreground font-medium">{m.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
