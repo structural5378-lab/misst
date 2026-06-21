@@ -150,13 +150,14 @@ export default function NotificationPrompt() {
   if (!showButton) return null;
 
   return (
-    <div className="fixed bottom-24 left-4 right-4 z-50">
-      <div className="bg-violet-600 text-white rounded-xl p-4 shadow-lg">
+    <div className="fixed bottom-24 left-4 right-4 z-[9999] pointer-events-auto">
+      <div className="bg-violet-600 text-white rounded-xl p-4 shadow-lg pointer-events-auto">
         <p className="text-sm font-semibold mb-2">🔔 Enable Notifications</p>
         <p className="text-xs text-white/90 mb-3">Get alerts for new messages, location requests, and community updates - even when the app is closed.</p>
         <button
           onClick={handleEnable}
-          className="w-full bg-white text-violet-600 text-sm font-semibold py-3 rounded-lg hover:bg-white/90 transition-colors"
+          className="w-full bg-white text-violet-600 text-sm font-semibold py-3 rounded-lg hover:bg-white/90 transition-colors pointer-events-auto cursor-pointer active:scale-[0.98]"
+          type="button"
         >
           Enable Push Notifications
         </button>
