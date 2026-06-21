@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import PageHeader from "@/components/layout/PageHeader";
@@ -159,6 +159,15 @@ function IncomingRequest({ session, onAccept, onDecline }) {
   );
 }
 
+// ─── Auto-recenter map to position ───────────────────────────────────────────
+function MapRecenter({ lat, lon }) {
+  const map = useMap();
+  useEffect(() => {
+    if (lat && lon) map.flyTo([lat, lon], map.getZoom(), { animate: true, duration: 1 });
+  }, [lat, lon]);
+  return null;
+}
+
 // ─── Step 4: Live map ─────────────────────────────────────────────────────────
 function LiveMap({ session, myUID, onEnd, onPing }) {
   const isInitiator = session.initiator_uid === myUID;
@@ -174,6 +183,16 @@ function LiveMap({ session, myUID, onEnd, onPing }) {
     ? haversineKm(myLat, myLon, theirLat, theirLon).toFixed(2)
     : null;
   const distMi = distKm ? (distKm * 0.621371).toFixed(2) : null;
+
+  // Track whether we've centered on our own position yet
+  const centeredRef = useRef(false);
+  const [centerTarget, setCenterTarget] = useState(null);
+  useEffect(() => {
+    if (hasMyPos && !centeredRef.current) {
+      centeredRef.current = true;
+      setCenterTarget({ lat: myLat, lon: myLon });
+    }
+  }, [myLat, myLon]);
 
   const center = hasMyPos ? [myLat, myLon] : [28.5, -81.4];
 
@@ -219,6 +238,7 @@ function LiveMap({ session, myUID, onEnd, onPing }) {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='© OpenStreetMap contributors'
           />
+          {centerTarget && <MapRecenter lat={centerTarget.lat} lon={centerTarget.lon} />}
           {hasMyPos && (
             <Marker position={[myLat, myLon]} icon={makeIcon("#8b5cf6")}>
               <Popup>You</Popup>
