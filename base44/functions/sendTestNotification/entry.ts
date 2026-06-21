@@ -12,7 +12,8 @@ Deno.serve(async (req) => {
       body: new URLSearchParams({
         title: "🔔 Test Notification",
         message: "Notifications are working! INSOMNIACSGMRS.COM",
-        url: "https://insomniacsgmrs.com/app",
+        url: "https://mist.insomniacsgmrs.com",
+        icon: "https://insomniacsgmrs.com/uploads/mist-icon.png",
         sound: "https://insomniacsgmrs.com/uploads/notification.mp3",
       }).toString(),
     });

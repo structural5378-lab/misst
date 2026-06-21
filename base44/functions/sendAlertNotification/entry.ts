@@ -18,7 +18,9 @@ Deno.serve(async (req) => {
       const pushBody = {
         title: data.title,
         message: data.message || "",
-        url: data.link || "https://insomniacsgmrs.com",
+        url: data.link || "https://mist.insomniacsgmrs.com",
+        icon: "https://insomniacsgmrs.com/uploads/mist-icon.png",
+        sound: "https://insomniacsgmrs.com/uploads/notification.mp3",
       };
 
       const pushRes = await fetch("https://api.pushalert.co/rest/v1/send", {

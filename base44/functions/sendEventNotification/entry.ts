@@ -30,7 +30,8 @@ Deno.serve(async (req) => {
       body: new URLSearchParams({
         title: notifTitle,
         message: notifMessage,
-        url: "https://insomniacsgmrs.com/app",
+        url: "https://mist.insomniacsgmrs.com",
+        icon: "https://insomniacsgmrs.com/uploads/mist-icon.png",
         sound: "https://insomniacsgmrs.com/uploads/notification.mp3",
       }).toString(),
     });
