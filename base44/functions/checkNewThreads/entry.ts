@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
 
     if (apiKey) {
       for (const thread of newThreads) {
-        await fetch("https://api.pushalert.co/rest/v1/send", {
+        await fetch("https://api.pushalert.co/api/v1/send", {
           method: "POST",
           headers: {
             "Authorization": `api_key=${apiKey}`,
