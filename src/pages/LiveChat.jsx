@@ -98,7 +98,7 @@ export default function LiveChat() {
 
   // Derive "online" members from messages sent in the last 10 minutes
   const onlineMembers = useMemo(() => {
-    const cutoff = subMinutes(new Date(), 10);
+    const cutoff = subMinutes(new Date(), 5);
     const seen = new Map();
     messages.forEach((msg) => {
       if (new Date(msg.created_date) >= cutoff) {
