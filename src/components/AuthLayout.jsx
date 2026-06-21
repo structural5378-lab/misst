@@ -10,7 +10,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, childr
           {/* Insomniacs GMRS Logo */}
           <div className="flex flex-col items-center mb-6">
             <img
-              src="https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png"
+              src="https://media.base44.com/images/public/6a24d788be1af31b2258fab2/ef2f5095f_EA7D7629-51E2-49DA-AE8B-4017441D651F.png"
               alt="Insomniacs GMRS"
               className="w-32 h-32 object-contain mb-2"
             />

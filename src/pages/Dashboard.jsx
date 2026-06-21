@@ -10,7 +10,7 @@ import StormTracker from "@/components/weather/StormTracker";
 import PropagationGauge from "@/components/dashboard/PropagationGauge";
 import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
 
-const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
+const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/ef2f5095f_EA7D7629-51E2-49DA-AE8B-4017441D651F.png";
 
 const quickItems = [
   { icon: Radio, label: "Repeaters", path: "/repeaters", bg: "bg-violet-500/15", color: "text-violet-400" },
