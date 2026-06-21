@@ -23,6 +23,7 @@ const quickItems = [
   { icon: Camera, label: "Gallery", path: "/gallery", bg: "bg-pink-500/15", color: "text-pink-400" },
   { icon: UserCircle2, label: "Members", path: "/members", bg: "bg-cyan-500/15", color: "text-cyan-400" },
   { icon: SignalHigh, label: "Simplex", path: "/cineplex", bg: "bg-emerald-500/15", color: "text-emerald-400" },
+  { icon: MessageCircle, label: "Messages", path: "/messages", bg: "bg-rose-500/15", color: "text-rose-400" },
   { icon: MessageCircle, label: "Live Chat", path: "/live-chat", bg: "bg-violet-500/15", color: "text-violet-400" },
 ];
 
@@ -121,10 +122,10 @@ export default function Dashboard() {
 
         <div className="relative px-4 pt-4 pb-1 flex items-center justify-end gap-2">
           <Link
-            to="/messages"
+            to="/alerts"
             className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            <MessageCircle className="w-5 h-5" />
+            <Bell className="w-5 h-5" />
           </Link>
           <button
             onClick={() => { mybbLogout(); window.location.href = "/login"; }}
