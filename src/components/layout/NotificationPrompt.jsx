@@ -8,20 +8,7 @@ export default function NotificationPrompt() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [swRegistered, setSwRegistered] = useState(false);
 
-  // Register service worker explicitly on mount
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/serviceworker.js')
-        .then(reg => {
-          console.log('Service Worker registered:', reg.scope);
-          setSwRegistered(true);
-        })
-        .catch(err => {
-          console.error('Service Worker registration failed:', err);
-          setSwRegistered(false);
-        });
-    }
-  }, []);
+  // PushAlert SDK handles service worker registration automatically
 
   useEffect(() => {
     // Check if already subscribed
