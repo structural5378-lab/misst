@@ -45,10 +45,9 @@ Deno.serve(async (req) => {
       if (!to_username || !message) {
         return Response.json({ error: "Missing to_username or message" }, { status: 400 });
       }
-      const botPassword = Deno.env.get("MYBB_BOT_PASSWORD") || "";
       const data = await bridgeCall("send_pm", {
-        bot_password: botPassword,
-        sender_username: username,
+        username,
+        password,
         to_username,
         subject: subject || `Message from ${username}`,
         message,

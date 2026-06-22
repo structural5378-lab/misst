@@ -18,11 +18,17 @@ export default function BottomNav() {
   const { mybbUser } = useMyBBAuth();
 
   const { data: unreadPMs = 0 } = useQuery({
-    queryKey: ["unread-pms-badge"],
+    queryKey: ["unread-pms-badge", mybbUser?.username],
     queryFn: async () => {
-      const res = await base44.functions.invoke("mybbMessages", { action: "get_pms" });
+      if (!mybbUser?.username || !mybbUser?.password) return 0;
+      const res = await base44.functions.invoke("mybbMessages", {
+        action: "get_pms",
+        username: mybbUser.username,
+        password: mybbUser.password,
+      });
       return res.data?.unread_count || 0;
     },
+    enabled: !!mybbUser?.password,
     refetchInterval: 30000,
     staleTime: 15000,
   });

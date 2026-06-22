@@ -102,11 +102,20 @@ Deno.serve(async (req) => {
 
     if (action === "online_users") {
       const data = await bridgeCall("online_users", {});
-      const users = (data.users || []).map(u => ({
-        uid: u.uid,
-        username: u.username,
-        avatar: u.avatar ? `https://insomniacsgmrs.com/${u.avatar}` : null,
-      }));
+      const users = (data.users || []).map(u => {
+        let avatar = null;
+        if (u.avatar) {
+          avatar = u.avatar.startsWith("http") ? u.avatar : `https://insomniacsgmrs.com/${u.avatar.replace(/^\//, "")}`;
+        }
+        return {
+          uid: u.uid,
+          username: u.username,
+          avatar,
+          postcount: parseInt(u.postcount || 0),
+          usergroup: u.usergroup,
+          role: [4, 6].includes(parseInt(u.usergroup)) ? "admin" : parseInt(u.usergroup) === 5 ? "moderator" : "member",
+        };
+      });
       return Response.json({ users, count: users.length });
     }
 

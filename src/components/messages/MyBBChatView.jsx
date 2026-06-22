@@ -68,6 +68,8 @@ export default function MyBBChatView({ pmid, fromUsername, subject, mybbUser, on
       if (res.data?.ok || res.data?.success) {
         setReplyText("");
         queryClient.invalidateQueries({ queryKey: ["mybb-pms", mybbUser?.username] });
+        queryClient.invalidateQueries({ queryKey: ["mybb-pm-thread", pmid] });
+        queryClient.invalidateQueries({ queryKey: ["unread-pms-badge"] });
       } else {
         setSendError(res.data?.error || "Failed to send.");
       }

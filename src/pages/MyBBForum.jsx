@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ExternalLink, MessageSquare, ChevronRight, RefreshCw,
-  Eye, LogIn, Plus, X, Send, TrendingUp, ArrowLeft, Hash,
-  Radio, Wrench, Users, Star, Globe, BookOpen, Megaphone, HelpCircle
+  ExternalLink, MessageSquare, RefreshCw,
+  Eye, LogIn, Plus, X, Send, ArrowLeft,
+  Radio, Wrench, Users, Star, Globe, BookOpen, Megaphone, HelpCircle,
+  Clock, ChevronRight, TrendingUp, Hash
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import PageHeader from "@/components/layout/PageHeader";
@@ -12,7 +13,6 @@ import ThreadReader from "@/components/forum/ThreadReader";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { Button } from "@/components/ui/button";
 
-// Map forum names to icons & accent colors
 const CATEGORY_META = [
   { keywords: ["general", "chat", "talk", "lounge"], icon: MessageSquare, color: "violet" },
   { keywords: ["radio", "gmrs", "frequency", "rf", "antenna", "tech"], icon: Radio, color: "cyan" },
@@ -25,14 +25,14 @@ const CATEGORY_META = [
 ];
 
 const COLOR_MAP = {
-  violet: { bg: "bg-violet-500/10", border: "border-violet-500/20", icon: "text-violet-400", badge: "bg-violet-500/10 text-violet-300 border-violet-500/20" },
-  cyan:   { bg: "bg-cyan-500/10",   border: "border-cyan-500/20",   icon: "text-cyan-400",   badge: "bg-cyan-500/10 text-cyan-300 border-cyan-500/20" },
-  amber:  { bg: "bg-amber-500/10",  border: "border-amber-500/20",  icon: "text-amber-400",  badge: "bg-amber-500/10 text-amber-300 border-amber-500/20" },
-  emerald:{ bg: "bg-emerald-500/10",border: "border-emerald-500/20",icon: "text-emerald-400",badge: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20" },
-  rose:   { bg: "bg-rose-500/10",   border: "border-rose-500/20",   icon: "text-rose-400",   badge: "bg-rose-500/10 text-rose-300 border-rose-500/20" },
-  yellow: { bg: "bg-yellow-500/10", border: "border-yellow-500/20", icon: "text-yellow-400", badge: "bg-yellow-500/10 text-yellow-300 border-yellow-500/20" },
-  orange: { bg: "bg-orange-500/10", border: "border-orange-500/20", icon: "text-orange-400", badge: "bg-orange-500/10 text-orange-300 border-orange-500/20" },
-  blue:   { bg: "bg-blue-500/10",   border: "border-blue-500/20",   icon: "text-blue-400",   badge: "bg-blue-500/10 text-blue-300 border-blue-500/20" },
+  violet:  { bg: "bg-violet-500/15",  icon: "text-violet-400",  dot: "bg-violet-400" },
+  cyan:    { bg: "bg-cyan-500/15",    icon: "text-cyan-400",    dot: "bg-cyan-400" },
+  amber:   { bg: "bg-amber-500/15",   icon: "text-amber-400",   dot: "bg-amber-400" },
+  emerald: { bg: "bg-emerald-500/15", icon: "text-emerald-400", dot: "bg-emerald-400" },
+  rose:    { bg: "bg-rose-500/15",    icon: "text-rose-400",    dot: "bg-rose-400" },
+  yellow:  { bg: "bg-yellow-500/15",  icon: "text-yellow-400",  dot: "bg-yellow-400" },
+  orange:  { bg: "bg-orange-500/15",  icon: "text-orange-400",  dot: "bg-orange-400" },
+  blue:    { bg: "bg-blue-500/15",    icon: "text-blue-400",    dot: "bg-blue-400" },
 };
 
 function getCategoryMeta(name = "") {
@@ -45,11 +45,21 @@ function getCategoryMeta(name = "") {
   return { Icon: BookOpen, colors: COLOR_MAP["violet"] };
 }
 
+function timeAgo(unix) {
+  if (!unix) return "";
+  const diff = Math.floor(Date.now() / 1000) - parseInt(unix);
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return new Date(parseInt(unix) * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 export default function MyBBForum() {
-  // view: "home" | "category" | "thread"
-  const [view, setView] = useState("home");
-  const [activeCategory, setActiveCategory] = useState(null); // full forum object
+  const [view, setView] = useState("home"); // "home" | "category" | "thread"
+  const [activeCategory, setActiveCategory] = useState(null);
   const [selectedThread, setSelectedThread] = useState(null);
+  const [activeTab, setActiveTab] = useState("recent"); // "recent" | "categories"
   const [showNewThread, setShowNewThread] = useState(false);
   const { mybbUser } = useMyBBAuth();
   const queryClient = useQueryClient();
@@ -113,7 +123,7 @@ export default function MyBBForum() {
       queryClient.invalidateQueries({ queryKey: ["mybb-threads", activeCategory?.fid] });
       queryClient.invalidateQueries({ queryKey: ["mybb-threads-recent"] });
     } else {
-      setPostError(res.data?.result?.error || "Failed to create thread.");
+      setPostError(res.data?.result?.error || res.data?.error || "Failed to create thread.");
     }
     setPosting(false);
   };
@@ -143,12 +153,8 @@ export default function MyBBForum() {
           <p className="text-sm text-muted-foreground mb-6 max-w-xs">
             Please sign in to access the Insomniacs GMRS community forum
           </p>
-          <button
-            onClick={() => navigate("/login")}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition-colors mb-3"
-          >
-            <LogIn className="w-4 h-4" />
-            Sign In
+          <button onClick={() => navigate("/login")} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition-colors mb-3">
+            <LogIn className="w-4 h-4" /> Sign In
           </button>
           <Link to="/community-forum/register" className="text-sm text-violet-400 hover:text-violet-300">
             Don't have an account? Register
@@ -158,10 +164,7 @@ export default function MyBBForum() {
     );
   }
 
-  const openThread = (thread) => {
-    setSelectedThread(thread);
-    setView("thread");
-  };
+  const openThread = (thread) => { setSelectedThread(thread); setView("thread"); };
 
   // ── CATEGORY VIEW ──────────────────────────────────────────────
   if (view === "category" && activeCategory) {
@@ -169,13 +172,13 @@ export default function MyBBForum() {
     const { Icon, colors } = getCategoryMeta(activeCategory.name);
     return (
       <div className="min-h-screen bg-background pb-24">
-        <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-xl border-b border-border">
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border">
           <div className="flex items-center gap-3 h-14 px-4">
             <button onClick={() => { setView("home"); setActiveCategory(null); }} className="text-primary p-1 -ml-1">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className={`w-7 h-7 rounded-lg ${colors.bg} ${colors.border} border flex items-center justify-center`}>
-              <Icon className={`w-3.5 h-3.5 ${colors.icon}`} />
+            <div className={`w-8 h-8 rounded-xl ${colors.bg} flex items-center justify-center`}>
+              <Icon className={`w-4 h-4 ${colors.icon}`} />
             </div>
             <h1 className="text-base font-bold text-foreground flex-1 line-clamp-1">{activeCategory.name}</h1>
             <div className="flex items-center gap-1">
@@ -189,12 +192,9 @@ export default function MyBBForum() {
               </button>
             </div>
           </div>
-          {activeCategory.description && (
-            <p className="text-xs text-muted-foreground px-4 pb-2.5">{activeCategory.description}</p>
-          )}
         </div>
 
-        <div className="px-4 pt-3 space-y-2">
+        <div className="pt-2">
           {categoryLoading ? (
             <div className="flex justify-center py-12">
               <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
@@ -205,7 +205,9 @@ export default function MyBBForum() {
               <p className="text-sm text-muted-foreground">No threads yet</p>
             </div>
           ) : (
-            threads.map((thread, i) => <ThreadCard key={thread.threadId || i} thread={thread} onClick={() => openThread(thread)} />)
+            <div className="divide-y divide-white/[0.04]">
+              {threads.map((thread, i) => <ThreadRow key={thread.threadId || i} thread={thread} onClick={() => openThread(thread)} />)}
+            </div>
           )}
         </div>
 
@@ -228,118 +230,170 @@ export default function MyBBForum() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <PageHeader
-        title="Community Forum"
-        showBack
-        rightAction={
-          <button onClick={() => refetchRecent()} className="p-2 text-muted-foreground hover:text-foreground">
-            <RefreshCw className={`w-4 h-4 ${recentLoading ? "animate-spin" : ""}`} />
-          </button>
-        }
-      />
-
-      {/* Categories section */}
-      <div className="px-4 pt-4 pb-2">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Categories</h2>
-        {forumsLoading ? (
-          <div className="grid grid-cols-2 gap-2">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-20 rounded-2xl bg-white/[0.04] animate-pulse" />
-            ))}
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border">
+        <div className="flex items-center justify-between h-14 px-4">
+          <h1 className="text-base font-bold text-foreground">Community Forum</h1>
+          <div className="flex items-center gap-1">
+            {mybbUser?.password && (
+              <button onClick={() => setShowNewThread(true)} className="p-2 text-violet-400 hover:text-violet-300">
+                <Plus className="w-5 h-5" />
+              </button>
+            )}
+            <button onClick={() => refetchRecent()} className="p-2 text-muted-foreground hover:text-foreground">
+              <RefreshCw className={`w-4 h-4 ${recentLoading ? "animate-spin" : ""}`} />
+            </button>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-2">
-            {forums.map((forum) => {
+        </div>
+
+        {/* Tabs */}
+        <div className="flex px-4 gap-1 pb-2">
+          {[
+            { id: "recent", label: "Recent", icon: TrendingUp },
+            { id: "categories", label: "Categories", icon: Hash },
+          ].map(({ id, label, icon: TabIcon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeTab === id
+                  ? "bg-violet-500/20 text-violet-300"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <TabIcon className="w-3.5 h-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent tab */}
+      {activeTab === "recent" && (
+        <div>
+          {recentLoading ? (
+            <div className="flex justify-center py-16">
+              <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : recentThreads.length === 0 ? (
+            <div className="text-center py-16">
+              <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
+              <p className="text-sm text-muted-foreground">No recent activity</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-white/[0.04]">
+              {recentThreads.slice(0, 20).map((thread, i) => (
+                <ThreadRow key={thread.threadId || i} thread={thread} onClick={() => openThread(thread)} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Categories tab */}
+      {activeTab === "categories" && (
+        <div className="divide-y divide-white/[0.04]">
+          {forumsLoading ? (
+            <div className="flex justify-center py-16">
+              <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            forums.map((forum) => {
               const { Icon, colors } = getCategoryMeta(forum.name);
               return (
                 <button
                   key={forum.fid}
                   onClick={() => { setActiveCategory(forum); setView("category"); }}
-                  className="flex flex-col items-start p-4 rounded-2xl bg-white/[0.03] border border-white/[0.07] hover:border-white/[0.14] hover:bg-white/[0.06] active:scale-[0.97] transition-all text-left group"
+                  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/[0.03] active:bg-white/[0.05] transition-colors text-left"
                 >
-                  <div className={`w-9 h-9 rounded-xl ${colors.bg} ${colors.border} border flex items-center justify-center mb-2.5`}>
-                    <Icon className={`w-4.5 h-4.5 ${colors.icon}`} />
+                  <div className={`w-10 h-10 rounded-xl ${colors.bg} flex items-center justify-center shrink-0`}>
+                    <Icon className={`w-5 h-5 ${colors.icon}`} />
                   </div>
-                  <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-violet-200 transition-colors">{forum.name}</p>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-[10px] text-muted-foreground">{parseInt(forum.threads || 0)} threads</span>
-                    <span className="text-[10px] text-muted-foreground">·</span>
-                    <span className="text-[10px] text-muted-foreground">{parseInt(forum.posts || 0)} posts</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{forum.name}</p>
+                    {forum.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{forum.description}</p>
+                    )}
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] text-muted-foreground">{parseInt(forum.threads || 0)} threads</span>
+                      <span className="text-[10px] text-muted-foreground">·</span>
+                      <span className="text-[10px] text-muted-foreground">{parseInt(forum.posts || 0)} posts</span>
+                    </div>
                   </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                 </button>
               );
-            })}
-          </div>
-        )}
-      </div>
+            })
+          )}
 
-      {/* Recent activity */}
-      <div className="px-4 pt-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recent Activity</h2>
-          <TrendingUp className="w-3.5 h-3.5 text-muted-foreground" />
+          <div className="px-4 py-4">
+            <a
+              href="https://insomniacsgmrs.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-violet-500/20 text-sm text-violet-400 hover:bg-violet-500/5 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Open Full Forum in Browser
+            </a>
+          </div>
         </div>
-        {recentLoading ? (
-          <div className="space-y-2">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-white/[0.04] animate-pulse" />
-            ))}
-          </div>
-        ) : recentThreads.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">No recent activity</p>
-        ) : (
-          <div className="space-y-2">
-            {recentThreads.slice(0, 8).map((thread, i) => (
-              <ThreadCard key={thread.threadId || i} thread={thread} onClick={() => openThread(thread)} />
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
-      <div className="px-4 mt-4">
-        <a
-          href="https://insomniacsgmrs.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-violet-500/20 text-sm text-violet-400 hover:bg-violet-500/5 transition-colors"
-        >
-          <ExternalLink className="w-4 h-4" />
-          Open Full Forum in Browser
-        </a>
-      </div>
+      {showNewThread && (
+        <NewThreadModal
+          forumName={activeCategory?.name || forums[0]?.name || "Forum"}
+          newSubject={newSubject} setNewSubject={setNewSubject}
+          newBody={newBody} setNewBody={setNewBody}
+          posting={posting} postError={postError}
+          onSubmit={handleNewThread}
+          onClose={() => { setShowNewThread(false); setPostError(""); }}
+        />
+      )}
     </div>
   );
 }
 
-function ThreadCard({ thread, onClick }) {
+function ThreadRow({ thread, onClick }) {
+  const initials = thread.author ? thread.author.slice(0, 2).toUpperCase() : "?";
+  // Parse time — thread.pubDate is already formatted, use threadId as fallback sort
   return (
     <button
       onClick={onClick}
-      className="w-full text-left p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.07] hover:border-violet-500/30 hover:bg-violet-500/5 transition-all active:scale-[0.99] group"
+      className="w-full text-left flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.03] active:bg-white/[0.05] transition-colors group"
     >
-      <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-violet-900/40 border border-violet-500/20 flex items-center justify-center shrink-0 text-[10px] font-bold text-violet-300 mt-0.5">
-          {thread.author ? thread.author.slice(0, 2).toUpperCase() : "?"}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-violet-200 transition-colors">{thread.title}</p>
-          <div className="flex items-center gap-2 mt-1">
-            {thread.author && <span className="text-[11px] text-violet-300/70 font-medium">{thread.author}</span>}
-            {thread.pubDate && <span className="text-[10px] text-muted-foreground">· {thread.pubDate}</span>}
-          </div>
-        </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          {thread.replies !== undefined && (
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <MessageSquare className="w-3 h-3" />{thread.replies}
-            </span>
+      <div className="w-9 h-9 rounded-full bg-violet-900/50 border border-violet-500/20 flex items-center justify-center shrink-0 text-[11px] font-bold text-violet-300 mt-0.5">
+        {initials}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-violet-200 transition-colors">
+          {thread.title}
+        </p>
+        <div className="flex items-center gap-2 mt-1.5">
+          {thread.author && (
+            <span className="text-[11px] text-violet-300/70 font-medium">{thread.author}</span>
           )}
-          {thread.views !== undefined && (
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Eye className="w-3 h-3" />{thread.views}
-            </span>
+          {thread.pubDate && (
+            <>
+              <span className="text-[10px] text-muted-foreground/50">·</span>
+              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                <Clock className="w-2.5 h-2.5" />{thread.pubDate}
+              </span>
+            </>
           )}
         </div>
+      </div>
+      <div className="flex flex-col items-end gap-1.5 shrink-0 pt-0.5">
+        {thread.replies !== undefined && (
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <MessageSquare className="w-3 h-3" />{thread.replies}
+          </span>
+        )}
+        {thread.views !== undefined && (
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Eye className="w-3 h-3" />{thread.views}
+          </span>
+        )}
       </div>
     </button>
   );
@@ -351,9 +405,7 @@ function NewThreadModal({ forumName, newSubject, setNewSubject, newBody, setNewB
       <div className="w-full max-w-lg bg-card rounded-2xl border border-border/60 p-5 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-foreground">New Thread</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="w-5 h-5" />
-          </button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
         </div>
         <p className="text-[10px] text-muted-foreground">Posting in: <span className="text-violet-300">{forumName}</span></p>
         <input
@@ -366,7 +418,7 @@ function NewThreadModal({ forumName, newSubject, setNewSubject, newBody, setNewB
         <textarea
           value={newBody}
           onChange={(e) => setNewBody(e.target.value)}
-          placeholder="Write your post... BBCode supported"
+          placeholder="Write your post..."
           rows={6}
           className="w-full bg-secondary/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-violet-500/50"
         />
