@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import BottomNav from "./BottomNav";
+import CommunitySelector from "./CommunitySelector";
 import AlertPoller from "./AlertPoller";
 import SimplexRequestPoller from "./SimplexRequestPoller";
 import NotificationPrompt from "./NotificationPrompt";
@@ -44,6 +45,7 @@ export default function AppLayout() {
             />
             <span className="text-xs font-bold tracking-[0.2em] text-violet-300 uppercase">MISST</span>
           </div>
+          <CommunitySelector />
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span>{formatDate(dateTime)}</span>
             <span className="text-violet-400">{formatTime(dateTime)}</span>

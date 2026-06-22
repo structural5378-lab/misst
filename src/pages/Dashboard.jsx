@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { useQuery } from "@tanstack/react-query";
+import { useCommunity } from "@/hooks/useCommunity";
 import { Bell, Radio, MapPin, Users, Wrench, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera, ChevronRight, UserCircle2, SignalHigh, BellRing, MessageCircle, MessageSquare, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const [notifPermission, setNotifPermission] = useState(() => {
     try { return Notification.permission; } catch { return "default"; }
   });
+  const { communityName, loading: communityLoading } = useCommunity();
 
   const handleEnableNotifications = () => {
     // PushAlert SDK exposes pa_push object; fall back to native Notification API
@@ -170,6 +172,11 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground mt-0.5">
               {location}{mybbUser?.role ? ` · ${mybbUser.role.charAt(0).toUpperCase() + mybbUser.role.slice(1)}` : " · GMRS Operator"}
             </p>
+            {!communityLoading && communityName && (
+              <p className="text-[10px] text-violet-400 mt-1 flex items-center gap-1">
+                <Users className="w-3 h-3" /> {communityName}
+              </p>
+            )}
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <Link to="/profile" className="text-xs text-violet-400 font-medium hover:text-violet-300">
                 Edit Profile →

@@ -11,6 +11,12 @@
     "sender_avatar": {
       "type": "string"
     },
+    "community_id": {
+      "type": "string"
+    },
+    "community_name": {
+      "type": "string"
+    },
     "content": {
       "type": "string"
     },
@@ -21,6 +27,7 @@
   "required": [
     "sender_uid",
     "sender_name",
-    "content"
+    "content",
+    "community_id"
   ]
 }

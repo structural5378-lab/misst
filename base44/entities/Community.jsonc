@@ -1,0 +1,48 @@
+{
+  "name": "Community",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Community/club name"
+    },
+    "callsign": {
+      "type": "string",
+      "description": "Club callsign (e.g. MIST, K4NET)"
+    },
+    "description": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "primary_color": {
+      "type": "string",
+      "default": "#8B5CF6"
+    },
+    "founder_uid": {
+      "type": "string"
+    },
+    "founder_name": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "name",
+    "callsign",
+    "founder_uid",
+    "founder_name"
+  ]
+}

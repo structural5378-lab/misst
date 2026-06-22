@@ -14,6 +14,9 @@
     "receiver_name": {
       "type": "string"
     },
+    "community_id": {
+      "type": "string"
+    },
     "content": {
       "type": "string"
     },
@@ -23,6 +26,7 @@
     }
   },
   "required": [
-    "content"
+    "content",
+    "community_id"
   ]
 }

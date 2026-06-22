@@ -11,6 +11,9 @@
     "initiator_avatar": {
       "type": "string"
     },
+    "community_id": {
+      "type": "string"
+    },
     "initiator_lat": {
       "type": "number"
     },
@@ -51,6 +54,7 @@
     "initiator_uid",
     "initiator_username",
     "target_uid",
-    "target_username"
+    "target_username",
+    "community_id"
   ]
 }
