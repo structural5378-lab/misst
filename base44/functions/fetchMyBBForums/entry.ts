@@ -141,16 +141,16 @@ Deno.serve(async (req) => {
     }
 
     if (action === "create_thread") {
-      const { fid: postFid, subject, message, username, password } = body;
-      if (!postFid || !subject || !message || !username || !password) {
+      const { fid: postFid, subject, message } = body;
+      if (!postFid || !subject || !message) {
         return Response.json({ error: "Missing required fields" }, { status: 400 });
       }
       const data = await bridgeCall("create_thread", {
         fid: postFid,
         subject,
         message,
-        bot_username: username,
-        bot_password: password,
+        bot_username: "Mist Client",
+        bot_password: Deno.env.get("MYBB_BOT_PASSWORD"),
       });
       if (data.error) {
         return Response.json({ ok: false, error: data.error, result: data });
