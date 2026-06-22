@@ -74,7 +74,8 @@ export default function MyBBForum() {
     queryKey: ["mybb-forums"],
     queryFn: async () => {
       const res = await base44.functions.invoke("fetchMyBBForums", { action: "forums" });
-      return res.data?.forums || [];
+      const forums = res.data?.forums || [];
+      return forums.sort((a, b) => parseInt(a.disporder || 0) - parseInt(b.disporder || 0));
     },
     staleTime: 300000,
   });

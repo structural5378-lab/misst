@@ -3,10 +3,126 @@ import { base44 } from "@/api/base44Client";
 import {
   CloudSun, Wind, Droplets, Eye, Gauge, Sunrise, Sunset,
   RefreshCw, Thermometer, CloudRain, Cloud, Sun, Zap, Snowflake,
-  Navigation, Radio, AlertTriangle
+  Navigation, Radio, AlertTriangle, Radar, Layers, Map
 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import StormTracker from "@/components/weather/StormTracker";
+
+// Radar layer options using RainViewer (free, no key needed) + NWS
+const RADAR_LAYERS = [
+  { id: "rainviewer", label: "Rain Radar", color: "text-blue-400" },
+  { id: "nws_ref", label: "NWS Composite", color: "text-cyan-400" },
+  { id: "nws_ir", label: "Satellite IR", color: "text-violet-400" },
+];
+
+function WeatherRadar({ lat, lon }) {
+  const [activeLayer, setActiveLayer] = useState("rainviewer");
+  const [timestamp, setTimestamp] = useState(Math.floor(Date.now() / 1000 / 600) * 600);
+  const [radarTs, setRadarTs] = useState(null);
+  const [mapKey, setMapKey] = useState(0);
+
+  // Fetch latest RainViewer timestamps
+  useEffect(() => {
+    fetch("https://api.rainviewer.com/public/weather-maps.json")
+      .then(r => r.json())
+      .then(d => {
+        const past = d?.radar?.past || [];
+        if (past.length > 0) setRadarTs(past[past.length - 1].path);
+      })
+      .catch(() => {});
+  }, []);
+
+  const centerLat = lat || 28.5383;
+  const centerLon = lon || -81.3792;
+  const zoom = 7;
+
+  // Build tile URL for different layers
+  const getTileUrl = () => {
+    if (activeLayer === "rainviewer" && radarTs) {
+      return `https://tilecache.rainviewer.com${radarTs}/256/{z}/{x}/{y}/2/1_1.png`;
+    }
+    if (activeLayer === "nws_ref") {
+      return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png";
+    }
+    if (activeLayer === "nws_ir") {
+      return "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes-east-vis-900913/{z}/{x}/{y}.png";
+    }
+    // fallback rainviewer without latest timestamp
+    return "https://tilecache.rainviewer.com/v2/radar/now/256/{z}/{x}/{y}/2/1_1.png";
+  };
+
+  const tileUrl = getTileUrl();
+
+  // Build a leaflet-style static map URL using OpenStreetMap + radar overlay via iframe
+  const iframeSrc = `https://embed.windy.com/embed2.html?lat=${centerLat}&lon=${centerLon}&detailLat=${centerLat}&detailLon=${centerLon}&width=100%&height=100%&zoom=${zoom}&level=surface&overlay=rain&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1`;
+
+  return (
+    <div className="rounded-2xl overflow-hidden border border-white/[0.07] bg-black">
+      {/* Layer selector */}
+      <div className="flex items-center gap-1 px-3 py-2 bg-black/60 border-b border-white/[0.06]">
+        <Radar className="w-3.5 h-3.5 text-blue-400 shrink-0 mr-1" />
+        {RADAR_LAYERS.map(l => (
+          <button
+            key={l.id}
+            onClick={() => setActiveLayer(l.id)}
+            className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all ${
+              activeLayer === l.id
+                ? `bg-blue-500/25 ${l.color} border border-blue-500/30`
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {l.label}
+          </button>
+        ))}
+        <button
+          onClick={() => setMapKey(k => k + 1)}
+          className="ml-auto p-1 text-muted-foreground hover:text-foreground"
+          title="Refresh radar"
+        >
+          <RefreshCw className="w-3 h-3" />
+        </button>
+      </div>
+
+      {/* Radar iframe — Windy gives excellent animated radar */}
+      <div className="relative w-full" style={{ height: 320 }}>
+        {activeLayer === "rainviewer" ? (
+          <iframe
+            key={`windy-${mapKey}`}
+            src={iframeSrc}
+            className="w-full h-full border-0"
+            title="Weather Radar"
+            allow="fullscreen"
+          />
+        ) : activeLayer === "nws_ref" ? (
+          <iframe
+            key={`nws-${mapKey}`}
+            src={`https://radar.weather.gov/station/KORL/standard`}
+            className="w-full h-full border-0"
+            title="NWS Radar"
+            allow="fullscreen"
+          />
+        ) : (
+          <iframe
+            key={`sat-${mapKey}`}
+            src={`https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G16&sector=se`}
+            className="w-full h-full border-0"
+            title="Satellite"
+            allow="fullscreen"
+          />
+        )}
+
+        {/* Overlay label */}
+        <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-lg border border-white/10">
+          <p className="text-[9px] text-muted-foreground">
+            {activeLayer === "rainviewer" ? "Windy · Live animated radar" :
+             activeLayer === "nws_ref" ? "NWS NEXRAD · KORL Orlando" :
+             "GOES-16 · Satellite IR"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Wind direction degrees → compass label
 function degToCompass(deg) {
@@ -84,6 +200,7 @@ export default function Weather() {
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [gpsStatus, setGpsStatus] = useState("pending"); // pending | granted | denied | default
+  const [coords, setCoords] = useState(null);
   const coordsRef = useRef(null);
 
   const fetchWeather = async (coords) => {
@@ -115,6 +232,7 @@ export default function Weather() {
       (pos) => {
         setGpsStatus("granted");
         coordsRef.current = pos.coords;
+        setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
         fetchWeather(pos.coords);
       },
       () => {
@@ -289,6 +407,16 @@ export default function Weather() {
                   <span className="text-xs">{h.text}</span>
                 </div>
               ))}
+            </div>
+
+            {/* ── Live Radar ── */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Radar className="w-4 h-4 text-blue-400" />
+                <h3 className="text-sm font-semibold text-foreground">Live Radar</h3>
+                <span className="text-[10px] text-emerald-400 font-medium px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">LIVE</span>
+              </div>
+              <WeatherRadar lat={coords?.lat} lon={coords?.lon} />
             </div>
 
             {/* ── 5-Day Forecast ── */}

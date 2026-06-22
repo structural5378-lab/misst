@@ -23,10 +23,10 @@ export default function MyBBNewMessageModal({ mybbUser, onClose, onSent }) {
         subject: subject.trim() || `Message from ${mybbUser.username}`,
         message: message.trim(),
       });
-      if (res.data?.ok || res.data?.success) {
+      if (res.data?.ok === true || res.data?.success === true) {
         onSent();
       } else {
-        setError(res.data?.error || "Failed to send message.");
+        setError(res.data?.error || "Failed to send message. Check the username and try again.");
       }
     } catch (e) {
       setError("Send failed: " + e.message);

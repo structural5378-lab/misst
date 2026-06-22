@@ -65,7 +65,7 @@ export default function MyBBChatView({ pmid, fromUsername, subject, mybbUser, on
         subject: subject?.startsWith("Re:") ? subject : `Re: ${subject || ""}`,
         message: replyText.trim(),
       });
-      if (res.data?.ok || res.data?.success) {
+      if (res.data?.ok === true || res.data?.success === true) {
         setReplyText("");
         queryClient.invalidateQueries({ queryKey: ["mybb-pms", mybbUser?.username] });
         queryClient.invalidateQueries({ queryKey: ["mybb-pm-thread", pmid] });
