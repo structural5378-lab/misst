@@ -27,7 +27,6 @@
   "required": [
     "sender_uid",
     "sender_name",
-    "content",
-    "community_id"
+    "content"
   ]
 }

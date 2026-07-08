@@ -26,7 +26,6 @@
     }
   },
   "required": [
-    "content",
-    "community_id"
+    "content"
   ]
 }

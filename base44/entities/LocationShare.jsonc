@@ -54,7 +54,6 @@
     "initiator_uid",
     "initiator_username",
     "target_uid",
-    "target_username",
-    "community_id"
+    "target_username"
   ]
 }

@@ -49,7 +49,6 @@
   },
   "required": [
     "title",
-    "category_id",
-    "community_id"
+    "category_id"
   ]
 }
