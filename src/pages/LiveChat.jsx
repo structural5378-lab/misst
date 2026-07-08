@@ -36,32 +36,17 @@ export default function LiveChat() {
   const bottomRef = useRef(null);
   const fileRef = useRef(null);
   const inputRef = useRef(null);
-  const [communityId, setCommunityId] = useState("");
-  const [communityName, setCommunityName] = useState("");
-
-  // Get selected community
-  useEffect(() => {
-    const cid = localStorage.getItem("selected_community_id");
-    const cname = localStorage.getItem("selected_community_name");
-    if (cid) {
-      setCommunityId(cid);
-      setCommunityName(cname || "");
-    }
-  }, []);
 
   // Load initial messages
   useEffect(() => {
-    if (!communityId) return;
-    base44.entities.ChatMessage.filter({ community_id: communityId }, "-created_date", 60).then((msgs) => {
+    base44.entities.ChatMessage.list("-created_date", 60).then((msgs) => {
       setMessages(msgs.reverse());
     });
-  }, [communityId]);
+  }, []);
 
   // Real-time subscription
   useEffect(() => {
-    if (!communityId) return;
     const unsub = base44.entities.ChatMessage.subscribe((event) => {
-      if (event.data?.community_id !== communityId) return;
       if (event.type === "create") {
         setMessages((prev) => [...prev, event.data]);
       } else if (event.type === "delete") {
@@ -69,7 +54,7 @@ export default function LiveChat() {
       }
     });
     return unsub;
-  }, [communityId]);
+  }, []);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -91,8 +76,6 @@ export default function LiveChat() {
         sender_uid: String(mybbUser.uid),
         sender_name: mybbUser.username,
         sender_avatar: mybbUser.avatar || "",
-        community_id: communityId,
-        community_name: communityName,
         content: text || "",
         ...(image_url ? { image_url } : {}),
       });
