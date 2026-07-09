@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Radio, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -39,34 +40,16 @@ function scoreToLabel(score) {
 }
 
 export default function PropagationGauge() {
-  const [score, setScore] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const coordsRef = useRef(null);
+  const { data: weather, isLoading: loading } = useQuery({
+    queryKey: ["weather-data"],
+    queryFn: async () => {
+      const res = await base44.functions.invoke("getWeatherData", {});
+      return res.data;
+    },
+    staleTime: 15 * 60 * 1000,
+  });
 
-  const fetchScore = async (coords) => {
-    setLoading(true);
-    try {
-      const payload = coords ? { lat: coords.latitude, lon: coords.longitude } : {};
-      const res = await base44.functions.invoke("getWeatherData", payload);
-      if (res.data?.current) {
-        setScore(calcPropScore(res.data.current));
-      }
-    } catch (_) {}
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => { coordsRef.current = pos.coords; fetchScore(pos.coords); },
-        () => fetchScore(null),
-        { timeout: 8000 }
-      );
-    } else {
-      fetchScore(null);
-    }
-  }, []);
-
+  const score = weather?.current ? calcPropScore(weather.current) : null;
   const meta = score !== null ? scoreToLabel(score) : null;
 
   // Arc gauge: 180° semicircle

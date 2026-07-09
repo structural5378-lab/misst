@@ -25,7 +25,8 @@ export default function Messages() {
       return res.data?.pms || [];
     },
     enabled: !!mybbUser?.password,
-    refetchInterval: 15000,
+    refetchInterval: 60000,
+    staleTime: 30000,
   });
 
   const pms = pmsData || [];

@@ -73,7 +73,7 @@ export default function Dashboard() {
       return res.data?.posts?.[0] || null;
     },
     initialData: null,
-    refetchInterval: 60000,
+    refetchInterval: 120000,
   });
 
   const nextNet = nets.length > 0 ? nets[0] : null;
@@ -94,16 +94,18 @@ export default function Dashboard() {
       return res.data?.users || [];
     },
     initialData: [],
-    refetchInterval: 15000,
+    refetchInterval: 60000,
   });
 
-  const { data: totalMembers } = useQuery({
-    queryKey: ["totalMembers"],
+  const { data: forumMembers } = useQuery({
+    queryKey: ["forum-members"],
     queryFn: async () => {
       const res = await base44.functions.invoke("fetchMyBBForums", { action: "members" });
-      return res.data?.count ?? res.data?.members?.length ?? null;
+      return res.data?.members || [];
     },
+    staleTime: 60000,
   });
+  const totalMembers = forumMembers?.length ?? null;
 
   const typeIcons = {
     info: Info,

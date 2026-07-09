@@ -64,7 +64,7 @@ export default function SimplexRequestPoller() {
     };
 
     check();
-    const interval = setInterval(check, 5000);
+    const interval = setInterval(check, 30000);
     return () => clearInterval(interval);
   }, [mybbUser]);
 

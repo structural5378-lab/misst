@@ -29,8 +29,8 @@ export default function BottomNav() {
       return res.data?.unread_count || 0;
     },
     enabled: !!mybbUser?.password,
-    refetchInterval: 15000,
-    staleTime: 10000,
+    refetchInterval: 60000,
+    staleTime: 30000,
   });
 
   const [hasNewChat, setHasNewChat] = React.useState(false);

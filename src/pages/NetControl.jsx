@@ -40,8 +40,17 @@ export default function NetControl() {
     queryKey: ["net-log", activeSession?.id],
     queryFn: () => base44.entities.NetLog.filter({ session_id: activeSession.id }, "checkin_number", 100),
     enabled: !!activeSession?.id,
-    refetchInterval: 5000,
   });
+
+  // Real-time check-in updates via subscription instead of 5s polling
+  useEffect(() => {
+    const unsubscribe = base44.entities.NetLog.subscribe((event) => {
+      if (event.type === "create" && activeSession?.id) {
+        queryClient.invalidateQueries({ queryKey: ["net-log", activeSession.id] });
+      }
+    });
+    return unsubscribe;
+  }, [activeSession?.id, queryClient]);
 
   useEffect(() => {
     const active = sessions.find(s => s.status === "active");

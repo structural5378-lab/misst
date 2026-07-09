@@ -385,7 +385,7 @@ export default function CineplexMode() {
 
   const startPolling = (sessionId, isInitiator) => {
     prevStatusRef.current = "pending";
-    pollRef.current = setInterval(() => pollSession(sessionId, isInitiator), 3000);
+    pollRef.current = setInterval(() => pollSession(sessionId, isInitiator), 15000);
   };
 
   const stopPolling = () => {
@@ -418,8 +418,6 @@ export default function CineplexMode() {
       }
     };
     checkIncoming();
-    const interval = setInterval(checkIncoming, 5000);
-    return () => clearInterval(interval);
   }, [myUID]);
 
   const handleSelect = async (member) => {

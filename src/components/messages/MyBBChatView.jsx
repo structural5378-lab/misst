@@ -30,21 +30,26 @@ export default function MyBBChatView({ pmid, fromUsername, subject, mybbUser, on
         password: mybbUser.password,
         pmid,
       });
-      // Also mark as read
+      if (res.data?.error) throw new Error(res.data.error);
+      const thread = res.data?.thread || [];
+      if (thread.length > 0) return thread;
+      return res.data?.pm ? [res.data.pm] : [];
+    },
+    staleTime: 30000,
+    refetchInterval: 30000,
+  });
+
+  // Mark as read once when thread is first opened
+  useEffect(() => {
+    if (pmid) {
       base44.functions.invoke("mybbMessages", {
         action: "mark_pm_read",
         username: mybbUser.username,
         password: mybbUser.password,
         pmid,
       }).catch(() => {});
-      if (res.data?.error) throw new Error(res.data.error);
-      const thread = res.data?.thread || [];
-      if (thread.length > 0) return thread;
-      return res.data?.pm ? [res.data.pm] : [];
-    },
-    staleTime: 10000,
-    refetchInterval: 15000,
-  });
+    }
+  }, [pmid]);
 
   const messages = data || [];
 

@@ -245,7 +245,7 @@ export default function Weather() {
 
   // Auto-refresh every 5 min using last known coords
   useEffect(() => {
-    const interval = setInterval(() => fetchWeather(coordsRef.current), 5 * 60 * 1000);
+    const interval = setInterval(() => fetchWeather(coordsRef.current), 15 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -447,7 +447,7 @@ export default function Weather() {
             {/* Last updated */}
             {lastUpdated && (
               <p className="text-center text-[10px] text-muted-foreground pb-2">
-                Updated {lastUpdated.toLocaleTimeString()} · auto-refreshes every 5 min
+                Updated {lastUpdated.toLocaleTimeString()} · auto-refreshes every 15 min
               </p>
             )}
           </>

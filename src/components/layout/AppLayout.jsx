@@ -8,27 +8,25 @@ import NotificationPrompt from "./NotificationPrompt";
 import InstallBanner from "./InstallBanner";
 import NotificationManager from "./NotificationManager";
 import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 
 export default function AppLayout() {
   const [dateTime, setDateTime] = useState(new Date());
-  const [temp, setTemp] = useState(null);
 
   useEffect(() => {
     const timer = setInterval(() => setDateTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const fetchTemp = async () => {
-      try {
-        const res = await base44.functions.invoke("getWeatherData", { lat: 28.5383, lon: -81.3792 });
-        if (res.data?.temperature) setTemp(Math.round(res.data.temperature));
-      } catch {}
-    };
-    fetchTemp();
-    const interval = setInterval(fetchTemp, 300000);
-    return () => clearInterval(interval);
-  }, []);
+  const { data: weather } = useQuery({
+    queryKey: ["weather-data"],
+    queryFn: async () => {
+      const res = await base44.functions.invoke("getWeatherData", {});
+      return res.data;
+    },
+    staleTime: 15 * 60 * 1000,
+  });
+  const temp = weather?.current?.temp ?? null;
 
   const formatDate = (d) => d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   const formatTime = (d) => d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
