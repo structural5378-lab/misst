@@ -38,8 +38,10 @@ export default function BottomNav() {
   const isOnChat = location.pathname === "/live-chat";
   const isOnMessages = location.pathname === "/messages";
   const isOnChatRef = React.useRef(isOnChat);
+  const myUidRef = React.useRef("");
   const prevUnreadRef = React.useRef(0);
   React.useEffect(() => { isOnChatRef.current = isOnChat; }, [isOnChat]);
+  React.useEffect(() => { myUidRef.current = String(mybbUser?.uid || mybbUser?.username || ""); }, [mybbUser]);
 
   // Clear glow when user is on the chat page
   React.useEffect(() => {
@@ -68,19 +70,18 @@ export default function BottomNav() {
     prevUnreadRef.current = unreadPMs;
   }, [unreadPMs, isOnMessages]);
 
-  // Subscribe to new chat messages (single subscription, ref-based location check)
+  // Subscribe to new chat messages (single stable subscription via refs)
   React.useEffect(() => {
     const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
       if (event.type === "create" && !isOnChatRef.current) {
-        const myUid = String(mybbUser?.uid || mybbUser?.username || "");
         const senderUid = String(event.data?.sender_uid || "");
-        if (senderUid !== myUid) {
+        if (senderUid !== myUidRef.current) {
           setHasNewChat(true);
         }
       }
     });
     return unsubscribe;
-  }, [mybbUser]);
+  }, []);
 
 
 
