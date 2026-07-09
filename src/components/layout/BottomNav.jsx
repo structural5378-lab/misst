@@ -29,14 +29,17 @@ export default function BottomNav() {
       return res.data?.unread_count || 0;
     },
     enabled: !!mybbUser?.password,
-    refetchInterval: 30000,
-    staleTime: 15000,
+    refetchInterval: 15000,
+    staleTime: 10000,
   });
 
   const [hasNewChat, setHasNewChat] = React.useState(false);
   const [hasNewPMs, setHasNewPMs] = React.useState(false);
   const isOnChat = location.pathname === "/live-chat";
   const isOnMessages = location.pathname === "/messages";
+  const isOnChatRef = React.useRef(isOnChat);
+  const prevUnreadRef = React.useRef(0);
+  React.useEffect(() => { isOnChatRef.current = isOnChat; }, [isOnChat]);
 
   // Clear glow when user is on the chat page
   React.useEffect(() => {
@@ -54,27 +57,30 @@ export default function BottomNav() {
     }
   }, [isOnMessages]);
 
-  // Set PM glow when unread count increases
+  // Set PM glow on count increase; clear when all read
   React.useEffect(() => {
-    if (unreadPMs > 0 && !isOnMessages) {
+    if (unreadPMs > prevUnreadRef.current && !isOnMessages) {
       setHasNewPMs(true);
     }
+    if (unreadPMs === 0) {
+      setHasNewPMs(false);
+    }
+    prevUnreadRef.current = unreadPMs;
   }, [unreadPMs, isOnMessages]);
 
-  // Subscribe to new chat messages
+  // Subscribe to new chat messages (single subscription, ref-based location check)
   React.useEffect(() => {
     const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
-      if (event.type === "create" && !isOnChat) {
+      if (event.type === "create" && !isOnChatRef.current) {
         const myUid = String(mybbUser?.uid || mybbUser?.username || "");
         const senderUid = String(event.data?.sender_uid || "");
-        // Only glow if someone else posted
         if (senderUid !== myUid) {
           setHasNewChat(true);
         }
       }
     });
     return unsubscribe;
-  }, [isOnChat, mybbUser]);
+  }, [mybbUser]);
 
 
 

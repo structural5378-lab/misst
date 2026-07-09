@@ -36,6 +36,9 @@ export default function LiveChat() {
   const bottomRef = useRef(null);
   const fileRef = useRef(null);
   const inputRef = useRef(null);
+  const myUidRef = useRef("");
+
+  useEffect(() => { myUidRef.current = String(mybbUser?.uid || ""); }, [mybbUser]);
 
   // Load initial messages
   useEffect(() => {
@@ -44,11 +47,15 @@ export default function LiveChat() {
     });
   }, []);
 
-  // Real-time subscription
+  // Real-time subscription (skip own messages — added optimistically; dedup by id)
   useEffect(() => {
     const unsub = base44.entities.ChatMessage.subscribe((event) => {
       if (event.type === "create") {
-        setMessages((prev) => [...prev, event.data]);
+        if (String(event.data?.sender_uid || "") === myUidRef.current) return;
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === event.data.id)) return prev;
+          return [...prev, event.data];
+        });
       } else if (event.type === "delete") {
         setMessages((prev) => prev.filter((m) => m.id !== event.id));
       }
@@ -72,6 +79,18 @@ export default function LiveChat() {
         const res = await base44.integrations.Core.UploadFile({ file: imageFile });
         image_url = res.file_url;
       }
+      // Optimistic: show message immediately
+      setMessages((prev) => [...prev, {
+        id: `temp-${Date.now()}`,
+        sender_uid: String(mybbUser.uid),
+        sender_name: mybbUser.username,
+        sender_avatar: mybbUser.avatar || "",
+        content: text || "",
+        ...(image_url ? { image_url } : {}),
+        created_date: new Date().toISOString(),
+      }]);
+      setInput("");
+      setImageFile(null);
       await base44.entities.ChatMessage.create({
         sender_uid: String(mybbUser.uid),
         sender_name: mybbUser.username,
@@ -79,8 +98,6 @@ export default function LiveChat() {
         content: text || "",
         ...(image_url ? { image_url } : {}),
       });
-      setInput("");
-      setImageFile(null);
     } finally {
       setSending(false);
       inputRef.current?.focus();
@@ -111,12 +128,12 @@ export default function LiveChat() {
   }, [messages]);
 
   // Group messages: show avatar/name only when sender changes
-  const grouped = messages.map((msg, i) => {
+  const grouped = useMemo(() => messages.map((msg, i) => {
     const prev = messages[i - 1];
     const isMe = String(msg.sender_uid) === myUid;
     const showMeta = !prev || prev.sender_uid !== msg.sender_uid;
     return { ...msg, isMe, showMeta };
-  });
+  }), [messages, myUid]);
 
   return (
     <div className="flex flex-col bg-background" style={{ height: "calc(100vh - 76px)" }}>

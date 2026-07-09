@@ -48,6 +48,7 @@ export default function Messages() {
         onBack={() => {
           setActiveThread(null);
           queryClient.invalidateQueries({ queryKey: ["mybb-pms", mybbUser?.username] });
+          queryClient.invalidateQueries({ queryKey: ["unread-pms-badge", mybbUser?.username] });
         }}
       />
     );
