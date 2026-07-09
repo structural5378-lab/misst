@@ -34,9 +34,9 @@ export default function AppLayout() {
   const formatTime = (d) => d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="w-full bg-violet-950/80 border-b border-violet-500/20 backdrop-blur-sm px-4 py-2">
-        <div className="flex items-center justify-between max-w-md mx-auto">
+    <div className="min-h-screen bg-background flex flex-col w-full max-w-full overflow-x-hidden">
+      <div className="w-full bg-violet-950/80 border-b border-violet-500/20 backdrop-blur-sm px-4 py-2 sticky top-0 z-30">
+        <div className="flex items-center justify-between max-w-2xl mx-auto">
           <div className="flex items-center gap-2">
             <img
               src="https://media.base44.com/images/public/6a24d788be1af31b2258fab2/ef2f5095f_EA7D7629-51E2-49DA-AE8B-4017441D651F.png"
@@ -53,7 +53,7 @@ export default function AppLayout() {
           </div>
         </div>
       </div>
-      <main className="pb-20">
+      <main className="pb-20 flex-1 w-full max-w-2xl mx-auto overflow-x-hidden">
         <Outlet />
       </main>
       <NotificationManager />
