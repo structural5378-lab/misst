@@ -86,6 +86,9 @@
   50% { opacity: 0.3; filter: drop-shadow(0 0 2px rgba(167,139,250,0.3)); }
 }
 
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
 @keyframes glow-flash {
   0%, 100% { opacity: 0.95; transform: scale(2.5); }
   50% { opacity: 0.1; transform: scale(1.5); }

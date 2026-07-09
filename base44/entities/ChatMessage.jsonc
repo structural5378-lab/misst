@@ -22,6 +22,22 @@
     },
     "image_url": {
       "type": "string"
+    },
+    "reactions": {
+      "type": "string",
+      "description": "JSON string: {emoji: [uid1, uid2]}"
+    },
+    "reply_to_id": {
+      "type": "string"
+    },
+    "reply_to_name": {
+      "type": "string"
+    },
+    "reply_to_content": {
+      "type": "string"
+    },
+    "reply_to_image": {
+      "type": "string"
     }
   },
   "required": [

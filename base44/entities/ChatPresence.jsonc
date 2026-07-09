@@ -1,0 +1,33 @@
+{
+  "name": "ChatPresence",
+  "type": "object",
+  "properties": {
+    "user_uid": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "user_avatar": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "online",
+        "typing",
+        "away",
+        "offline"
+      ],
+      "default": "online"
+    },
+    "last_active": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_uid",
+    "user_name"
+  ]
+}
