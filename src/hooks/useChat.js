@@ -13,6 +13,7 @@ export function useChat(mybbUser) {
   const typingTimeoutRef = useRef(null);
   const heartbeatRef = useRef(null);
   const lastTypingRef = useRef(0);
+  const presenceDebounceRef = useRef(null);
 
   useEffect(() => { myUidRef.current = myUid; }, [myUid]);
 
@@ -90,12 +91,13 @@ export function useChat(mybbUser) {
     return () => {
       clearInterval(heartbeatRef.current);
       clearTimeout(typingTimeoutRef.current);
+      clearTimeout(presenceDebounceRef.current);
       window.removeEventListener("beforeunload", onUnload);
       updatePresence("offline");
     };
   }, [mybbUser?.uid]);
 
-  // Load + subscribe to presence
+  // Load + subscribe to presence (debounced subscription to avoid flood)
   useEffect(() => {
     const loadPresence = async () => {
       try {
@@ -113,22 +115,17 @@ export function useChat(mybbUser) {
     };
     loadPresence();
     const interval = setInterval(loadPresence, 15000);
-    const unsub = base44.entities.ChatPresence.subscribe(() => loadPresence());
-    return () => { clearInterval(interval); unsub(); };
+    const unsub = base44.entities.ChatPresence.subscribe(() => {
+      clearTimeout(presenceDebounceRef.current);
+      presenceDebounceRef.current = setTimeout(loadPresence, 800);
+    });
+    return () => { clearInterval(interval); clearTimeout(presenceDebounceRef.current); unsub(); };
   }, []);
 
-  // Send message (optimistic)
-  const sendMessage = useCallback(async ({ text, imageFile, replyTo }) => {
-    if (!text?.trim() && !imageFile) return;
+  // Send message (optimistic, non-blocking)
+  const sendMessage = useCallback(({ text, imageFile, replyTo }) => {
+    if (!mybbUser || (!text?.trim() && !imageFile)) return;
     const tempId = `temp-${Date.now()}`;
-    let image_url;
-
-    if (imageFile) {
-      try {
-        const res = await base44.integrations.Core.UploadFile({ file: imageFile });
-        image_url = res.file_url;
-      } catch { return; }
-    }
 
     const optimistic = {
       id: tempId,
@@ -136,7 +133,6 @@ export function useChat(mybbUser) {
       sender_name: mybbUser.username,
       sender_avatar: mybbUser.avatar || "",
       content: text?.trim() || "",
-      ...(image_url ? { image_url } : {}),
       created_date: new Date().toISOString(),
       _status: "sending",
       ...(replyTo ? {
@@ -149,28 +145,40 @@ export function useChat(mybbUser) {
 
     setMessages((prev) => [...prev, optimistic]);
 
-    try {
-      const created = await base44.entities.ChatMessage.create({
-        sender_uid: String(mybbUser.uid),
-        sender_name: mybbUser.username,
-        sender_avatar: mybbUser.avatar || "",
-        content: text?.trim() || "",
-        ...(image_url ? { image_url } : {}),
-        ...(replyTo ? {
-          reply_to_id: replyTo.id,
-          reply_to_name: replyTo.sender_name,
-          reply_to_content: replyTo.content,
-          reply_to_image: replyTo.image_url,
-        } : {}),
-      });
-      setMessages((prev) =>
-        prev.map((m) => (m.id === tempId ? { ...created, _status: "sent" } : m))
-      );
-    } catch {
-      setMessages((prev) =>
-        prev.map((m) => (m.id === tempId ? { ...m, _status: "failed" } : m))
-      );
-    }
+    // Fire and forget — don't block the composer
+    (async () => {
+      try {
+        let image_url;
+        if (imageFile) {
+          const res = await base44.integrations.Core.UploadFile({ file: imageFile });
+          image_url = res.file_url;
+          // Update optimistic message with image
+          setMessages((prev) =>
+            prev.map((m) => (m.id === tempId ? { ...m, image_url } : m))
+          );
+        }
+        const created = await base44.entities.ChatMessage.create({
+          sender_uid: String(mybbUser.uid),
+          sender_name: mybbUser.username,
+          sender_avatar: mybbUser.avatar || "",
+          content: text?.trim() || "",
+          ...(image_url ? { image_url } : {}),
+          ...(replyTo ? {
+            reply_to_id: replyTo.id,
+            reply_to_name: replyTo.sender_name,
+            reply_to_content: replyTo.content,
+            reply_to_image: replyTo.image_url,
+          } : {}),
+        });
+        setMessages((prev) =>
+          prev.map((m) => (m.id === tempId ? { ...created, _status: "sent" } : m))
+        );
+      } catch {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === tempId ? { ...m, _status: "failed" } : m))
+        );
+      }
+    })();
   }, [mybbUser]);
 
   // Delete message
@@ -181,7 +189,7 @@ export function useChat(mybbUser) {
 
   // Toggle reaction
   const toggleReaction = useCallback(async (messageId, emoji) => {
-    const uid = String(mybbUser.uid);
+    const uid = String(mybbUser?.uid || "");
     let newReactionsStr = "{}";
 
     setMessages((prev) => prev.map((m) => {
@@ -206,6 +214,7 @@ export function useChat(mybbUser) {
 
   // Set typing status
   const setTyping = useCallback(() => {
+    if (!mybbUser?.uid) return;
     const now = Date.now();
     if (now - lastTypingRef.current < 3000) return;
     lastTypingRef.current = now;
@@ -222,7 +231,7 @@ export function useChat(mybbUser) {
         }).catch(() => {});
       }, 3000);
     }
-  }, []);
+  }, [mybbUser]);
 
   return {
     messages, loading, typingUsers, onlineUsers,

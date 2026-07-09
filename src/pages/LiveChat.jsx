@@ -32,15 +32,15 @@ export default function LiveChat() {
     return () => clearTimeout(t);
   }, []);
 
-  const handleSend = async (text, imageFile) => {
-    await sendMessage({ text, imageFile, replyTo });
+  const handleSend = (text, imageFile) => {
+    sendMessage({ text, imageFile, replyTo });
     setReplyTo(null);
   };
 
   const typingNames = typingUsers.map((t) => t.user_name).join(", ");
 
   return (
-    <div className="flex flex-col bg-background" style={{ height: "calc(100dvh - 80px)" }}>
+    <div className="flex flex-col bg-background h-full min-h-0">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-card/80 backdrop-blur-xl shrink-0">
         <Link to="/" className="text-muted-foreground hover:text-foreground -ml-1">
@@ -74,7 +74,7 @@ export default function LiveChat() {
 
       {/* Messages */}
       {loading ? (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center min-h-0">
           <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (

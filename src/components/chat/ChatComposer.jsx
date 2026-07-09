@@ -1,5 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Send, Image as ImageIcon, Smile, X, Reply } from "lucide-react";
 import ChatEmojiPicker from "./ChatEmojiPicker";
 
@@ -7,9 +6,17 @@ export default function ChatComposer({ onSend, onTyping, replyTo, onCancelReply 
   const [text, setText] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [showEmoji, setShowEmoji] = useState(false);
-  const [sending, setSending] = useState(false);
   const inputRef = useRef(null);
   const fileRef = useRef(null);
+
+  // Fix memory leak: create object URL in useMemo, revoke on cleanup
+  const imageUrl = useMemo(
+    () => (imageFile ? URL.createObjectURL(imageFile) : null),
+    [imageFile]
+  );
+  useEffect(() => {
+    return () => { if (imageUrl) URL.revokeObjectURL(imageUrl); };
+  }, [imageUrl]);
 
   const adjustHeight = () => {
     const el = inputRef.current;
@@ -20,17 +27,17 @@ export default function ChatComposer({ onSend, onTyping, replyTo, onCancelReply 
 
   useEffect(adjustHeight, [text]);
 
-  const handleSend = async () => {
-    if ((!text.trim() && !imageFile) || sending) return;
-    setSending(true);
+  // Non-blocking send — don't await onSend
+  const handleSend = () => {
+    if (!text.trim() && !imageFile) return;
     const t = text;
     const f = imageFile;
     setText("");
     setImageFile(null);
     setShowEmoji(false);
-    await onSend(t, f);
-    setSending(false);
-    inputRef.current?.focus();
+    onSend(t, f);
+    try { navigator.vibrate?.(8); } catch {}
+    requestAnimationFrame(() => inputRef.current?.focus());
   };
 
   const handleKeyDown = (e) => {
@@ -49,58 +56,36 @@ export default function ChatComposer({ onSend, onTyping, replyTo, onCancelReply 
 
   return (
     <div className="shrink-0 bg-card border-t border-border">
-      <AnimatePresence>
-        {replyTo && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="flex items-center gap-2 px-4 py-2 bg-violet-500/10 border-b border-violet-500/20">
-              <Reply className="w-4 h-4 text-violet-400 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-violet-400">{replyTo.sender_name}</p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {replyTo.content || (replyTo.image_url ? "📷 Photo" : "")}
-                </p>
-              </div>
-              <button onClick={onCancelReply} className="p-1 text-muted-foreground hover:text-foreground">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Reply preview */}
+      {replyTo && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-violet-500/10 border-b border-violet-500/20 fade-in">
+          <Reply className="w-4 h-4 text-violet-400 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-violet-400">{replyTo.sender_name}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {replyTo.content || (replyTo.image_url ? "📷 Photo" : "")}
+            </p>
+          </div>
+          <button onClick={onCancelReply} className="p-1 text-muted-foreground hover:text-foreground">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
-      <AnimatePresence>
-        {showEmoji && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <ChatEmojiPicker onPick={handleEmojiPick} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Emoji picker */}
+      {showEmoji && (
+        <div className="fade-in">
+          <ChatEmojiPicker onPick={handleEmojiPick} />
+        </div>
+      )}
 
-      <AnimatePresence>
-        {imageFile && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="flex items-center gap-2 px-4 py-2">
-              <img src={URL.createObjectURL(imageFile)} alt="preview" className="h-14 w-14 rounded-lg object-cover" />
-              <button onClick={() => setImageFile(null)} className="text-xs text-red-400">Remove</button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Image preview */}
+      {imageFile && imageUrl && (
+        <div className="flex items-center gap-2 px-4 py-2 fade-in">
+          <img src={imageUrl} alt="preview" className="h-14 w-14 rounded-lg object-cover" />
+          <button onClick={() => setImageFile(null)} className="text-xs text-red-400">Remove</button>
+        </div>
+      )}
 
       <div className="flex items-end gap-2 px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
         <button
@@ -126,24 +111,20 @@ export default function ChatComposer({ onSend, onTyping, replyTo, onCancelReply 
             onKeyDown={handleKeyDown}
             placeholder="Message..."
             rows={1}
+            enterKeyHint="send"
+            inputMode="text"
             className="flex-1 resize-none bg-transparent py-2.5 pr-3 text-sm text-foreground placeholder:text-muted-foreground outline-none max-h-28"
             style={{ overflowY: "hidden" }}
           />
         </div>
 
-        <motion.button
-          whileTap={{ scale: 0.85 }}
-          animate={{ scale: hasContent ? 1 : 0.85 }}
+        <button
           onClick={handleSend}
-          disabled={sending || !hasContent}
-          className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 disabled:opacity-30 flex items-center justify-center shrink-0 shadow-lg shadow-violet-900/30"
+          disabled={!hasContent}
+          className={`w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 disabled:opacity-30 flex items-center justify-center shrink-0 shadow-lg shadow-violet-900/30 transition-transform active:scale-90 ${hasContent ? "scale-100" : "scale-85"}`}
         >
-          {sending ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <Send className="w-4 h-4 text-white" />
-          )}
-        </motion.button>
+          <Send className="w-4 h-4 text-white" />
+        </button>
       </div>
     </div>
   );
