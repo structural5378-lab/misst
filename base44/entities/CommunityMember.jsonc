@@ -3,9 +3,13 @@
   "type": "object",
   "properties": {
     "user_id": {
-      "type": "string"
+      "type": "string",
+      "description": "Global MIST user ID (UUID)"
     },
     "user_name": {
+      "type": "string"
+    },
+    "user_email": {
       "type": "string"
     },
     "user_callsign": {
@@ -20,14 +24,30 @@
     "community_name": {
       "type": "string"
     },
+    "community_slug": {
+      "type": "string"
+    },
     "role": {
       "type": "string",
       "enum": [
-        "member",
+        "community_owner",
+        "community_admin",
         "moderator",
-        "admin"
+        "trusted_member",
+        "member",
+        "guest"
       ],
       "default": "member"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "pending",
+        "suspended",
+        "left"
+      ],
+      "default": "active"
     },
     "joined_date": {
       "type": "string",
@@ -40,6 +60,7 @@
   },
   "required": [
     "user_id",
-    "community_id"
+    "community_id",
+    "role"
   ]
 }

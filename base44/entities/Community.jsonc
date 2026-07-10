@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Community/club name"
     },
+    "slug": {
+      "type": "string",
+      "description": "URL-safe unique identifier e.g. insomniacs-gmrs"
+    },
     "callsign": {
       "type": "string",
       "description": "Club callsign (e.g. MIST, K4NET)"
@@ -16,15 +20,90 @@
     "logo_url": {
       "type": "string"
     },
+    "banner_url": {
+      "type": "string",
+      "description": "Dashboard hero banner image"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "User ID of the community owner (UUID)"
+    },
+    "owner_name": {
+      "type": "string",
+      "description": "Display name of the owner"
+    },
+    "founder_uid": {
+      "type": "string",
+      "description": "Original founder UID (legacy compat)"
+    },
+    "founder_name": {
+      "type": "string",
+      "description": "Original founder name (legacy compat)"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "default": "private"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "pending",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "timezone": {
+      "type": "string",
+      "description": "IANA timezone e.g. America/New_York",
+      "default": "America/New_York"
+    },
+    "location": {
+      "type": "string",
+      "description": "City, State for default weather/map center"
+    },
+    "location_lat": {
+      "type": "number",
+      "description": "Default latitude for maps and weather"
+    },
+    "location_lon": {
+      "type": "number",
+      "description": "Default longitude for maps and weather"
+    },
     "primary_color": {
       "type": "string",
       "default": "#8B5CF6"
     },
-    "founder_uid": {
-      "type": "string"
+    "accent_color": {
+      "type": "string",
+      "default": "#06B6D4"
     },
-    "founder_name": {
-      "type": "string"
+    "theme_override": {
+      "type": "string",
+      "description": "JSON string of theme overrides (fonts, borders, etc.)"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "pro",
+        "enterprise"
+      ],
+      "default": "free"
+    },
+    "max_members": {
+      "type": "number",
+      "default": 1000
+    },
+    "is_listed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Appears in public community directory"
     },
     "is_active": {
       "type": "boolean",
@@ -33,16 +112,12 @@
     "member_count": {
       "type": "number",
       "default": 0
-    },
-    "created_date": {
-      "type": "string",
-      "format": "date-time"
     }
   },
   "required": [
     "name",
-    "callsign",
-    "founder_uid",
-    "founder_name"
+    "slug",
+    "owner_id",
+    "owner_name"
   ]
 }

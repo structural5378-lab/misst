@@ -1,0 +1,75 @@
+{
+  "name": "CommunitySettings",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "References Community.id (UUID)"
+    },
+    "features_enabled": {
+      "type": "string",
+      "description": "JSON map: {chat: true, forum: true, weather: true, repeaters: true, maps: true, gallery: true, cams: true, events: true, shopping: true, ai: true, files: true, nets: true}"
+    },
+    "dashboard_widgets": {
+      "type": "string",
+      "description": "JSON array: [{widget: 'alerts', order: 1, visible: true}, ...]"
+    },
+    "nav_config": {
+      "type": "string",
+      "description": "JSON array: [{icon: 'Home', label: 'Home', path: '/', order: 1, roles: ['member','moderator',...]}]"
+    },
+    "join_mode": {
+      "type": "string",
+      "enum": [
+        "open",
+        "invite",
+        "request",
+        "closed"
+      ],
+      "default": "invite"
+    },
+    "marketplace_public": {
+      "type": "boolean",
+      "default": false
+    },
+    "quiet_hours_start": {
+      "type": "string",
+      "description": "HH:MM format, null = disabled"
+    },
+    "quiet_hours_end": {
+      "type": "string",
+      "description": "HH:MM format, null = disabled"
+    },
+    "forum_type": {
+      "type": "string",
+      "enum": [
+        "mybb",
+        "discourse",
+        "native",
+        "none"
+      ],
+      "default": "none"
+    },
+    "forum_url": {
+      "type": "string"
+    },
+    "bridge_url": {
+      "type": "string",
+      "description": "API endpoint for forum bridge"
+    },
+    "pushalert_segment": {
+      "type": "string",
+      "description": "PushAlert subscriber segment for this community"
+    },
+    "email_from_name": {
+      "type": "string"
+    },
+    "email_enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "community_id"
+  ]
+}

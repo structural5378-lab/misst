@@ -49,6 +49,15 @@ import TestNotifications from '@/pages/TestNotifications.jsx';
 import Shopping from '@/pages/Shopping';
 import CreateCommunity from '@/pages/CreateCommunity';
 
+// Platform Admin pages
+import PlatformAdminDashboard from '@/pages/platform/PlatformAdminDashboard';
+import PlatformAdminCommunities from '@/pages/platform/PlatformAdminCommunities';
+import PlatformAdminUsers from '@/pages/platform/PlatformAdminUsers';
+import PlatformAdminRoles from '@/pages/platform/PlatformAdminRoles';
+import PlatformAdminAuditLog from '@/pages/platform/PlatformAdminAuditLog';
+import PlatformAdminRoute from '@/components/PlatformAdminRoute';
+import PlatformAdminLayout from '@/components/PlatformAdminLayout';
+
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
 import { MyBBAuthProvider } from '@/lib/MyBBAuthContext';
@@ -98,6 +107,17 @@ const AuthenticatedApp = () => {
         <Route path="/test-notifications" element={<TestNotifications />} />
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/community/create" element={<CreateCommunity />} />
+      </Route>
+
+      {/* Hidden Platform Admin namespace — completely separate from communities */}
+      <Route element={<PlatformAdminRoute />}>
+        <Route element={<PlatformAdminLayout />}>
+          <Route path="/platform/admin" element={<PlatformAdminDashboard />} />
+          <Route path="/platform/admin/communities" element={<PlatformAdminCommunities />} />
+          <Route path="/platform/admin/users" element={<PlatformAdminUsers />} />
+          <Route path="/platform/admin/roles" element={<PlatformAdminRoles />} />
+          <Route path="/platform/admin/audit-log" element={<PlatformAdminAuditLog />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
