@@ -1,0 +1,39 @@
+{
+  "name": "PlatformRole",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Global MIST user ID (UUID)"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email for display"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "platform_owner",
+        "platform_admin",
+        "platform_support"
+      ],
+      "description": "Platform-level role (separate from community roles)"
+    },
+    "assigned_by": {
+      "type": "string",
+      "description": "User ID of who assigned this role"
+    },
+    "assigned_by_email": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_id",
+    "user_email",
+    "role"
+  ]
+}

@@ -51,22 +51,20 @@ import CreateCommunity from '@/pages/CreateCommunity';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
-import { MyBBAuthProvider, useMyBBAuth } from '@/lib/MyBBAuthContext';
-
-const MyBBProtectedRoute = () => {
-  const { mybbUser } = useMyBBAuth();
-  if (!mybbUser) return <Navigate to="/login" replace />;
-  return <AppLayout />;
-};
+import { MyBBAuthProvider } from '@/lib/MyBBAuthContext';
+import DualProtectedRoute from '@/components/DualProtectedRoute';
 
 const AuthenticatedApp = () => {
-  // This app uses MyBB forum auth — Base44 auth state is intentionally ignored.
-  // MyBBProtectedRoute handles all access control via localStorage session.
+  // Dual-auth period: users can authenticate via Base44 native auth (email+password)
+  // or MyBB forum bridge (username+password). DualProtectedRoute accepts either.
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
-      <Route element={<MyBBProtectedRoute />}>
+      <Route element={<DualProtectedRoute />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/repeaters" element={<Repeaters />} />
         <Route path="/repeaters/add" element={<AddRepeater />} />

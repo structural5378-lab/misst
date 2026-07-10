@@ -1,0 +1,51 @@
+{
+  "name": "CommunityRole",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Global MIST user ID (UUID)"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email for display"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Community ID this role applies to"
+    },
+    "community_name": {
+      "type": "string",
+      "description": "Community name for display"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "community_owner",
+        "community_admin",
+        "moderator",
+        "trusted_member",
+        "member",
+        "guest"
+      ],
+      "description": "Community-level role"
+    },
+    "assigned_by": {
+      "type": "string",
+      "description": "User ID of who assigned this role"
+    },
+    "assigned_by_email": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_id",
+    "user_email",
+    "community_id",
+    "role"
+  ]
+}
