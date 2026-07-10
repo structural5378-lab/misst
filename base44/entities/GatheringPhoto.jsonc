@@ -20,6 +20,14 @@
     },
     "uploader_id": {
       "type": "string"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Community this photo belongs to (data isolation)"
+    },
+    "community_name": {
+      "type": "string",
+      "description": "Community name for display"
     }
   },
   "required": [

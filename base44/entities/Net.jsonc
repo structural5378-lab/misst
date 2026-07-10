@@ -47,6 +47,14 @@
     "is_favorite": {
       "type": "boolean",
       "default": false
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Community this net belongs to (data isolation)"
+    },
+    "community_name": {
+      "type": "string",
+      "description": "Community name for display"
     }
   },
   "required": [

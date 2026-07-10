@@ -71,6 +71,14 @@
     "posted_date": {
       "type": "string",
       "format": "date-time"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Community this item belongs to (data isolation)"
+    },
+    "community_name": {
+      "type": "string",
+      "description": "Community name for display"
     }
   },
   "required": [

@@ -24,6 +24,14 @@
     },
     "link": {
       "type": "string"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Community this alert belongs to (data isolation)"
+    },
+    "community_name": {
+      "type": "string",
+      "description": "Community name for display"
     }
   },
   "required": [

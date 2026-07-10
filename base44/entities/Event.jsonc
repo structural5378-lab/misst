@@ -43,6 +43,14 @@
     "notification_sent": {
       "type": "boolean",
       "default": false
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Community this event belongs to (data isolation)"
+    },
+    "community_name": {
+      "type": "string",
+      "description": "Community name for display"
     }
   },
   "required": [

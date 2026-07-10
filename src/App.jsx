@@ -58,6 +58,19 @@ import PlatformAdminAuditLog from '@/pages/platform/PlatformAdminAuditLog';
 import PlatformAdminRoute from '@/components/PlatformAdminRoute';
 import PlatformAdminLayout from '@/components/PlatformAdminLayout';
 
+// Community-scoped pages
+import CommunityLayout from '@/components/community/CommunityLayout';
+import CommunityHome from '@/pages/community/CommunityHome';
+import CommunityChat from '@/pages/community/CommunityChat';
+import CommunityForum from '@/pages/community/CommunityForum';
+import CommunityMembers from '@/pages/community/CommunityMembers';
+import CommunityEvents from '@/pages/community/CommunityEvents';
+import CommunityRepeaters from '@/pages/community/CommunityRepeaters';
+import CommunityGallery from '@/pages/community/CommunityGallery';
+import CommunityFiles from '@/pages/community/CommunityFiles';
+import CommunityAdmin from '@/pages/community/CommunityAdmin';
+import CommunityMore from '@/pages/community/CommunityMore';
+
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
 import { MyBBAuthProvider } from '@/lib/MyBBAuthContext';
@@ -107,6 +120,20 @@ const AuthenticatedApp = () => {
         <Route path="/test-notifications" element={<TestNotifications />} />
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/community/create" element={<CreateCommunity />} />
+
+        {/* Community-scoped routes — /c/:slug/* (isolated per community) */}
+        <Route element={<CommunityLayout />}>
+          <Route path="/c/:slug" element={<CommunityHome />} />
+          <Route path="/c/:slug/chat" element={<CommunityChat />} />
+          <Route path="/c/:slug/forum" element={<CommunityForum />} />
+          <Route path="/c/:slug/members" element={<CommunityMembers />} />
+          <Route path="/c/:slug/events" element={<CommunityEvents />} />
+          <Route path="/c/:slug/repeaters" element={<CommunityRepeaters />} />
+          <Route path="/c/:slug/gallery" element={<CommunityGallery />} />
+          <Route path="/c/:slug/files" element={<CommunityFiles />} />
+          <Route path="/c/:slug/admin" element={<CommunityAdmin />} />
+          <Route path="/c/:slug/more" element={<CommunityMore />} />
+        </Route>
       </Route>
 
       {/* Hidden Platform Admin namespace — completely separate from communities */}
