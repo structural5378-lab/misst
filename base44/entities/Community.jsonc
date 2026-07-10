@@ -4,15 +4,19 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Community/club name"
+      "description": "Community name"
     },
     "slug": {
       "type": "string",
-      "description": "URL-safe unique identifier e.g. insomniacs-gmrs"
+      "description": "URL-safe unique identifier e.g. my-community"
+    },
+    "category": {
+      "type": "string",
+      "description": "Community category (generic, multi-purpose) e.g. radio, technology, social, gaming, education, sports, music, professional, hobby, other"
     },
     "callsign": {
       "type": "string",
-      "description": "Club callsign (e.g. MIST, K4NET)"
+      "description": "Optional identifier (e.g. club callsign for radio communities). Generic \u2014 may be left empty for non-radio communities."
     },
     "description": {
       "type": "string"
@@ -46,7 +50,8 @@
         "public",
         "private"
       ],
-      "default": "private"
+      "default": "private",
+      "description": "Whether community is discoverable publicly (public) or hidden (private). Join mode controls how members join."
     },
     "status": {
       "type": "string",
