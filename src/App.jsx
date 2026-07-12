@@ -48,6 +48,7 @@ import ThreadView from '@/pages/ThreadView';
 import TestNotifications from '@/pages/TestNotifications.jsx';
 import Shopping from '@/pages/Shopping';
 import CreateCommunity from '@/pages/CreateCommunity';
+import RadioScope from '@/pages/RadioScope';
 
 // Platform Admin pages
 import PlatformAdminDashboard from '@/pages/platform/PlatformAdminDashboard';
@@ -120,6 +121,7 @@ const AuthenticatedApp = () => {
         <Route path="/test-notifications" element={<TestNotifications />} />
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/community/create" element={<CreateCommunity />} />
+        <Route path="/radioscope" element={<RadioScope />} />
 
         {/* Community-scoped routes — /c/:slug/* (isolated per community) */}
         <Route element={<CommunityLayout />}>

@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
 import PropagationGauge from "@/components/dashboard/PropagationGauge";
 import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
+import RadioScopeTile from "@/components/radioscope/RadioScopeTile";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/ef2f5095f_EA7D7629-51E2-49DA-AE8B-4017441D651F.png";
 
@@ -308,6 +309,14 @@ export default function Dashboard() {
         {showOnlineSheet && (
           <OnlineMembersSheet members={onlineMembers} onClose={() => setShowOnlineSheet(false)} />
         )}
+
+        {/* RadioScope */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-foreground">RadioScope</h3>
+          </div>
+          <RadioScopeTile />
+        </div>
 
         {/* Quick Access */}
         <div>

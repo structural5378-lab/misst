@@ -17,6 +17,9 @@
         "online",
         "typing",
         "away",
+        "idle",
+        "monitoring",
+        "emergency",
         "offline"
       ],
       "default": "online"
@@ -24,6 +27,18 @@
     "last_active": {
       "type": "string",
       "format": "date-time"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "User latitude for RadioScope tactical map"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "User longitude for RadioScope tactical map"
+    },
+    "current_repeater_id": {
+      "type": "string",
+      "description": "Repeater the user is currently connected to"
     }
   },
   "required": [
