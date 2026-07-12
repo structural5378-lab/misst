@@ -128,6 +128,8 @@ export default function RadioScope() {
           searchQuery={searchQuery}
           tileMode={tileMode}
           recenterTrigger={recenterTrigger}
+          selectedRepeater={selectedRepeater}
+          selectedUser={selectedUser}
           onRepeaterClick={setSelectedRepeater}
           onUserClick={setSelectedUser}
         />
@@ -169,8 +171,8 @@ export default function RadioScope() {
       {/* Recenter button */}
       <button
         onClick={handleRecenter}
-        className="absolute bottom-6 right-4 z-10 w-12 h-12 rounded-full bg-black/80 backdrop-blur border border-cyan-500/30 flex items-center justify-center text-cyan-400 active:scale-90 transition-transform"
-        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+        className="absolute right-4 z-10 w-12 h-12 rounded-full bg-black/80 backdrop-blur border border-cyan-500/30 flex items-center justify-center text-cyan-400 active:scale-90 transition-transform"
+        style={{ bottom: "calc(5rem + env(safe-area-inset-bottom))" }}
       >
         <Crosshair className="w-6 h-6" />
       </button>

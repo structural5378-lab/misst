@@ -36,8 +36,8 @@ export default function UserSheet({ user, userPosition, repeaters, onClose }) {
 
   return (
     <>
-      <div onClick={onClose} className="fixed inset-0 bg-black/60 z-[60] fade-in" style={{ touchAction: "none" }} />
-      <div className="fixed bottom-0 left-0 right-0 z-[60] bg-card rounded-t-3xl border-t border-cyan-500/20 pb-[env(safe-area-inset-bottom)] sheet-up max-h-[80vh] overflow-y-auto">
+      <div onClick={onClose} className="fixed inset-0 bg-black/60 z-[80] fade-in" style={{ touchAction: "none" }} />
+      <div className="fixed bottom-0 left-0 right-0 z-[80] bg-card rounded-t-3xl border-t border-cyan-500/20 pb-[env(safe-area-inset-bottom)] sheet-up max-h-[80vh] overflow-y-auto">
         <div className="flex justify-center pt-2 pb-1">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
         </div>

@@ -21,7 +21,7 @@ export default function CommunityBottomNav({ slug }) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-t border-border"
+      className="fixed bottom-0 left-0 right-0 z-[70] bg-background/90 backdrop-blur-xl border-t border-border"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex items-center justify-around max-w-2xl mx-auto px-2 h-16">

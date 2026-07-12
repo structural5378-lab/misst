@@ -16,8 +16,8 @@ export default function RadioScopeLayers({ activeLayers, onLayerChange, tileMode
 
   return (
     <>
-      <div onClick={onClose} className="fixed inset-0 bg-black/50 z-[60] fade-in" />
-      <div className="fixed top-0 right-0 bottom-0 z-[60] w-72 bg-card border-l border-cyan-500/20 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sheet-up overflow-y-auto">
+      <div onClick={onClose} className="fixed inset-0 bg-black/50 z-[80] fade-in" />
+      <div className="fixed top-0 right-0 bottom-0 z-[80] w-72 bg-card border-l border-cyan-500/20 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sheet-up overflow-y-auto">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h2 className="text-sm font-bold text-foreground">Map Layers</h2>
           <button onClick={onClose} className="p-2 -m-1 text-muted-foreground hover:text-foreground">

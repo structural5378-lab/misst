@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import BottomNav from "./BottomNav";
 import CommunitySelector from "./CommunitySelector";
@@ -12,6 +12,23 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 
 export default function AppLayout() {
+  // Restore normal interface after orientation change or fullscreen exit
+  useEffect(() => {
+    const reset = () => {
+      window.scrollTo(0, 0);
+      window.dispatchEvent(new Event("resize"));
+    };
+    const onVisibilityChange = () => {
+      if (!document.hidden) setTimeout(reset, 100);
+    };
+    window.addEventListener("orientationchange", reset);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.removeEventListener("orientationchange", reset);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, []);
+
   const { data: weather } = useQuery({
     queryKey: ["weather-data"],
     queryFn: async () => {

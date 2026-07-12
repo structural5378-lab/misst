@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useState, useCallback } from "react";
 import { MapContainer, TileLayer, Circle, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -7,7 +7,7 @@ import { haversine } from "@/lib/geoUtils";
 
 const DEFAULT_CENTER = [25.77, -80.19];
 const DEFAULT_ZOOM = 11;
-const COVERAGE_RADIUS = 25000;
+const COVERAGE_RADIUS = 25000; // 25 km
 
 function createRepeaterIcon() {
   return L.divIcon({
@@ -40,55 +40,155 @@ function createUserPosIcon() {
   });
 }
 
-function MapController({ recenterTrigger, userPosition }) {
+function createClusterIcon(count) {
+  return L.divIcon({
+    className: "rs-divicon",
+    html: `<div class="rs-cluster-marker">${count}</div>`,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+  });
+}
+
+function MapController({ recenterTrigger, userPosition, selectedRepeater, selectedUser }) {
   const map = useMap();
   const firstFix = useRef(true);
+
   useEffect(() => {
     if (!userPosition) return;
     if (firstFix.current || recenterTrigger > 0) {
       firstFix.current = false;
       map.flyTo(userPosition, Math.max(map.getZoom(), 12), { duration: 1.5 });
     }
-  }, [recenterTrigger, userPosition]);
+  }, [recenterTrigger, userPosition, map]);
+
+  // Fly to selected target when it's outside the current view (e.g. from search)
+  useEffect(() => {
+    const target = selectedRepeater
+      ? [selectedRepeater.latitude, selectedRepeater.longitude]
+      : selectedUser
+      ? [selectedUser.latitude, selectedUser.longitude]
+      : null;
+    if (target && target[0] && target[1]) {
+      const bounds = map.getBounds();
+      if (!bounds.contains(target)) {
+        map.flyTo(target, Math.max(map.getZoom(), 13), { duration: 1.2 });
+      }
+    }
+  }, [selectedRepeater, selectedUser, map]);
+
   return null;
+}
+
+function BoundsTracker({ onBoundsChange }) {
+  const map = useMap();
+  useEffect(() => {
+    const update = () => onBoundsChange({ bounds: map.getBounds(), zoom: map.getZoom() });
+    map.on("moveend zoomend", update);
+    update();
+    return () => map.off("moveend zoomend", update);
+  }, [map, onBoundsChange]);
+  return null;
+}
+
+function ClusterMarker({ position, count }) {
+  const map = useMap();
+  const icon = useMemo(() => createClusterIcon(count), [count]);
+  return (
+    <AnimatedMarker
+      position={position}
+      icon={icon}
+      onClick={() => map.flyTo(position, map.getZoom() + 2, { duration: 0.8 })}
+    />
+  );
 }
 
 export default function RadioScopeMap({
   userPosition, repeaters, onlineUsers, activeLayers, activeFilter,
-  searchQuery, tileMode, recenterTrigger, onRepeaterClick, onUserClick,
+  searchQuery, tileMode, recenterTrigger, selectedRepeater, selectedUser,
+  onRepeaterClick, onUserClick,
 }) {
   const center = userPosition || DEFAULT_CENTER;
   const repeaterIcon = useMemo(() => createRepeaterIcon(), []);
   const userPosIcon = useMemo(() => createUserPosIcon(), []);
+  const [mapBounds, setMapBounds] = useState(null);
+  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
 
+  const handleBoundsChange = useCallback((v) => {
+    setMapBounds(v.bounds);
+    setMapZoom(v.zoom);
+  }, []);
+
+  const inBounds = useCallback((lat, lon) => {
+    if (!mapBounds) return true;
+    return mapBounds.contains([lat, lon]);
+  }, [mapBounds]);
+
+  // Lazy-load: only render repeaters within current map bounds
   const filteredRepeaters = useMemo(() => {
-    let r = repeaters.filter((r) => r.latitude && r.longitude);
+    let r = repeaters.filter((rep) => {
+      if (!rep.latitude || !rep.longitude) return false;
+      if (!inBounds(rep.latitude, rep.longitude)) return false;
+      return true;
+    });
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      r = r.filter((r) =>
-        r.callsign?.toLowerCase().includes(q) ||
-        String(r.frequency || "").includes(q) ||
-        r.location?.toLowerCase().includes(q) ||
-        r.community_name?.toLowerCase().includes(q)
+      r = r.filter((rep) =>
+        rep.callsign?.toLowerCase().includes(q) ||
+        String(rep.frequency || "").includes(q) ||
+        rep.location?.toLowerCase().includes(q) ||
+        rep.community_name?.toLowerCase().includes(q)
       );
     }
+    // Always include selected repeater even if panned out of bounds
+    if (selectedRepeater && !r.find((rep) => rep.id === selectedRepeater.id)) {
+      r = [selectedRepeater, ...r];
+    }
     return r;
-  }, [repeaters, searchQuery]);
+  }, [repeaters, searchQuery, inBounds, selectedRepeater]);
 
   const filteredUsers = useMemo(() => {
-    let u = onlineUsers.filter((u) => u.latitude && u.longitude);
-    if (activeFilter === "online") u = u.filter((u) => u.status === "online" || u.status === "typing");
-    if (activeFilter === "emergency") u = u.filter((u) => u.status === "emergency");
+    let u = onlineUsers.filter((usr) => {
+      if (!usr.latitude || !usr.longitude) return false;
+      if (!inBounds(usr.latitude, usr.longitude)) return false;
+      return true;
+    });
+    if (activeFilter === "online") u = u.filter((usr) => usr.status === "online" || usr.status === "typing");
+    if (activeFilter === "emergency") u = u.filter((usr) => usr.status === "emergency");
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      u = u.filter((u) => u.user_name?.toLowerCase().includes(q));
+      u = u.filter((usr) => usr.user_name?.toLowerCase().includes(q));
     }
     return u;
-  }, [onlineUsers, activeFilter, searchQuery]);
+  }, [onlineUsers, activeFilter, searchQuery, inBounds]);
 
+  // Cluster users when zoomed out for performance
+  const { userClusters, individualUsers } = useMemo(() => {
+    if (mapZoom >= 10) return { userClusters: [], individualUsers: filteredUsers };
+    const gridSize = 0.5 / Math.pow(2, mapZoom - 5);
+    const grid = {};
+    filteredUsers.forEach((u) => {
+      const key = `${Math.floor(u.latitude / gridSize)},${Math.floor(u.longitude / gridSize)}`;
+      if (!grid[key]) grid[key] = [];
+      grid[key].push(u);
+    });
+    const clusters = [];
+    const individuals = [];
+    Object.values(grid).forEach((users) => {
+      if (users.length > 1) {
+        const avgLat = users.reduce((s, u) => s + u.latitude, 0) / users.length;
+        const avgLon = users.reduce((s, u) => s + u.longitude, 0) / users.length;
+        clusters.push({ lat: avgLat, lon: avgLon, count: users.length });
+      } else {
+        individuals.push(users[0]);
+      }
+    });
+    return { userClusters: clusters, individualUsers: individuals };
+  }, [filteredUsers, mapZoom]);
+
+  // RF beams: user → nearest repeater
   const beams = useMemo(() => {
     if (!activeLayers.beams) return [];
-    return filteredUsers.map((user) => {
+    return individualUsers.map((user) => {
       let nearest = null;
       for (const rep of filteredRepeaters) {
         const d = haversine(user.latitude, user.longitude, rep.latitude, rep.longitude);
@@ -100,8 +200,9 @@ export default function RadioScopeMap({
         key: `beam-${user.user_uid}`,
       };
     }).filter(Boolean);
-  }, [filteredUsers, filteredRepeaters, activeLayers.beams]);
+  }, [individualUsers, filteredRepeaters, activeLayers.beams]);
 
+  // Linked repeaters: repeater ↔ repeater
   const linkedRepeaters = useMemo(() => {
     if (!activeLayers.beams) return [];
     const links = [];
@@ -125,6 +226,16 @@ export default function RadioScopeMap({
     return links;
   }, [filteredRepeaters, activeLayers.beams]);
 
+  // Overlap: repeaters whose coverage intersects with selected repeater
+  const overlapRepeaters = useMemo(() => {
+    if (!selectedRepeater) return [];
+    return filteredRepeaters.filter((r) => {
+      if (r.id === selectedRepeater.id) return false;
+      const d = haversine(selectedRepeater.latitude, selectedRepeater.longitude, r.latitude, r.longitude);
+      return d < 50; // within 2× coverage radius
+    });
+  }, [selectedRepeater, filteredRepeaters]);
+
   const showRepeaters = activeLayers.repeaters && activeFilter !== "online" && activeFilter !== "emergency";
   const showUsers = activeLayers.users && activeFilter !== "repeaters";
 
@@ -144,21 +255,59 @@ export default function RadioScopeMap({
       style={{ background: "#000" }}
     >
       <TileLayer key={tileMode} url={tileUrl} attribution="&copy; OpenStreetMap, CARTO, Esri" />
-      <MapController recenterTrigger={recenterTrigger} userPosition={userPosition} />
+      <MapController
+        recenterTrigger={recenterTrigger}
+        userPosition={userPosition}
+        selectedRepeater={selectedRepeater}
+        selectedUser={selectedUser}
+      />
+      <BoundsTracker onBoundsChange={handleBoundsChange} />
 
+      {/* User GPS position with radar sweep */}
       {userPosition && (
         <AnimatedMarker position={userPosition} icon={userPosIcon} zIndexOffset={1000} />
       )}
 
+      {/* Coverage circles (layer toggle) */}
       {activeLayers.coverage && showRepeaters && filteredRepeaters.map((r) => (
         <Circle
           key={`cov-${r.id}`}
           center={[r.latitude, r.longitude]}
           radius={COVERAGE_RADIUS}
-          pathOptions={{ color: "#8b5cf6", fillColor: "#8b5cf6", fillOpacity: 0.04, weight: 1, dashArray: "4 4" }}
+          pathOptions={{
+            color: r.id === selectedRepeater?.id ? "#06b6d4" : "#8b5cf6",
+            fillColor: r.id === selectedRepeater?.id ? "#06b6d4" : "#8b5cf6",
+            fillOpacity: r.id === selectedRepeater?.id ? 0.08 : 0.04,
+            weight: r.id === selectedRepeater?.id ? 2 : 1,
+            dashArray: "4 4",
+          }}
+          className={r.id === selectedRepeater?.id ? "rs-coverage-selected" : ""}
         />
       ))}
 
+      {/* Selected repeater coverage — always visible when selected */}
+      {selectedRepeater && !activeLayers.coverage && (
+        <Circle
+          center={[selectedRepeater.latitude, selectedRepeater.longitude]}
+          radius={COVERAGE_RADIUS}
+          pathOptions={{ color: "#06b6d4", fillColor: "#06b6d4", fillOpacity: 0.08, weight: 2, dashArray: "6 6" }}
+          className="rs-coverage-selected"
+        />
+      )}
+
+      {/* Overlap indicators: dashed lines to repeaters with intersecting coverage */}
+      {selectedRepeater && overlapRepeaters.map((r) => (
+        <Polyline
+          key={`overlap-${r.id}`}
+          positions={[
+            [selectedRepeater.latitude, selectedRepeater.longitude],
+            [r.latitude, r.longitude],
+          ]}
+          pathOptions={{ color: "#06b6d4", weight: 1.5, opacity: 0.4, dashArray: "2 8" }}
+        />
+      ))}
+
+      {/* Repeater markers */}
       {showRepeaters && filteredRepeaters.map((r) => (
         <AnimatedMarker
           key={r.id}
@@ -168,7 +317,8 @@ export default function RadioScopeMap({
         />
       ))}
 
-      {showUsers && filteredUsers.map((u) => (
+      {/* Individual user markers (zoomed in) */}
+      {showUsers && individualUsers.map((u) => (
         <AnimatedMarker
           key={u.user_uid || u.id}
           position={[u.latitude, u.longitude]}
@@ -177,6 +327,12 @@ export default function RadioScopeMap({
         />
       ))}
 
+      {/* Cluster markers (zoomed out) */}
+      {showUsers && userClusters.map((c, i) => (
+        <ClusterMarker key={`cluster-${i}`} position={[c.lat, c.lon]} count={c.count} />
+      ))}
+
+      {/* RF beams with signal pulse */}
       {beams.map((b) => (
         <Polyline
           key={b.key}
@@ -186,6 +342,7 @@ export default function RadioScopeMap({
         />
       ))}
 
+      {/* Linked repeater lines */}
       {linkedRepeaters.map((l) => (
         <Polyline
           key={l.key}

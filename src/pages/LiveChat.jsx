@@ -62,7 +62,7 @@ export default function LiveChat() {
     <div
       ref={rootRef}
       className="fixed inset-0 z-[55] flex flex-col bg-background overflow-hidden"
-      style={{ height: "100dvh" }}
+      style={{ height: "100dvh", paddingBottom: "calc(4rem + env(safe-area-inset-bottom))" }}
     >
       {/* Header — respects top safe-area (notch) */}
       <header

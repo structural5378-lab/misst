@@ -31,8 +31,8 @@ export default function RepeaterSheet({ repeater, userPosition, onlineUsers, rep
 
   return (
     <>
-      <div onClick={onClose} className="fixed inset-0 bg-black/60 z-[60] fade-in" style={{ touchAction: "none" }} />
-      <div className="fixed bottom-0 left-0 right-0 z-[60] bg-card rounded-t-3xl border-t border-cyan-500/20 pb-[env(safe-area-inset-bottom)] sheet-up max-h-[80vh] overflow-y-auto">
+      <div onClick={onClose} className="fixed inset-0 bg-black/60 z-[80] fade-in" style={{ touchAction: "none" }} />
+      <div className="fixed bottom-0 left-0 right-0 z-[80] bg-card rounded-t-3xl border-t border-cyan-500/20 pb-[env(safe-area-inset-bottom)] sheet-up max-h-[80vh] overflow-y-auto">
         <div className="flex justify-center pt-2 pb-1">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
         </div>
@@ -44,6 +44,25 @@ export default function RepeaterSheet({ repeater, userPosition, onlineUsers, rep
             <div>
               <h2 className="text-lg font-bold text-foreground">{repeater.callsign}</h2>
               <p className="text-xs text-muted-foreground">{repeater.location || "Location unknown"}</p>
+              <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                {repeater.status && (
+                  <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full border ${
+                    repeater.status === "online" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" :
+                    repeater.status === "offline" ? "bg-red-500/20 text-red-400 border-red-500/30" :
+                    "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                  }`}>
+                    ● {repeater.status.charAt(0).toUpperCase() + repeater.status.slice(1)}
+                  </span>
+                )}
+                {dist != null && (
+                  <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full border ${
+                    dist <= 25 ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" :
+                    "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                  }`}>
+                    {dist <= 25 ? "In Range" : "Out of Range"}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <button onClick={onClose} className="p-2 -m-1 text-muted-foreground hover:text-foreground">
