@@ -59,15 +59,15 @@ export default function ChatComposer({ onSend, onTyping, replyTo, onCancelReply 
       {/* Reply preview */}
       {replyTo && (
         <div className="flex items-center gap-2 px-4 py-2 bg-violet-500/10 border-b border-violet-500/20 fade-in">
-          <Reply className="w-4 h-4 text-violet-400 shrink-0" />
+          <Reply className="w-5 h-5 text-violet-400 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-violet-400">{replyTo.sender_name}</p>
             <p className="text-xs text-muted-foreground truncate">
               {replyTo.content || (replyTo.image_url ? "📷 Photo" : "")}
             </p>
           </div>
-          <button onClick={onCancelReply} className="p-1 text-muted-foreground hover:text-foreground">
-            <X className="w-4 h-4" />
+          <button onClick={onCancelReply} className="p-2 -m-1 text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
           </button>
         </div>
       )}
@@ -83,16 +83,16 @@ export default function ChatComposer({ onSend, onTyping, replyTo, onCancelReply 
       {imageFile && imageUrl && (
         <div className="flex items-center gap-2 px-4 py-2 fade-in">
           <img src={imageUrl} alt="preview" className="h-14 w-14 rounded-lg object-cover" />
-          <button onClick={() => setImageFile(null)} className="text-xs text-red-400">Remove</button>
+          <button onClick={() => setImageFile(null)} className="text-xs text-red-400 px-2 py-1">Remove</button>
         </div>
       )}
 
-      <div className="flex items-end gap-2 px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+      <div className="flex items-end gap-2 px-3 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
         <button
           onClick={() => fileRef.current?.click()}
-          className="p-2.5 rounded-full text-muted-foreground hover:text-violet-400 hover:bg-violet-500/10 transition-colors shrink-0"
+          className="p-3 rounded-full text-muted-foreground hover:text-violet-400 hover:bg-violet-500/10 transition-colors shrink-0"
         >
-          <ImageIcon className="w-5 h-5" />
+          <ImageIcon className="w-6 h-6" />
         </button>
         <input type="file" accept="image/*" ref={fileRef} className="hidden"
           onChange={(e) => setImageFile(e.target.files[0] || null)} />
@@ -100,9 +100,9 @@ export default function ChatComposer({ onSend, onTyping, replyTo, onCancelReply 
         <div className="flex-1 flex items-end gap-1 bg-secondary rounded-3xl border border-border focus-within:border-violet-500/50 transition-colors">
           <button
             onClick={() => setShowEmoji(!showEmoji)}
-            className={`p-2.5 transition-colors shrink-0 ${showEmoji ? "text-violet-400" : "text-muted-foreground hover:text-violet-400"}`}
+            className={`p-3 transition-colors shrink-0 ${showEmoji ? "text-violet-400" : "text-muted-foreground hover:text-violet-400"}`}
           >
-            <Smile className="w-5 h-5" />
+            <Smile className="w-6 h-6" />
           </button>
           <textarea
             ref={inputRef}
@@ -113,7 +113,7 @@ export default function ChatComposer({ onSend, onTyping, replyTo, onCancelReply 
             rows={1}
             enterKeyHint="send"
             inputMode="text"
-            className="flex-1 resize-none bg-transparent py-2.5 pr-3 text-sm text-foreground placeholder:text-muted-foreground outline-none max-h-28"
+            className="flex-1 resize-none bg-transparent py-3 pr-3 text-[15px] leading-[1.5] text-foreground placeholder:text-muted-foreground outline-none max-h-28"
             style={{ overflowY: "hidden" }}
           />
         </div>
@@ -121,9 +121,9 @@ export default function ChatComposer({ onSend, onTyping, replyTo, onCancelReply 
         <button
           onClick={handleSend}
           disabled={!hasContent}
-          className={`w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 disabled:opacity-30 flex items-center justify-center shrink-0 shadow-lg shadow-violet-900/30 transition-transform active:scale-90 ${hasContent ? "scale-100" : "scale-85"}`}
+          className={`w-11 h-11 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 disabled:opacity-30 flex items-center justify-center shrink-0 shadow-lg shadow-violet-900/30 transition-transform active:scale-90 ${hasContent ? "scale-100" : "scale-90"}`}
         >
-          <Send className="w-4 h-4 text-white" />
+          <Send className="w-5 h-5 text-white" />
         </button>
       </div>
     </div>

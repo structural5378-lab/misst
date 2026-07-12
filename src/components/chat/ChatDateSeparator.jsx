@@ -10,7 +10,7 @@ export default function ChatDateSeparator({ date }) {
 
   return (
     <div className="flex items-center justify-center my-3">
-      <span className="text-[10px] font-semibold text-muted-foreground bg-secondary/60 px-3 py-1 rounded-full">
+      <span className="text-[11px] font-semibold text-muted-foreground bg-secondary/60 px-3 py-1.5 rounded-full">
         {label}
       </span>
     </div>

@@ -47,24 +47,24 @@ export default React.memo(function ChatMessageBubble({ msg, isMe, showSender, on
   };
 
   return (
-    <div className={`flex ${isMe ? "justify-end" : "justify-start"} items-end gap-2 my-0.5`}>
+    <div className={`flex ${isMe ? "justify-end" : "justify-start"} items-end gap-2 my-1`}>
       {!isMe && (
-        <div className="w-7 shrink-0">
-          {showSender && <ChatAvatar src={msg.sender_avatar} name={msg.sender_name} size="w-7 h-7" />}
+        <div className="w-9 shrink-0">
+          {showSender && <ChatAvatar src={msg.sender_avatar} name={msg.sender_name} size="w-9 h-9" />}
         </div>
       )}
-      <div className={`max-w-[78%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+      <div className={`max-w-[80%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
         {showSender && !isMe && (
-          <span className="text-[11px] font-medium text-violet-400 mb-0.5 ml-1">{msg.sender_name}</span>
+          <span className="text-xs font-medium text-violet-400 mb-0.5 ml-1">{msg.sender_name}</span>
         )}
         <div
           onTouchStart={startPress}
           onTouchEnd={() => clearTimeout(pressTimerRef.current)}
           onTouchMove={cancelPress}
           onContextMenu={(e) => { e.preventDefault(); onLongPress(msg); }}
-          className={`px-3.5 py-2 text-sm leading-relaxed select-none ${
+          className={`px-4 py-2.5 text-[15px] leading-[1.5] select-none ${
             isMe
-              ? "bg-gradient-to-br from-violet-600 to-violet-700 text-white rounded-2xl rounded-br-md"
+              ? "bg-gradient-to-br from-violet-500 to-violet-700 text-white rounded-2xl rounded-br-md"
               : "bg-card border border-border text-foreground rounded-2xl rounded-bl-md"
           } ${msg._status === "failed" ? "border-red-500/50" : ""}`}
         >
@@ -81,7 +81,8 @@ export default React.memo(function ChatMessageBubble({ msg, isMe, showSender, on
               src={msg.image_url}
               alt="shared"
               loading="lazy"
-              className="rounded-xl max-w-full mb-1 max-h-60 object-cover"
+              decoding="async"
+              className="rounded-xl max-w-full mb-1.5 max-h-64 object-cover"
             />
           )}
           {msg.content && <span className="break-words whitespace-pre-wrap">{msg.content}</span>}
@@ -93,7 +94,7 @@ export default React.memo(function ChatMessageBubble({ msg, isMe, showSender, on
               <button
                 key={emoji}
                 onClick={() => onReaction(msg.id, emoji)}
-                className={`px-1.5 py-0.5 rounded-full text-xs flex items-center gap-0.5 border active:scale-110 transition-transform ${
+                className={`px-2 py-1 rounded-full text-sm flex items-center gap-1 border active:scale-110 transition-transform ${
                   isMe ? "bg-violet-500/20 border-violet-400/30" : "bg-secondary border-border"
                 }`}
               >
@@ -105,12 +106,12 @@ export default React.memo(function ChatMessageBubble({ msg, isMe, showSender, on
         )}
 
         <div className={`flex items-center gap-1 mt-0.5 px-1 ${isMe ? "flex-row-reverse" : ""}`}>
-          <span className="text-[10px] text-muted-foreground">{formatTime(msg.created_date)}</span>
+          <span className="text-[11px] text-muted-foreground">{formatTime(msg.created_date)}</span>
           {isMe && msg._status && (
             <span className="text-muted-foreground">
-              {msg._status === "sending" && <Clock className="w-3 h-3" />}
-              {msg._status === "sent" && <Check className="w-3 h-3" />}
-              {msg._status === "failed" && <AlertCircle className="w-3 h-3 text-red-400" />}
+              {msg._status === "sending" && <Clock className="w-3.5 h-3.5" />}
+              {msg._status === "sent" && <Check className="w-3.5 h-3.5" />}
+              {msg._status === "failed" && <AlertCircle className="w-3.5 h-3.5 text-red-400" />}
             </span>
           )}
         </div>
