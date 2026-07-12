@@ -25,11 +25,11 @@ export default function ChatMessageActions({ msg, myUid, onClose, onReply, onRea
     <>
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-black/60 z-[60] fade-in"
+        className="fixed inset-0 bg-black/60 z-[80] fade-in"
         style={{ touchAction: "none" }}
       />
       <div
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-card rounded-t-3xl border-t border-border pb-[env(safe-area-inset-bottom)] sheet-up"
+        className="fixed bottom-0 left-0 right-0 z-[80] bg-card rounded-t-3xl border-t border-border pb-[env(safe-area-inset-bottom)] sheet-up"
         role="dialog"
         aria-modal="true"
       >

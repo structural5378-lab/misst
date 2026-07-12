@@ -50,7 +50,7 @@ function ComposeModal({ recipient, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-lg bg-card border border-border rounded-t-2xl p-5 pb-8 space-y-4 animate-in slide-in-from-bottom-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -115,7 +115,7 @@ export default function OnlineMembersSheet({ members, onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
         <div
           className="w-full max-w-lg bg-card border border-border rounded-t-2xl overflow-hidden animate-in slide-in-from-bottom-4"
           style={{ maxHeight: "80vh" }}

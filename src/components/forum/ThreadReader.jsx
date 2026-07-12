@@ -136,7 +136,7 @@ export default function ThreadReader({ thread, onBack }) {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3">
+      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3">
         <button onClick={onBack} className="text-violet-400 hover:text-violet-300 p-1 -ml-1">
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -168,7 +168,7 @@ export default function ThreadReader({ thread, onBack }) {
         </div>
       )}
 
-      <div className="flex-1 px-4 py-2 space-y-3 pb-4">
+      <div className="flex-1 px-4 py-2 space-y-3 pb-20">
         {isLoading ? (
           <div className="flex justify-center py-16">
             <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
@@ -191,7 +191,7 @@ export default function ThreadReader({ thread, onBack }) {
 
       {/* Sticky reply bar */}
       {mybbUser?.password && (
-        <div className="sticky bottom-0 bg-background/95 backdrop-blur-xl border-t border-border px-4 py-3">
+        <div className="sticky bottom-16 z-30 bg-background/95 backdrop-blur-xl border-t border-border px-4 py-3">
           {postError && <p className="text-xs text-red-400 mb-2">{postError}</p>}
           <div className="flex items-end gap-2">
             <div className="w-7 h-7 rounded-full bg-violet-900/60 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-300 shrink-0 mb-1">

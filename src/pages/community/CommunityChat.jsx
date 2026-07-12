@@ -65,7 +65,7 @@ export default function CommunityChat() {
   const canPost = hasPermission('community:post_chat');
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem-4rem)]">
+    <div className="flex flex-col h-[calc(100dvh-3.5rem-4rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))]">
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {isLoading && (
           <div className="flex justify-center py-8">

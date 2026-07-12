@@ -173,7 +173,7 @@ export default function MyBBForum() {
     const { Icon, colors } = getCategoryMeta(activeCategory.name);
     return (
       <div className="min-h-screen bg-background pb-24">
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border">
+        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
           <div className="flex items-center gap-3 h-14 px-4">
             <button onClick={() => { setView("home"); setActiveCategory(null); }} className="text-primary p-1 -ml-1">
               <ArrowLeft className="w-5 h-5" />
@@ -232,7 +232,7 @@ export default function MyBBForum() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
         <div className="flex items-center justify-between h-14 px-4">
           <h1 className="text-base font-bold text-foreground">Community Forum</h1>
           <div className="flex items-center gap-1">
@@ -402,7 +402,7 @@ function ThreadRow({ thread, onClick }) {
 
 function NewThreadModal({ forumName, newSubject, setNewSubject, newBody, setNewBody, posting, postError, onSubmit, onClose }) {
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4">
+    <div className="fixed inset-0 z-[80] bg-black/70 flex items-end sm:items-center justify-center p-4">
       <div className="w-full max-w-lg bg-card rounded-2xl border border-border/60 p-5 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-foreground">New Thread</h3>

@@ -137,7 +137,7 @@ export default function RadioScope() {
 
       {/* Header */}
       <header
-        className="absolute top-0 left-0 right-0 z-10 flex items-center gap-3 px-4 py-2.5"
+        className="absolute top-0 left-0 right-0 z-20 flex items-center gap-3 px-4 py-2.5 bg-black/60 backdrop-blur-md border-b border-cyan-500/10"
         style={{ paddingTop: "calc(0.625rem + env(safe-area-inset-top))" }}
       >
         <Link to="/" className="p-2 -m-1 text-cyan-400">
@@ -153,7 +153,7 @@ export default function RadioScope() {
       </header>
 
       {/* Search + Filters */}
-      <div className="absolute top-14 left-0 right-0 z-10 px-3">
+      <div className="absolute left-0 right-0 z-10 px-3" style={{ top: "calc(3.5rem + env(safe-area-inset-top))" }}>
         <RadioScopeSearch
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

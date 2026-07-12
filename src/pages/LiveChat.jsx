@@ -40,6 +40,12 @@ export default function LiveChat() {
       const vv = window.visualViewport;
       if (rootRef.current && vv) {
         rootRef.current.style.height = `${vv.height}px`;
+        // When keyboard is open (viewport shrank), remove bottom padding so
+        // the composer sits directly above the keyboard with no gap
+        const keyboardOpen = vv.height < window.innerHeight - 100;
+        rootRef.current.style.paddingBottom = keyboardOpen
+          ? "0px"
+          : "calc(4rem + env(safe-area-inset-bottom))";
       }
     };
     updateHeight();

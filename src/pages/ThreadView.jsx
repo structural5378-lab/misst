@@ -54,10 +54,10 @@ export default function ThreadView() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="min-h-screen flex flex-col">
       <PageHeader title={thread?.title || "Thread"} showBack />
       
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      <div className="flex-1 px-4 py-3 space-y-3 pb-32">
         {/* Original post */}
         {thread && (
           <div className="p-4 rounded-xl bg-card border border-border/50">
@@ -103,9 +103,12 @@ export default function ThreadView() {
         ))}
       </div>
 
-      {/* Reply bar */}
-      <div className="border-t border-border p-3 bg-card/95 backdrop-blur-xl">
-        <div className="flex gap-2">
+      {/* Reply bar — fixed above bottom nav */}
+      <div
+        className="fixed left-0 right-0 z-30 border-t border-border p-3 bg-card/95 backdrop-blur-xl"
+        style={{ bottom: "calc(4rem + env(safe-area-inset-bottom))" }}
+      >
+        <div className="flex gap-2 max-w-2xl mx-auto">
           <Input
             placeholder="Write a reply..."
             value={reply}

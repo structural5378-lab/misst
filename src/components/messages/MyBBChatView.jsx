@@ -86,8 +86,8 @@ export default function MyBBChatView({ pmid, fromUsername, subject, mybbUser, on
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-white/[0.06] px-4 py-3 flex items-center gap-3">
+    <div className="min-h-screen flex flex-col bg-background">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-white/[0.06] px-4 py-3 flex items-center gap-3">
         <button onClick={onBack} className="text-violet-400 hover:text-violet-300 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -100,7 +100,7 @@ export default function MyBBChatView({ pmid, fromUsername, subject, mybbUser, on
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-24">
+      <div className="flex-1 px-4 py-4 space-y-3 pb-32">
         {isLoading ? (
           <div className="flex justify-center py-16">
             <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
@@ -138,7 +138,10 @@ export default function MyBBChatView({ pmid, fromUsername, subject, mybbUser, on
         <div ref={bottomRef} />
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-xl border-t border-white/[0.06] px-4 py-3">
+      <div
+        className="fixed left-0 right-0 z-30 bg-background/95 backdrop-blur-xl border-t border-white/[0.06] px-4 py-3"
+        style={{ bottom: "calc(4rem + env(safe-area-inset-bottom))" }}
+      >
         {sendError && <p className="text-xs text-red-400 mb-2">{sendError}</p>}
         <div className="flex items-center gap-2 max-w-lg mx-auto">
           <input
