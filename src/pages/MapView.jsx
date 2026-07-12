@@ -46,7 +46,7 @@ export default function MapView() {
     : dbRepeaters.filter((r) => r.latitude && r.longitude);
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="flex flex-col" style={{ height: "calc(100dvh - 7.5rem)" }}>
       <PageHeader
         title="Repeater Map"
         showBack

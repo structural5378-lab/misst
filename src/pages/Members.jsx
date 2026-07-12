@@ -54,7 +54,7 @@ function ComposeModal({ recipient, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
       <div
         className="w-full max-w-lg bg-card border border-border rounded-2xl p-5 space-y-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
@@ -122,7 +122,7 @@ function MemberSheet({ member, onClose, onMessage, isSelf }) {
   const role = getRoleStyle(member.role);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div
         className="w-full max-w-lg bg-card border border-border rounded-t-2xl overflow-y-auto max-h-[85vh] animate-in slide-in-from-bottom-4"
         onClick={e => e.stopPropagation()}

@@ -210,7 +210,7 @@ function LiveMap({ session, myUID, onEnd, onPing, repeaters }) {
   const center = hasMyPos ? [myLat, myLon] : [28.5, -81.4];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)]">
+    <div className="flex flex-col" style={{ height: "calc(100dvh - 11rem)" }}>
       {/* Distance bar */}
       <div className="px-4 py-3 bg-card border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">

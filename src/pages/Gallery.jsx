@@ -24,7 +24,7 @@ function LightboxModal({ photos, startIndex, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+      className="fixed inset-0 z-[80] bg-black/90 flex items-center justify-center"
       onClick={onClose}
     >
       <button
@@ -121,7 +121,7 @@ function UploadModal({ onClose, onSuccess, uploaderName }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4">
+    <div className="fixed inset-0 z-[80] bg-black/70 flex items-end sm:items-center justify-center p-4">
       <div className="w-full max-w-md bg-card border border-border rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-foreground text-lg">Add Photos</h3>
