@@ -36,16 +36,24 @@ export default function LiveChat() {
   // Adjust root height when keyboard opens/closes (visualViewport API)
   // This keeps the composer visible above the keyboard on iOS/Android
   useEffect(() => {
+    const initialHeight = window.visualViewport?.height || window.innerHeight;
     const updateHeight = () => {
       const vv = window.visualViewport;
       if (rootRef.current && vv) {
+        const keyboardOpen = vv.height < initialHeight - 100;
+        // Track the visual viewport exactly — height + top offset — so the
+        // chat sits precisely in the visible area above the keyboard on
+        // both iOS (layout viewport != visual viewport) and Android.
         rootRef.current.style.height = `${vv.height}px`;
-        // When keyboard is open (viewport shrank), remove bottom padding so
-        // the composer sits directly above the keyboard with no gap
-        const keyboardOpen = vv.height < window.innerHeight - 100;
+        rootRef.current.style.top = `${vv.offsetTop || 0}px`;
+        // When keyboard is open, remove bottom padding so the composer
+        // sits directly above the keyboard with no gap, and raise z-index
+        // above the bottom nav so the nav never overlaps the chat.
         rootRef.current.style.paddingBottom = keyboardOpen
           ? "0px"
           : "calc(4rem + env(safe-area-inset-bottom))";
+        rootRef.current.style.zIndex = keyboardOpen ? "75" : "55";
+        document.body.classList.toggle("keyboard-open", keyboardOpen);
       }
     };
     updateHeight();
@@ -54,6 +62,7 @@ export default function LiveChat() {
     return () => {
       window.visualViewport?.removeEventListener("resize", updateHeight);
       window.visualViewport?.removeEventListener("scroll", updateHeight);
+      document.body.classList.remove("keyboard-open");
     };
   }, []);
 
@@ -67,7 +76,7 @@ export default function LiveChat() {
   return (
     <div
       ref={rootRef}
-      className="fixed inset-0 z-[55] flex flex-col bg-background overflow-hidden"
+      className="fixed top-0 left-0 right-0 z-[55] flex flex-col bg-background overflow-hidden"
       style={{ height: "100dvh", paddingBottom: "calc(4rem + env(safe-area-inset-bottom))" }}
     >
       {/* Header — respects top safe-area (notch) */}
