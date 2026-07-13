@@ -51,6 +51,8 @@ import CreateCommunity from '@/pages/CreateCommunity';
 import RadioScope from '@/pages/RadioScope';
 import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
+import Settings from '@/pages/Settings';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 // Platform Admin pages
 import PlatformAdminDashboard from '@/pages/platform/PlatformAdminDashboard';
@@ -126,6 +128,7 @@ const AuthenticatedApp = () => {
         <Route path="/radioscope" element={<RadioScope />} />
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/settings" element={<Settings />} />
 
         {/* Community-scoped routes — /c/:slug/* (isolated per community) */}
         <Route element={<CommunityLayout />}>
@@ -161,16 +164,18 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <MyBBAuthProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router>
-            <AuthenticatedApp />
-          </Router>
-          <Toaster />
-        </QueryClientProvider>
-      </MyBBAuthProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <MyBBAuthProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <Router>
+              <AuthenticatedApp />
+            </Router>
+            <Toaster />
+          </QueryClientProvider>
+        </MyBBAuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

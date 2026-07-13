@@ -372,3 +372,59 @@ body.keyboard-open [data-bottom-nav] {
     overflow-x: auto;
   }
 }
+
+/* ─── Theme Engine ─── */
+
+/* Smooth theme transition */
+.theme-transition, .theme-transition * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* Card Style */
+body.cards-square { --radius: 0.25rem; }
+body.cards-rounded { --radius: 0.75rem; }
+
+/* Animation Intensity */
+body.anim-minimal *, body.anim-minimal *::before, body.anim-minimal *::after {
+  animation-duration: 0.1s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0.1s !important;
+}
+body.anim-performance *, body.anim-performance *::before, body.anim-performance *::after {
+  animation: none !important;
+  transition: none !important;
+}
+body.anim-enhanced .operator-card {
+  box-shadow: 0 0 30px hsl(var(--primary) / 0.15), 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* Animated Backgrounds */
+body.no-anim-bg .banner-galaxy::before,
+body.no-anim-bg .banner-lightning::before,
+body.no-anim-bg .banner-storm::before,
+body.no-anim-bg .banner-aurora::before,
+body.no-anim-bg .banner-matrix::before,
+body.no-anim-bg .banner-neon::before,
+body.no-anim-bg .banner-founder,
+body.no-anim-bg .banner-holiday::before,
+body.no-anim-bg .banner-radiotower::before { animation: none !important; }
+
+/* Compact Mode */
+body.compact-mode .space-y-4 > * + * { margin-top: 0.5rem !important; }
+body.compact-mode .space-y-6 > * + * { margin-top: 0.75rem !important; }
+body.compact-mode .gap-4 { gap: 0.5rem !important; }
+body.compact-mode .gap-6 { gap: 0.75rem !important; }
+body.compact-mode .p-4 { padding: 0.625rem !important; }
+body.compact-mode .px-4 { padding-left: 0.625rem !important; padding-right: 0.625rem !important; }
+
+/* UI Scaling */
+body.scale-small { font-size: 14px; }
+body.scale-medium { font-size: 16px; }
+body.scale-large { font-size: 18px; }
+
+/* Icon Style */
+body.icon-bold svg { stroke-width: 2.5; }
+body.icon-outline svg { stroke-width: 1.5; }
+
+/* AMOLED Mode */
+body.amoled-mode { background: #000; }

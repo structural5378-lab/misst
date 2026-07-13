@@ -28,6 +28,7 @@ const quickItems = [
   { icon: SignalHigh, label: "Simplex", path: "/cineplex", bg: "bg-emerald-500/15", color: "text-emerald-400" },
   { icon: MessageCircle, label: "Live Chat", path: "/live-chat", bg: "bg-violet-500/15", color: "text-violet-400" },
   { icon: Trophy, label: "Trophies", path: "/achievements", bg: "bg-amber-500/15", color: "text-amber-400" },
+  { icon: Settings, label: "Settings", path: "/settings", bg: "bg-slate-500/15", color: "text-slate-400" },
 ];
 
 export default function Dashboard() {
