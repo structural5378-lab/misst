@@ -9,7 +9,7 @@ export const BANNERS = {
   aurora:   { id: 'aurora',   name: 'Aurora',           rarity: 'legendary', class: 'banner-aurora',  animated: true },
   matrix:   { id: 'matrix',   name: 'Digital Matrix',   rarity: 'legendary', class: 'banner-matrix',  animated: true },
   tactical: { id: 'tactical', name: 'Military Tactical',rarity: 'legendary', class: 'banner-tactical',animated: false },
-  founder:  { id: 'founder',  name: 'Founder Exclusive', rarity: 'founder',   class: 'banner-founder',  animated: true, image: 'https://media.base44.com/images/public/6a24d788be1af31b2258fab2/6d090e943_generated_image.png' },
+  founder:  { id: 'founder',  name: 'Founder Exclusive', rarity: 'founder',   class: 'banner-founder',  animated: true, image: 'https://media.base44.com/images/public/6a24d788be1af31b2258fab2/c1bfc9bd8_DC251A0F-8A84-42EF-9E38-64B084A1F566.png' },
   holiday:  { id: 'holiday',  name: 'Holiday Limited',  rarity: 'seasonal',   class: 'banner-holiday', animated: true },
 };
 
