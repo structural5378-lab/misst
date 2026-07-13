@@ -29,3 +29,10 @@ export function formatDistance(km) {
   if (km < 10) return km.toFixed(1) + " km";
   return Math.round(km) + " km";
 }
+
+export function formatDistanceMixed(km) {
+  if (km < 1) return Math.round(km * 1000) + " m";
+  const miles = km * 0.621371;
+  if (miles < 10) return miles.toFixed(1) + " mi";
+  return Math.round(miles) + " mi";
+}
