@@ -10,6 +10,7 @@ import StormTracker from "@/components/weather/StormTracker";
 import PropagationGauge from "@/components/dashboard/PropagationGauge";
 import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
 import RadioScopeTile from "@/components/radioscope/RadioScopeTile";
+import OperatorCard from "@/components/profile/OperatorCard";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/ef2f5095f_EA7D7629-51E2-49DA-AE8B-4017441D651F.png";
 
@@ -159,42 +160,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* User identity banner */}
-        <div className="relative px-4 pb-6 flex items-center gap-4">
-          <div className="w-20 h-20 rounded-2xl border-2 border-violet-500/40 bg-violet-950/50 overflow-hidden flex items-center justify-center shadow-lg shadow-violet-900/30">
-            <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; e.target.className = "w-full h-full object-contain scale-110"; }} />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-foreground">{callsign}</span>
-              <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                ● Online
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {location}{mybbUser?.role ? ` · ${mybbUser.role.charAt(0).toUpperCase() + mybbUser.role.slice(1)}` : " · GMRS Operator"}
-            </p>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <Link to="/profile" className="text-xs text-violet-400 font-medium hover:text-violet-300">
-                Edit Profile →
-              </Link>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Link
-              to="/alerts"
-              className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Bell className="w-5 h-5" />
-            </Link>
-            <button
-              onClick={() => { mybbLogout(); window.location.href = "/login"; }}
-              className="p-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
-              title="Sign Out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
+        {/* Operator Identity Card */}
+        <div className="relative px-4 pb-4">
+          <OperatorCard onLogout={() => { mybbLogout(); window.location.href = "/login"; }} />
         </div>
       </div>
 
