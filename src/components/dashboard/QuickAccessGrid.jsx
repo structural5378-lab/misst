@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Radio, MapPin, Users, MessageSquare, Wrench, Camera, UserCircle2, CloudSun, SignalHigh } from "lucide-react";
+import { Radio, MapPin, Users, MessageSquare, Wrench, Camera, UserCircle2, CloudSun, SignalHigh, Trophy } from "lucide-react";
 
 const items = [
   { icon: Radio, label: "Repeaters", path: "/repeaters", color: "text-primary" },
@@ -12,6 +12,7 @@ const items = [
   { icon: Wrench, label: "Tools", path: "/tools", color: "text-orange-400" },
   { icon: CloudSun, label: "Weather", path: "/weather", color: "text-yellow-400" },
   { icon: SignalHigh, label: "Simplex", path: "/cineplex", color: "text-emerald-400" },
+  { icon: Trophy, label: "Trophies", path: "/achievements", color: "text-amber-400" },
 ];
 
 export default function QuickAccessGrid() {

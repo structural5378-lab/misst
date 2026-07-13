@@ -1,0 +1,160 @@
+{
+  "name": "UserStats",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "user_callsign": {
+      "type": "string"
+    },
+    "user_avatar": {
+      "type": "string"
+    },
+    "user_location": {
+      "type": "string"
+    },
+    "net_checkins": {
+      "type": "number",
+      "default": 0
+    },
+    "net_control_sessions": {
+      "type": "number",
+      "default": 0
+    },
+    "repeaters_visited": {
+      "type": "number",
+      "default": 0
+    },
+    "states_operated": {
+      "type": "number",
+      "default": 0
+    },
+    "counties_visited": {
+      "type": "number",
+      "default": 0
+    },
+    "miles_traveled": {
+      "type": "number",
+      "default": 0
+    },
+    "hours_on_nets": {
+      "type": "number",
+      "default": 0
+    },
+    "forum_posts": {
+      "type": "number",
+      "default": 0
+    },
+    "helpful_answers": {
+      "type": "number",
+      "default": 0
+    },
+    "photos_uploaded": {
+      "type": "number",
+      "default": 0
+    },
+    "events_attended": {
+      "type": "number",
+      "default": 0
+    },
+    "volunteer_hours": {
+      "type": "number",
+      "default": 0
+    },
+    "emergency_activations": {
+      "type": "number",
+      "default": 0
+    },
+    "club_events_hosted": {
+      "type": "number",
+      "default": 0
+    },
+    "repeaters_managed": {
+      "type": "number",
+      "default": 0
+    },
+    "friends": {
+      "type": "number",
+      "default": 0
+    },
+    "reputation": {
+      "type": "number",
+      "default": 0
+    },
+    "years_active": {
+      "type": "number",
+      "default": 0
+    },
+    "xp": {
+      "type": "number",
+      "default": 0
+    },
+    "level": {
+      "type": "number",
+      "default": 1
+    },
+    "achievement_score": {
+      "type": "number",
+      "default": 0
+    },
+    "achievements_count": {
+      "type": "number",
+      "default": 0
+    },
+    "daily_login_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "weekly_net_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "monthly_club_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "travel_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "volunteer_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "last_login_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "gmrs_license": {
+      "type": "string"
+    },
+    "ham_license_class": {
+      "type": "string",
+      "enum": [
+        "",
+        "technician",
+        "general",
+        "amateur_extra"
+      ],
+      "default": ""
+    },
+    "club_membership": {
+      "type": "string"
+    },
+    "favorite_repeater": {
+      "type": "string"
+    },
+    "current_status": {
+      "type": "string",
+      "default": "online"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

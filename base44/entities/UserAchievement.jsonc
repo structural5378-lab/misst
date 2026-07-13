@@ -1,0 +1,54 @@
+{
+  "name": "UserAchievement",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "achievement_id": {
+      "type": "string",
+      "description": "Achievement key from achievementsData.js"
+    },
+    "achievement_name": {
+      "type": "string"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "rare",
+        "epic",
+        "legendary",
+        "mythic",
+        "founder",
+        "seasonal",
+        "club_exclusive",
+        "national_event",
+        "developer"
+      ]
+    },
+    "collection": {
+      "type": "string"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false
+    },
+    "pin_order": {
+      "type": "number",
+      "default": 0
+    },
+    "unlocked_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "achievement_id"
+  ]
+}

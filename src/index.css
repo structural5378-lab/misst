@@ -225,6 +225,43 @@ body.keyboard-open [data-bottom-nav] {
 .rs-divicon { background: transparent; border: none; }
 .leaflet-container { background: #000; }
 
+/* ─── Achievement Badge System ─── */
+.ach-badge { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ach-hex { clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+.ach-badge[data-size="sm"] { width: 48px; height: 56px; }
+.ach-badge[data-size="md"] { width: 72px; height: 84px; }
+.ach-badge[data-size="lg"] { width: 120px; height: 140px; }
+.ach-badge[data-size="xl"] { width: 180px; height: 210px; }
+.ach-border { position: absolute; inset: 0; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); overflow: hidden; }
+.ach-border::before { content: ''; position: absolute; inset: -50%; background: var(--ach-border-grad, conic-gradient(from 0deg, #888, #ccc, #888)); animation: ach-rotate 4s linear infinite; }
+.ach-body { position: absolute; inset: 2px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: var(--ach-glow, none), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -3px 6px rgba(0,0,0,0.3); }
+.ach-body::after { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(255,255,255,0.25) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.15) 100%); pointer-events: none; }
+.ach-icon { position: relative; z-index: 2; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
+.ach-badge[data-size="sm"] .ach-icon { width: 20px; height: 20px; }
+.ach-badge[data-size="md"] .ach-icon { width: 32px; height: 32px; }
+.ach-badge[data-size="lg"] .ach-icon { width: 52px; height: 52px; }
+.ach-badge[data-size="xl"] .ach-icon { width: 80px; height: 80px; }
+.ach-holo { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,0,0,0.25), rgba(255,255,0,0.25), rgba(0,255,0,0.25), rgba(0,255,255,0.25), rgba(255,0,255,0.25), rgba(255,0,0,0.0.25)); background-size: 300% 300%; animation: ach-holo 3s ease-in-out infinite; mix-blend-mode: overlay; z-index: 1; }
+.ach-particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+.ach-particle { position: absolute; width: 3px; height: 3px; border-radius: 50%; opacity: 0; animation: ach-particle-float 2.5s ease-out infinite; }
+.ach-locked .ach-body { filter: grayscale(1) brightness(0.25); }
+.ach-locked .ach-icon { opacity: 0.15; }
+.ach-locked .ach-border::before { animation: none; opacity: 0.3; }
+.ach-locked .ach-particles { display: none; }
+@keyframes ach-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes ach-holo { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes ach-particle-float { 0% { opacity: 0; transform: translateY(0) scale(0.5); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-25px) scale(1); } }
+@keyframes ach-glow-pulse { 0%,100% { filter: drop-shadow(0 0 8px var(--ach-glow-color, rgba(255,255,255,0.4))); } 50% { filter: drop-shadow(0 0 20px var(--ach-glow-color, rgba(255,255,255,0.6))); } }
+.ach-glow-pulse { animation: ach-glow-pulse 2s ease-in-out infinite; }
+@keyframes ach-unlock-zoom { 0% { transform: scale(0) rotate(-180deg); opacity: 0; } 60% { transform: scale(1.15) rotate(8deg); opacity: 1; } 80% { transform: scale(0.92) rotate(-3deg); } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.ach-unlock-zoom { animation: ach-unlock-zoom 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes ach-shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+.ach-shine-text { background: linear-gradient(90deg, transparent, var(--ach-color, #fff), transparent); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: ach-shine 2.5s linear infinite; }
+@keyframes ach-bar-fill { from { width: 0%; } }
+.ach-bar-fill { animation: ach-bar-fill 0.6s ease-out; }
+@keyframes ach-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.ach-sheet-up { animation: ach-slide-up 0.3s cubic-bezier(0.32,0.72,0,1); }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

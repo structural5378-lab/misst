@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
-import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2, UserPlus, Shield, Camera, Loader2 } from "lucide-react";
+import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2, UserPlus, Shield, Camera, Loader2, Trophy, BarChart3 } from "lucide-react";
+import { useQuery } from '@tanstack/react-query';
+import LevelBar from '@/components/achievements/LevelBar';
+import TrophyCase from '@/components/achievements/TrophyCase';
+import StatsGrid from '@/components/achievements/StatsGrid';
+import { RARITY_SCORES } from '@/lib/rarityConfig';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +27,22 @@ export default function Profile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef(null);
+
+  const { data: userStats = {} } = useQuery({
+    queryKey: ['profile-stats'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('syncUserStats', { uid: mybbUser?.uid });
+      return res.data?.stats || {};
+    },
+    enabled: !!mybbUser?.uid,
+    staleTime: 30000,
+  });
+
+  const { data: userAchievements = [] } = useQuery({
+    queryKey: ['profile-achievements'],
+    queryFn: async () => await base44.entities.UserAchievement.list(),
+    staleTime: 15000,
+  });
 
   useEffect(() => {
     base44.auth.me().then((u) => {
@@ -197,6 +218,28 @@ export default function Profile() {
               <span className="text-xs text-muted-foreground mt-1">{label}</span>
             </div>
           ))}
+        </div>
+
+        {/* Level & XP */}
+        <LevelBar xp={userStats.xp || 0} />
+
+        {/* Achievement Links */}
+        <div className="flex gap-2">
+          <Link to="/achievements" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600/20 to-purple-600/20 border border-violet-500/30 text-violet-300 text-sm font-medium">
+            <Trophy className="w-4 h-4" /> {userAchievements.length} Achievements
+          </Link>
+          <Link to="/leaderboard" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm font-medium">
+            <BarChart3 className="w-4 h-4" /> Leaderboard
+          </Link>
+        </div>
+
+        {/* Trophy Case */}
+        <TrophyCase achievements={userAchievements} onBadgeClick={() => {}} />
+
+        {/* Lifetime Statistics */}
+        <div>
+          <h3 className="text-sm font-semibold text-foreground mb-2">Lifetime Statistics</h3>
+          <StatsGrid stats={userStats} />
         </div>
 
         {/* Edit Form */}
