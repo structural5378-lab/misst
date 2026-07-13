@@ -198,6 +198,20 @@ export default function Dashboard() {
       </div>
 
       <div className="px-4 pt-4 space-y-6 pb-4">
+        {/* RadioScope */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-foreground">RadioScope</h3>
+          </div>
+          <RadioScopeTile />
+        </div>
+
+        {/* Propagation Gauge */}
+        <PropagationGauge />
+
+        {/* Storm Tracker */}
+        <StormTracker />
+
         {/* Alerts Section */}
         {alerts.length > 0 && (
           <div>
@@ -235,12 +249,6 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-
-        {/* Propagation Gauge */}
-        <PropagationGauge />
-
-        {/* Storm Tracker */}
-        <StormTracker />
 
         {/* Stats strip */}
         <div className="grid grid-cols-3 gap-2">
@@ -309,14 +317,6 @@ export default function Dashboard() {
         {showOnlineSheet && (
           <OnlineMembersSheet members={onlineMembers} onClose={() => setShowOnlineSheet(false)} />
         )}
-
-        {/* RadioScope */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-foreground">RadioScope</h3>
-          </div>
-          <RadioScopeTile />
-        </div>
 
         {/* Quick Access */}
         <div>

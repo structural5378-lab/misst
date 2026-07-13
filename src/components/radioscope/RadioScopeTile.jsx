@@ -40,7 +40,7 @@ export default function RadioScopeTile() {
   return (
     <Link
       to="/radioscope"
-      className="relative w-full flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-br from-slate-950 to-violet-950/50 border border-cyan-500/20 hover:border-cyan-500/40 transition-all active:scale-[0.98] overflow-hidden group"
+      className="relative w-full flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-slate-950 to-violet-950/50 border border-cyan-500/20 hover:border-cyan-500/40 transition-all active:scale-[0.98] overflow-hidden group"
     >
       <div className="absolute inset-0 opacity-30 pointer-events-none">
         <div className="absolute top-1/2 left-4 w-20 h-20 -mt-10 rounded-full border-2 border-cyan-500/20" />
