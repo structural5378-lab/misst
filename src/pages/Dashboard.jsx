@@ -162,7 +162,7 @@ export default function Dashboard() {
         </div>
 
         {/* Operator Identity Card */}
-        <div className="relative px-4 pb-4">
+        <div className="relative pb-4">
           <OperatorCard onLogout={() => { mybbLogout(); window.location.href = "/login"; }} />
         </div>
       </div>
