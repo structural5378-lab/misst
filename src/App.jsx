@@ -62,6 +62,20 @@ import PlatformAdminRoles from '@/pages/platform/PlatformAdminRoles';
 import PlatformAdminAuditLog from '@/pages/platform/PlatformAdminAuditLog';
 import PlatformAdminRoute from '@/components/PlatformAdminRoute';
 import PlatformAdminLayout from '@/components/PlatformAdminLayout';
+import PlatformAdminAnalytics from '@/pages/platform/PlatformAdminAnalytics';
+import PlatformAdminFeatureFlags from '@/pages/platform/PlatformAdminFeatureFlags';
+import PlatformAdminThemeBuilder from '@/pages/platform/PlatformAdminThemeBuilder';
+import PlatformAdminNotifications from '@/pages/platform/PlatformAdminNotifications';
+import PlatformAdminContent from '@/pages/platform/PlatformAdminContent';
+import PlatformAdminBadges from '@/pages/platform/PlatformAdminBadges';
+import PlatformAdminRadioScope from '@/pages/platform/PlatformAdminRadioScope';
+import PlatformAdminForum from '@/pages/platform/PlatformAdminForum';
+import PlatformAdminChat from '@/pages/platform/PlatformAdminChat';
+import PlatformAdminClubs from '@/pages/platform/PlatformAdminClubs';
+import PlatformAdminMedia from '@/pages/platform/PlatformAdminMedia';
+import PlatformAdminAppBuilder from '@/pages/platform/PlatformAdminAppBuilder';
+import PlatformAdminDeveloper from '@/pages/platform/PlatformAdminDeveloper';
+import PlatformAdminSystem from '@/pages/platform/PlatformAdminSystem';
 
 // Community-scoped pages
 import CommunityLayout from '@/components/community/CommunityLayout';
@@ -153,6 +167,20 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/users" element={<PlatformAdminUsers />} />
           <Route path="/platform/admin/roles" element={<PlatformAdminRoles />} />
           <Route path="/platform/admin/audit-log" element={<PlatformAdminAuditLog />} />
+          <Route path="/platform/admin/analytics" element={<PlatformAdminAnalytics />} />
+          <Route path="/platform/admin/feature-flags" element={<PlatformAdminFeatureFlags />} />
+          <Route path="/platform/admin/theme-builder" element={<PlatformAdminThemeBuilder />} />
+          <Route path="/platform/admin/notifications" element={<PlatformAdminNotifications />} />
+          <Route path="/platform/admin/content" element={<PlatformAdminContent />} />
+          <Route path="/platform/admin/badges" element={<PlatformAdminBadges />} />
+          <Route path="/platform/admin/radioscope" element={<PlatformAdminRadioScope />} />
+          <Route path="/platform/admin/forum" element={<PlatformAdminForum />} />
+          <Route path="/platform/admin/chat" element={<PlatformAdminChat />} />
+          <Route path="/platform/admin/clubs" element={<PlatformAdminClubs />} />
+          <Route path="/platform/admin/media" element={<PlatformAdminMedia />} />
+          <Route path="/platform/admin/app-builder" element={<PlatformAdminAppBuilder />} />
+          <Route path="/platform/admin/developer" element={<PlatformAdminDeveloper />} />
+          <Route path="/platform/admin/system" element={<PlatformAdminSystem />} />
         </Route>
       </Route>
 

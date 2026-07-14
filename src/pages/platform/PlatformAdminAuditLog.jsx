@@ -1,10 +1,12 @@
 import React from "react";
+import AdminPlaceholder from "@/components/platform/AdminPlaceholder";
 
 export default function PlatformAdminAuditLog() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-slate-200 mb-2">Audit Log</h1>
-      <p className="text-slate-500 text-sm">Audit log will be built in a later phase.</p>
-    </div>
+    <AdminPlaceholder
+      title="Audit Log"
+      description="Track all admin actions and platform changes. Every action performed in this control center will be logged here for security and compliance."
+      features={["Admin action history", "User permission changes", "Content modifications", "Feature flag toggles", "Exportable logs"]}
+    />
   );
 }
