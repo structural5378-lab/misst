@@ -53,11 +53,11 @@ export default function UserActionModal({ user, onClose, onAction }) {
   ];
 
   const colorClasses = {
-    amber: "border-amber-500/30 text-amber-400 hover:bg-amber-500/10",
-    rose: "border-rose-500/30 text-rose-400 hover:bg-rose-500/10",
-    blue: "border-blue-500/30 text-blue-400 hover:bg-blue-500/10",
-    emerald: "border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10",
-    violet: "border-violet-500/30 text-violet-400 hover:bg-violet-500/10",
+    amber: "border-warning/30 text-warning hover:bg-warning/10",
+    rose: "border-destructive/30 text-destructive hover:bg-destructive/10",
+    blue: "border-info/30 text-info hover:bg-info/10",
+    emerald: "border-success/30 text-success hover:bg-success/10",
+    violet: "border-primary/30 text-primary hover:bg-primary/10",
   };
 
   return (
@@ -66,7 +66,7 @@ export default function UserActionModal({ user, onClose, onAction }) {
         {/* Header */}
         <div className="sticky top-0 bg-card/95 backdrop-blur-xl border-b border-border px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-violet-500/15 flex items-center justify-center text-sm font-bold text-violet-400">
+            <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-primary">
               {(user.callsign || user.email || "?").charAt(0).toUpperCase()}
             </div>
             <div>
@@ -83,11 +83,11 @@ export default function UserActionModal({ user, onClose, onAction }) {
         <div className="p-5 space-y-5">
           {/* Status badges */}
           <div className="flex flex-wrap gap-2">
-            {user.is_banned && <span className="text-xs px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/25">Banned</span>}
-            {user.is_platform_suspended && <span className="text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25">Suspended</span>}
-            {user.is_muted && <span className="text-xs px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/25">Muted</span>}
-            {user.is_verified && <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">Verified</span>}
-            <span className={`text-xs px-2.5 py-1 rounded-full border ${user.role === "admin" ? "bg-amber-500/15 text-amber-400 border-amber-500/25" : "bg-white/[0.05] text-muted-foreground border-white/[0.08]"}`}>
+            {user.is_banned && <span className="text-xs px-2.5 py-1 rounded-full bg-destructive/15 text-destructive border border-destructive/25">Banned</span>}
+            {user.is_platform_suspended && <span className="text-xs px-2.5 py-1 rounded-full bg-warning/15 text-warning border border-warning/25">Suspended</span>}
+            {user.is_muted && <span className="text-xs px-2.5 py-1 rounded-full bg-info/15 text-info border border-info/25">Muted</span>}
+            {user.is_verified && <span className="text-xs px-2.5 py-1 rounded-full bg-success/15 text-success border border-success/25">Verified</span>}
+            <span className={`text-xs px-2.5 py-1 rounded-full border ${user.role === "admin" ? "bg-warning/15 text-warning border-warning/25" : "bg-muted text-muted-foreground border-border"}`}>
               {user.role || "user"}
             </span>
           </div>
@@ -112,14 +112,14 @@ export default function UserActionModal({ user, onClose, onAction }) {
                 <Input value={form.mybb_username} onChange={e => setForm(f => ({ ...f, mybb_username: e.target.value }))} className="h-9 bg-background" />
               </div>
               <div className="flex gap-2">
-                <Button size="sm" onClick={saveProfile} disabled={loading === "update_profile"} className="bg-violet-600 hover:bg-violet-700 text-white">
+                <Button size="sm" onClick={saveProfile} disabled={loading === "update_profile"} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   {loading === "update_profile" ? "Saving..." : <><Save className="w-3 h-3 mr-1" />Save</>}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
               </div>
             </div>
           ) : (
-            <button onClick={() => setEditing(true)} className="w-full flex items-center gap-2 p-3 rounded-xl bg-background/50 border border-border hover:border-violet-500/30 transition-colors text-sm text-violet-400">
+            <button onClick={() => setEditing(true)} className="w-full flex items-center gap-2 p-3 rounded-xl bg-background/50 border border-border hover:border-primary/30 transition-colors text-sm text-primary">
               <Edit className="w-4 h-4" /> Edit Profile Information
             </button>
           )}

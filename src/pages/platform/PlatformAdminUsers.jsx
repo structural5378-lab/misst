@@ -43,9 +43,9 @@ export default function PlatformAdminUsers() {
         </div>
         <div className="divide-y divide-border">
           {filtered.map(u => (
-            <button key={u.id} onClick={() => setSelectedUser(u)} className="w-full grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 sm:gap-4 px-4 py-3 hover:bg-white/[0.02] transition-colors text-left">
+            <button key={u.id} onClick={() => setSelectedUser(u)} className="w-full grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 sm:gap-4 px-4 py-3 hover:bg-muted/50 transition-colors text-left">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-violet-500/15 flex items-center justify-center text-xs font-bold text-violet-400 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-primary shrink-0">
                   {(u.callsign || u.email || "?").charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
@@ -55,15 +55,15 @@ export default function PlatformAdminUsers() {
               </div>
               <div className="text-sm text-muted-foreground self-center">{u.callsign || "—"}</div>
               <div className="self-center">
-                <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === "admin" ? "bg-amber-500/15 text-amber-400" : "bg-white/[0.05] text-muted-foreground"}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === "admin" ? "bg-warning/15 text-warning" : "bg-muted text-muted-foreground"}`}>
                   {u.role || "user"}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 self-center flex-wrap">
-                {u.is_banned && <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400">Banned</span>}
-                {u.is_platform_suspended && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400">Suspended</span>}
-                {u.is_muted && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400">Muted</span>}
-                {u.is_verified && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400">Verified</span>}
+                {u.is_banned && <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/15 text-destructive">Banned</span>}
+                {u.is_platform_suspended && <span className="text-xs px-2 py-0.5 rounded-full bg-warning/15 text-warning">Suspended</span>}
+                {u.is_muted && <span className="text-xs px-2 py-0.5 rounded-full bg-info/15 text-info">Muted</span>}
+                {u.is_verified && <span className="text-xs px-2 py-0.5 rounded-full bg-success/15 text-success">Verified</span>}
                 {!u.is_banned && !u.is_platform_suspended && !u.is_muted && !u.is_verified && <span className="text-xs text-muted-foreground">Active</span>}
               </div>
             </button>

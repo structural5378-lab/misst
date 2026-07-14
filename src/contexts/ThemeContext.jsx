@@ -3,6 +3,18 @@ import { THEMES } from '@/lib/themes';
 
 const ThemeContext = createContext(null);
 
+// All theme-overridable CSS variables — cleared before each switch to prevent stale values
+const THEME_VAR_KEYS = [
+  'background', 'foreground', 'card', 'card-foreground', 'popover', 'popover-foreground',
+  'primary', 'primary-foreground', 'secondary', 'secondary-foreground',
+  'muted', 'muted-foreground', 'accent', 'accent-foreground',
+  'destructive', 'destructive-foreground', 'border', 'input', 'ring',
+  'success', 'success-foreground', 'warning', 'warning-foreground', 'info', 'info-foreground',
+  'chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5',
+  'sidebar-background', 'sidebar-foreground', 'sidebar-primary', 'sidebar-primary-foreground',
+  'sidebar-accent', 'sidebar-accent-foreground', 'sidebar-border', 'sidebar-ring',
+];
+
 export function ThemeProvider({ children }) {
   const [savedThemeId, setSavedThemeId] = useState(() => localStorage.getItem('mist-theme') || 'classic');
   const [previewThemeId, setPreviewThemeId] = useState(null);
@@ -22,6 +34,12 @@ export function ThemeProvider({ children }) {
     const theme = THEMES[currentThemeId] || THEMES.classic;
     const root = document.documentElement;
     root.classList.add('theme-transition');
+    root.classList.add('dark'); // All MIST themes are dark — ensures shadcn dark: variants work
+
+    // Clear all theme variables to prevent stale values from previous themes
+    THEME_VAR_KEYS.forEach(key => root.style.removeProperty(`--${key}`));
+
+    // Apply new theme variables
     Object.entries(theme.vars).forEach(([key, value]) => {
       root.style.setProperty(`--${key}`, value);
     });
@@ -39,8 +57,9 @@ export function ThemeProvider({ children }) {
   }, [currentThemeId, amoled, accentColor]);
 
   // Apply body classes for card style, animation, scaling, compact, etc.
+  // Preserves non-theme classes (like 'keyboard-open' added by visualViewport API)
   useEffect(() => {
-    const classes = [
+    const themeClasses = [
       `cards-${cardStyle}`,
       `anim-${animationIntensity}`,
       `scale-${uiScale}`,
@@ -49,7 +68,12 @@ export function ThemeProvider({ children }) {
       !animatedBg ? 'no-anim-bg' : '',
       amoled ? 'amoled-mode' : '',
     ].filter(Boolean);
-    document.body.className = classes.join(' ');
+    const themePrefixes = ['cards-', 'anim-', 'scale-', 'icon-'];
+    const themeNames = ['compact-mode', 'no-anim-bg', 'amoled-mode'];
+    const preserved = document.body.className.split(' ').filter(c =>
+      c && !themePrefixes.some(p => c.startsWith(p)) && !themeNames.includes(c)
+    );
+    document.body.className = [...preserved, ...themeClasses].join(' ');
   }, [cardStyle, animationIntensity, uiScale, iconStyle, compact, animatedBg, amoled]);
 
   // Persist settings

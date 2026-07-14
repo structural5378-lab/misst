@@ -46,7 +46,7 @@ export default function PlatformAdminDashboard() {
 
       <div className="mb-6">
         <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Server className="w-4 h-4 text-violet-400" /> System Health
+          <Server className="w-4 h-4 text-primary" /> System Health
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {systemStats.map((s) => (
@@ -57,7 +57,7 @@ export default function PlatformAdminDashboard() {
 
       <div className="rounded-xl bg-card border border-border p-4">
         <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-          <Radio className="w-4 h-4 text-violet-400" /> RadioScope Activity
+          <Radio className="w-4 h-4 text-primary" /> RadioScope Activity
         </h2>
         <p className="text-sm text-muted-foreground">
           {data?.onlineUsers ?? 0} operators currently active on the tactical map · {data?.repeaters ?? 0} repeaters tracked

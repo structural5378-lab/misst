@@ -20,17 +20,17 @@ export default function PlatformAdminLayout() {
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-1 text-muted-foreground hover:text-foreground">
               {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-900/30">
-              <Shield className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-violet-900/30">
+              <Shield className="w-4 h-4 text-primary-foreground" />
             </div>
             <div>
               <span className="text-sm font-bold tracking-wide text-foreground">MIST Control Center</span>
-              <span className="text-xs text-violet-400 ml-2 hidden sm:inline">Super Admin</span>
+              <span className="text-xs text-primary ml-2 hidden sm:inline">Super Admin</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Exit to App →</Link>
-            <button onClick={() => { logout(); window.location.href = "/login"; }} className="p-1.5 text-muted-foreground hover:text-rose-400 transition-colors">
+            <button onClick={() => { logout(); window.location.href = "/login"; }} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
@@ -50,7 +50,7 @@ export default function PlatformAdminLayout() {
                       key={item.path}
                       to={item.path}
                       end={item.end}
-                      className={({ isActive }) => `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${isActive ? "bg-violet-500/15 text-violet-300 border border-violet-500/20" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.03] border border-transparent"}`}
+                      className={({ isActive }) => `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${isActive ? "bg-primary/15 text-primary border border-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"}`}
                     >
                       <item.icon className="w-4 h-4 shrink-0" />
                       <span className="truncate">{item.label}</span>

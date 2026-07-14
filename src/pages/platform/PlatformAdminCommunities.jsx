@@ -17,8 +17,8 @@ export default function PlatformAdminCommunities() {
           {communities.map(c => (
             <div key={c.id} className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0">
-                  <Building className="w-5 h-5 text-violet-400" />
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                  <Building className="w-5 h-5 text-primary" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
@@ -27,8 +27,8 @@ export default function PlatformAdminCommunities() {
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <span className="text-xs text-muted-foreground flex items-center gap-1"><Users className="w-3 h-3" />{c.member_count || 0}</span>
-                {c.visibility === "public" ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
-                <span className={`text-xs px-2 py-0.5 rounded-full ${c.status === "active" ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-400"}`}>{c.status || "active"}</span>
+                {c.visibility === "public" ? <Eye className="w-4 h-4 text-success" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
+                <span className={`text-xs px-2 py-0.5 rounded-full ${c.status === "active" ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>{c.status || "active"}</span>
               </div>
             </div>
           ))}

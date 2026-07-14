@@ -4,6 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import AnimatedMarker from "./AnimatedMarker";
 import { haversine } from "@/lib/geoUtils";
+import { useThemeColors } from "@/hooks/useThemeColors";
 
 const DEFAULT_CENTER = [25.77, -80.19];
 const DEFAULT_ZOOM = 11;
@@ -107,6 +108,7 @@ export default function RadioScopeMap({
   searchQuery, tileMode, recenterTrigger, selectedRepeater, selectedUser,
   onRepeaterClick, onUserClick,
 }) {
+  const tc = useThemeColors();
   const center = userPosition || DEFAULT_CENTER;
   const repeaterIcon = useMemo(() => createRepeaterIcon(), []);
   const userPosIcon = useMemo(() => createUserPosIcon(), []);
@@ -252,7 +254,7 @@ export default function RadioScopeMap({
       zoom={DEFAULT_ZOOM}
       zoomControl={false}
       className="w-full h-full"
-      style={{ background: "#000" }}
+      style={{ background: tc.background }}
     >
       <TileLayer key={tileMode} url={tileUrl} attribution="&copy; OpenStreetMap, CARTO, Esri" />
       <MapController
@@ -275,8 +277,8 @@ export default function RadioScopeMap({
           center={[r.latitude, r.longitude]}
           radius={COVERAGE_RADIUS}
           pathOptions={{
-            color: r.id === selectedRepeater?.id ? "#06b6d4" : "#8b5cf6",
-            fillColor: r.id === selectedRepeater?.id ? "#06b6d4" : "#8b5cf6",
+            color: r.id === selectedRepeater?.id ? tc.accent : tc.primary,
+            fillColor: r.id === selectedRepeater?.id ? tc.accent : tc.primary,
             fillOpacity: r.id === selectedRepeater?.id ? 0.08 : 0.04,
             weight: r.id === selectedRepeater?.id ? 2 : 1,
             dashArray: "4 4",
@@ -290,7 +292,7 @@ export default function RadioScopeMap({
         <Circle
           center={[selectedRepeater.latitude, selectedRepeater.longitude]}
           radius={COVERAGE_RADIUS}
-          pathOptions={{ color: "#06b6d4", fillColor: "#06b6d4", fillOpacity: 0.08, weight: 2, dashArray: "6 6" }}
+          pathOptions={{ color: tc.accent, fillColor: tc.accent, fillOpacity: 0.08, weight: 2, dashArray: "6 6" }}
           className="rs-coverage-selected"
         />
       )}
@@ -303,7 +305,7 @@ export default function RadioScopeMap({
             [selectedRepeater.latitude, selectedRepeater.longitude],
             [r.latitude, r.longitude],
           ]}
-          pathOptions={{ color: "#06b6d4", weight: 1.5, opacity: 0.4, dashArray: "2 8" }}
+          pathOptions={{ color: tc.accent, weight: 1.5, opacity: 0.4, dashArray: "2 8" }}
         />
       ))}
 
@@ -337,7 +339,7 @@ export default function RadioScopeMap({
         <Polyline
           key={b.key}
           positions={b.positions}
-          pathOptions={{ color: "#06b6d4", weight: 1, opacity: 0.5, dashArray: "4 4" }}
+          pathOptions={{ color: tc.accent, weight: 1, opacity: 0.5, dashArray: "4 4" }}
           className="rs-beam"
         />
       ))}
@@ -347,7 +349,7 @@ export default function RadioScopeMap({
         <Polyline
           key={l.key}
           positions={l.positions}
-          pathOptions={{ color: "#8b5cf6", weight: 1, opacity: 0.25, dashArray: "2 6" }}
+          pathOptions={{ color: tc.primary, weight: 1, opacity: 0.25, dashArray: "2 6" }}
         />
       ))}
     </MapContainer>

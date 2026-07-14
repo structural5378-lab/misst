@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Palette, RotateCcw, Save, Eye } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useTheme } from "@/contexts/ThemeContext";
+import { THEMES } from "@/lib/themes";
 
 const DEFAULT_THEME = {
   primary: "#a855f7",
@@ -38,6 +40,10 @@ function hexToHsl(hex) {
 }
 
 export default function PlatformAdminThemeBuilder() {
+  const { themeId, accentColor, amoled } = useTheme();
+  const restoreRef = useRef({ themeId, accentColor, amoled });
+  restoreRef.current = { themeId, accentColor, amoled };
+
   const [theme, setTheme] = useState(() => {
     try { return { ...DEFAULT_THEME, ...JSON.parse(localStorage.getItem("admin_theme") || "{}") }; }
     catch { return DEFAULT_THEME; }
@@ -60,6 +66,21 @@ export default function PlatformAdminThemeBuilder() {
     return () => {
       const root = document.documentElement;
       ["--primary", "--accent", "--background", "--card", "--border", "--radius"].forEach(p => root.style.removeProperty(p));
+      // Re-apply the active theme from ThemeContext to restore all CSS variables
+      const { themeId, accentColor, amoled } = restoreRef.current;
+      const t = THEMES[themeId] || THEMES.classic;
+      Object.entries(t.vars).forEach(([key, value]) => {
+        root.style.setProperty(`--${key}`, value);
+      });
+      if (amoled) {
+        root.style.setProperty('--background', '0 0% 0%');
+        root.style.setProperty('--card', '0 0% 4%');
+        root.style.setProperty('--popover', '0 0% 4%');
+        root.style.setProperty('--sidebar-background', '0 0% 4%');
+      }
+      if (accentColor) {
+        root.style.setProperty('--primary', accentColor);
+      }
     };
   }, []);
 
@@ -92,14 +113,14 @@ export default function PlatformAdminThemeBuilder() {
       action={
         <div className="flex gap-2">
           <Button variant="outline" onClick={reset} className="border-border text-muted-foreground"><RotateCcw className="w-4 h-4 mr-1" />Reset</Button>
-          <Button onClick={save} className="bg-violet-600 hover:bg-violet-700 text-white"><Save className="w-4 h-4 mr-1" />{saved ? "Saved!" : "Save"}</Button>
+          <Button onClick={save} className="bg-primary hover:bg-primary/90 text-primary-foreground"><Save className="w-4 h-4 mr-1" />{saved ? "Saved!" : "Save"}</Button>
         </div>
       }
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Controls */}
         <div className="rounded-xl bg-card border border-border p-5 space-y-4">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2"><Palette className="w-4 h-4 text-violet-400" />Colors</h3>
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2"><Palette className="w-4 h-4 text-primary" />Colors</h3>
           {colorFields.map(f => (
             <div key={f.key} className="flex items-center justify-between">
               <Label className="text-sm text-muted-foreground">{f.label}</Label>
@@ -112,12 +133,12 @@ export default function PlatformAdminThemeBuilder() {
 
           <div className="pt-2 border-t border-border">
             <Label className="text-sm text-muted-foreground">Border Radius: {theme.radius}rem</Label>
-            <input type="range" min="0" max="1.5" step="0.05" value={theme.radius} onChange={e => update("radius", e.target.value)} className="w-full mt-2 accent-violet-500" />
+            <input type="range" min="0" max="1.5" step="0.05" value={theme.radius} onChange={e => update("radius", e.target.value)} className="w-full mt-2 accent-primary" />
           </div>
 
           <div>
             <Label className="text-sm text-muted-foreground">Glow Intensity: {theme.glow}%</Label>
-            <input type="range" min="0" max="100" step="5" value={theme.glow} onChange={e => update("glow", e.target.value)} className="w-full mt-2 accent-violet-500" />
+            <input type="range" min="0" max="100" step="5" value={theme.glow} onChange={e => update("glow", e.target.value)} className="w-full mt-2 accent-primary" />
           </div>
 
           <div>
@@ -129,15 +150,15 @@ export default function PlatformAdminThemeBuilder() {
 
           <div className="flex items-center justify-between">
             <Label className="text-sm text-muted-foreground">Dark Mode</Label>
-            <button onClick={() => update("darkMode", !theme.darkMode)} className={`relative w-11 h-6 rounded-full transition-colors ${theme.darkMode ? "bg-violet-500" : "bg-muted"}`}>
-              <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${theme.darkMode ? "translate-x-5" : "translate-x-0.5"}`} />
+            <button onClick={() => update("darkMode", !theme.darkMode)} className={`relative w-11 h-6 rounded-full transition-colors ${theme.darkMode ? "bg-primary" : "bg-muted"}`}>
+              <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-foreground shadow transition-transform ${theme.darkMode ? "translate-x-5" : "translate-x-0.5"}`} />
             </button>
           </div>
         </div>
 
         {/* Live Preview */}
         <div className="rounded-xl bg-card border border-border p-5">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4"><Eye className="w-4 h-4 text-violet-400" />Live Preview</h3>
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4"><Eye className="w-4 h-4 text-primary" />Live Preview</h3>
           <div className="space-y-3" style={{ filter: `drop-shadow(0 0 ${theme.glow / 4}px ${theme.primary})` }}>
             <div className="rounded-xl p-4" style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: `${theme.radius}rem` }}>
               <div className="flex items-center gap-3 mb-3">

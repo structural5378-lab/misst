@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const ROLE_DEFS = [
-  { role: "platform_owner", label: "Super Admin", icon: Crown, color: "text-amber-400 bg-amber-500/15", desc: "Full platform control" },
-  { role: "platform_admin", label: "Administrator", icon: Shield, color: "text-violet-400 bg-violet-500/15", desc: "Manage users and content" },
-  { role: "platform_support", label: "Support", icon: Headphones, color: "text-cyan-400 bg-cyan-500/15", desc: "View and assist users" },
+  { role: "platform_owner", label: "Super Admin", icon: Crown, color: "text-warning bg-warning/15", desc: "Full platform control" },
+  { role: "platform_admin", label: "Administrator", icon: Shield, color: "text-primary bg-primary/15", desc: "Manage users and content" },
+  { role: "platform_support", label: "Support", icon: Headphones, color: "text-accent bg-accent/15", desc: "View and assist users" },
 ];
 
 const PERMISSIONS = [
@@ -72,7 +72,7 @@ export default function PlatformAdminRoles() {
       title="Roles & Permissions"
       description="Manage platform-level roles and permissions"
       action={
-        <Button onClick={() => setShowAssign(true)} className="bg-violet-600 hover:bg-violet-700 text-white">
+        <Button onClick={() => setShowAssign(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Plus className="w-4 h-4 mr-1" /> Assign Role
         </Button>
       }
@@ -103,7 +103,7 @@ export default function PlatformAdminRoles() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {PERMISSIONS.map(p => (
             <div key={p.key} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background/50 border border-border text-xs">
-              <div className="w-2 h-2 rounded-full bg-emerald-400" />
+              <div className="w-2 h-2 rounded-full bg-success" />
               {p.label}
             </div>
           ))}
@@ -127,7 +127,7 @@ export default function PlatformAdminRoles() {
                     <p className="text-xs text-muted-foreground">{def.label || r.role} · by {r.assigned_by_email || "—"}</p>
                   </div>
                 </div>
-                <button onClick={() => handleRevoke(r.id)} className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors">
+                <button onClick={() => handleRevoke(r.id)} className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -158,14 +158,14 @@ export default function PlatformAdminRoles() {
                 <label className="text-xs text-muted-foreground mb-1 block">Role</label>
                 <div className="space-y-1.5">
                   {ROLE_DEFS.map(r => (
-                    <button key={r.role} onClick={() => setSelectedRole(r.role)} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition-all ${selectedRole === r.role ? "border-violet-500/40 bg-violet-500/10" : "border-border hover:bg-white/[0.02]"}`}>
+                    <button key={r.role} onClick={() => setSelectedRole(r.role)} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border transition-all ${selectedRole === r.role ? "border-primary/40 bg-primary/10" : "border-border hover:bg-muted/50"}`}>
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${r.color}`}><r.icon className="w-4 h-4" /></div>
                       <div className="text-left"><p className="text-sm font-medium text-foreground">{r.label}</p><p className="text-xs text-muted-foreground">{r.desc}</p></div>
                     </button>
                   ))}
                 </div>
               </div>
-              <Button onClick={handleAssign} disabled={assigning || !targetId} className="w-full bg-violet-600 hover:bg-violet-700 text-white">
+              <Button onClick={handleAssign} disabled={assigning || !targetId} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 {assigning ? "Assigning..." : "Assign Role"}
               </Button>
             </div>

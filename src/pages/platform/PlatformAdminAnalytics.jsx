@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BarChart, Bar, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { TrendingUp, MessageSquare, Users, Activity } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
+import { useThemeColors } from "@/hooks/useThemeColors";
 
 function groupByDate(items, dateField = "created_date", days = 7) {
   const result = [];
@@ -22,6 +23,7 @@ function groupByDate(items, dateField = "created_date", days = 7) {
 }
 
 export default function PlatformAdminAnalytics() {
+  const tc = useThemeColors();
   const { data: users = [] } = useQuery({ queryKey: ["analytics-users"], queryFn: async () => await base44.entities.User.list("-created_date", 500) });
   const { data: messages = [] } = useQuery({ queryKey: ["analytics-messages"], queryFn: async () => await base44.entities.ChatMessage.list("-created_date", 500) });
   const { data: posts = [] } = useQuery({ queryKey: ["analytics-posts"], queryFn: async () => await base44.entities.ForumPost.list("-created_date", 500) });
@@ -35,9 +37,9 @@ export default function PlatformAdminAnalytics() {
   ).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   const cards = [
-    { icon: Users, label: "Daily New Users", data: userData, color: "#a855f7" },
-    { icon: MessageSquare, label: "Messages / Day", data: msgData, color: "#06b6d4" },
-    { icon: Activity, label: "Forum Posts / Day", data: postData, color: "#10b981" },
+    { icon: Users, label: "Daily New Users", data: userData, color: tc.chart1 },
+    { icon: MessageSquare, label: "Messages / Day", data: msgData, color: tc.chart2 },
+    { icon: Activity, label: "Forum Posts / Day", data: postData, color: tc.chart3 },
   ];
 
   return (
@@ -49,8 +51,8 @@ export default function PlatformAdminAnalytics() {
             <ResponsiveContainer width="100%" height={140}>
               <AreaChart data={c.data}>
                 <defs><linearGradient id={`g-${c.label}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={c.color} stopOpacity={0.4} /><stop offset="100%" stopColor={c.color} stopOpacity={0} /></linearGradient></defs>
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#8888aa" }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: "#1e1e3f", border: "1px solid #2d2d4f", borderRadius: "8px", fontSize: "12px" }} />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: tc.mutedForeground }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: tc.card, border: `1px solid ${tc.border}`, borderRadius: "8px", fontSize: "12px" }} />
                 <Area type="monotone" dataKey="count" stroke={c.color} fill={`url(#g-${c.label})`} strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
@@ -60,25 +62,25 @@ export default function PlatformAdminAnalytics() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-xl bg-card border border-border p-4">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><TrendingUp className="w-4 h-4 text-violet-400" />User Growth (7 days)</h3>
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><TrendingUp className="w-4 h-4 text-primary" />User Growth (7 days)</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={userData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2d2d4f" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#8888aa" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: "#8888aa" }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: "#1e1e3f", border: "1px solid #2d2d4f", borderRadius: "8px", fontSize: "12px" }} />
-              <Bar dataKey="count" fill="#a855f7" radius={[4, 4, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tc.border} />
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: tc.mutedForeground }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: tc.mutedForeground }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: tc.card, border: `1px solid ${tc.border}`, borderRadius: "8px", fontSize: "12px" }} />
+              <Bar dataKey="count" fill={tc.chart1} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="rounded-xl bg-card border border-border p-4">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><MessageSquare className="w-4 h-4 text-cyan-400" />Most Active Members</h3>
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><MessageSquare className="w-4 h-4 text-accent" />Most Active Members</h3>
           <div className="space-y-2">
             {topMembers.map(([name, count], i) => (
               <div key={name} className="flex items-center justify-between px-3 py-2 rounded-lg bg-background/50 border border-border">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-violet-400 w-5">{i + 1}</span>
+                  <span className="text-xs font-bold text-primary w-5">{i + 1}</span>
                   <span className="text-sm text-foreground">{name || "Unknown"}</span>
                 </div>
                 <span className="text-xs text-muted-foreground">{count} messages</span>

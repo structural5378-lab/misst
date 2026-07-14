@@ -15,21 +15,21 @@ import OperatorCard from "@/components/profile/OperatorCard";
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/ef2f5095f_EA7D7629-51E2-49DA-AE8B-4017441D651F.png";
 
 const quickItems = [
-  { icon: Radio, label: "Repeaters", path: "/repeaters", bg: "bg-violet-500/15", color: "text-violet-400" },
-  { icon: MapPin, label: "Map", path: "/map", bg: "bg-teal-500/15", color: "text-teal-400" },
-  { icon: Users, label: "Nets", path: "/nets", bg: "bg-purple-500/15", color: "text-purple-400" },
-  { icon: Sun, label: "Weather", path: "/weather", bg: "bg-yellow-500/15", color: "text-yellow-400" },
-  { icon: Wrench, label: "Tools", path: "/tools", bg: "bg-orange-500/15", color: "text-orange-400" },
-  { icon: Globe, label: "Forum", path: "/community-forum", bg: "bg-indigo-500/15", color: "text-indigo-400" },
-  { icon: Sun, label: "Live Cams", path: "/live-cams", bg: "bg-cyan-500/15", color: "text-cyan-400" },
-  { icon: Camera, label: "Gallery", path: "/gallery", bg: "bg-pink-500/15", color: "text-pink-400" },
-  { icon: UserCircle2, label: "Members", path: "/members", bg: "bg-cyan-500/15", color: "text-cyan-400" },
-  { icon: ShoppingBag, label: "Shopping", path: "/shopping", bg: "bg-amber-500/15", color: "text-amber-400" },
-  { icon: SignalHigh, label: "Simplex", path: "/cineplex", bg: "bg-emerald-500/15", color: "text-emerald-400" },
-  { icon: MessageCircle, label: "Live Chat", path: "/live-chat", bg: "bg-violet-500/15", color: "text-violet-400" },
-  { icon: Trophy, label: "Trophies", path: "/achievements", bg: "bg-amber-500/15", color: "text-amber-400" },
-  { icon: Settings, label: "Settings", path: "/settings", bg: "bg-slate-500/15", color: "text-slate-400" },
-  { icon: Shield, label: "Admin", path: "/platform/admin", bg: "bg-amber-500/15", color: "text-amber-400", adminOnly: true },
+  { icon: Radio, label: "Repeaters", path: "/repeaters", bg: "bg-primary/15", color: "text-primary" },
+  { icon: MapPin, label: "Map", path: "/map", bg: "bg-accent/15", color: "text-accent" },
+  { icon: Users, label: "Nets", path: "/nets", bg: "bg-info/15", color: "text-info" },
+  { icon: Sun, label: "Weather", path: "/weather", bg: "bg-warning/15", color: "text-warning" },
+  { icon: Wrench, label: "Tools", path: "/tools", bg: "bg-warning/15", color: "text-warning" },
+  { icon: Globe, label: "Forum", path: "/community-forum", bg: "bg-info/15", color: "text-info" },
+  { icon: Sun, label: "Live Cams", path: "/live-cams", bg: "bg-accent/15", color: "text-accent" },
+  { icon: Camera, label: "Gallery", path: "/gallery", bg: "bg-primary/15", color: "text-primary" },
+  { icon: UserCircle2, label: "Members", path: "/members", bg: "bg-accent/15", color: "text-accent" },
+  { icon: ShoppingBag, label: "Shopping", path: "/shopping", bg: "bg-warning/15", color: "text-warning" },
+  { icon: SignalHigh, label: "Simplex", path: "/cineplex", bg: "bg-success/15", color: "text-success" },
+  { icon: MessageCircle, label: "Live Chat", path: "/live-chat", bg: "bg-primary/15", color: "text-primary" },
+  { icon: Trophy, label: "Trophies", path: "/achievements", bg: "bg-warning/15", color: "text-warning" },
+  { icon: Settings, label: "Settings", path: "/settings", bg: "bg-muted", color: "text-muted-foreground" },
+  { icon: Shield, label: "Admin", path: "/platform/admin", bg: "bg-warning/15", color: "text-warning", adminOnly: true },
 ];
 
 export default function Dashboard() {
@@ -130,8 +130,8 @@ export default function Dashboard() {
 
   const typeColors = {
     info: "bg-primary/10 text-primary",
-    warning: "bg-amber-500/10 text-amber-400",
-    emergency: "bg-red-500/10 text-red-400",
+    warning: "bg-warning/10 text-warning",
+    emergency: "bg-destructive/10 text-destructive",
     system: "bg-muted text-muted-foreground",
   };
 
@@ -146,25 +146,25 @@ export default function Dashboard() {
       {/* Hero Header */}
       <div className="relative overflow-hidden">
         {/* Purple glow background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-violet-950/60 via-background/80 to-background" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-violet-600/20 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background/80 to-background" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
 
         {/* Marquee Section */}
         <div className="relative px-4 pt-4 pb-2">
-          <div className="w-full bg-violet-950/50 border border-violet-500/20 rounded-xl overflow-hidden backdrop-blur-sm">
+          <div className="w-full bg-card/50 border border-primary/20 rounded-xl overflow-hidden backdrop-blur-sm">
             <div className="flex items-center gap-6 py-2">
               {latestForumPost && (
                 <div className="flex items-center gap-2 min-w-fit">
-                  <MessageSquare className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+                  <MessageSquare className="w-3.5 h-3.5 text-primary shrink-0" />
                   <span className="text-[10px] text-muted-foreground whitespace-nowrap">Latest:</span>
                   <span className="text-xs text-foreground truncate max-w-[150px]">{latestForumPost.subject || latestForumPost.title}</span>
                 </div>
               )}
               {nextNet && (
                 <div className="flex items-center gap-2 min-w-fit">
-                  <Radio className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <Radio className="w-3.5 h-3.5 text-success shrink-0" />
                   <span className="text-[10px] text-muted-foreground whitespace-nowrap">Next Net:</span>
-                  <span className="text-xs text-emerald-400 font-medium whitespace-nowrap">{nextNet.name} · {nextNet.time}</span>
+                  <span className="text-xs text-success font-medium whitespace-nowrap">{nextNet.name} · {nextNet.time}</span>
                 </div>
               )}
             </div>
@@ -197,10 +197,10 @@ export default function Dashboard() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Bell className="w-4 h-4 text-violet-400" />
+                <Bell className="w-4 h-4 text-primary" />
                 Important Updates
               </h3>
-              <Link to="/alerts" className="text-xs text-violet-400 font-medium hover:text-violet-300">View All</Link>
+              <Link to="/alerts" className="text-xs text-primary font-medium hover:text-primary/80">View All</Link>
             </div>
             <div className="space-y-2">
               {alerts.map((alert) => {
@@ -209,7 +209,7 @@ export default function Dashboard() {
                 return (
                   <div
                     key={alert.id}
-                    className={`flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.07] ${!alert.is_read ? "border-l-2 border-l-violet-500" : ""}`}
+                    className={`flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border ${!alert.is_read ? "border-l-2 border-l-primary" : ""}`}
                   >
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
                       <Icon className="w-4 h-4" />
@@ -237,7 +237,7 @@ export default function Dashboard() {
             { label: "Threads", value: mybbUser?.threadcount ?? 0 },
             { label: "Posts", value: mybbUser?.postcount ?? 0 },
           ].map(({ label, value }) => (
-            <div key={label} className="flex flex-col items-center py-3 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+            <div key={label} className="flex flex-col items-center py-3 rounded-xl bg-muted/30 border border-border">
               <span className="text-xl font-bold text-foreground">{value}</span>
               <span className="text-[10px] text-muted-foreground mt-0.5">{label}</span>
             </div>
@@ -248,30 +248,30 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Users className="w-4 h-4 text-emerald-400" />
+              <Users className="w-4 h-4 text-success" />
               Online Now
             </h3>
             {totalMembers != null && (
-              <span className="text-xs text-amber-400 font-medium flex items-center gap-1">
+              <span className="text-xs text-warning font-medium flex items-center gap-1">
                 <Users className="w-3 h-3" />{totalMembers} total
               </span>
             )}
           </div>
           <button
             onClick={() => setShowOnlineSheet(true)}
-            className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.07] hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all active:scale-[0.99] text-left"
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border hover:border-success/30 hover:bg-success/5 transition-all active:scale-[0.99] text-left"
           >
             <div className="flex -space-x-2">
               {onlineMembers.slice(0, 5).map((member) => (
                 <div
                   key={member.uid}
-                  className="w-8 h-8 rounded-full border-2 border-background bg-violet-950/50 overflow-hidden"
+                  className="w-8 h-8 rounded-full border-2 border-background bg-card/50 overflow-hidden"
                   title={member.username}
                 >
                   {member.avatar ? (
                     <img src={member.avatar} alt={member.username} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = "none"; }} />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-violet-400">
+                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-primary">
                       {(member.username || "?").charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -284,11 +284,11 @@ export default function Dashboard() {
               ) : (
                 <span className="text-xs text-muted-foreground">
                   {onlineMembers.length > 5 ? `+${onlineMembers.length - 5} more · ` : ""}
-                  <span className="text-emerald-400 font-medium">{onlineMembers.length} online</span>
+                  <span className="text-success font-medium">{onlineMembers.length} online</span>
                 </span>
               )}
             </div>
-            <span className="text-xs font-semibold text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+            <span className="text-xs font-semibold text-success border border-success/30 bg-success/10 px-2.5 py-1 rounded-lg">
               View All
             </span>
           </button>
@@ -308,7 +308,7 @@ export default function Dashboard() {
               <Link
                 key={label}
                 to={path}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.07] hover:border-violet-500/30 hover:bg-violet-500/5 transition-all active:scale-95"
+                className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-muted/30 border border-border hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95"
               >
                 <div className={`w-11 h-11 rounded-xl ${bg} flex items-center justify-center`}>
                   <Icon className={`w-5 h-5 ${color}`} />
@@ -323,21 +323,21 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-foreground">Upcoming Nets</h3>
-            <Link to="/nets" className="text-xs text-violet-400 font-medium hover:text-violet-300">View All</Link>
+            <Link to="/nets" className="text-xs text-primary font-medium hover:text-primary/80">View All</Link>
           </div>
           <div className="space-y-2">
             {nets.slice(0, 3).map((net) => (
-              <div key={net.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.07] hover:border-violet-500/20 transition-colors">
+              <div key={net.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border hover:border-primary/20 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-violet-500/15 flex items-center justify-center">
-                    <Radio className="w-4 h-4 text-violet-400" />
+                  <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                    <Radio className="w-4 h-4 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">{net.name}</p>
                     <p className="text-xs text-muted-foreground">{net.time} · {net.frequency} MHz</p>
                   </div>
                 </div>
-                <Link to="/nets" className="h-7 text-xs bg-violet-600/30 hover:bg-violet-600/50 text-violet-300 border-0 px-3 rounded-md flex items-center gap-1 font-medium">
+                <Link to="/nets" className="h-7 text-xs bg-primary/30 hover:bg-primary/50 text-primary border-0 px-3 rounded-md flex items-center gap-1 font-medium">
                   Join <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>

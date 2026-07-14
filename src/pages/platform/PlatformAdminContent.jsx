@@ -45,7 +45,7 @@ export default function PlatformAdminContent() {
           { key: "events", label: "Events", icon: Calendar },
           { key: "repeaters", label: "Featured", icon: Radio },
         ].map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${tab === t.key ? "bg-violet-500/15 text-violet-300" : "text-muted-foreground hover:text-foreground"}`}>
+          <button key={t.key} onClick={() => setTab(t.key)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${tab === t.key ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}>
             <t.icon className="w-4 h-4" /> {t.label}
           </button>
         ))}
@@ -55,19 +55,19 @@ export default function PlatformAdminContent() {
         <div className="rounded-xl bg-card border border-border overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <span className="text-sm font-semibold text-foreground">Platform Alerts ({alerts.length})</span>
-            <Button size="sm" onClick={() => setShowCreate("alert")} className="bg-violet-600 hover:bg-violet-700 text-white h-8"><Plus className="w-4 h-4 mr-1" />New</Button>
+            <Button size="sm" onClick={() => setShowCreate("alert")} className="bg-primary hover:bg-primary/90 text-primary-foreground h-8"><Plus className="w-4 h-4 mr-1" />New</Button>
           </div>
           <div className="divide-y divide-border">
             {alerts.map(a => (
               <div key={a.id} className="flex items-center justify-between px-4 py-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${a.type === "emergency" ? "bg-rose-500/15 text-rose-400" : a.type === "warning" ? "bg-amber-500/15 text-amber-400" : "bg-violet-500/15 text-violet-400"}`}>{a.type}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${a.type === "emergency" ? "bg-destructive/15 text-destructive" : a.type === "warning" ? "bg-warning/15 text-warning" : "bg-primary/15 text-primary"}`}>{a.type}</span>
                     <p className="text-sm font-medium text-foreground truncate">{a.title}</p>
                   </div>
                   {a.message && <p className="text-xs text-muted-foreground mt-0.5 truncate">{a.message}</p>}
                 </div>
-                <button onClick={() => deleteAlert(a.id)} className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => deleteAlert(a.id)} className="p-2 text-destructive hover:bg-destructive/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
             {alerts.length === 0 && <div className="py-8 text-center text-sm text-muted-foreground">No alerts</div>}
@@ -79,7 +79,7 @@ export default function PlatformAdminContent() {
         <div className="rounded-xl bg-card border border-border overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <span className="text-sm font-semibold text-foreground">Events ({events.length})</span>
-            <Button size="sm" onClick={() => setShowCreate("event")} className="bg-violet-600 hover:bg-violet-700 text-white h-8"><Plus className="w-4 h-4 mr-1" />New</Button>
+            <Button size="sm" onClick={() => setShowCreate("event")} className="bg-primary hover:bg-primary/90 text-primary-foreground h-8"><Plus className="w-4 h-4 mr-1" />New</Button>
           </div>
           <div className="divide-y divide-border">
             {events.map(e => (
@@ -88,7 +88,7 @@ export default function PlatformAdminContent() {
                   <p className="text-sm font-medium text-foreground">{e.title}</p>
                   <p className="text-xs text-muted-foreground">{e.event_time && new Date(e.event_time).toLocaleString()} · {e.location || "No location"}</p>
                 </div>
-                <button onClick={() => deleteEvent(e.id)} className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => deleteEvent(e.id)} className="p-2 text-destructive hover:bg-destructive/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
             {events.length === 0 && <div className="py-8 text-center text-sm text-muted-foreground">No events</div>}
@@ -103,7 +103,7 @@ export default function PlatformAdminContent() {
             {repeaters.map(r => (
               <div key={r.id} className="flex items-center justify-between px-4 py-3">
                 <div><p className="text-sm font-medium text-foreground">{r.callsign} · {r.frequency} MHz</p><p className="text-xs text-muted-foreground">{r.location}</p></div>
-                <button onClick={() => toggleFeatured(r)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${r.is_favorite ? "border-amber-500/30 text-amber-400 bg-amber-500/10" : "border-border text-muted-foreground hover:text-foreground"}`}>
+                <button onClick={() => toggleFeatured(r)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${r.is_favorite ? "border-warning/30 text-warning bg-warning/10" : "border-border text-muted-foreground hover:text-foreground"}`}>
                   {r.is_favorite ? "★ Featured" : "☆ Feature"}
                 </button>
               </div>
@@ -162,7 +162,7 @@ function CreateModal({ type, onClose, onCreated }) {
               <div><Label className="text-xs text-muted-foreground">Location</Label><Input value={form.location || ""} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} className="h-9 bg-background mt-1" /></div>
             </>
           )}
-          <Button onClick={save} disabled={saving} className="w-full bg-violet-600 hover:bg-violet-700 text-white">{saving ? "Creating..." : "Create"}</Button>
+          <Button onClick={save} disabled={saving} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">{saving ? "Creating..." : "Create"}</Button>
         </div>
       </div>
     </div>

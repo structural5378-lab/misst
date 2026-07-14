@@ -1,7 +1,8 @@
 import {
   LayoutDashboard, BarChart3, Users, Shield, Building, Building2,
   Award, Radio, MessageSquare, MessagesSquare, FileText, Palette,
-  Image, MousePointerClick, Terminal, Server, Bell, Flag, ScrollText
+  Image, MousePointerClick, Terminal, Server, Bell, Flag, ScrollText,
+  Stethoscope
 } from "lucide-react";
 
 export const adminNavSections = [
@@ -40,6 +41,7 @@ export const adminNavSections = [
     items: [
       { label: "RadioScope", path: "/platform/admin/radioscope", icon: Radio },
       { label: "Theme Builder", path: "/platform/admin/theme-builder", icon: Palette },
+      { label: "Theme Diagnostic", path: "/platform/admin/theme-diagnostic", icon: Stethoscope },
       { label: "Media Library", path: "/platform/admin/media", icon: Image },
     ]
   },

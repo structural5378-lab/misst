@@ -76,6 +76,7 @@ import PlatformAdminMedia from '@/pages/platform/PlatformAdminMedia';
 import PlatformAdminAppBuilder from '@/pages/platform/PlatformAdminAppBuilder';
 import PlatformAdminDeveloper from '@/pages/platform/PlatformAdminDeveloper';
 import PlatformAdminSystem from '@/pages/platform/PlatformAdminSystem';
+import PlatformAdminThemeDiagnostic from '@/pages/platform/PlatformAdminThemeDiagnostic';
 
 // Community-scoped pages
 import CommunityLayout from '@/components/community/CommunityLayout';
@@ -181,6 +182,7 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/app-builder" element={<PlatformAdminAppBuilder />} />
           <Route path="/platform/admin/developer" element={<PlatformAdminDeveloper />} />
           <Route path="/platform/admin/system" element={<PlatformAdminSystem />} />
+          <Route path="/platform/admin/theme-diagnostic" element={<PlatformAdminThemeDiagnostic />} />
         </Route>
       </Route>
 

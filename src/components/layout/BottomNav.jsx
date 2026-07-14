@@ -86,7 +86,7 @@ export default function BottomNav() {
 
 
   return (
-    <nav data-bottom-nav className="fixed bottom-0 left-0 right-0 z-[70] bg-[hsl(210,30%,7%)]/95 backdrop-blur-xl border-t border-white/[0.06] transition-transform duration-300 ease-out will-change-transform">
+    <nav data-bottom-nav className="fixed bottom-0 left-0 right-0 z-[70] bg-background/95 backdrop-blur-xl border-t border-border transition-transform duration-300 ease-out will-change-transform">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = path === "/"
@@ -105,15 +105,15 @@ export default function BottomNav() {
               key={path}
               to={path}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-all ${
-                isAdd ? "" : isActive ? "text-violet-400" : "text-muted-foreground hover:text-foreground"
+                isAdd ? "" : isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {isAdd ? (
                 <div className="relative -mt-5">
                   {/* Glow ring */}
-                  <div className="absolute inset-0 rounded-full bg-violet-500 blur-md opacity-50 scale-110" />
-                  <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-xl shadow-violet-900/60 border-2 border-violet-400/30">
-                    <Plus className="w-6 h-6 text-white" />
+                  <div className="absolute inset-0 rounded-full bg-primary blur-md opacity-50 scale-110" />
+                  <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-xl shadow-primary/30 border-2 border-primary/30">
+                    <Plus className="w-6 h-6 text-primary-foreground" />
                   </div>
                 </div>
               ) : (
@@ -121,18 +121,18 @@ export default function BottomNav() {
                   <div className="relative">
                     {(chatGlow || pmGlow) && (
                       <>
-                        <div className="absolute inset-0 rounded-full bg-violet-400 blur-xl chat-glow-flash" style={{borderRadius:'50%'}} />
+                        <div className="absolute inset-0 rounded-full bg-primary blur-xl chat-glow-flash" style={{borderRadius:'50%'}} />
                         <div className="absolute inset-0 rounded-full bg-white blur-md opacity-50 chat-glow-flash" style={{borderRadius:'50%'}} />
                       </>
                     )}
                     <Icon className={`w-5 h-5 transition-transform relative ${isActive ? "scale-110" : ""} ${(chatGlow || pmGlow) ? "text-white scale-125 chat-icon-flash" : ""}`} />
                     {hasUnread && (
-                      <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-0.5 leading-none shadow-md">
+                      <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-0.5 leading-none shadow-md">
                         {badgeCount > 9 ? "9+" : badgeCount}
                       </span>
                     )}
                   </div>
-                  <span className={`text-[10px] font-medium ${isActive ? "text-violet-400" : ""}`}>
+                  <span className={`text-[10px] font-medium ${isActive ? "text-primary" : ""}`}>
                     {label}
                   </span>
                 </>

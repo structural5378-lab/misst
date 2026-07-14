@@ -52,7 +52,7 @@ export default function PlatformAdminFeatureFlags() {
       title="Feature Flags"
       description="Enable or disable platform features instantly"
       action={
-        <Button onClick={() => setShowCreate(true)} className="bg-violet-600 hover:bg-violet-700 text-white">
+        <Button onClick={() => setShowCreate(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Plus className="w-4 h-4 mr-1" /> Create Flag
         </Button>
       }
@@ -70,8 +70,8 @@ export default function PlatformAdminFeatureFlags() {
                 {allFlags.map(flag => (
                   <div key={flag.id || flag.key} className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0">
-                        <Flag className="w-4 h-4 text-violet-400" />
+                      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <Flag className="w-4 h-4 text-primary" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{flag.label}</p>
@@ -81,9 +81,9 @@ export default function PlatformAdminFeatureFlags() {
                     <button
                       onClick={() => !flag.isDefault && toggle(flag)}
                       disabled={flag.isDefault}
-                      className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${flag.is_enabled ? "bg-emerald-500" : "bg-muted"} ${flag.isDefault ? "opacity-50 cursor-not-allowed" : ""}`}
+                      className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${flag.is_enabled ? "bg-success" : "bg-muted"} ${flag.isDefault ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
-                      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${flag.is_enabled ? "translate-x-5" : "translate-x-0.5"}`} />
+                      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-foreground shadow transition-transform ${flag.is_enabled ? "translate-x-5" : "translate-x-0.5"}`} />
                     </button>
                   </div>
                 ))}
@@ -105,7 +105,7 @@ export default function PlatformAdminFeatureFlags() {
               <div><Label className="text-xs text-muted-foreground">Label</Label><Input value={newFlag.label} onChange={e => setNewFlag(f => ({ ...f, label: e.target.value }))} placeholder="Live Cams" className="h-9 bg-background mt-1" /></div>
               <div><Label className="text-xs text-muted-foreground">Description</Label><Input value={newFlag.description} onChange={e => setNewFlag(f => ({ ...f, description: e.target.value }))} placeholder="What this feature does" className="h-9 bg-background mt-1" /></div>
               <div><Label className="text-xs text-muted-foreground">Category</Label><Input value={newFlag.category} onChange={e => setNewFlag(f => ({ ...f, category: e.target.value }))} placeholder="General" className="h-9 bg-background mt-1" /></div>
-              <Button onClick={createFlag} className="w-full bg-violet-600 hover:bg-violet-700 text-white">Create Flag</Button>
+              <Button onClick={createFlag} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">Create Flag</Button>
             </div>
           </div>
         </div>
