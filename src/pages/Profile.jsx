@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
-import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2, UserPlus, Shield, Camera, Loader2, Trophy, BarChart3 } from "lucide-react";
+import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2, UserPlus, Shield, Camera, Loader2, Trophy, BarChart3, ChevronRight } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 import LevelBar from '@/components/achievements/LevelBar';
 import TrophyCase from '@/components/achievements/TrophyCase';
@@ -12,11 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import PageHeader from "@/components/layout/PageHeader";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
 export default function Profile() {
   const { mybbUser, login, logout: mybbLogout } = useMyBBAuth();
+  const { isAdmin } = useAdminAccess();
   const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -368,10 +370,27 @@ export default function Profile() {
           </>
         )}
 
+        {/* Admin Access */}
+        {isAdmin && (
+          <Link
+            to="/platform/admin"
+            className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-warning/10 to-primary/10 border border-warning/20 hover:border-warning/40 transition-all active:scale-[0.98]"
+          >
+            <div className="w-10 h-10 rounded-lg bg-warning/15 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-warning" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">Admin Control Center</p>
+              <p className="text-xs text-muted-foreground">Manage users, content, and platform settings</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-warning" />
+          </Link>
+        )}
+
         {/* Logout */}
         <Button
           variant="outline"
-          className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-400"
+          className="w-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
           onClick={() => { mybbLogout(); window.location.href = "/login"; }}
         >
           <LogOut className="w-4 h-4 mr-2" />

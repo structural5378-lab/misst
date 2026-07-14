@@ -3,13 +3,23 @@ import { Outlet, NavLink, Link, useLocation } from "react-router-dom";
 import { Shield, Menu, X, LogOut } from "lucide-react";
 import { adminNavSections } from "@/lib/adminNav";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
+import AdminBadge from "@/components/admin/AdminBadge";
 
 export default function PlatformAdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { logout } = useMyBBAuth();
+  const { maxRoleLevel } = useAdminAccess();
 
   useEffect(() => setSidebarOpen(false), [location.pathname]);
+
+  const visibleSections = adminNavSections
+    .map(section => ({
+      ...section,
+      items: section.items.filter(item => !item.minRole || maxRoleLevel >= item.minRole),
+    }))
+    .filter(section => section.items.length > 0);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -20,8 +30,9 @@ export default function PlatformAdminLayout() {
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-1 text-muted-foreground hover:text-foreground">
               {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-violet-900/30">
+            <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
               <Shield className="w-4 h-4 text-primary-foreground" />
+              <AdminBadge size="sm" />
             </div>
             <div>
               <span className="text-sm font-bold tracking-wide text-foreground">MIST Control Center</span>
@@ -41,7 +52,7 @@ export default function PlatformAdminLayout() {
         {/* Sidebar */}
         <aside className={`fixed lg:sticky top-14 left-0 z-40 w-60 h-[calc(100vh-3.5rem)] bg-card/80 backdrop-blur-xl border-r border-border overflow-y-auto transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
           <nav className="p-3 space-y-5">
-            {adminNavSections.map((section) => (
+            {visibleSections.map((section) => (
               <div key={section.title}>
                 <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1.5">{section.title}</h3>
                 <div className="space-y-0.5">

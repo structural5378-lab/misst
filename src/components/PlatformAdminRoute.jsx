@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, Navigate } from "react-router-dom";
+import { Shield, ChevronLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 /**
@@ -38,8 +39,8 @@ export default function PlatformAdminRoute() {
 
   if (checking) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-slate-950">
-        <div className="w-8 h-8 border-4 border-slate-700 border-t-violet-500 rounded-full animate-spin"></div>
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -50,14 +51,17 @@ export default function PlatformAdminRoute() {
 
   if (!hasAccess) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-slate-950">
-        <div className="text-center">
-          <p className="text-slate-400 text-lg font-medium">Access Denied</p>
-          <p className="text-slate-600 text-sm mt-2">You do not have platform admin access.</p>
-          <a href="/" className="text-violet-400 text-sm mt-4 inline-block hover:underline">
-            Return to app
-          </a>
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-background px-6">
+        <div className="w-16 h-16 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center mb-4">
+          <Shield className="w-8 h-8 text-destructive" />
         </div>
+        <p className="text-foreground text-lg font-bold">Access Denied</p>
+        <p className="text-muted-foreground text-sm mt-2 text-center max-w-xs">
+          You do not have platform admin access. If you believe this is an error, contact a platform administrator.
+        </p>
+        <a href="/" className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
+          <ChevronLeft className="w-4 h-4" /> Return to App
+        </a>
       </div>
     );
   }

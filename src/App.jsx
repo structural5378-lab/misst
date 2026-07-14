@@ -77,6 +77,11 @@ import PlatformAdminAppBuilder from '@/pages/platform/PlatformAdminAppBuilder';
 import PlatformAdminDeveloper from '@/pages/platform/PlatformAdminDeveloper';
 import PlatformAdminSystem from '@/pages/platform/PlatformAdminSystem';
 import PlatformAdminThemeDiagnostic from '@/pages/platform/PlatformAdminThemeDiagnostic';
+import PlatformAdminReports from '@/pages/platform/PlatformAdminReports';
+import PlatformAdminRepeaters from '@/pages/platform/PlatformAdminRepeaters';
+import PlatformAdminNets from '@/pages/platform/PlatformAdminNets';
+import PlatformAdminNews from '@/pages/platform/PlatformAdminNews';
+import PlatformAdminBackup from '@/pages/platform/PlatformAdminBackup';
 
 // Community-scoped pages
 import CommunityLayout from '@/components/community/CommunityLayout';
@@ -183,6 +188,11 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/developer" element={<PlatformAdminDeveloper />} />
           <Route path="/platform/admin/system" element={<PlatformAdminSystem />} />
           <Route path="/platform/admin/theme-diagnostic" element={<PlatformAdminThemeDiagnostic />} />
+          <Route path="/platform/admin/reports" element={<PlatformAdminReports />} />
+          <Route path="/platform/admin/repeaters" element={<PlatformAdminRepeaters />} />
+          <Route path="/platform/admin/nets" element={<PlatformAdminNets />} />
+          <Route path="/platform/admin/news" element={<PlatformAdminNews />} />
+          <Route path="/platform/admin/backup" element={<PlatformAdminBackup />} />
         </Route>
       </Route>
 

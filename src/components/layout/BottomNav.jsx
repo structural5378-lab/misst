@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, MessageSquare, MessageCircle, BellRing, Plus } from "lucide-react";
+import { Home, MessageSquare, MessageCircle, BellRing, Plus, Shield } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
+import AdminBadge from "@/components/admin/AdminBadge";
 
 const navItems = [
   { icon: Home, label: "Home", path: "/" },
@@ -16,6 +18,12 @@ const navItems = [
 export default function BottomNav() {
   const location = useLocation();
   const { mybbUser } = useMyBBAuth();
+  const { isAdmin } = useAdminAccess();
+
+  const items = [
+    ...navItems,
+    ...(isAdmin ? [{ icon: Shield, label: "Admin", path: "/platform/admin", isAdmin: true }] : []),
+  ];
 
   const { data: unreadPMs = 0 } = useQuery({
     queryKey: ["unread-pms-badge", mybbUser?.username],
@@ -88,13 +96,14 @@ export default function BottomNav() {
   return (
     <nav data-bottom-nav className="fixed bottom-0 left-0 right-0 z-[70] bg-background/95 backdrop-blur-xl border-t border-border transition-transform duration-300 ease-out will-change-transform">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
-        {navItems.map(({ icon: Icon, label, path }) => {
+        {items.map(({ icon: Icon, label, path }) => {
           const isActive = path === "/"
             ? location.pathname === "/"
             : location.pathname === path || location.pathname.startsWith(path + "/");
           const isAdd = label === "Add";
           const isMessages = label === "Messages";
           const isChat = label === "Chat";
+          const isAdminItem = label === "Admin";
           const hasUnread = isMessages && unreadPMs > 0;
           const badgeCount = isMessages ? unreadPMs : 0;
           const chatGlow = isChat && hasNewChat;
@@ -131,6 +140,7 @@ export default function BottomNav() {
                         {badgeCount > 9 ? "9+" : badgeCount}
                       </span>
                     )}
+                    {isAdminItem && <AdminBadge />}
                   </div>
                   <span className={`text-[10px] font-medium ${isActive ? "text-primary" : ""}`}>
                     {label}
