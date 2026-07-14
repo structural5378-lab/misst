@@ -73,7 +73,7 @@ export default function MistChatComposer({
   };
 
   return (
-    <div className="border-t border-border bg-card">
+    <div className="shrink-0 border-t border-border bg-card">
       {/* Reply preview */}
       {replyTo && (
         <div className="flex items-center gap-2 px-3 pt-2">

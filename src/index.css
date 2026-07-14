@@ -146,6 +146,19 @@ body.keyboard-open [data-bottom-nav] {
   animation: glow-flash 0.6s ease-in-out infinite;
 }
 
+/* ─── MIST Nav Gentle Pulse (smooth, battery-friendly) ─── */
+@keyframes mist-nav-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.mist-nav-pulse { animation: mist-nav-pulse 2s ease-in-out infinite; }
+
+@keyframes mist-nav-glow-ring {
+  0%, 100% { opacity: 0.2; transform: scale(0.9); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+.mist-nav-glow-ring { animation: mist-nav-glow-ring 2s ease-in-out infinite; }
+
 /* RadioScope Tactical Map */
 @keyframes rs-radar-sweep {
   from { transform: rotate(0deg); }

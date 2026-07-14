@@ -52,6 +52,7 @@ export default function BottomNav() {
   const isOnChatRef = React.useRef(isOnChat);
   const myUidRef = React.useRef("");
   const prevUnreadRef = React.useRef(0);
+  const isFirstLoadRef = React.useRef(true);
   React.useEffect(() => { isOnChatRef.current = isOnChat; }, [isOnChat]);
   React.useEffect(() => { myUidRef.current = String(mybbUser?.uid || mybbUser?.username || ""); }, [mybbUser]);
 
@@ -71,12 +72,17 @@ export default function BottomNav() {
     }
   }, [isOnMessages]);
 
-  // Set DM glow on count increase; clear when all read
+  // Set DM glow on count increase (skip initial load); clear when all read or viewing messages
   React.useEffect(() => {
+    if (isFirstLoadRef.current) {
+      isFirstLoadRef.current = false;
+      prevUnreadRef.current = dmUnreadCount;
+      return;
+    }
     if (dmUnreadCount > prevUnreadRef.current && !isOnMessages) {
       setHasNewPMs(true);
     }
-    if (dmUnreadCount === 0) {
+    if (dmUnreadCount === 0 || isOnMessages) {
       setHasNewPMs(false);
     }
     prevUnreadRef.current = dmUnreadCount;
@@ -132,15 +138,18 @@ export default function BottomNav() {
               ) : (
                 <>
                   <div className="relative">
-                    {(chatGlow || pmGlow) && (
+                    {chatGlow && (
                       <>
                         <div className="absolute inset-0 rounded-full bg-primary blur-xl chat-glow-flash" style={{borderRadius:'50%'}} />
                         <div className="absolute inset-0 rounded-full bg-white blur-md opacity-50 chat-glow-flash" style={{borderRadius:'50%'}} />
                       </>
                     )}
-                    <Icon className={`w-5 h-5 transition-transform relative ${isActive ? "scale-110" : ""} ${(chatGlow || pmGlow) ? "text-white scale-125 chat-icon-flash" : ""}`} />
+                    {pmGlow && (
+                      <div className="absolute inset-0 rounded-full bg-primary/40 blur-md mist-nav-glow-ring" />
+                    )}
+                    <Icon className={`w-5 h-5 transition-transform relative ${isActive ? "scale-110" : ""} ${chatGlow ? "text-white scale-125 chat-icon-flash" : ""} ${pmGlow ? "text-primary mist-nav-pulse" : ""}`} />
                     {hasUnread && (
-                      <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-0.5 leading-none shadow-md">
+                      <span className="absolute -top-1 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shadow-md ring-2 ring-background">
                         {badgeCount > 9 ? "9+" : badgeCount}
                       </span>
                     )}

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useMemo } from "react";
+import React, { useRef, useEffect, useState, useMemo, useCallback } from "react";
 import { format } from "date-fns";
 import { ChevronLeft, Info, Search, X, Users, Phone } from "lucide-react";
 import MistMessageBubble from "./MistMessageBubble";
@@ -23,13 +23,34 @@ export default function MistChatView({
   const [editTarget, setEditTarget] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
   const scrollRef = useRef(null);
+  const isNearBottomRef = useRef(true);
+  const prevConvRef = useRef(null);
 
-  // Scroll to bottom on new messages
+  // Track scroll position to detect if user is reading older messages
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+    isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 120;
+  }, []);
+
+  // Smart auto-scroll: force scroll to bottom on conversation change;
+  // on new messages, only scroll if user is near the bottom
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const convChanged = prevConvRef.current !== conversation?.id;
+    prevConvRef.current = conversation?.id;
+
+    if (convChanged) {
+      isNearBottomRef.current = true;
     }
-  }, [messages.length, conversation?.id]);
+
+    if (isNearBottomRef.current || convChanged) {
+      requestAnimationFrame(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+      });
+    }
+  }, [messages.length, conversation?.id, messagesLoading]);
 
   // Clear reply/edit when switching conversations
   useEffect(() => {
@@ -85,7 +106,7 @@ export default function MistChatView({
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-card">
+      <div className="shrink-0 flex items-center gap-2 px-3 py-2.5 border-b border-border bg-card">
         {onBack && (
           <button onClick={onBack} className="p-1.5 text-muted-foreground hover:text-foreground lg:hidden">
             <ChevronLeft className="w-5 h-5" />
@@ -123,7 +144,7 @@ export default function MistChatView({
 
       {/* Message search bar */}
       {showSearch && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-card border-b border-border">
+        <div className="shrink-0 flex items-center gap-2 px-3 py-2 bg-card border-b border-border">
           <Search className="w-4 h-4 text-muted-foreground" />
           <input
             value={messageSearchQuery}
@@ -139,7 +160,7 @@ export default function MistChatView({
       )}
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-1">
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-3 space-y-1 scroll-smooth">
         {messagesLoading ? (
           <div className="flex justify-center py-12">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
