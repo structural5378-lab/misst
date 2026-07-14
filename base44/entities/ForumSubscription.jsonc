@@ -1,0 +1,53 @@
+{
+  "name": "ForumSubscription",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID of subscriber"
+    },
+    "thread_id": {
+      "type": "string",
+      "description": "References ForumThread.id"
+    },
+    "thread_title": {
+      "type": "string",
+      "description": "Denormalized for list display"
+    },
+    "category_name": {
+      "type": "string"
+    },
+    "is_subscribed": {
+      "type": "boolean",
+      "default": true,
+      "description": "True = get notifications, False = muted"
+    },
+    "is_muted": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_bookmarked": {
+      "type": "boolean",
+      "default": false,
+      "description": "User bookmarked this thread"
+    },
+    "last_read_post_id": {
+      "type": "string",
+      "description": "Last post ID the user read"
+    },
+    "last_read_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the user last opened this thread"
+    },
+    "unread_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Replies since last read"
+    }
+  },
+  "required": [
+    "user_id",
+    "thread_id"
+  ]
+}

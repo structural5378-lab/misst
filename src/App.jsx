@@ -31,7 +31,9 @@ import FrequencyReference from '@/pages/tools/FrequencyReference';
 import RepeaterSpacing from '@/pages/tools/RepeaterSpacing';
 import Profile from '@/pages/Profile';
 import AddContent from '@/pages/AddContent';
-import MyBBForum from '@/pages/MyBBForum';
+import Community from '@/pages/Community';
+import CommunityThread from '@/pages/CommunityThread';
+import CommunityNewThread from '@/pages/CommunityNewThread';
 import NetControl from '@/pages/NetControl';
 import CreateNet from '@/pages/CreateNet';
 import ForumRegister from '@/pages/ForumRegister';
@@ -128,7 +130,9 @@ const AuthenticatedApp = () => {
         <Route path="/tools/repeater-spacing" element={<RepeaterSpacing />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/add" element={<AddContent />} />
-        <Route path="/community-forum" element={<MyBBForum />} />
+        <Route path="/community-forum" element={<Community />} />
+        <Route path="/community/thread/:id" element={<CommunityThread />} />
+        <Route path="/community/new" element={<CommunityNewThread />} />
         <Route path="/nets/:netId/control" element={<NetControl />} />
         <Route path="/nets/create" element={<CreateNet />} />
         <Route path="/community-forum/register" element={<ForumRegister />} />

@@ -3,16 +3,81 @@
   "type": "object",
   "properties": {
     "thread_id": {
-      "type": "string"
+      "type": "string",
+      "description": "References ForumThread.id"
+    },
+    "thread_title": {
+      "type": "string",
+      "description": "Denormalized for notification display"
     },
     "body": {
-      "type": "string"
+      "type": "string",
+      "description": "Post content (rich text / markdown)"
+    },
+    "author_id": {
+      "type": "string",
+      "description": "Base44 user ID of author"
     },
     "author_name": {
       "type": "string"
     },
     "author_callsign": {
       "type": "string"
+    },
+    "author_avatar": {
+      "type": "string"
+    },
+    "author_role": {
+      "type": "string"
+    },
+    "parent_post_id": {
+      "type": "string",
+      "description": "For nested replies - ID of parent post"
+    },
+    "reply_to_post_id": {
+      "type": "string",
+      "description": "Post being directly replied to"
+    },
+    "reply_to_author": {
+      "type": "string"
+    },
+    "quote_of_post_id": {
+      "type": "string",
+      "description": "Quoted post ID"
+    },
+    "quote_of_author": {
+      "type": "string"
+    },
+    "quote_of_body": {
+      "type": "string",
+      "description": "Truncated quoted text"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "attachments": {
+      "type": "string",
+      "description": "JSON array: [{name, url, size}]"
+    },
+    "reactions": {
+      "type": "string",
+      "description": "JSON map: {\"like\": [uid1, uid2], \"heart\": [uid3]}"
+    },
+    "mentions": {
+      "type": "string",
+      "description": "JSON array of mentioned user IDs: [uid1, uid2]"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false
+    },
+    "edited_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "edit_history": {
+      "type": "string",
+      "description": "JSON array: [{edited_at, old_body, edited_by}]"
     }
   },
   "required": [

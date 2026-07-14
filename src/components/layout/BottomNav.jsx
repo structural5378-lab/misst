@@ -9,7 +9,7 @@ import AdminBadge from "@/components/admin/AdminBadge";
 
 const navItems = [
   { icon: Home, label: "Home", path: "/" },
-  { icon: MessageSquare, label: "Forum", path: "/community-forum" },
+  { icon: MessageSquare, label: "Community", path: "/community-forum" },
   { icon: null, label: "Add", path: "/add" }, // center action
   { icon: MessageCircle, label: "Chat", path: "/live-chat" },
   { icon: Mail, label: "Messages", path: "/messages" },
@@ -27,6 +27,7 @@ export default function BottomNav() {
   ];
 
   const [dmUnreadCount, setDmUnreadCount] = useState(0);
+  const [forumUnreadCount, setForumUnreadCount] = useState(0);
 
   // Native MIST DM unread count (replaces MyBB PM badge)
   useEffect(() => {
@@ -41,6 +42,23 @@ export default function BottomNav() {
     loadUnread();
     const unsub = base44.entities.ConversationParticipant.subscribe((event) => {
       if (event.data?.user_id === user.id) loadUnread();
+    });
+    return unsub;
+  }, [user?.id]);
+
+  // Native MIST Community forum unread count
+  useEffect(() => {
+    if (!user?.id) return;
+    const loadForumUnread = async () => {
+      try {
+        const subs = await base44.entities.ForumSubscription.filter({ user_id: user.id });
+        const total = subs.reduce((sum, s) => sum + (s.unread_count || 0), 0);
+        setForumUnreadCount(total);
+      } catch {}
+    };
+    loadForumUnread();
+    const unsub = base44.entities.ForumSubscription.subscribe((event) => {
+      if (event.data?.user_id === user.id) loadForumUnread();
     });
     return unsub;
   }, [user?.id]);
@@ -114,8 +132,9 @@ export default function BottomNav() {
           const isMessages = label === "Messages";
           const isChat = label === "Chat";
           const isAdminItem = label === "Admin";
-          const hasUnread = isMessages && dmUnreadCount > 0;
-          const badgeCount = isMessages ? dmUnreadCount : 0;
+          const isCommunity = label === "Community";
+          const hasUnread = (isMessages && dmUnreadCount > 0) || (isCommunity && forumUnreadCount > 0);
+          const badgeCount = isMessages ? dmUnreadCount : (isCommunity ? forumUnreadCount : 0);
           const chatGlow = isChat && hasNewChat;
           const pmGlow = isMessages && hasNewPMs;
 

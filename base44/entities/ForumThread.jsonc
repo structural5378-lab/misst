@@ -6,7 +6,8 @@
       "type": "string"
     },
     "body": {
-      "type": "string"
+      "type": "string",
+      "description": "First post content (rich text / markdown)"
     },
     "category_id": {
       "type": "string"
@@ -15,16 +16,60 @@
       "type": "string"
     },
     "community_id": {
-      "type": "string"
+      "type": "string",
+      "description": "Community this thread belongs to (data isolation)"
     },
     "community_name": {
       "type": "string"
+    },
+    "author_id": {
+      "type": "string",
+      "description": "Base44 user ID of thread author"
     },
     "author_name": {
       "type": "string"
     },
     "author_callsign": {
       "type": "string"
+    },
+    "author_avatar": {
+      "type": "string"
+    },
+    "author_role": {
+      "type": "string",
+      "description": "Author's role badge at time of posting"
+    },
+    "tags": {
+      "type": "string",
+      "description": "JSON array of tag strings e.g. [\"help\",\"antenna\"]"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Attached image for the first post"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Pinned to top of category"
+    },
+    "is_announcement": {
+      "type": "boolean",
+      "default": false,
+      "description": "Global announcement shown on community home"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Editor's pick / featured post"
+    },
+    "is_locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Locked - no new replies"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false
     },
     "reply_count": {
       "type": "number",
@@ -34,17 +79,34 @@
       "type": "number",
       "default": 0
     },
-    "is_pinned": {
-      "type": "boolean",
-      "default": false
-    },
-    "is_read": {
-      "type": "boolean",
-      "default": false
+    "reaction_counts": {
+      "type": "string",
+      "description": "JSON map: {\"like\": 5, \"thumbsup\": 2, \"heart\": 3}"
     },
     "last_reply_date": {
       "type": "string",
       "format": "date-time"
+    },
+    "last_reply_author": {
+      "type": "string"
+    },
+    "last_reply_author_id": {
+      "type": "string"
+    },
+    "last_reply_avatar": {
+      "type": "string"
+    },
+    "has_poll": {
+      "type": "boolean",
+      "default": false
+    },
+    "poll_data": {
+      "type": "string",
+      "description": "JSON: {question, options: [{text, votes}], expires}"
+    },
+    "subscribed_count": {
+      "type": "number",
+      "default": 0
     }
   },
   "required": [

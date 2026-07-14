@@ -488,3 +488,40 @@ body.icon-outline svg { stroke-width: 1.5; }
 
 /* AMOLED Mode */
 body.amoled-mode { background: #000; }
+
+/* ─── Community Forum: Rich Text Editor (ReactQuill dark) ─── */
+.community-quill .ql-toolbar { border: none !important; border-bottom: 1px solid hsl(var(--border)) !important; background: hsl(var(--secondary)/0.3); }
+.community-quill .ql-container { border: none !important; min-height: 120px; max-height: 320px; font-family: var(--font-body); }
+.community-quill .ql-editor { color: hsl(var(--foreground)); min-height: 120px; }
+.community-quill .ql-editor.ql-blank::before { color: hsl(var(--muted-foreground)); opacity: 0.6; }
+.community-quill .ql-snow .ql-stroke { stroke: hsl(var(--muted-foreground)); }
+.community-quill .ql-snow .ql-fill { fill: hsl(var(--muted-foreground)); }
+.community-quill .ql-snow .ql-picker-label { color: hsl(var(--muted-foreground)); }
+.community-quill .ql-snow .ql-picker-options { background: hsl(var(--popover)); border-color: hsl(var(--border)); }
+.community-quill .ql-snow.ql-toolbar button:hover .ql-stroke,
+.community-quill .ql-snow.ql-toolbar button.ql-active .ql-stroke { stroke: hsl(var(--primary)); }
+.community-quill .ql-snow.ql-toolbar button:hover .ql-fill,
+.community-quill .ql-snow.ql-toolbar button.ql-active .ql-fill { fill: hsl(var(--primary)); }
+.community-quill .ql-snow.ql-toolbar button:hover,
+.community-quill .ql-snow.ql-toolbar button.ql-active { color: hsl(var(--primary)); }
+.community-quill .ql-link::before, .community-quill .ql-image::before { color: hsl(var(--muted-foreground)); }
+
+/* ─── Community Forum: Markdown rendering ─── */
+.forum-markdown p { margin: 0.5em 0; }
+.forum-markdown p:first-child { margin-top: 0; }
+.forum-markdown p:last-child { margin-bottom: 0; }
+.forum-markdown h1, .forum-markdown h2, .forum-markdown h3 { font-weight: 700; margin: 0.75em 0 0.35em; color: hsl(var(--foreground)); }
+.forum-markdown h1 { font-size: 1.15em; }
+.forum-markdown h2 { font-size: 1.05em; }
+.forum-markdown h3 { font-size: 1em; }
+.forum-markdown ul, .forum-markdown ol { margin: 0.5em 0; padding-left: 1.25em; }
+.forum-markdown ul { list-style: disc; }
+.forum-markdown ol { list-style: decimal; }
+.forum-markdown li { margin: 0.2em 0; }
+.forum-markdown blockquote { border-left: 2px solid hsl(var(--primary)/0.4); padding-left: 0.75em; margin: 0.5em 0; color: hsl(var(--muted-foreground)); font-style: italic; }
+.forum-markdown code { background: hsl(var(--secondary)/0.6); padding: 0.15em 0.35em; border-radius: 4px; font-size: 0.85em; font-family: var(--font-mono); }
+.forum-markdown pre { background: hsl(var(--secondary)/0.6); padding: 0.6em; border-radius: 8px; overflow-x: auto; margin: 0.5em 0; }
+.forum-markdown pre code { background: none; padding: 0; }
+.forum-markdown a { color: hsl(var(--primary)); text-decoration: underline; }
+.forum-markdown img { max-width: 100%; border-radius: 8px; margin: 0.5em 0; }
+.forum-markdown hr { border: none; border-top: 1px solid hsl(var(--border)); margin: 1em 0; }
