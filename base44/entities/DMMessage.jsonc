@@ -1,0 +1,63 @@
+{
+  "name": "DMMessage",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "References Conversation.id"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "Base44 user ID of sender"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "sender_avatar": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message text content"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Attached image URL"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "Attached file URL"
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "file_size": {
+      "type": "number"
+    },
+    "reply_to_id": {
+      "type": "string",
+      "description": "ID of message being replied to"
+    },
+    "reply_to_content": {
+      "type": "string"
+    },
+    "reply_to_sender_name": {
+      "type": "string"
+    },
+    "edited_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp if message was edited"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft delete - message content removed but bubble remains"
+    }
+  },
+  "required": [
+    "conversation_id",
+    "sender_id",
+    "content"
+  ]
+}

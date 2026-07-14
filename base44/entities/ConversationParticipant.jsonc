@@ -1,0 +1,70 @@
+{
+  "name": "ConversationParticipant",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "References Conversation.id"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Display name (denormalized for list rendering)"
+    },
+    "user_avatar": {
+      "type": "string",
+      "description": "Avatar URL (denormalized)"
+    },
+    "user_callsign": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "member"
+      ],
+      "default": "member",
+      "description": "Group admin or regular member"
+    },
+    "joined_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_read_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the user last read messages in this conversation"
+    },
+    "unread_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Unread message count for this user in this conversation"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_muted": {
+      "type": "boolean",
+      "default": false
+    },
+    "typing_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when user started typing (for typing indicators)"
+    }
+  },
+  "required": [
+    "conversation_id",
+    "user_id",
+    "user_name"
+  ]
+}

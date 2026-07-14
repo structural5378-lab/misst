@@ -1,0 +1,58 @@
+{
+  "name": "Conversation",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "group"
+      ],
+      "default": "direct",
+      "description": "Direct (1-on-1) or group conversation"
+    },
+    "title": {
+      "type": "string",
+      "description": "Group chat title (empty for direct conversations)"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Group avatar URL"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "User ID of conversation creator"
+    },
+    "created_by_name": {
+      "type": "string"
+    },
+    "last_message_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of most recent message (for sorting)"
+    },
+    "last_message_preview": {
+      "type": "string",
+      "description": "Truncated preview of most recent message"
+    },
+    "last_message_sender_name": {
+      "type": "string"
+    },
+    "last_message_sender_id": {
+      "type": "string"
+    },
+    "last_message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "image",
+        "file"
+      ],
+      "default": "text"
+    }
+  },
+  "required": [
+    "type",
+    "created_by"
+  ]
+}

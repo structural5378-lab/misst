@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -221,9 +222,26 @@ export default function Members() {
   const admins = members.filter(m => m.role === "admin").length;
   const mods = members.filter(m => m.role === "moderator").length;
 
-  const handleMessage = (member) => {
+  const navigate = useNavigate();
+  const handleMessage = async (member) => {
     setSelectedMember(null);
-    setComposeTo(member);
+    try {
+      const res = await base44.functions.invoke("searchUsers", { query: member.username });
+      const found = (res.data?.users || []).find((u) => u.mybb_username === member.username);
+      if (found) {
+        const params = new URLSearchParams({
+          new_dm: found.id,
+          name: found.full_name || found.email || member.username,
+          avatar: found.avatar_url || "",
+          callsign: found.callsign || "",
+        });
+        navigate(`/messages?${params.toString()}`);
+      } else {
+        alert(`${member.username} hasn't registered with MIST native auth yet. They need to log in with their email to use direct messaging.`);
+      }
+    } catch {
+      alert("Failed to start conversation. Please try again.");
+    }
   };
 
   return (

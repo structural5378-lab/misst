@@ -1,0 +1,28 @@
+{
+  "name": "BlockedUser",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user ID of the blocker"
+    },
+    "blocked_user_id": {
+      "type": "string",
+      "description": "Base44 user ID of the blocked user"
+    },
+    "blocked_user_name": {
+      "type": "string"
+    },
+    "blocked_user_avatar": {
+      "type": "string"
+    },
+    "blocked_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "blocked_user_id"
+  ]
+}

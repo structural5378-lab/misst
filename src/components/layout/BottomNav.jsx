@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, MessageSquare, MessageCircle, BellRing, Plus, Shield } from "lucide-react";
+import { Home, MessageSquare, MessageCircle, Mail, Plus, Shield } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useAuth } from "@/lib/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import AdminBadge from "@/components/admin/AdminBadge";
 
@@ -12,12 +12,13 @@ const navItems = [
   { icon: MessageSquare, label: "Forum", path: "/community-forum" },
   { icon: null, label: "Add", path: "/add" }, // center action
   { icon: MessageCircle, label: "Chat", path: "/live-chat" },
-  { icon: BellRing, label: "Messages", path: "/messages" },
+  { icon: Mail, label: "Messages", path: "/messages" },
 ];
 
 export default function BottomNav() {
   const location = useLocation();
   const { mybbUser } = useMyBBAuth();
+  const { user } = useAuth();
   const { isAdmin } = useAdminAccess();
 
   const items = [
@@ -25,21 +26,24 @@ export default function BottomNav() {
     ...(isAdmin ? [{ icon: Shield, label: "Admin", path: "/platform/admin", isAdmin: true }] : []),
   ];
 
-  const { data: unreadPMs = 0 } = useQuery({
-    queryKey: ["unread-pms-badge", mybbUser?.username],
-    queryFn: async () => {
-      if (!mybbUser?.username || !mybbUser?.password) return 0;
-      const res = await base44.functions.invoke("mybbMessages", {
-        action: "get_pms",
-        username: mybbUser.username,
-        password: mybbUser.password,
-      });
-      return res.data?.unread_count || 0;
-    },
-    enabled: !!mybbUser?.password,
-    refetchInterval: 60000,
-    staleTime: 30000,
-  });
+  const [dmUnreadCount, setDmUnreadCount] = useState(0);
+
+  // Native MIST DM unread count (replaces MyBB PM badge)
+  useEffect(() => {
+    if (!user?.id) return;
+    const loadUnread = async () => {
+      try {
+        const parts = await base44.entities.ConversationParticipant.filter({ user_id: user.id });
+        const total = parts.reduce((sum, p) => sum + (p.unread_count || 0), 0);
+        setDmUnreadCount(total);
+      } catch {}
+    };
+    loadUnread();
+    const unsub = base44.entities.ConversationParticipant.subscribe((event) => {
+      if (event.data?.user_id === user.id) loadUnread();
+    });
+    return unsub;
+  }, [user?.id]);
 
   const [hasNewChat, setHasNewChat] = React.useState(false);
   const [hasNewPMs, setHasNewPMs] = React.useState(false);
@@ -67,16 +71,16 @@ export default function BottomNav() {
     }
   }, [isOnMessages]);
 
-  // Set PM glow on count increase; clear when all read
+  // Set DM glow on count increase; clear when all read
   React.useEffect(() => {
-    if (unreadPMs > prevUnreadRef.current && !isOnMessages) {
+    if (dmUnreadCount > prevUnreadRef.current && !isOnMessages) {
       setHasNewPMs(true);
     }
-    if (unreadPMs === 0) {
+    if (dmUnreadCount === 0) {
       setHasNewPMs(false);
     }
-    prevUnreadRef.current = unreadPMs;
-  }, [unreadPMs, isOnMessages]);
+    prevUnreadRef.current = dmUnreadCount;
+  }, [dmUnreadCount, isOnMessages]);
 
   // Subscribe to new chat messages (single stable subscription via refs)
   React.useEffect(() => {
@@ -104,8 +108,8 @@ export default function BottomNav() {
           const isMessages = label === "Messages";
           const isChat = label === "Chat";
           const isAdminItem = label === "Admin";
-          const hasUnread = isMessages && unreadPMs > 0;
-          const badgeCount = isMessages ? unreadPMs : 0;
+          const hasUnread = isMessages && dmUnreadCount > 0;
+          const badgeCount = isMessages ? dmUnreadCount : 0;
           const chatGlow = isChat && hasNewChat;
           const pmGlow = isMessages && hasNewPMs;
 

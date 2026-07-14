@@ -28,6 +28,9 @@ Deno.serve(async (req) => {
         email: u.email,
         callsign: u.callsign,
         mybb_username: u.mybb_username,
+        avatar_url: u.avatar_url,
+        bio: u.bio,
+        location: u.location,
       }));
 
     return Response.json({ users: results });
