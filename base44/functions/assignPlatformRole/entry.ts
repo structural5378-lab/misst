@@ -21,7 +21,13 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { target_user_id, target_user_email, role } = body;
+    const { action, role_id, target_user_id, target_user_email, role } = body;
+
+    if (action === 'revoke') {
+      if (!role_id) return Response.json({ error: 'role_id is required' }, { status: 400 });
+      const revoked = await base44.asServiceRole.entities.PlatformRole.update(role_id, { is_active: false });
+      return Response.json({ success: true, role: revoked });
+    }
 
     if (!target_user_id || !role) {
       return Response.json({ error: 'target_user_id and role are required' }, { status: 400 });

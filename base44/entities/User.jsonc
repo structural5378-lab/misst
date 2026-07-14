@@ -75,6 +75,21 @@
       "type": "boolean",
       "default": false,
       "description": "Platform admin can suspend a user globally"
+    },
+    "is_banned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Platform admin can permanently ban a user"
+    },
+    "is_muted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Platform admin can mute a user from chat/forum"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Verified operator badge granted by platform admin"
     }
   }
 }

@@ -1,0 +1,29 @@
+{
+  "name": "FeatureFlag",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Unique machine key e.g. forum, chat, marketplace"
+    },
+    "label": {
+      "type": "string",
+      "description": "Human readable name"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "default": "General"
+    },
+    "is_enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "key",
+    "label"
+  ]
+}
