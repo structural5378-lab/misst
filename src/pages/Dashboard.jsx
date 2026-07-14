@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMyBBAuth } from "@/lib/MyBBAuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, MapPin, Users, Wrench, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera, ChevronRight, UserCircle2, SignalHigh, BellRing, MessageCircle, MessageSquare, ShoppingBag, Trophy } from "lucide-react";
+import { Bell, Radio, MapPin, Users, Wrench, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera, ChevronRight, UserCircle2, SignalHigh, BellRing, MessageCircle, MessageSquare, ShoppingBag, Trophy, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
@@ -29,6 +29,7 @@ const quickItems = [
   { icon: MessageCircle, label: "Live Chat", path: "/live-chat", bg: "bg-violet-500/15", color: "text-violet-400" },
   { icon: Trophy, label: "Trophies", path: "/achievements", bg: "bg-amber-500/15", color: "text-amber-400" },
   { icon: Settings, label: "Settings", path: "/settings", bg: "bg-slate-500/15", color: "text-slate-400" },
+  { icon: Shield, label: "Admin", path: "/platform/admin", bg: "bg-amber-500/15", color: "text-amber-400", adminOnly: true },
 ];
 
 export default function Dashboard() {
@@ -110,6 +111,15 @@ export default function Dashboard() {
     staleTime: 60000,
   });
   const totalMembers = forumMembers?.length ?? null;
+
+  const { data: platformData } = useQuery({
+    queryKey: ["platform-roles-dashboard"],
+    queryFn: async () => {
+      const res = await base44.functions.invoke("getPlatformRoles", {});
+      return res.data;
+    },
+  });
+  const isAdmin = (platformData?.platform_roles || []).length > 0;
 
   const typeIcons = {
     info: Info,
@@ -294,7 +304,7 @@ export default function Dashboard() {
             <h3 className="text-sm font-semibold text-foreground">Quick Access</h3>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            {quickItems.map(({ icon: Icon, label, path, bg, color }) => (
+            {quickItems.filter(item => item.adminOnly ? isAdmin : true).map(({ icon: Icon, label, path, bg, color }) => (
               <Link
                 key={label}
                 to={path}
