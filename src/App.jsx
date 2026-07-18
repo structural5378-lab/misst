@@ -84,6 +84,9 @@ import PlatformAdminRepeaters from '@/pages/platform/PlatformAdminRepeaters';
 import PlatformAdminNets from '@/pages/platform/PlatformAdminNets';
 import PlatformAdminNews from '@/pages/platform/PlatformAdminNews';
 import PlatformAdminBackup from '@/pages/platform/PlatformAdminBackup';
+import PlatformAdminGallery from '@/pages/platform/PlatformAdminGallery';
+import PlatformAdminMarketplace from '@/pages/platform/PlatformAdminMarketplace';
+import PlatformAdminPrivateMessages from '@/pages/platform/PlatformAdminPrivateMessages';
 
 // Community-scoped pages
 import CommunityLayout from '@/components/community/CommunityLayout';
@@ -197,6 +200,9 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/nets" element={<PlatformAdminNets />} />
           <Route path="/platform/admin/news" element={<PlatformAdminNews />} />
           <Route path="/platform/admin/backup" element={<PlatformAdminBackup />} />
+          <Route path="/platform/admin/private-messages" element={<PlatformAdminPrivateMessages />} />
+          <Route path="/platform/admin/gallery" element={<PlatformAdminGallery />} />
+          <Route path="/platform/admin/marketplace" element={<PlatformAdminMarketplace />} />
         </Route>
       </Route>
 
