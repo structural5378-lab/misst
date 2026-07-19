@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster"
+import { lazy, Suspense } from "react"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -18,7 +19,7 @@ import Dashboard from '@/pages/Dashboard';
 import Repeaters from '@/pages/Repeaters';
 import RepeaterDetail from '@/pages/RepeaterDetail';
 import AddRepeater from '@/pages/AddRepeater';
-import MapView from '@/pages/MapView';
+const MapView = lazy(() => import('@/pages/MapView'));
 import Nets from '@/pages/Nets';
 
 import Messages from '@/pages/Messages';
@@ -36,7 +37,6 @@ import CommunityThread from '@/pages/CommunityThread';
 import CommunityNewThread from '@/pages/CommunityNewThread';
 import NetControl from '@/pages/NetControl';
 import CreateNet from '@/pages/CreateNet';
-import ForumRegister from '@/pages/ForumRegister';
 import CreateAlert from '@/pages/CreateAlert';
 import LiveCams from '@/pages/LiveCams';
 import Gallery from '@/pages/Gallery';
@@ -45,12 +45,10 @@ import Weather from '@/pages/Weather';
 import CineplexMode from '@/pages/CineplexMode';
 import CreateEvent from '@/pages/CreateEvent';
 import LiveChat from '@/pages/LiveChat';
-import NewThread from '@/pages/NewThread';
-import ThreadView from '@/pages/ThreadView';
 import TestNotifications from '@/pages/TestNotifications.jsx';
 import Shopping from '@/pages/Shopping';
 import CreateCommunity from '@/pages/CreateCommunity';
-import RadioScope from '@/pages/RadioScope';
+const RadioScope = lazy(() => import('@/pages/RadioScope'));
 import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
 import Settings from '@/pages/Settings';
@@ -72,7 +70,7 @@ import PlatformAdminThemeBuilder from '@/pages/platform/PlatformAdminThemeBuilde
 import PlatformAdminNotifications from '@/pages/platform/PlatformAdminNotifications';
 import PlatformAdminContent from '@/pages/platform/PlatformAdminContent';
 import PlatformAdminBadges from '@/pages/platform/PlatformAdminBadges';
-import PlatformAdminRadioScope from '@/pages/platform/PlatformAdminRadioScope';
+const PlatformAdminRadioScope = lazy(() => import('@/pages/platform/PlatformAdminRadioScope'));
 import PlatformAdminForum from '@/pages/platform/PlatformAdminForum';
 import PlatformAdminChat from '@/pages/platform/PlatformAdminChat';
 import PlatformAdminClubs from '@/pages/platform/PlatformAdminClubs';
@@ -112,6 +110,7 @@ const AuthenticatedApp = () => {
   // Dual-auth period: users can authenticate via Base44 native auth (email+password)
   // or MyBB forum bridge (username+password). DualProtectedRoute accepts either.
   return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -140,7 +139,7 @@ const AuthenticatedApp = () => {
         <Route path="/community/new" element={<CommunityNewThread />} />
         <Route path="/nets/:netId/control" element={<NetControl />} />
         <Route path="/nets/create" element={<CreateNet />} />
-        <Route path="/community-forum/register" element={<ForumRegister />} />
+
         <Route path="/alerts/create" element={<CreateAlert />} />
         <Route path="/live-cams" element={<LiveCams />} />
         <Route path="/gallery" element={<Gallery />} />
@@ -149,8 +148,7 @@ const AuthenticatedApp = () => {
         <Route path="/cineplex" element={<CineplexMode />} />
         <Route path="/events/create" element={<CreateEvent />} />
         <Route path="/live-chat" element={<LiveChat />} />
-        <Route path="/forums/new" element={<NewThread />} />
-        <Route path="/forums/thread/:id" element={<ThreadView />} />
+
         <Route path="/test-notifications" element={<TestNotifications />} />
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/community/create" element={<CreateCommunity />} />
@@ -212,6 +210,7 @@ const AuthenticatedApp = () => {
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </Suspense>
   );
 };
 
