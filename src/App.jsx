@@ -29,7 +29,7 @@ import FeedlineCalculator from '@/pages/tools/FeedlineCalculator';
 import PLToneLookup from '@/pages/tools/PLToneLookup';
 import FrequencyReference from '@/pages/tools/FrequencyReference';
 import RepeaterSpacing from '@/pages/tools/RepeaterSpacing';
-import Profile from '@/pages/Profile';
+import OperatorProfile from '@/pages/OperatorProfile';
 import AddContent from '@/pages/AddContent';
 import Community from '@/pages/Community';
 import CommunityThread from '@/pages/CommunityThread';
@@ -133,7 +133,7 @@ const AuthenticatedApp = () => {
         <Route path="/tools/pl-tones" element={<PLToneLookup />} />
         <Route path="/tools/frequencies" element={<FrequencyReference />} />
         <Route path="/tools/repeater-spacing" element={<RepeaterSpacing />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<OperatorProfile />} />
         <Route path="/add" element={<AddContent />} />
         <Route path="/community-forum" element={<Community />} />
         <Route path="/community/thread/:id" element={<CommunityThread />} />
