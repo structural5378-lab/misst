@@ -185,11 +185,11 @@ export async function resolveCallerPerms(base44, user) {
   let slugs = active.map((ur) => ur.role_slug).filter(Boolean);
   let perms = resolveUserPermissions(active, rolesById);
   let legacy = mapToLegacyPlatformRoles(slugs, perms);
-  if (active.length === 0) {
-    const plat = await base44.asServiceRole.entities.PlatformRole.filter({ user_id: user.id, is_active: true });
-    const fb = legacyFallback((plat || []).map((p) => p.role));
-    if (fb) { slugs = fb.slugs; perms = fb.permissions; legacy = fb.legacy; }
-    else if (user.role === 'admin') { const o = ownerFallback(); slugs = o.slugs; perms = o.permissions; legacy = o.legacy; }
+  // Single RBAC source of truth: UserRole. PlatformRole/CommunityRole are no
+  // longer read. A built-in admin (user.role === 'admin') with no UserRole yet
+  // is treated as Owner so the platform owner can never be locked out.
+  if (active.length === 0 && user.role === 'admin') {
+    const o = ownerFallback(); slugs = o.slugs; perms = o.permissions; legacy = o.legacy;
   }
   return { perms, slugs, legacy, assignments: active };
 }

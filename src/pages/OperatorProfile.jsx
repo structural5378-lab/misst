@@ -105,38 +105,41 @@ export default function OperatorProfile() {
   const addRadio = () => { if (!newRadio.trim()) return; setForm((f) => ({ ...f, radios: [...(f.radios || []), newRadio.trim()] })); setNewRadio(""); };
   const removeRadio = (i) => setForm((f) => ({ ...f, radios: f.radios.filter((_, idx) => idx !== i) }));
 
+  // Native avatar pipeline: resize client-side, upload to MIST file storage,
+  // then persist the URL on the canonical MIST User via updateProfile (which
+  // refreshes the session). No MyBB bridge involved.
   const resizeImage = (file) => new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = 100; canvas.height = 100;
+      canvas.width = 256; canvas.height = 256;
       const ctx = canvas.getContext("2d");
-      const scale = Math.max(100 / img.width, 100 / img.height);
+      const scale = Math.max(256 / img.width, 256 / img.height);
       const w = img.width * scale; const h = img.height * scale;
-      ctx.drawImage(img, (100 - w) / 2, (100 - h) / 2, w, h);
+      ctx.drawImage(img, (256 - w) / 2, (256 - h) / 2, w, h);
       URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/jpeg", 0.92));
+      canvas.toBlob((blob) => {
+        resolve({ dataUrl: canvas.toDataURL("image/jpeg", 0.92), blob });
+      }, "image/jpeg", 0.92);
     };
     img.src = url;
   });
   const handleAvatarPick = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const dataUrl = await resizeImage(file);
+    const { dataUrl, blob } = await resizeImage(file);
     setAvatarPreview(dataUrl);
-    setAvatarFile({ dataUrl, name: file.name });
+    setAvatarFile({ blob, name: file.name });
   };
   const handleAvatarUpload = async () => {
-    if (!avatarFile || !mybbUser) return;
+    if (!avatarFile) return;
     setUploadingAvatar(true); setAvatarError("");
     try {
-      const base64 = avatarFile.dataUrl.split(",")[1];
-      const res = await base44.functions.invoke("uploadAvatar", { fileBase64: base64, fileName: "avatar.jpg", mimeType: "image/jpeg", username: mybbUser.username, uid: mybbUser.uid });
-      if (res.data?.success) {
-        login({ ...mybbUser, avatar: res.data.avatar_url });
-        setAvatarPreview(null); setAvatarFile(null);
-      } else setAvatarError(res.data?.error || "Upload failed");
+      const fileObj = new File([avatarFile.blob], avatarFile.name || "avatar.jpg", { type: "image/jpeg" });
+      const res = await base44.integrations.Core.UploadFile({ file: fileObj });
+      await updateProfile({ avatar_url: res.file_url });
+      setAvatarPreview(null); setAvatarFile(null);
     } catch (e) { setAvatarError("Upload failed: " + e.message); }
     setUploadingAvatar(false);
   };

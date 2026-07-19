@@ -5,8 +5,9 @@ import { base44 } from "@/api/base44Client";
 
 /**
  * PlatformAdminRoute — guards the hidden /platform/admin/* namespace.
- * Only users with a PlatformRole (platform_owner, platform_admin, platform_support) can access.
- * This is completely separate from community routing and community auth.
+ * Only users with a platform-level RBAC role (owner, administrator, etc.) in
+ * the unified UserRole model can access. Reads via getPlatformRoles, which
+ * delegates to the single RBAC engine (resolveRbac).
  */
 export default function PlatformAdminRoute() {
   const [checking, setChecking] = useState(true);

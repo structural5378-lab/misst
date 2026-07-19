@@ -88,28 +88,20 @@ function UploadModal({ onClose, onSuccess, uploaderName }) {
     setFiles(selected);
   };
 
+  // Native upload pipeline: upload each file to MIST file storage, then create
+  // a GatheringPhoto record directly. No MyBB bridge involved.
   const handleUpload = async () => {
     if (!files.length) return;
     setUploading(true);
     try {
       for (let i = 0; i < files.length; i++) {
-        // Convert file to base64 for JSON transport
-        const fileBase64 = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result.split(",")[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(files[i]);
-        });
-
-        const res = await base44.functions.invoke("uploadGalleryPhoto", {
-          fileBase64,
-          fileName: files[i].name,
-          mimeType: files[i].type,
+        const res = await base44.integrations.Core.UploadFile({ file: files[i] });
+        await base44.entities.GatheringPhoto.create({
+          photo_url: res.file_url,
           caption: files.length === 1 ? caption : "",
           gathering_label: gatheringLabel,
           uploader_name: uploaderName,
         });
-        if (!res.data?.success) throw new Error(res.data?.error || "Upload failed");
         setProgress(Math.round(((i + 1) / files.length) * 100));
       }
       onSuccess();

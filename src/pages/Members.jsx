@@ -24,99 +24,6 @@ function getRoleStyle(role) {
   return null;
 }
 
-// ─── Compose Modal ───────────────────────────────────────────────────────────
-function ComposeModal({ recipient, onClose }) {
-  const { mybbUser } = useMistUser();
-  const [subject, setSubject] = useState(`Hello from ${mybbUser?.username || "a member"}`);
-  const [message, setMessage] = useState("");
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSend = async () => {
-    if (!message.trim()) return;
-    setSending(true);
-    setError("");
-    try {
-      await base44.functions.invoke("mybbMessages", {
-        action: "send_pm",
-        username: mybbUser.username,
-        password: mybbUser.password,
-        to_username: recipient.username,
-        subject,
-        message,
-      });
-      setSent(true);
-    } catch (e) {
-      setError("Failed to send. Please try again.");
-    } finally {
-      setSending(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
-      <div
-        className="w-full max-w-lg bg-card border border-border rounded-2xl p-5 space-y-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between sticky top-0 bg-card pb-2 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl overflow-hidden border border-violet-500/30 bg-violet-950/50">
-              <img src={normalizeAvatar(recipient.avatar) || LOGO_URL} alt={recipient.username}
-                className="w-full h-full object-cover" onError={e => { e.target.src = LOGO_URL; }} />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-foreground">{recipient.username}</p>
-              <p className="text-xs text-muted-foreground">Private Message</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {sent ? (
-          <div className="text-center py-8 space-y-2">
-            <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
-              <Send className="w-6 h-6 text-emerald-400" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">Message Sent!</p>
-            <p className="text-xs text-muted-foreground">Your message was delivered to {recipient.username}</p>
-            <button onClick={onClose} className="mt-2 text-xs text-violet-400 hover:underline">Close</button>
-          </div>
-        ) : (
-          <>
-            <input
-              value={subject}
-              onChange={e => setSubject(e.target.value)}
-              placeholder="Subject"
-              className="w-full bg-secondary border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-violet-500"
-            />
-            <textarea
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              placeholder={`Write a message to ${recipient.username}...`}
-              rows={4}
-              className="w-full bg-secondary border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-violet-500 resize-none"
-            />
-            {error && <p className="text-xs text-red-400">{error}</p>}
-            <button
-              onClick={handleSend}
-              disabled={sending || !message.trim()}
-              className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-semibold py-3 rounded-xl transition-colors"
-            >
-              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              {sending ? "Sending..." : "Send Message"}
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ─── Member Profile Sheet ─────────────────────────────────────────────────────
 function MemberSheet({ member, onClose, onMessage, isSelf }) {
   const avatarUrl = normalizeAvatar(member.avatar);
@@ -202,7 +109,6 @@ export default function Members() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // all | admin | moderator
   const [selectedMember, setSelectedMember] = useState(null);
-  const [composeTo, setComposeTo] = useState(null);
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ["forum-members"],
@@ -389,13 +295,6 @@ export default function Members() {
         />
       )}
 
-      {/* Compose Modal */}
-      {composeTo && (
-        <ComposeModal
-          recipient={composeTo}
-          onClose={() => setComposeTo(null)}
-        />
-      )}
     </div>
   );
 }

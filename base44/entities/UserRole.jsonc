@@ -9,9 +9,22 @@
     "user_email": {
       "type": "string"
     },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "platform",
+        "community"
+      ],
+      "default": "platform",
+      "description": "platform = global RBAC role (resolves permissions via Role); community = community-scoped role (display/membership only)"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "For scope=community: the community this role applies to"
+    },
     "role_id": {
       "type": "string",
-      "description": "References Role.id"
+      "description": "References Role.id (platform scope). Nullable for community-scoped roles with no matching Role row."
     },
     "role_name": {
       "type": "string",
@@ -39,7 +52,6 @@
   },
   "required": [
     "user_id",
-    "role_id",
     "role_slug"
   ]
 }

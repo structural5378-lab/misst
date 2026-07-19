@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Wifi, ShieldCheck } from "lucide-react";
 
-const STAFF_ROLES = ["platform_owner", "platform_admin", "community_owner", "community_admin", "moderator"];
+const PLATFORM_STAFF = ["owner", "administrator", "senior_moderator", "moderator"];
+const COMMUNITY_STAFF = ["community_owner", "community_admin", "moderator"];
 
 export default function OnlineMembersStrip() {
   const { data: online = [] } = useQuery({
@@ -12,14 +13,14 @@ export default function OnlineMembersStrip() {
     staleTime: 15000,
   });
   const { data: staffIds = [] } = useQuery({
-    queryKey: ["forum-staff-ids"],
+    queryKey: ["staff-user-ids"],
     queryFn: async () => {
-      const [plat, comm] = await Promise.all([
-        base44.entities.PlatformRole.filter({ is_active: true }),
-        base44.entities.CommunityRole.filter({ is_active: true }),
-      ]);
+      const all = await base44.entities.UserRole.filter({ is_active: true });
       const ids = new Set();
-      [...(plat || []), ...(comm || [])].forEach((r) => { if (STAFF_ROLES.includes(r.role)) ids.add(r.user_id); });
+      (all || []).forEach((r) => {
+        if ((r.scope || "platform") === "platform" && PLATFORM_STAFF.includes(r.role_slug)) ids.add(r.user_id);
+        if (r.scope === "community" && COMMUNITY_STAFF.includes(r.role_slug)) ids.add(r.user_id);
+      });
       return Array.from(ids);
     },
     staleTime: 60000,

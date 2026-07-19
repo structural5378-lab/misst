@@ -122,7 +122,7 @@ export default function BottomNav() {
 
 
   return (
-    <nav data-bottom-nav className="fixed bottom-0 left-0 right-0 z-[70] bg-background/95 backdrop-blur-xl border-t border-border transition-transform duration-300 ease-out will-change-transform">
+    <nav data-bottom-nav aria-label="Primary navigation" className="fixed bottom-0 left-0 right-0 z-[70] bg-background/95 backdrop-blur-xl border-t border-border transition-transform duration-300 ease-out will-change-transform">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
         {items.map(({ icon: Icon, label, path }) => {
           const isActive = path === "/"
@@ -142,6 +142,8 @@ export default function BottomNav() {
             <Link
               key={path}
               to={path}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={isAdd ? "Add content" : label}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-all ${
                 isAdd ? "" : isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
