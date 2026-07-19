@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, Radio, MapPin, Users, Wrench, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera, ChevronRight, UserCircle2, SignalHigh, BellRing, MessageCircle, MessageSquare, ShoppingBag, Trophy, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,8 +33,7 @@ const quickItems = [
 ];
 
 export default function Dashboard() {
-  const { mybbUser, logout: mybbLogout } = useMyBBAuth();
-  const [user, setUser] = useState(null);
+  const { mistUser, signOut } = useMistUser();
   const [testingNotif, setTestingNotif] = useState(false);
   const [notifPermission, setNotifPermission] = useState(() => {
     try { return Notification.permission; } catch { return "default"; }
@@ -56,14 +55,10 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    base44.auth.me().then(async (u) => {
-      setUser(u);
-      // Update last active timestamp
-      if (u?.id) {
-        await base44.auth.updateMe({ last_active: new Date().toISOString() });
-      }
-    }).catch(() => {});
-  }, []);
+    if (mistUser.id) {
+      base44.auth.updateMe({ last_active: new Date().toISOString() }).catch(() => {});
+    }
+  }, [mistUser.id]);
 
   const { data: nets } = useQuery({
     queryKey: ["nets"],
@@ -137,9 +132,9 @@ export default function Dashboard() {
 
   const [showOnlineSheet, setShowOnlineSheet] = useState(false);
 
-  const callsign = user?.callsign || mybbUser?.username || "MIST Member";
-  const avatarUrl = mybbUser?.avatar || LOGO_URL;
-  const location = user?.location || "GMRS Community";
+  const callsign = mistUser.callsign || "MIST Member";
+  const avatarUrl = mistUser.avatarUrl || LOGO_URL;
+  const location = mistUser.location || "GMRS Community";
 
   return (
     <div className="min-h-screen bg-background">
@@ -173,7 +168,7 @@ export default function Dashboard() {
 
         {/* Operator Identity Card */}
         <div className="relative pb-4">
-          <OperatorCard onLogout={() => { mybbLogout(); window.location.href = "/login"; }} />
+          <OperatorCard onLogout={signOut} />
         </div>
       </div>
 
@@ -233,9 +228,9 @@ export default function Dashboard() {
         {/* Stats strip */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: "Reputation", value: mybbUser?.reputation ?? 0 },
-            { label: "Threads", value: mybbUser?.threadcount ?? 0 },
-            { label: "Posts", value: mybbUser?.postcount ?? 0 },
+            { label: "Reputation", value: mistUser.reputation ?? 0 },
+            { label: "Threads", value: mistUser.threadCount ?? 0 },
+            { label: "Posts", value: mistUser.postCount ?? 0 },
           ].map(({ label, value }) => (
             <div key={label} className="flex flex-col items-center py-3 rounded-xl bg-muted/30 border border-border">
               <span className="text-xl font-bold text-foreground">{value}</span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { Radio, Star, Award, MessageSquare, LogOut, Edit, Save, X, Plus, Trash2, UserPlus, Shield, Camera, Loader2, Trophy, BarChart3, ChevronRight } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 import LevelBar from '@/components/achievements/LevelBar';
@@ -17,9 +17,8 @@ import { useAdminAccess } from "@/hooks/useAdminAccess";
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
 export default function Profile() {
-  const { mybbUser, login, logout: mybbLogout } = useMyBBAuth();
+  const { user, mistUser, mybbUser, login, updateProfile, signOut } = useMistUser();
   const { isAdmin } = useAdminAccess();
-  const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({});
@@ -47,23 +46,20 @@ export default function Profile() {
   });
 
   useEffect(() => {
-    base44.auth.me().then((u) => {
-      setUser(u);
+    if (user) {
       setForm({
-        callsign: u?.callsign || "",
-        location: u?.location || "",
-        bio: u?.bio || "",
-        radios: u?.radios || [],
-        mybb_username: u?.mybb_username || "",
+        callsign: user.callsign || "",
+        location: user.location || "",
+        bio: user.bio || "",
+        radios: user.radios || [],
+        mybb_username: user.mybb_username || "",
       });
-    }).catch(() => {});
-  }, []);
+    }
+  }, [user]);
 
   const handleSave = async () => {
     setSaving(true);
-    await base44.auth.updateMe(form);
-    const updated = await base44.auth.me();
-    setUser(updated);
+    await updateProfile(form);
     setEditing(false);
     setSaving(false);
   };
@@ -135,7 +131,7 @@ export default function Profile() {
     }
   };
 
-  const callsign = user?.callsign || mybbUser?.username || "MIST Member";
+  const callsign = mistUser.callsign || "MIST Member";
 
   return (
     <div>
@@ -167,8 +163,8 @@ export default function Profile() {
             <div className="w-20 h-20 rounded-2xl border-2 border-violet-500/40 bg-violet-950/50 overflow-hidden flex items-center justify-center shadow-lg shadow-violet-900/30">
               {avatarPreview ? (
                 <img src={avatarPreview} alt="preview" className="w-full h-full object-cover" />
-              ) : mybbUser?.avatar ? (
-                <img src={mybbUser.avatar} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.onerror=null; e.target.src=LOGO_URL; }} />
+              ) : mistUser.avatarUrl ? (
+                <img src={mistUser.avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.onerror=null; e.target.src=LOGO_URL; }} />
               ) : (
                 <img src={LOGO_URL} alt="avatar" className="w-full h-full object-contain scale-110" />
               )}
@@ -195,7 +191,7 @@ export default function Profile() {
           )}
           {avatarError && <p className="text-xs text-red-400 mb-1">{avatarError}</p>}
           <h2 className="text-xl font-bold text-foreground">{callsign}</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">{user?.location || "GMRS Community"} · GMRS Operator</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{mistUser.location || "GMRS Community"} · GMRS Operator</p>
           {mybbUser?.role && (
             <div className={`mt-1.5 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
               mybbUser.role === "admin" ? "bg-amber-500/15 text-amber-400 border border-amber-500/25"
@@ -211,9 +207,9 @@ export default function Profile() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { icon: Star, label: "Reputation", value: mybbUser?.reputation ?? 0 },
-            { icon: MessageSquare, label: "Posts", value: mybbUser?.postcount ?? 0 },
-            { icon: Award, label: "Threads", value: mybbUser?.threadcount ?? 0 },
+            { icon: Star, label: "Reputation", value: mistUser.reputation ?? 0 },
+            { icon: MessageSquare, label: "Posts", value: mistUser.postCount ?? 0 },
+            { icon: Award, label: "Threads", value: mistUser.threadCount ?? 0 },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex flex-col items-center py-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
               <span className="text-2xl font-bold text-foreground">{value}</span>
@@ -391,7 +387,7 @@ export default function Profile() {
         <Button
           variant="outline"
           className="w-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
-          onClick={() => { mybbLogout(); window.location.href = "/login"; }}
+          onClick={signOut}
         >
           <LogOut className="w-4 h-4 mr-2" />
           Sign Out
