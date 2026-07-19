@@ -55,6 +55,7 @@ import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
 import Settings from '@/pages/Settings';
 import Search from '@/pages/Search';
+import Notifications from '@/pages/Notifications';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 
 // Platform Admin pages
@@ -158,6 +159,7 @@ const AuthenticatedApp = () => {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/notifications" element={<Notifications />} />
 
         {/* Community-scoped routes — /c/:slug/* (isolated per community) */}
         <Route element={<CommunityLayout />}>

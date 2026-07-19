@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import BottomNav from "./BottomNav";
 import CommunitySelector from "./CommunitySelector";
 import AlertPoller from "./AlertPoller";
@@ -8,6 +8,8 @@ import NotificationPrompt from "./NotificationPrompt";
 import InstallBanner from "./InstallBanner";
 import NotificationManager from "./NotificationManager";
 import Clock from "./Clock";
+import { Bell } from "lucide-react";
+import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 
@@ -38,6 +40,7 @@ export default function AppLayout() {
     staleTime: 15 * 60 * 1000,
   });
   const temp = weather?.current?.temp ?? null;
+  const { data: unread = 0 } = useUnreadNotifications();
 
   return (
     <div className="min-h-screen bg-background flex flex-col w-full max-w-full overflow-x-hidden">
@@ -52,7 +55,17 @@ export default function AppLayout() {
             <span className="text-xs font-bold tracking-[0.2em] text-violet-300 uppercase">MISST</span>
           </div>
           <CommunitySelector />
-          <Clock temp={temp} />
+          <div className="flex items-center gap-2">
+            <Link to="/notifications" className="relative p-1.5 text-violet-300 hover:text-violet-100" aria-label="Notifications">
+              <Bell className="w-4 h-4" />
+              {unread > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </Link>
+            <Clock temp={temp} />
+          </div>
         </div>
       </div>
       <main className="pb-20 flex-1 w-full max-w-2xl mx-auto overflow-x-hidden">
