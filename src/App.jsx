@@ -35,6 +35,7 @@ import AddContent from '@/pages/AddContent';
 import Community from '@/pages/Community';
 import CommunityThread from '@/pages/CommunityThread';
 import CommunityNewThread from '@/pages/CommunityNewThread';
+import CommunityDesktopShell from '@/components/community/desktop/CommunityDesktopShell';
 import NetControl from '@/pages/NetControl';
 import CreateNet from '@/pages/CreateNet';
 import CreateAlert from '@/pages/CreateAlert';
@@ -133,9 +134,11 @@ const AuthenticatedApp = () => {
         <Route path="/tools/repeater-spacing" element={<RepeaterSpacing />} />
         <Route path="/profile" element={<OperatorProfile />} />
         <Route path="/add" element={<AddContent />} />
-        <Route path="/community-forum" element={<Community />} />
+        <Route element={<CommunityDesktopShell />}>
+          <Route path="/community-forum" element={<Community />} />
+          <Route path="/community/new" element={<CommunityNewThread />} />
+        </Route>
         <Route path="/community/thread/:id" element={<CommunityThread />} />
-        <Route path="/community/new" element={<CommunityNewThread />} />
         <Route path="/nets/:netId/control" element={<NetControl />} />
         <Route path="/nets/create" element={<CreateNet />} />
 

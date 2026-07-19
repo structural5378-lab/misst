@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import BottomNav from "./BottomNav";
 import CommunitySelector from "./CommunitySelector";
 import AlertPoller from "./AlertPoller";
@@ -41,6 +42,28 @@ export default function AppLayout() {
   });
   const temp = weather?.current?.temp ?? null;
   const { data: unread = 0 } = useUnreadNotifications();
+
+  // Desktop community routes get a full-bleed workspace (no mobile chrome);
+  // CommunityDesktopShell adds the three-column layout for forum pages.
+  const location = useLocation();
+  const isDesktop = useMediaQuery("(min-width: 1280px)");
+  const p = location.pathname;
+  const isCommunityDesktop =
+    isDesktop &&
+    (p === "/community-forum" || p.startsWith("/community/thread/") || p === "/community/new");
+
+  if (isCommunityDesktop) {
+    return (
+      <div className="min-h-screen bg-background w-full overflow-x-hidden">
+        <Outlet />
+        <NotificationManager />
+        <AlertPoller />
+        <SimplexRequestPoller />
+        <NotificationPrompt />
+        <InstallBanner />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col w-full max-w-full overflow-x-hidden">
