@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
 import { Signal, Check, X } from "lucide-react";
 
 export default function SimplexRequestPoller() {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const navigate = useNavigate();
   const shownRef = useRef(new Set());
 

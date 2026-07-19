@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from "@tanstack/react-query";
 import {
   MessageSquare, Star, Award, Search, Users, Shield,
@@ -26,7 +26,7 @@ function getRoleStyle(role) {
 
 // ─── Compose Modal ───────────────────────────────────────────────────────────
 function ComposeModal({ recipient, onClose }) {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [subject, setSubject] = useState(`Hello from ${mybbUser?.username || "a member"}`);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -198,7 +198,7 @@ function MemberSheet({ member, onClose, onMessage, isSelf }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Members() {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // all | admin | moderator
   const [selectedMember, setSelectedMember] = useState(null);

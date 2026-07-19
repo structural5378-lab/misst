@@ -7,7 +7,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 
 const statusOptions = ["online", "offline", "busy"];
 
@@ -15,7 +15,7 @@ export default function RepeaterDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const canEdit = mybbUser?.canEdit;
 
   const [editing, setEditing] = useState(false);

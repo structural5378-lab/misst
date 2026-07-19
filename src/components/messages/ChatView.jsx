@@ -3,10 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Send } from "lucide-react";
 import { format } from "date-fns";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 
 export default function ChatView({ otherUserId, otherName, currentUser, onBack }) {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [text, setText] = useState("");
   const bottomRef = useRef(null);
   const queryClient = useQueryClient();

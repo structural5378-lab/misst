@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, MessageSquare, MessageCircle, Mail, Plus, Shield } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { useAuth } from "@/lib/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import AdminBadge from "@/components/admin/AdminBadge";
@@ -17,7 +17,7 @@ const navItems = [
 
 export default function BottomNav() {
   const location = useLocation();
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const { user } = useAuth();
   const { isAdmin } = useAdminAccess();
 

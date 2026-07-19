@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useMyBBAuth } from '@/lib/MyBBAuthContext';
+import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trophy, Search, BarChart3 } from 'lucide-react';
 import PageHeader from '@/components/layout/PageHeader';
@@ -14,7 +14,7 @@ import { ACHIEVEMENTS, COLLECTIONS, COLLECTIONS_ORDER, getAchievementsByCollecti
 import { RARITY_SCORES } from '@/lib/rarityConfig';
 
 export default function Achievements() {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [user, setUser] = useState(null);
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [celebration, setCelebration] = useState(null);

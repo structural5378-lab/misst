@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function CommunitySelector() {
   const navigate = useNavigate();
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [communities, setCommunities] = useState([]);
   const [selectedId, setSelectedId] = useState("");
   const [selectedName, setSelectedName] = useState("");

@@ -103,7 +103,6 @@ import CommunityMore from '@/pages/community/CommunityMore';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
-import { MyBBAuthProvider } from '@/lib/MyBBAuthContext';
 import MistProtectedRoute from '@/components/MistProtectedRoute';
 
 const AuthenticatedApp = () => {
@@ -219,14 +218,12 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <MyBBAuthProvider>
           <QueryClientProvider client={queryClientInstance}>
             <Router>
               <AuthenticatedApp />
             </Router>
             <Toaster />
           </QueryClientProvider>
-        </MyBBAuthProvider>
       </AuthProvider>
     </ThemeProvider>
   )

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Radio, Plus, CheckCircle, XCircle, Clock, Users, Send, StopCircle } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
@@ -13,7 +13,7 @@ import NetCheckinList from "@/components/nets/NetCheckinList";
 export default function NetControl() {
   const { netId } = useParams();
   const navigate = useNavigate();
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const queryClient = useQueryClient();
 
   const isAuthorized = mybbUser?.role === "admin" || mybbUser?.role === "moderator";

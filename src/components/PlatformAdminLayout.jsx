@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Outlet, NavLink, Link, useLocation } from "react-router-dom";
 import { Shield, Menu, X, LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { adminNavSections } from "@/lib/adminNav";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import AdminBadge from "@/components/admin/AdminBadge";
 import AdminBreadcrumb from "@/components/platform/AdminBreadcrumb";
@@ -14,7 +14,7 @@ export default function PlatformAdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const { logout } = useMyBBAuth();
+  const { signOut } = useMistUser();
   const { maxRoleLevel } = useAdminAccess();
 
   useEffect(() => setSidebarOpen(false), [location.pathname]);
@@ -50,7 +50,7 @@ export default function PlatformAdminLayout() {
           <div className="flex items-center gap-2 shrink-0">
             <AdminNotificationBell />
             <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Exit →</Link>
-            <button onClick={() => { logout(); window.location.href = "/login"; }} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors">
+            <button onClick={() => { signOut(); window.location.href = "/login"; }} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors">
               <LogOut className="w-4 h-4" />
             </button>
           </div>

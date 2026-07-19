@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { useChat } from "@/hooks/useChat";
 import ChatAvatar from "@/components/chat/ChatAvatar";
 import ChatMessageList from "@/components/chat/ChatMessageList";
@@ -11,7 +11,7 @@ import ChatMessageActions from "@/components/chat/ChatMessageActions";
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
 export default function LiveChat() {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const {
     messages, loading, typingUsers, onlineUsers,
     sendMessage, deleteMessage, toggleReaction, setTyping,

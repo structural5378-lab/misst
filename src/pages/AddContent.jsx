@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Radio, MessageSquare, Users, Bell, ChevronRight, Lock, CalendarDays } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 
 const options = [
   { icon: Radio, label: "Add Repeater", desc: "Register a new repeater", path: "/repeaters/add", color: "text-primary", requiresEdit: true },
@@ -13,7 +13,7 @@ const options = [
 ];
 
 export default function AddContent() {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const canEdit = mybbUser?.canEdit;
 
   return (

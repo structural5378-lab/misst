@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Info, AlertTriangle, Radio, Settings, Trash2 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { format } from "date-fns";
 
 const typeIcons = {
@@ -21,7 +21,7 @@ const typeColors = {
 };
 
 export default function Alerts() {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const queryClient = useQueryClient();
   const canEdit = mybbUser?.canEdit;
   const [deletingIds, setDeletingIds] = useState(new Set());

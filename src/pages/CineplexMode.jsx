@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
@@ -301,7 +301,7 @@ function LiveMap({ session, myUID, onEnd, onPing, repeaters }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function CineplexMode() {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [session, setSession] = useState(null);
   const [step, setStep] = useState("pick"); // pick | waiting | incoming | live
   const pollRef = useRef(null);

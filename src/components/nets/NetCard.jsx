@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { Radio, Users, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { base44 } from "@/api/base44Client";
 
 export default function NetCard({ net, onDeleted }) {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const canControl = mybbUser?.role === "admin" || mybbUser?.role === "moderator";
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);

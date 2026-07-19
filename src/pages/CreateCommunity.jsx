@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useMyBBAuth } from '@/lib/MyBBAuthContext';
+import { useMistUser } from "@/hooks/useMistUser";
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Loader2, Rocket } from 'lucide-react';
 import WizardProgress from '@/components/community/wizard/WizardProgress';
@@ -26,7 +26,7 @@ const INITIAL_DATA = {
 
 export default function CreateCommunity() {
   const navigate = useNavigate();
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [step, setStep] = useState(1);
   const [data, setData] = useState(INITIAL_DATA);
   const [errors, setErrors] = useState({});

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, Upload, X, ChevronLeft, ChevronRight, Plus, ImageIcon } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
@@ -190,7 +190,7 @@ function UploadModal({ onClose, onSuccess, uploaderName }) {
 }
 
 export default function Gallery() {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const queryClient = useQueryClient();
   const [showUpload, setShowUpload] = useState(false);
   const [lightbox, setLightbox] = useState(null); // { photos, index }

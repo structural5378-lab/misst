@@ -4,11 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Radio, CheckCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 
 export default function NetCheckInPanel({ net }) {
   const [user, setUser] = useState(null);
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [showForm, setShowForm] = useState(false);
   const [signalReport, setSignalReport] = useState("5x5");
   const [notes, setNotes] = useState("");

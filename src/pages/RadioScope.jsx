@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { Link } from "react-router-dom";
 import { ArrowLeft, Layers, Crosshair } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from "@tanstack/react-query";
 import RadioScopeMap from "@/components/radioscope/RadioScopeMap";
 import RadioScopeSearch from "@/components/radioscope/RadioScopeSearch";
@@ -13,7 +13,7 @@ import UserSheet from "@/components/radioscope/UserSheet";
 const DEFAULT_CENTER = [25.77, -80.19];
 
 export default function RadioScope() {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [userPosition, setUserPosition] = useState(null);
   const [selectedRepeater, setSelectedRepeater] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);

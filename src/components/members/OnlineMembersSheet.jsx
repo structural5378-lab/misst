@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { base44 } from "@/api/base44Client";
 import { X, MessageSquare, Send, Navigation, Loader2, Shield, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -21,7 +21,7 @@ function getRoleStyle(role) {
 
 // ─── Compose Modal ────────────────────────────────────────────────────────────
 function ComposeModal({ recipient, onClose }) {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [subject, setSubject] = useState(`Hello from ${mybbUser?.username || "a member"}`);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -110,7 +110,7 @@ function ComposeModal({ recipient, onClose }) {
 
 // ─── Main Sheet ───────────────────────────────────────────────────────────────
 export default function OnlineMembersSheet({ members, onClose }) {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [composeTo, setComposeTo] = useState(null);
 
   return (

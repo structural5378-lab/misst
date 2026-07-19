@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { useMyBBAuth } from "@/lib/MyBBAuthContext";
+import { useMistUser } from "@/hooks/useMistUser";
 import { useToast } from "@/components/ui/use-toast";
 import PageHeader from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { CalendarDays, MapPin, AlarmClock, Loader2 } from "lucide-react";
 
 export default function CreateEvent() {
   const navigate = useNavigate();
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const { toast } = useToast();
 
   const [title, setTitle] = useState("");

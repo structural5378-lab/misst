@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useMyBBAuth } from '@/lib/MyBBAuthContext';
+import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from '@tanstack/react-query';
 import { Bell, LogOut, Calendar, Users, BadgeCheck, Award, Flame, X } from 'lucide-react';
 import ProfileBanner from './ProfileBanner';
@@ -16,7 +16,7 @@ import { deriveGroups, deriveBadges, selectBanner, getAvatarFrame } from '@/lib/
 const LOGO_URL = 'https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png';
 
 export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
-  const { mybbUser } = useMyBBAuth();
+  const { mybbUser } = useMistUser();
   const [user, setUser] = useState(null);
   const [selectedBadge, setSelectedBadge] = useState(null);
 
