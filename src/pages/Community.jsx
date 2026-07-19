@@ -4,12 +4,16 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Search, X, RefreshCw, Megaphone, Pin, Flame, Star, Inbox,
-  MessageSquare, ChevronLeft,
+  MessageSquare, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import QuickActions from "@/components/community/QuickActions";
 import CategoryCard from "@/components/community/CategoryCard";
 import ThreadCard from "@/components/community/ThreadCard";
 import MemberStats from "@/components/community/MemberStats";
+import CommunityStatsBar from "@/components/community/CommunityStatsBar";
+import OnlineMembersStrip from "@/components/community/OnlineMembersStrip";
+import FeaturedRail from "@/components/community/FeaturedRail";
+import NewMembersStrip from "@/components/community/NewMembersStrip";
 import { useAuth } from "@/lib/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 
@@ -32,6 +36,13 @@ export default function Community() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [sortBy, setSortBy] = useState("activity");
+  const SORTS = [
+    { id: "activity", label: "Activity" },
+    { id: "newest", label: "Newest" },
+    { id: "replies", label: "Replies" },
+    { id: "views", label: "Views" },
+  ];
 
   const { data: categories = [], isLoading: catLoading } = useQuery({
     queryKey: ["forum-categories"],
@@ -99,10 +110,16 @@ export default function Community() {
     } else if (activeTab === "featured") {
       list = list.filter(t => t.is_featured);
     }
-    const pinned = list.filter(t => t.is_pinned);
-    const rest = list.filter(t => !t.is_pinned);
+    const sortFn = (a, b) => {
+      if (sortBy === "replies") return (b.reply_count || 0) - (a.reply_count || 0);
+      if (sortBy === "views") return (b.view_count || 0) - (a.view_count || 0);
+      if (sortBy === "newest") return new Date(b.created_date) - new Date(a.created_date);
+      return new Date(b.last_reply_date || b.created_date) - new Date(a.last_reply_date || a.created_date);
+    };
+    const pinned = list.filter(t => t.is_pinned).sort(sortFn);
+    const rest = list.filter(t => !t.is_pinned).sort(sortFn);
     return [...pinned, ...rest];
-  }, [activeThreads, selectedCategory, filter, searchQuery, activeTab, subByThread, user, subscriptions, isAdmin]);
+  }, [activeThreads, selectedCategory, filter, searchQuery, activeTab, sortBy, subByThread, user, subscriptions, isAdmin]);
 
   const totalPosts = activeThreads.reduce((sum, t) => sum + (t.reply_count || 0), 0);
   const unreadCount = subscriptions.reduce((sum, s) => sum + (s.unread_count || 0), 0);
@@ -124,11 +141,13 @@ export default function Community() {
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
         <div className="flex items-center justify-between h-14 px-4">
           {selectedCategory ? (
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <button onClick={() => setSelectedCategory(null)} className="text-primary p-1 -ml-1 shrink-0">
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <h1 className="text-base font-bold text-foreground truncate">{selectedCategory.name}</h1>
+              <button onClick={() => setSelectedCategory(null)} className="text-xs text-muted-foreground hover:text-foreground shrink-0">Community</button>
+              <ChevronRight className="w-3 h-3 text-muted-foreground/50 shrink-0" />
+              <h1 className="text-sm font-bold text-foreground truncate">{selectedCategory.name}</h1>
             </div>
           ) : filter ? (
             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -175,6 +194,16 @@ export default function Community() {
 
       {/* Quick Actions */}
       <QuickActions onSearch={() => setShowSearch(true)} isAdmin={isAdmin} />
+
+      {/* Community Stats + Online Members + Featured + New Members (home only) */}
+      {!selectedCategory && !filter && (
+        <>
+          <CommunityStatsBar threads={activeThreads} />
+          <OnlineMembersStrip />
+          <FeaturedRail threads={activeThreads} />
+          <NewMembersStrip threads={activeThreads} />
+        </>
+      )}
 
       {/* Pinned Announcements */}
       {!selectedCategory && !filter && pinnedAnnouncements.length > 0 && (
@@ -239,6 +268,22 @@ export default function Community() {
           </div>
         </div>
       )}
+
+      {/* Sort controls */}
+      <div className="flex items-center gap-1.5 px-4 py-2 overflow-x-auto scrollbar-hide border-b border-border/40">
+        <span className="text-[10px] text-muted-foreground font-medium shrink-0">Sort</span>
+        {SORTS.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => setSortBy(s.id)}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors ${
+              sortBy === s.id ? "bg-primary/15 text-primary border border-primary/30" : "text-muted-foreground border border-border/40 hover:text-foreground"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
 
       {/* Thread List */}
       <div className="pt-1">
