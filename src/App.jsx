@@ -104,7 +104,7 @@ import CommunityMore from '@/pages/community/CommunityMore';
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
 import { MyBBAuthProvider } from '@/lib/MyBBAuthContext';
-import DualProtectedRoute from '@/components/DualProtectedRoute';
+import MistProtectedRoute from '@/components/MistProtectedRoute';
 
 const AuthenticatedApp = () => {
   // Dual-auth period: users can authenticate via Base44 native auth (email+password)
@@ -116,7 +116,7 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      <Route element={<DualProtectedRoute />}>
+      <Route element={<MistProtectedRoute />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/repeaters" element={<Repeaters />} />
         <Route path="/repeaters/add" element={<AddRepeater />} />

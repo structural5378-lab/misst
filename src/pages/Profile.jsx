@@ -334,26 +334,15 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Forum Link */}
+            {/* Community Access */}
             <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
-              <h3 className="text-sm font-semibold text-foreground mb-2">Forum Account</h3>
-              {user?.mybb_username ? (
-                <a
-                  href={`https://insomniacsgmrs.com/member.php?action=profile&username=${user.mybb_username}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-violet-400 hover:underline"
-                >
-                  {user.mybb_username} on insomniacsgmrs.com →
-                </a>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">No forum account linked yet.</p>
-                  <Link to="/community-forum/register" className="inline-flex items-center gap-1.5 text-xs font-medium text-violet-400 hover:text-violet-300 bg-violet-500/10 border border-violet-500/20 px-3 py-1.5 rounded-lg">
-                    <UserPlus className="w-3.5 h-3.5" /> Register for the Forum
-                  </Link>
-                </div>
-              )}
+              <h3 className="text-sm font-semibold text-foreground mb-2">Community</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Your MIST account includes full community &amp; forum access — no separate login needed.
+              </p>
+              <Link to="/community-forum" className="inline-flex items-center gap-1.5 text-xs font-medium text-violet-400 hover:text-violet-300 bg-violet-500/10 border border-violet-500/20 px-3 py-1.5 rounded-lg">
+                <MessageSquare className="w-3.5 h-3.5" /> Open Community
+              </Link>
             </div>
 
             {/* Member Since */}
