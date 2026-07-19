@@ -1,0 +1,67 @@
+{
+  "name": "AccountMigration",
+  "type": "object",
+  "properties": {
+    "mybb_uid": {
+      "type": "string",
+      "description": "Legacy MyBB user ID"
+    },
+    "mybb_username": {
+      "type": "string"
+    },
+    "mybb_email": {
+      "type": "string"
+    },
+    "mist_user_id": {
+      "type": "string",
+      "description": "Mapped MIST user ID (null if conflict/unmatched)"
+    },
+    "mist_email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "migrated",
+        "conflict",
+        "skipped",
+        "error",
+        "resolved"
+      ],
+      "default": "conflict",
+      "description": "migrated=linked, conflict=needs admin review, skipped=duplicate/already, error=write failed, resolved=admin fixed"
+    },
+    "conflict_reason": {
+      "type": "string",
+      "description": "Why migration could not auto-complete (e.g. no matching MIST account, duplicate)"
+    },
+    "preserved_data": {
+      "type": "string",
+      "description": "JSON snapshot preserved from MyBB: postcount, reputation, threadcount, usergroup, avatar, etc."
+    },
+    "migration_batch": {
+      "type": "string",
+      "description": "Batch identifier for this migration run"
+    },
+    "migrated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved_by": {
+      "type": "string",
+      "description": "Admin user ID who resolved a conflict"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolution_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "mybb_uid",
+    "mybb_username",
+    "status"
+  ]
+}
