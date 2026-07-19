@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { resolveCallerPerms } from '../../shared/rbac.ts';
 
 /**
  * ssoIssueToken — MIST is the Identity Provider (IdP).
@@ -46,12 +47,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: "No legacy forum account linked to this MIST user" }, { status: 400 });
     }
 
-    // Resolve platform role(s) so the bridge can map to the correct MyBB usergroup.
-    const roles = await base44.asServiceRole.entities.PlatformRole.filter({
-      user_id: user.id,
-      is_active: true
-    });
-    const roleStrings = (roles || []).map((r) => r.role);
+    // MIST RBAC is the single source of truth — embed effective permissions + roles
+    // so the PHP bridge syncs MyBB usergroups from MIST (no independent decisions).
+    const { perms, slugs, legacy } = await resolveCallerPerms(base44, user);
 
     const now = Math.floor(Date.now() / 1000);
     const payload = {
@@ -59,7 +57,10 @@ Deno.serve(async (req) => {
       mybb_username: mybbUsername,
       mybb_uid: user.mybb_uid || null,
       mist_email: user.email,
-      roles: roleStrings,
+      roles: slugs,
+      legacy_roles: legacy,
+      permissions: perms,
+      is_owner: slugs.includes('owner') || legacy.includes('platform_owner'),
       iat: now,
       exp: now + 120
     };

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
-import { resolveUserPermissions, mapToLegacyPlatformRoles, legacyFallback, ownerFallback, invalidateRbacCache } from '../../shared/rbac.ts';
+import { resolveCallerPerms, logRbacAudit, invalidateRbacCache } from '../../shared/rbac.ts';
 
 /**
  * rbacManage — admin-only Role Manager. Single endpoint for all RBAC mutations.
@@ -10,42 +10,14 @@ import { resolveUserPermissions, mapToLegacyPlatformRoles, legacyFallback, owner
  * Actions: list, create_role, clone_role, update_role, delete_role,
  *          assign_user, unassign_user, bulk_assign.
  */
-async function resolveCallerPerms(base44, user) {
-  const userRoles = await base44.asServiceRole.entities.UserRole.filter({ user_id: user.id });
-  const roles = await base44.asServiceRole.entities.Role.list('-priority', 500);
-  const rolesById = {};
-  for (const r of roles || []) rolesById[r.id] = r;
-  const active = (userRoles || []).filter((ur) => ur.is_active !== false);
-  let slugs = active.map((ur) => ur.role_slug).filter(Boolean);
-  let perms = resolveUserPermissions(active, rolesById);
-  let legacy = mapToLegacyPlatformRoles(slugs, perms);
-  if (active.length === 0) {
-    const plat = await base44.asServiceRole.entities.PlatformRole.filter({ user_id: user.id, is_active: true });
-    const fb = legacyFallback((plat || []).map((p) => p.role));
-    if (fb) { perms = fb.permissions; slugs = fb.slugs; legacy = fb.legacy; }
-    else if (user.role === 'admin') { const o = ownerFallback(); perms = o.permissions; slugs = o.slugs; legacy = o.legacy; }
-  }
-  return { perms, slugs, legacy };
-}
-
 async function logAudit(base44, admin, action, f) {
-  try {
-    await base44.asServiceRole.entities.RbacAuditLog.create({
-      admin_id: admin.id,
-      admin_email: admin.email || '',
-      action,
-      target_user_id: f.target_user_id || '',
-      target_user_email: f.target_user_email || '',
-      role_id: f.role_id || '',
-      role_name: f.role_name || '',
-      old_value: f.old_value || '',
-      new_value: f.new_value || '',
-      changed_permissions: f.changed_permissions || '',
-      reason: f.reason || ''
-    });
-  } catch {
-    /* audit is best-effort; never block the operation */
-  }
+  await logRbacAudit(base44, {
+    admin_id: admin.id, admin_email: admin.email || '', action,
+    target_user_id: f.target_user_id || '', target_user_email: f.target_user_email || '',
+    role_id: f.role_id || '', role_name: f.role_name || '',
+    old_value: f.old_value || '', new_value: f.new_value || '',
+    changed_permissions: f.changed_permissions || '', reason: f.reason || ''
+  });
 }
 
 function slugify(name) {

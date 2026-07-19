@@ -1,16 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { requirePermission } from '../../shared/rbac.ts';
 
 // Super Admin user management — list users and perform privileged actions.
-// Only callers with an active platform_owner or platform_admin PlatformRole may use this.
+// Enforced through the centralized RBAC engine: requires the users.manage permission.
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const callerRoles = await base44.asServiceRole.entities.PlatformRole.filter({ user_id: user.id, is_active: true });
-    const isPlatformAdmin = (callerRoles || []).some(r => r.role === 'platform_owner' || r.role === 'platform_admin');
-    if (!isPlatformAdmin) return Response.json({ error: 'Forbidden' }, { status: 403 });
+    const { ok } = await requirePermission(base44, user, 'users.manage', 'adminManageUser');
+    if (!ok) return Response.json({ error: 'Forbidden: users.manage required' }, { status: 403 });
 
     const body = await req.json().catch(() => ({}));
     const { action, target_user_id, fields } = body;

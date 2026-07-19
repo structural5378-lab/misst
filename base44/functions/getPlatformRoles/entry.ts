@@ -1,10 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
-import { resolveUserPermissions, mapToLegacyPlatformRoles, legacyFallback, ownerFallback } from '../../shared/rbac.ts';
+import { resolveCallerPerms } from '../../shared/rbac.ts';
 
 /**
- * getPlatformRoles — backward-compat shim. Now delegates to the unified RBAC
- * engine so existing admin gating (PlatformAdminRoute, useAdminAccess) reads
- * from the single source of truth while keeping its original response shape.
+ * getPlatformRoles — backward-compat shim. Delegates to the unified RBAC engine
+ * so existing admin gating (PlatformAdminRoute, useAdminAccess) reads from the
+ * single source of truth while keeping its original response shape.
  */
 Deno.serve(async (req) => {
   try {
@@ -12,29 +12,14 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const userRoles = await base44.asServiceRole.entities.UserRole.filter({ user_id: user.id });
-    const roles = await base44.asServiceRole.entities.Role.list('-priority', 500);
-    const rolesById = {};
-    for (const r of roles || []) rolesById[r.id] = r;
-
-    const active = (userRoles || []).filter((ur) => ur.is_active !== false);
-    let slugs = active.map((ur) => ur.role_slug).filter(Boolean);
-    let permissions = resolveUserPermissions(active, rolesById);
-    let legacy = mapToLegacyPlatformRoles(slugs, permissions);
-
-    if (active.length === 0) {
-      const plat = await base44.asServiceRole.entities.PlatformRole.filter({ user_id: user.id, is_active: true });
-      const fb = legacyFallback((plat || []).map((p) => p.role));
-      if (fb) { slugs = fb.slugs; permissions = fb.permissions; legacy = fb.legacy; }
-      else if (user.role === 'admin') { const o = ownerFallback(); slugs = o.slugs; permissions = o.permissions; legacy = o.legacy; }
-    }
+    const { perms, slugs, legacy } = await resolveCallerPerms(base44, user);
 
     return Response.json({
       user: { id: user.id, email: user.email, full_name: user.full_name, role: user.role },
       platform_roles: legacy,
-      platform_role_details: active,
+      platform_role_details: slugs,
       rbac_roles: slugs,
-      rbac_permissions: permissions
+      rbac_permissions: perms
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

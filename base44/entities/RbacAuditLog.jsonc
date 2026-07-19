@@ -4,7 +4,7 @@
   "properties": {
     "admin_id": {
       "type": "string",
-      "description": "MIST user ID of the administrator"
+      "description": "MIST user ID of the actor (admin, or denied caller)"
     },
     "admin_email": {
       "type": "string"
@@ -18,9 +18,11 @@
         "role_clone",
         "user_assign",
         "user_unassign",
-        "user_bulk_assign"
+        "user_bulk_assign",
+        "permission_denied",
+        "role_migration"
       ],
-      "description": "Type of permission change"
+      "description": "Type of permission event"
     },
     "target_user_id": {
       "type": "string",
@@ -35,6 +37,18 @@
     "role_name": {
       "type": "string"
     },
+    "endpoint": {
+      "type": "string",
+      "description": "Function/endpoint where the event occurred"
+    },
+    "permission_required": {
+      "type": "string",
+      "description": "Permission key that was required (for denials)"
+    },
+    "permission_granted": {
+      "type": "string",
+      "description": "Comma-separated effective permissions of the caller (for denials)"
+    },
     "old_value": {
       "type": "string",
       "description": "JSON snapshot before change"
@@ -48,6 +62,10 @@
       "description": "JSON array of permission keys that changed"
     },
     "reason": {
+      "type": "string",
+      "description": "Reason for denial or notes"
+    },
+    "ip_address": {
       "type": "string"
     }
   },

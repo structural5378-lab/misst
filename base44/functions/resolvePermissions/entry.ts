@@ -1,109 +1,50 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { resolveCallerPerms } from '../../shared/rbac.ts';
 
-// Permission constants — the single source of truth for the platform's permission framework.
-// Modules reference these permission strings; this function resolves them for a given user.
-
-const PLATFORM_PERMISSIONS = {
-  platform_owner: [
-    'platform:full_access',
-    'platform:manage_communities',
-    'platform:manage_users',
-    'platform:assign_roles',
-    'platform:view_audit_log',
-    'platform:support',
-    'platform:billing'
-  ],
-  platform_admin: [
-    'platform:manage_communities',
-    'platform:manage_users',
-    'platform:view_audit_log',
-    'platform:support'
-  ],
-  platform_support: [
-    'platform:support'
-  ]
-};
+// Permission resolver — platform permissions now come from the centralized RBAC
+// engine (single source of truth). Community-scoped permissions remain derived
+// from CommunityMember roles (a separate axis, intentionally not RBAC).
+// Legacy duplicate permission maps have been removed.
 
 const COMMUNITY_PERMISSIONS = {
   community_owner: [
-    'community:admin',
-    'community:moderate',
-    'community:create_alert',
-    'community:create_event',
-    'community:create_net',
-    'community:manage_members',
-    'community:manage_settings',
-    'community:delete',
-    'community:transfer_ownership',
-    'community:create_custom_roles',
-    'community:override_permissions',
-    'community:customize_branding',
-    'community:invite_members',
-    'community:upload_photos',
-    'community:create_listings',
-    'community:create_threads',
-    'community:post_chat',
-    'community:delete_own_message',
-    'community:checkin_net',
-    'community:view_content'
+    'community:admin', 'community:moderate', 'community:create_alert', 'community:create_event',
+    'community:create_net', 'community:manage_members', 'community:manage_settings', 'community:delete',
+    'community:transfer_ownership', 'community:create_custom_roles', 'community:override_permissions',
+    'community:customize_branding', 'community:invite_members', 'community:upload_photos',
+    'community:create_listings', 'community:create_threads', 'community:post_chat',
+    'community:delete_own_message', 'community:checkin_net', 'community:view_content'
   ],
   community_admin: [
-    'community:admin',
-    'community:moderate',
-    'community:create_alert',
-    'community:create_event',
-    'community:create_net',
-    'community:manage_members',
-    'community:manage_settings',
-    'community:invite_members',
-    'community:upload_photos',
-    'community:create_listings',
-    'community:create_threads',
-    'community:post_chat',
-    'community:delete_own_message',
-    'community:checkin_net',
-    'community:view_content'
+    'community:admin', 'community:moderate', 'community:create_alert', 'community:create_event',
+    'community:create_net', 'community:manage_members', 'community:manage_settings',
+    'community:invite_members', 'community:upload_photos', 'community:create_listings',
+    'community:create_threads', 'community:post_chat', 'community:delete_own_message',
+    'community:checkin_net', 'community:view_content'
   ],
   moderator: [
-    'community:moderate',
-    'community:create_net',
-    'community:upload_photos',
-    'community:create_listings',
-    'community:create_threads',
-    'community:post_chat',
-    'community:delete_own_message',
-    'community:checkin_net',
-    'community:view_content'
+    'community:moderate', 'community:create_net', 'community:upload_photos',
+    'community:create_listings', 'community:create_threads', 'community:post_chat',
+    'community:delete_own_message', 'community:checkin_net', 'community:view_content'
   ],
   trusted_member: [
-    'community:upload_photos',
-    'community:create_listings',
-    'community:create_threads',
-    'community:post_chat',
-    'community:delete_own_message',
-    'community:checkin_net',
+    'community:upload_photos', 'community:create_listings', 'community:create_threads',
+    'community:post_chat', 'community:delete_own_message', 'community:checkin_net',
     'community:view_content'
   ],
   member: [
-    'community:post_chat',
-    'community:delete_own_message',
-    'community:checkin_net',
+    'community:post_chat', 'community:delete_own_message', 'community:checkin_net',
     'community:view_content'
   ],
-  guest: [
-    'community:view_content'
-  ]
+  guest: ['community:view_content']
 };
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Check if user is platform-suspended
     if (user.is_platform_suspended) {
       return Response.json({
         error: 'Account suspended',
@@ -120,33 +61,20 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { community_id, community_slug } = body;
 
-    // Resolve platform roles
-    const platformRoles = await base44.asServiceRole.entities.PlatformRole.filter({
-      user_id: user.id,
-      is_active: true
-    });
-
-    const platformRoleStrings = (platformRoles || []).map(r => r.role);
-    const platformPermissions = new Set();
-    for (const role of platformRoleStrings) {
-      const perms = PLATFORM_PERMISSIONS[role] || [];
-      for (const p of perms) platformPermissions.add(p);
-    }
+    // Platform permissions + roles resolved from RBAC
+    const { perms, slugs, legacy } = await resolveCallerPerms(base44, user);
 
     const result = {
       user: {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        role: user.role,
-        callsign: user.callsign,
-        avatar_url: user.avatar_url
+        id: user.id, email: user.email, full_name: user.full_name, role: user.role,
+        callsign: user.callsign, avatar_url: user.avatar_url
       },
-      platform_roles: platformRoleStrings,
-      platform_permissions: Array.from(platformPermissions),
-      is_platform_owner: platformRoleStrings.includes('platform_owner'),
-      is_platform_admin: platformRoleStrings.includes('platform_admin'),
-      is_platform_support: platformRoleStrings.includes('platform_support'),
+      platform_roles: legacy,
+      platform_permissions: perms,
+      rbac_roles: slugs,
+      is_platform_owner: legacy.includes('platform_owner'),
+      is_platform_admin: legacy.includes('platform_admin') || perms.includes('admin.access'),
+      is_platform_support: legacy.includes('platform_support'),
       community_id: null,
       community_role: null,
       community_permissions: []
@@ -164,22 +92,16 @@ Deno.serve(async (req) => {
     if (community) {
       result.community_id = community.id;
       result.community = {
-        id: community.id,
-        name: community.name,
-        slug: community.slug,
-        logo_url: community.logo_url,
-        primary_color: community.primary_color,
-        visibility: community.visibility,
-        status: community.status
+        id: community.id, name: community.name, slug: community.slug,
+        logo_url: community.logo_url, primary_color: community.primary_color,
+        visibility: community.visibility, status: community.status
       };
 
-      // Find the user's membership in this community
       const memberships = await base44.asServiceRole.entities.CommunityMember.filter({
         user_id: user.id,
         community_id: community.id,
         is_active: true
       });
-
       const membership = (memberships && memberships[0]) || null;
 
       if (membership) {
@@ -191,11 +113,8 @@ Deno.serve(async (req) => {
         result.is_trusted_member = membership.role === 'trusted_member';
         result.is_member = membership.role === 'member';
         result.is_guest = membership.role === 'guest';
-
-        const communityPerms = COMMUNITY_PERMISSIONS[membership.role] || [];
-        result.community_permissions = communityPerms;
+        result.community_permissions = COMMUNITY_PERMISSIONS[membership.role] || [];
       } else {
-        // User is not a member — check if community is public
         result.community_role = null;
         result.is_guest = community.visibility === 'public';
         if (community.visibility === 'public') {

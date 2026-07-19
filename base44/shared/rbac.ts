@@ -159,3 +159,80 @@ export function setCached(key, data) {
 export function invalidateRbacCache() {
   cache.clear();
 }
+
+// ─── Shared enforcement layer ──────────────────────────────────────────────
+// Every protected backend function resolves the caller's permissions through
+// this single helper (cache-aware), and enforces via requirePermission. Denials
+// are written to RbacAuditLog so authorization failures are fully auditable.
+
+export async function resolveCallerPerms(base44, user) {
+  const cached = getCached(user.id);
+  if (cached) {
+    return {
+      perms: cached.permissions || [],
+      slugs: cached.roles || [],
+      legacy: cached.legacy_platform_roles || [],
+      assignments: cached.role_details || []
+    };
+  }
+  const [userRoles, roles] = await Promise.all([
+    base44.asServiceRole.entities.UserRole.filter({ user_id: user.id }),
+    base44.asServiceRole.entities.Role.list('-priority', 500)
+  ]);
+  const rolesById = {};
+  for (const r of roles || []) rolesById[r.id] = r;
+  const active = (userRoles || []).filter((ur) => ur.is_active !== false);
+  let slugs = active.map((ur) => ur.role_slug).filter(Boolean);
+  let perms = resolveUserPermissions(active, rolesById);
+  let legacy = mapToLegacyPlatformRoles(slugs, perms);
+  if (active.length === 0) {
+    const plat = await base44.asServiceRole.entities.PlatformRole.filter({ user_id: user.id, is_active: true });
+    const fb = legacyFallback((plat || []).map((p) => p.role));
+    if (fb) { slugs = fb.slugs; perms = fb.permissions; legacy = fb.legacy; }
+    else if (user.role === 'admin') { const o = ownerFallback(); slugs = o.slugs; perms = o.permissions; legacy = o.legacy; }
+  }
+  return { perms, slugs, legacy, assignments: active };
+}
+
+export async function logRbacAudit(base44, entry) {
+  try {
+    await base44.asServiceRole.entities.RbacAuditLog.create({
+      admin_id: entry.admin_id || '',
+      admin_email: entry.admin_email || '',
+      action: entry.action,
+      target_user_id: entry.target_user_id || '',
+      target_user_email: entry.target_user_email || '',
+      role_id: entry.role_id || '',
+      role_name: entry.role_name || '',
+      endpoint: entry.endpoint || '',
+      permission_required: entry.permission_required || '',
+      permission_granted: entry.permission_granted || '',
+      old_value: entry.old_value || '',
+      new_value: entry.new_value || '',
+      changed_permissions: entry.changed_permissions || '',
+      reason: entry.reason || '',
+      ip_address: entry.ip_address || ''
+    });
+  } catch {
+    /* audit is best-effort; never block the operation */
+  }
+}
+
+// Enforce a permission for a protected function. Returns { ok, perms, slugs }.
+// On denial, writes a permission_denied audit record. The caller returns 403.
+export async function requirePermission(base44, user, permission, endpoint) {
+  const { perms, slugs } = await resolveCallerPerms(base44, user);
+  const ok = perms.includes('*') || perms.includes(permission);
+  if (!ok) {
+    await logRbacAudit(base44, {
+      admin_id: user.id,
+      admin_email: user.email || '',
+      action: 'permission_denied',
+      endpoint: endpoint || '',
+      permission_required: permission,
+      permission_granted: perms.join(',') || '(none)',
+      reason: 'Missing "' + permission + '"'
+    });
+  }
+  return { ok, perms, slugs };
+}
