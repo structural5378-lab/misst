@@ -54,6 +54,7 @@ import RadioScope from '@/pages/RadioScope';
 import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
 import Settings from '@/pages/Settings';
+import Search from '@/pages/Search';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 
 // Platform Admin pages
@@ -156,6 +157,7 @@ const AuthenticatedApp = () => {
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/search" element={<Search />} />
 
         {/* Community-scoped routes — /c/:slug/* (isolated per community) */}
         <Route element={<CommunityLayout />}>
