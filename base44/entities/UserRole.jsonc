@@ -1,0 +1,45 @@
+{
+  "name": "UserRole",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "MIST user ID"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "role_id": {
+      "type": "string",
+      "description": "References Role.id"
+    },
+    "role_name": {
+      "type": "string",
+      "description": "Denormalized for display"
+    },
+    "role_slug": {
+      "type": "string",
+      "description": "Denormalized machine key"
+    },
+    "assigned_by": {
+      "type": "string",
+      "description": "Admin user ID who assigned this role"
+    },
+    "assigned_by_email": {
+      "type": "string"
+    },
+    "assigned_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_id",
+    "role_id",
+    "role_slug"
+  ]
+}

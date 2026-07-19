@@ -1,0 +1,64 @@
+{
+  "name": "Role",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Unique machine key"
+    },
+    "description": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Lucide icon name"
+    },
+    "color": {
+      "type": "string",
+      "description": "Hex color for badge/name/banner accent"
+    },
+    "priority": {
+      "type": "number",
+      "default": 100,
+      "description": "Lower = higher rank"
+    },
+    "is_system": {
+      "type": "boolean",
+      "default": false,
+      "description": "System roles cannot be deleted"
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false,
+      "description": "Role auto-assigned to new users"
+    },
+    "parent_role_id": {
+      "type": "string",
+      "description": "Parent role for inheritance (null = root)"
+    },
+    "permissions": {
+      "type": "string",
+      "description": "JSON array of permission keys; '*' = wildcard"
+    },
+    "denied_permissions": {
+      "type": "string",
+      "description": "JSON array of permission keys to override/remove from inherited; '*' = deny all"
+    },
+    "badge_config": {
+      "type": "string",
+      "description": "JSON: {name_color, banner_accent, forum_flair, dashboard_indicator, icon}"
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "slug"
+  ]
+}

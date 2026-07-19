@@ -1,0 +1,58 @@
+{
+  "name": "RbacAuditLog",
+  "type": "object",
+  "properties": {
+    "admin_id": {
+      "type": "string",
+      "description": "MIST user ID of the administrator"
+    },
+    "admin_email": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "role_create",
+        "role_update",
+        "role_delete",
+        "role_clone",
+        "user_assign",
+        "user_unassign",
+        "user_bulk_assign"
+      ],
+      "description": "Type of permission change"
+    },
+    "target_user_id": {
+      "type": "string",
+      "description": "Affected user (for assignment actions)"
+    },
+    "target_user_email": {
+      "type": "string"
+    },
+    "role_id": {
+      "type": "string"
+    },
+    "role_name": {
+      "type": "string"
+    },
+    "old_value": {
+      "type": "string",
+      "description": "JSON snapshot before change"
+    },
+    "new_value": {
+      "type": "string",
+      "description": "JSON snapshot after change"
+    },
+    "changed_permissions": {
+      "type": "string",
+      "description": "JSON array of permission keys that changed"
+    },
+    "reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "admin_id",
+    "action"
+  ]
+}
