@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  ChevronLeft, Pin, PinOff, Lock, LockOpen, Star, Trash2,
-  Bell, BellOff, Bookmark, Send, ImagePlus, Quote, CornerDownRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import PostCard from "@/components/community/PostCard";
+import { Lock, Pin, PinOff, LockOpen, Star, Trash2, FolderInput, Check } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { timeAgo, getCategoryMeta } from "@/lib/forumUtils";
+import ThreadHeader from "@/components/community/ThreadHeader";
+import PostCard from "@/components/community/PostCard";
+import QuickReply from "@/components/community/QuickReply";
+import ThreadNavDock from "@/components/community/ThreadNavDock";
+import ProfilePopup from "@/components/community/ProfilePopup";
 
 export default function CommunityThread() {
   const { id } = useParams();
@@ -22,33 +21,31 @@ export default function CommunityThread() {
   const [imageUrl, setImageUrl] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [quotePost, setQuotePost] = useState(null);
+  const [multiQuotePosts, setMultiQuotePosts] = useState([]);
   const [posting, setPosting] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [toast, setToast] = useState("");
   const viewIncremented = useRef(false);
+  const topRef = useRef(null);
+  const bottomRef = useRef(null);
+  const replyRef = useRef(null);
 
   const { data: thread } = useQuery({
     queryKey: ["forum-thread", id],
-    queryFn: async () => {
-      const list = await base44.entities.ForumThread.filter({ id });
-      return list[0];
-    },
+    queryFn: async () => (await base44.entities.ForumThread.filter({ id }))[0],
     enabled: !!id,
   });
-
   const { data: posts = [], refetch: refetchPosts } = useQuery({
     queryKey: ["forum-posts", id],
     queryFn: () => base44.entities.ForumPost.filter({ thread_id: id }, "created_date", 200),
     enabled: !!id,
     staleTime: 10000,
   });
-
   const { data: sub } = useQuery({
     queryKey: ["forum-sub", user?.id, id],
-    queryFn: async () => {
-      const list = await base44.entities.ForumSubscription.filter({ user_id: user.id, thread_id: id });
-      return list[0];
-    },
+    queryFn: async () => (await base44.entities.ForumSubscription.filter({ user_id: user.id, thread_id: id }))[0],
     enabled: !!user?.id && !!id,
   });
 
@@ -59,7 +56,6 @@ export default function CommunityThread() {
     }
   }, [sub]);
 
-  // Increment view count once
   useEffect(() => {
     if (thread && !viewIncremented.current) {
       viewIncremented.current = true;
@@ -67,23 +63,38 @@ export default function CommunityThread() {
     }
   }, [thread]);
 
-  // Mark as read
   useEffect(() => {
     if (user?.id && thread && sub?.unread_count > 0) {
-      base44.entities.ForumSubscription.update(sub.id, {
-        unread_count: 0,
-        last_read_date: new Date().toISOString(),
-      }).then(() => queryClient.invalidateQueries({ queryKey: ["forum-subs", user.id] })).catch(() => {});
+      base44.entities.ForumSubscription.update(sub.id, { unread_count: 0, last_read_date: new Date().toISOString() })
+        .then(() => queryClient.invalidateQueries({ queryKey: ["forum-subs", user.id] }))
+        .catch(() => {});
     }
   }, [user?.id, thread, sub]);
 
-  const handleReply = async () => {
+  const showToast = (m) => { setToast(m); setTimeout(() => setToast(""), 2000); };
+
+  const participants = useMemo(() => {
+    const map = new Map();
+    if (thread) map.set(thread.author_id, { id: thread.author_id, name: thread.author_name });
+    posts.forEach((p) => { if (p.author_id) map.set(p.author_id, { id: p.author_id, name: p.author_name }); });
+    return Array.from(map.values()).filter((p) => p.id && p.name);
+  }, [thread, posts]);
+
+  const openProfile = (authorId, role, name) => setProfile({ id: authorId, role, name });
+
+  const handleSend = async () => {
     if (!reply.trim() || !user || !thread) return;
     setPosting(true);
     try {
-      const body = quotePost
-        ? `> **${quotePost.author_name} said:**\n> ${quotePost.body?.slice(0, 200) || ""}\n\n${reply}`
-        : reply;
+      let body = reply;
+      if (multiQuotePosts.length) {
+        const q = multiQuotePosts
+          .map((p) => `> **${p.author_name} said:**\n> ${(p.body || "").slice(0, 160).replace(/\n/g, "\n> ")}\n`)
+          .join("\n");
+        body = `${q}\n${reply}`;
+      } else if (quotePost) {
+        body = `> **${quotePost.author_name} said:**\n> ${(quotePost.body || "").slice(0, 200)}\n\n${reply}`;
+      }
       await base44.entities.ForumPost.create({
         thread_id: id,
         thread_title: thread.title,
@@ -110,89 +121,102 @@ export default function CommunityThread() {
       setImageUrl("");
       setReplyTo(null);
       setQuotePost(null);
+      setMultiQuotePosts([]);
+      localStorage.removeItem(`mist_draft_thread_${id}`);
       refetchPosts();
       queryClient.invalidateQueries({ queryKey: ["forum-threads"] });
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch {}
     setPosting(false);
   };
 
-  const handleImage = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleImage = async (file) => {
     try {
       const res = await base44.integrations.Core.UploadFile({ file });
       setImageUrl(res.file_url);
+      showToast("Image attached");
     } catch {}
   };
+
+  const toggleMultiQuote = (post) => {
+    setMultiQuotePosts((prev) =>
+      prev.find((p) => p.id === post.id) ? prev.filter((p) => p.id !== post.id) : [...prev, post]
+    );
+  };
+
+  const copyLink = async (post) => {
+    const url = `${window.location.origin}/community/thread/${id}${post ? `#post-${post.id}` : ""}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast("Link copied");
+    } catch {}
+  };
+
+  const share = async () => {
+    try {
+      await navigator.share({ title: thread?.title, url: window.location.href });
+    } catch {}
+  };
+  const report = () => showToast("Report submitted");
 
   const toggleSubscribed = async () => {
     if (!user?.id || !thread) return;
     const newVal = !subscribed;
     setSubscribed(newVal);
     try {
-      if (sub) {
-        await base44.entities.ForumSubscription.update(sub.id, { is_subscribed: newVal });
-      } else {
+      if (sub) await base44.entities.ForumSubscription.update(sub.id, { is_subscribed: newVal });
+      else
         await base44.entities.ForumSubscription.create({
-          user_id: user.id,
-          thread_id: id,
-          thread_title: thread.title,
-          category_name: thread.category_name,
-          is_subscribed: newVal,
-          is_bookmarked: false,
-          unread_count: 0,
+          user_id: user.id, thread_id: id, thread_title: thread.title, category_name: thread.category_name,
+          is_subscribed: newVal, is_bookmarked: false, unread_count: 0,
         });
-      }
     } catch { setSubscribed(!newVal); }
   };
-
   const toggleBookmarked = async () => {
     if (!user?.id || !thread) return;
     const newVal = !bookmarked;
     setBookmarked(newVal);
     try {
-      if (sub) {
-        await base44.entities.ForumSubscription.update(sub.id, { is_bookmarked: newVal });
-      } else {
+      if (sub) await base44.entities.ForumSubscription.update(sub.id, { is_bookmarked: newVal });
+      else
         await base44.entities.ForumSubscription.create({
-          user_id: user.id, thread_id: id, thread_title: thread.title,
-          category_name: thread.category_name, is_subscribed: false, is_bookmarked: newVal, unread_count: 0,
+          user_id: user.id, thread_id: id, thread_title: thread.title, category_name: thread.category_name,
+          is_subscribed: false, is_bookmarked: newVal, unread_count: 0,
         });
-      }
     } catch { setBookmarked(!newVal); }
   };
-
   const togglePin = async () => {
     if (!thread) return;
     await base44.entities.ForumThread.update(thread.id, { is_pinned: !thread.is_pinned });
     queryClient.invalidateQueries({ queryKey: ["forum-thread", id] });
     queryClient.invalidateQueries({ queryKey: ["forum-threads"] });
   };
-
   const toggleLock = async () => {
     if (!thread) return;
     await base44.entities.ForumThread.update(thread.id, { is_locked: !thread.is_locked });
     queryClient.invalidateQueries({ queryKey: ["forum-thread", id] });
   };
-
   const toggleFeature = async () => {
     if (!thread) return;
     await base44.entities.ForumThread.update(thread.id, { is_featured: !thread.is_featured });
     queryClient.invalidateQueries({ queryKey: ["forum-thread", id] });
     queryClient.invalidateQueries({ queryKey: ["forum-threads"] });
   };
-
   const deleteThread = async () => {
     if (!thread || !confirm("Delete this entire thread?")) return;
     await base44.entities.ForumThread.update(thread.id, { is_deleted: true });
     navigate("/community-forum");
   };
 
+  const jumpNewest = () => bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  const jumpOldest = () => topRef.current?.scrollIntoView({ behavior: "smooth" });
+  const jumpReply = () => replyRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+
   if (!thread) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <div className="flex items-center h-14 px-4 border-b border-border">
-          <button onClick={() => navigate(-1)} className="text-primary"><ChevronLeft className="w-5 h-5" /></button>
+          <button onClick={() => navigate(-1)} className="text-primary text-sm">← Back</button>
         </div>
         <div className="flex-1 flex justify-center items-center">
           <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -201,7 +225,6 @@ export default function CommunityThread() {
     );
   }
 
-  const { Icon, colors } = getCategoryMeta(thread.category_name);
   const opPost = {
     id: thread.id,
     body: thread.body,
@@ -214,53 +237,52 @@ export default function CommunityThread() {
     created_date: thread.created_date,
     reactions: thread.reaction_counts,
   };
+  const visiblePosts = posts.filter((p) => !p.is_deleted || p.body !== "[deleted]");
+  const hasUnread = !!sub?.unread_count;
 
   return (
-    <div className="min-h-screen bg-background pb-40">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
-        <div className="flex items-center gap-2 h-14 px-4">
-          <button onClick={() => navigate(-1)} className="text-primary p-1 -ml-1">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-bold text-foreground line-clamp-1">{thread.title}</h1>
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <span className={`flex items-center gap-0.5 ${colors.text}`}>
-                <Icon className="w-2.5 h-2.5" />{thread.category_name}
-              </span>
-              <span>·</span>
-              <span>{timeAgo(thread.created_date)}</span>
-              <span>·</span>
-              <span>{thread.view_count || 0} views</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <button onClick={toggleSubscribed} className={`p-2 ${subscribed ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
-              {subscribed ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
-            </button>
-            <button onClick={toggleBookmarked} className={`p-2 ${bookmarked ? "text-amber-400" : "text-muted-foreground hover:text-foreground"}`}>
-              <Bookmark className={`w-4 h-4 ${bookmarked ? "fill-amber-400/30" : ""}`} />
-            </button>
-          </div>
-        </div>
+    <div className="min-h-screen bg-background" style={{ paddingBottom: "9rem" }}>
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl">
+        <ThreadHeader
+          thread={thread}
+          subscribed={subscribed}
+          bookmarked={bookmarked}
+          onSubscribe={toggleSubscribed}
+          onBookmark={toggleBookmarked}
+          onShare={share}
+          onCopyLink={() => copyLink(null)}
+          onReport={report}
+          onBack={() => navigate("/community-forum")}
+        />
         {isAdmin && (
-          <div className="flex items-center gap-1 px-4 pb-2">
-            <AdminBtn active={thread.is_pinned} onClick={togglePin} icon={thread.is_pinned ? Pin : PinOff} label={thread.is_pinned ? "Unpin" : "Pin"} />
-            <AdminBtn active={thread.is_locked} onClick={toggleLock} icon={thread.is_locked ? Lock : LockOpen} label={thread.is_locked ? "Unlock" : "Lock"} />
-            <AdminBtn active={thread.is_featured} onClick={toggleFeature} icon={Star} label={thread.is_featured ? "Unfeature" : "Feature"} />
-            <AdminBtn active={false} onClick={deleteThread} icon={Trash2} label="Delete" danger />
+          <div className="flex items-center gap-1 px-4 py-1.5 border-b border-border/50 overflow-x-auto scrollbar-hide">
+            <ModBtn active={thread.is_pinned} onClick={togglePin} icon={thread.is_pinned ? Pin : PinOff} label={thread.is_pinned ? "Unpin" : "Pin"} />
+            <ModBtn active={thread.is_locked} onClick={toggleLock} icon={thread.is_locked ? Lock : LockOpen} label={thread.is_locked ? "Unlock" : "Lock"} />
+            <ModBtn active={thread.is_featured} onClick={toggleFeature} icon={Star} label={thread.is_featured ? "Unfeature" : "Feature"} />
+            <ModBtn active={false} onClick={() => showToast("Move thread — coming soon")} icon={FolderInput} label="Move" />
+            <ModBtn active={false} onClick={deleteThread} icon={Trash2} label="Delete" danger />
           </div>
         )}
       </div>
 
-      {/* Posts */}
-      <div className="px-4 py-3 space-y-3">
-        <PostCard post={opPost} thread={thread} user={user} isOP onUpdate={refetchPosts} />
-        {posts.filter(p => !p.is_deleted || p.body !== "[deleted]").length === 0 && posts.length > 0 && (
-          <p className="text-center text-sm text-muted-foreground py-4">Replies are being loaded...</p>
-        )}
-        {posts.filter(p => !p.is_deleted).map((post) => (
+      <div className="px-3 py-3 space-y-3">
+        <div ref={topRef} />
+        <PostCard
+          post={opPost}
+          thread={thread}
+          user={user}
+          isOP
+          onReply={(p) => { setReplyTo(p); setQuotePost(null); setReply(`@${p.author_name} `); }}
+          onQuote={(p) => { setQuotePost(p); setReplyTo(null); }}
+          onMultiQuote={toggleMultiQuote}
+          multiQuoted={multiQuotePosts.some((p) => p.id === opPost.id)}
+          isAdmin={isAdmin}
+          onUpdate={refetchPosts}
+          onOpenProfile={openProfile}
+          onCopyLink={copyLink}
+          onReport={report}
+        />
+        {visiblePosts.map((post) => (
           <PostCard
             key={post.id}
             post={post}
@@ -268,60 +290,81 @@ export default function CommunityThread() {
             user={user}
             onReply={(p) => { setReplyTo(p); setQuotePost(null); setReply(`@${p.author_name} `); }}
             onQuote={(p) => { setQuotePost(p); setReplyTo(null); }}
+            onMultiQuote={toggleMultiQuote}
+            multiQuoted={multiQuotePosts.some((p) => p.id === post.id)}
             isAdmin={isAdmin}
             onUpdate={refetchPosts}
+            onOpenProfile={openProfile}
+            onCopyLink={copyLink}
+            onReport={report}
           />
         ))}
-        {posts.length === 0 && (
-          <p className="text-center text-sm text-muted-foreground py-4">No replies yet. Be the first!</p>
+        {posts.length === 0 && <p className="text-center text-sm text-muted-foreground py-4">No replies yet. Be the first!</p>}
+        <div ref={bottomRef} />
+      </div>
+
+      <div ref={replyRef} className="fixed left-0 right-0 z-40" style={{ bottom: "calc(4rem + env(safe-area-inset-bottom))" }}>
+        {thread.is_locked ? (
+          <div className="border-t border-border bg-card/95 backdrop-blur-xl p-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Lock className="w-4 h-4" /> This thread is locked
+          </div>
+        ) : (
+          <>
+            {(replyTo || quotePost || multiQuotePosts.length > 0) && (
+              <div className="flex items-center gap-2 px-3 pt-2 text-[11px] text-muted-foreground">
+                {replyTo && <span className="flex items-center gap-1"><Check className="w-3 h-3" />Replying to {replyTo.author_name}</span>}
+                {quotePost && <span>Quoting {quotePost.author_name}</span>}
+                {multiQuotePosts.length > 0 && <span>{multiQuotePosts.length} quoted</span>}
+                <button onClick={() => { setReplyTo(null); setQuotePost(null); setMultiQuotePosts([]); }} className="text-muted-foreground hover:text-foreground ml-auto">✕</button>
+              </div>
+            )}
+            <QuickReply
+              value={reply}
+              onChange={setReply}
+              onSend={handleSend}
+              onImage={handleImage}
+              posting={posting}
+              disabled={!reply.trim()}
+              participants={participants}
+              threadId={id}
+            />
+          </>
         )}
       </div>
 
-      {/* Reply bar */}
-      {!thread.is_locked && (
-        <div className="fixed left-0 right-0 z-30 border-t border-border p-3 bg-card/95 backdrop-blur-xl" style={{ bottom: "calc(4rem + env(safe-area-inset-bottom))" }}>
-          {(replyTo || quotePost) && (
-            <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-              {replyTo && <span className="flex items-center gap-1"><CornerDownRight className="w-3 h-3" />Replying to {replyTo.author_name}</span>}
-              {quotePost && <span className="flex items-center gap-1"><Quote className="w-3 h-3" />Quoting {quotePost.author_name}</span>}
-              <button onClick={() => { setReplyTo(null); setQuotePost(null); }} className="text-muted-foreground hover:text-foreground ml-auto">✕</button>
-            </div>
-          )}
-          <div className="flex gap-2 max-w-2xl mx-auto">
-            <textarea
-              value={reply}
-              onChange={(e) => setReply(e.target.value)}
-              placeholder="Write a reply..."
-              rows={1}
-              className="flex-1 bg-secondary/50 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary/50 max-h-24"
-            />
-            <label className="flex items-center justify-center w-9 rounded-lg border border-border/50 bg-secondary/30 cursor-pointer hover:bg-secondary/50 shrink-0">
-              <ImagePlus className="w-4 h-4 text-muted-foreground" />
-              <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
-            </label>
-            <Button size="icon" onClick={handleReply} disabled={!reply.trim() || posting} className="shrink-0">
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
-          {imageUrl && <img src={imageUrl} alt="" className="w-12 h-12 rounded-lg mt-2 object-cover" />}
-        </div>
-      )}
-      {thread.is_locked && (
-        <div className="fixed left-0 right-0 z-30 border-t border-border p-3 bg-card/95 backdrop-blur-xl flex items-center justify-center gap-2 text-sm text-muted-foreground" style={{ bottom: "calc(4rem + env(safe-area-inset-bottom))" }}>
-          <Lock className="w-4 h-4" /> This thread is locked
+      <ThreadNavDock
+        onBack={() => navigate("/community-forum")}
+        onNewest={jumpNewest}
+        onOldest={jumpOldest}
+        onReply={jumpReply}
+        hasUnread={hasUnread}
+        onUnread={jumpNewest}
+      />
+
+      {profile && <ProfilePopup authorId={profile.id} role={profile.role} name={profile.name} onClose={() => setProfile(null)} />}
+
+      {toast && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-[90] bg-foreground text-background text-xs font-medium px-3 py-1.5 rounded-full shadow-lg"
+          style={{ bottom: "calc(7rem + env(safe-area-inset-bottom))" }}
+        >
+          {toast}
         </div>
       )}
     </div>
   );
 }
 
-function AdminBtn({ active, onClick, icon: Icon, label, danger }) {
+function ModBtn({ active, onClick, icon: Icon, label, danger }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-medium border transition-colors ${
-        danger ? "text-destructive border-destructive/30 hover:bg-destructive/10"
-        : active ? "text-primary bg-primary/10 border-primary/30" : "text-muted-foreground border-border/50 hover:bg-muted/30"
+      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-medium border transition-colors whitespace-nowrap ${
+        danger
+          ? "text-destructive border-destructive/30 hover:bg-destructive/10"
+          : active
+          ? "text-primary bg-primary/10 border-primary/30"
+          : "text-muted-foreground border-border/50 hover:bg-muted/30"
       }`}
     >
       <Icon className="w-3 h-3" /> {label}
