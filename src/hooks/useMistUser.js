@@ -43,7 +43,7 @@ export function useMistUser() {
       id: u.id || null,
       email: u.email || "",
       username: u.mybb_username || u.username || u.full_name || "",
-      displayName: u.full_name || u.username || u.mybb_username || "MIST Member",
+      displayName: u.display_name || u.full_name || u.username || u.mybb_username || "MIST Member",
       callsign: u.callsign || u.mybb_username || "",
       avatarUrl: u.avatar_url || u.avatar || null,
       bannerUrl: u.banner_url || null,

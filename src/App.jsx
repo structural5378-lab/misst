@@ -53,6 +53,7 @@ const RadioScope = lazy(() => import('@/pages/RadioScope'));
 import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
 import Settings from '@/pages/Settings';
+import AccountCenter from '@/pages/AccountCenter';
 import Search from '@/pages/Search';
 import Notifications from '@/pages/Notifications';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -158,6 +159,7 @@ const AuthenticatedApp = () => {
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/account" element={<AccountCenter />} />
         <Route path="/search" element={<Search />} />
         <Route path="/notifications" element={<Notifications />} />
 

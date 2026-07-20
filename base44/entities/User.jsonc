@@ -14,9 +14,21 @@
       "type": "string",
       "description": "GMRS callsign e.g. WSEU790"
     },
+    "username": {
+      "type": "string",
+      "description": "Unique MIST handle (editable). 3-20 chars, letters/numbers/underscore."
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Display name shown across MIST (overrides built-in full_name when set)"
+    },
     "avatar_url": {
       "type": "string",
       "description": "Global profile avatar URL"
+    },
+    "banner_url": {
+      "type": "string",
+      "description": "Profile banner image URL"
     },
     "location": {
       "type": "string",
@@ -33,6 +45,26 @@
     "bio": {
       "type": "string",
       "description": "Short bio"
+    },
+    "about_me": {
+      "type": "string",
+      "description": "Longer about-me text"
+    },
+    "website": {
+      "type": "string",
+      "description": "Personal website URL"
+    },
+    "social_links": {
+      "type": "string",
+      "description": "Comma-separated or JSON social profile URLs"
+    },
+    "occupation": {
+      "type": "string",
+      "description": "Occupation (optional)"
+    },
+    "interests": {
+      "type": "string",
+      "description": "Comma-separated interests"
     },
     "radios": {
       "type": "array",
@@ -64,7 +96,53 @@
     },
     "notification_preferences": {
       "type": "string",
-      "description": "JSON string of global notification preferences"
+      "description": "JSON string of global notification preferences (legacy)"
+    },
+    "notif_settings": {
+      "type": "string",
+      "description": "JSON string of Account Center notification preferences"
+    },
+    "privacy_settings": {
+      "type": "string",
+      "description": "JSON string of Account Center privacy settings"
+    },
+    "radio_profile": {
+      "type": "string",
+      "description": "JSON string of Account Center radio profile (equipment, fleet, antennas, etc.)"
+    },
+    "security_settings": {
+      "type": "string",
+      "description": "JSON string of Account Center security settings (2FA, recovery codes)"
+    },
+    "language": {
+      "type": "string",
+      "description": "Interface language"
+    },
+    "timezone": {
+      "type": "string",
+      "description": "IANA timezone"
+    },
+    "date_format": {
+      "type": "string",
+      "description": "Preferred date format pattern"
+    },
+    "notif_sound": {
+      "type": "string",
+      "description": "Notification sound preference"
+    },
+    "account_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "deactivated"
+      ],
+      "default": "active",
+      "description": "Account status (deactivated hides the user)"
+    },
+    "account_deletion_requested": {
+      "type": "boolean",
+      "default": false,
+      "description": "User requested permanent account deletion (handled by support)"
     },
     "last_active": {
       "type": "string",

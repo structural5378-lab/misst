@@ -121,6 +121,11 @@ export default function DesktopTopBar() {
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
+              <Link to="/account" className="flex items-center gap-2 cursor-pointer">
+                <User className="w-4 h-4" /> Account Center
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
               <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
                 <User className="w-4 h-4" /> My Profile
               </Link>
