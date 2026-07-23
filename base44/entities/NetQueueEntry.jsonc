@@ -1,0 +1,63 @@
+{
+  "name": "NetQueueEntry",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "NetSession ID"
+    },
+    "net_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "callsign": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "avatar": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "priority",
+        "emergency"
+      ],
+      "default": "normal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "waiting",
+        "called",
+        "skipped",
+        "removed"
+      ],
+      "default": "waiting"
+    },
+    "position": {
+      "type": "number",
+      "default": 0
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "called_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "session_id",
+    "callsign"
+  ]
+}

@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Radio, ListChecks, Activity, BarChart3, ArrowLeft, MapPin } from "lucide-react";
+import { Radio, ListChecks, Activity, BarChart3, ArrowLeft, MapPin, Mic, Siren, Monitor } from "lucide-react";
 import MissionHeader from "@/components/mission/MissionHeader";
 import MissionMetrics from "@/components/mission/MissionMetrics";
 import MissionCheckinList from "@/components/mission/MissionCheckinList";
@@ -19,10 +19,14 @@ import MissionMap from "@/components/mission/MissionMap";
 import MissionStatusSheet from "@/components/mission/MissionStatusSheet";
 import XpToast from "@/components/mission/XpToast";
 import UnlockCelebration from "@/components/achievements/UnlockCelebration";
+import MissionQueue from "@/components/mission/MissionQueue";
+import MissionIncidents from "@/components/mission/MissionIncidents";
 
 const TABS = [
   { key: "checkins", label: "Check-ins", Icon: ListChecks },
+  { key: "queue", label: "Queue", Icon: Mic },
   { key: "map", label: "Map", Icon: MapPin },
+  { key: "incidents", label: "Incidents", Icon: Siren },
   { key: "timeline", label: "Timeline", Icon: Activity },
   { key: "stats", label: "Stats", Icon: BarChart3 },
 ];
@@ -86,7 +90,9 @@ export default function MissionControl() {
     const u1 = base44.entities.NetLog.subscribe(() => { if (activeSession?.id) qc.invalidateQueries({ queryKey: ["net-log", activeSession.id] }); });
     const u2 = base44.entities.NetTimeline.subscribe(() => { if (activeSession?.id) qc.invalidateQueries({ queryKey: ["net-timeline", activeSession.id] }); });
     const u3 = base44.entities.NetSession.subscribe(() => { if (netId) qc.invalidateQueries({ queryKey: ["net-sessions", netId] }); });
-    return () => { u1(); u2(); u3(); };
+    const u4 = base44.entities.NetQueueEntry.subscribe(() => { if (activeSession?.id) qc.invalidateQueries({ queryKey: ["net-queue", activeSession.id] }); });
+    const u5 = base44.entities.NetIncident.subscribe(() => { if (activeSession?.id) qc.invalidateQueries({ queryKey: ["net-incidents", activeSession.id] }); });
+    return () => { u1(); u2(); u3(); u4(); u5(); };
   }, [activeSession?.id, netId, qc]);
 
   const approved = checkins.filter((c) => c.approved !== false);
@@ -235,6 +241,7 @@ export default function MissionControl() {
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/[0.06] px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate(-1)} className="p-1.5 -ml-1 text-violet-300 hover:text-violet-200"><ArrowLeft className="w-5 h-5" /></button>
         <span className="text-xs font-bold tracking-[0.25em] text-violet-300/80 uppercase">Mission Control</span>
+        <Link to={`/nets/${netId}/display`} className="p-1.5 text-violet-300/60 hover:text-violet-200" title="Display Mode"><Monitor className="w-5 h-5" /></Link>
         <Link to="/nets" className="p-1.5 -mr-1 text-violet-300/60 hover:text-violet-200"><Radio className="w-5 h-5" /></Link>
       </div>
 
@@ -286,7 +293,9 @@ export default function MissionControl() {
 
             <div className="mist-fade-up">
               {tab === "checkins" && <MissionCheckinList checkins={sortedCheckins} isOperator={isOperator} onApprove={approveCheckin} onEditStatus={setEditing} />}
+              {tab === "queue" && <MissionQueue session={activeSession} isOperator={isOperator} user={{ ...mistUser, ...mybbUser }} />}
               {tab === "map" && <MissionMap checkins={approved} repeater={repeater} netControlUid={activeSession.net_control_uid} />}
+              {tab === "incidents" && <MissionIncidents session={activeSession} isOperator={isOperator} user={{ ...mistUser, ...mybbUser }} />}
               {tab === "timeline" && <MissionTimeline events={timeline} />}
               {tab === "stats" && <MissionStats checkins={checkins} session={activeSession} />}
             </div>

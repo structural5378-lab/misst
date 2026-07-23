@@ -1,0 +1,52 @@
+{
+  "name": "NetIncident",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "NetSession ID"
+    },
+    "net_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "weather",
+        "emergency",
+        "priority",
+        "equipment_failure",
+        "repeater_offline",
+        "medical",
+        "general_note"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "default": "info"
+    },
+    "operator": {
+      "type": "string",
+      "description": "Operator who logged the incident"
+    },
+    "operator_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "session_id",
+    "category"
+  ]
+}
