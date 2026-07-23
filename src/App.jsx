@@ -38,6 +38,8 @@ import CommunityNewThread from '@/pages/CommunityNewThread';
 import CommunityDesktopShell from '@/components/community/desktop/CommunityDesktopShell';
 import MissionControl from '@/pages/MissionControl';
 import MissionDisplay from '@/pages/MissionDisplay';
+import MissionOps from '@/pages/MissionOps';
+import MissionWallboard from '@/pages/MissionWallboard';
 import CreateNet from '@/pages/CreateNet';
 import CreateAlert from '@/pages/CreateAlert';
 import LiveCams from '@/pages/LiveCams';
@@ -146,6 +148,8 @@ const AuthenticatedApp = () => {
         <Route path="/community/thread/:id" element={<CommunityThread />} />
         <Route path="/nets/:netId/control" element={<MissionControl />} />
         <Route path="/nets/:netId/display" element={<MissionDisplay />} />
+        <Route path="/nets/:netId/ops" element={<MissionOps />} />
+        <Route path="/nets/:netId/wallboard" element={<MissionWallboard />} />
         <Route path="/nets/create" element={<CreateNet />} />
 
         <Route path="/alerts/create" element={<CreateAlert />} />

@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Radio, ListChecks, Activity, BarChart3, ArrowLeft, MapPin, Mic, Siren, Monitor } from "lucide-react";
+import { Radio, ListChecks, Activity, BarChart3, ArrowLeft, MapPin, Mic, Siren, Monitor, LayoutDashboard, Tv } from "lucide-react";
 import MissionHeader from "@/components/mission/MissionHeader";
 import MissionMetrics from "@/components/mission/MissionMetrics";
 import MissionCheckinList from "@/components/mission/MissionCheckinList";
@@ -241,6 +241,8 @@ export default function MissionControl() {
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/[0.06] px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate(-1)} className="p-1.5 -ml-1 text-violet-300 hover:text-violet-200"><ArrowLeft className="w-5 h-5" /></button>
         <span className="text-xs font-bold tracking-[0.25em] text-violet-300/80 uppercase">Mission Control</span>
+        <Link to={`/nets/${netId}/ops`} className="p-1.5 text-violet-300/60 hover:text-violet-200" title="Operations Center"><LayoutDashboard className="w-5 h-5" /></Link>
+        <Link to={`/nets/${netId}/wallboard`} className="p-1.5 text-violet-300/60 hover:text-violet-200" title="Wallboard Mode"><Tv className="w-5 h-5" /></Link>
         <Link to={`/nets/${netId}/display`} className="p-1.5 text-violet-300/60 hover:text-violet-200" title="Display Mode"><Monitor className="w-5 h-5" /></Link>
         <Link to="/nets" className="p-1.5 -mr-1 text-violet-300/60 hover:text-violet-200"><Radio className="w-5 h-5" /></Link>
       </div>
