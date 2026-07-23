@@ -2,6 +2,8 @@ import React from "react";
 import { Shield, BadgeCheck, MapPin, Calendar, Star, Award, MessageSquare, UserPlus, Edit, LogOut } from "lucide-react";
 import ProfileBanner from "./ProfileBanner";
 import GroupTag from "./GroupTag";
+import HeroArtwork from "./HeroArtwork";
+import { heroSeed, heroTheme, heroPrompt } from "@/hooks/useHeroArtwork";
 
 export default function ProfileHeader({
   banner, avatar, displayName, callsign, role, groups, avatarFrame,
@@ -12,10 +14,14 @@ export default function ProfileHeader({
     : role === "moderator" ? "bg-blue-500/15 text-blue-400 border-blue-500/30"
     : "bg-white/[0.05] text-muted-foreground border-white/[0.08]";
 
+  const heroSeedVal = heroSeed({ uid: callsign || displayName, role, level });
+  const heroPromptVal = heroPrompt(heroTheme({ role, level }));
+
   return (
-    <div className="operator-card">
-      <div className="relative h-28">
-        <ProfileBanner banner={banner} />
+    <div className="operator-card" style={{ boxShadow: "0 0 40px rgba(139,92,246,0.16), 0 0 14px rgba(139,92,246,0.10)" }}>
+      <div className="relative h-40">
+        <HeroArtwork seed={heroSeedVal} prompt={heroPromptVal} />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
       </div>
       <div className="px-4 pb-3 -mt-12 relative">
         <div className="flex items-end gap-3">

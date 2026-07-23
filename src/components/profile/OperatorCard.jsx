@@ -6,6 +6,8 @@ import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery } from '@tanstack/react-query';
 import { Bell, LogOut, Calendar, Users, BadgeCheck, Award, Flame, X, Share2, Shield, ChevronRight } from 'lucide-react';
 import ProfileBanner from './ProfileBanner';
+import HeroArtwork from './HeroArtwork';
+import { heroSeed, heroTheme, heroPrompt } from '@/hooks/useHeroArtwork';
 import GroupTag from './GroupTag';
 import BadgeShowcase from './BadgeShowcase';
 import PrestigeStats from './PrestigeStats';
@@ -57,6 +59,10 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
   const club = stats?.club_membership || 'Insomniacs GMRS';
   const streak = stats?.daily_login_streak || 0;
 
+  const heroRoleKey = isAdmin ? 'admin' : mybbUser?.role;
+  const heroSeedVal = heroSeed({ uid: mybbUser?.uid || user?.id, role: heroRoleKey, level: stats.level, community: club });
+  const heroPromptVal = heroPrompt(heroTheme({ role: heroRoleKey, level: stats.level, community: club }), club);
+
   const handleShare = async () => {
     const url = window.location.origin + '/profile';
     try {
@@ -67,10 +73,10 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
 
   return (
     <>
-      <div className="operator-card">
-        {/* Banner */}
-        <div className="relative h-32">
-          <ProfileBanner banner={banner} />
+      <div className="operator-card" style={{ boxShadow: '0 0 40px rgba(139,92,246,0.16), 0 0 14px rgba(139,92,246,0.10)' }}>
+        {/* Hero Artwork */}
+        <div className="relative h-44">
+          <HeroArtwork seed={heroSeedVal} prompt={heroPromptVal} />
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
           <div className="absolute top-3 right-3 flex gap-2 z-10">
             <Link to={alertsLink} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10">
