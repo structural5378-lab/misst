@@ -8,7 +8,24 @@
     "net_name": {
       "type": "string"
     },
+    "net_type": {
+      "type": "string",
+      "description": "general, emergency, technical, social, training"
+    },
     "frequency": {
+      "type": "number"
+    },
+    "tone": {
+      "type": "string",
+      "description": "PL/DPL tone"
+    },
+    "repeater_callsign": {
+      "type": "string"
+    },
+    "repeater_lat": {
+      "type": "number"
+    },
+    "repeater_lon": {
       "type": "number"
     },
     "net_control": {
@@ -18,10 +35,21 @@
     "net_control_uid": {
       "type": "string"
     },
+    "net_control_avatar": {
+      "type": "string"
+    },
+    "co_host": {
+      "type": "string",
+      "description": "Co-host callsign"
+    },
+    "co_host_uid": {
+      "type": "string"
+    },
     "status": {
       "type": "string",
       "enum": [
         "active",
+        "paused",
         "closed"
       ],
       "default": "active"
@@ -34,15 +62,54 @@
       "type": "string",
       "format": "date-time"
     },
+    "paused_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "paused_total": {
+      "type": "number",
+      "default": 0,
+      "description": "Accumulated paused ms"
+    },
     "checkin_count": {
       "type": "number",
       "default": 0
+    },
+    "total_operators": {
+      "type": "number",
+      "default": 0
+    },
+    "visitors": {
+      "type": "number",
+      "default": 0
+    },
+    "late_checkins": {
+      "type": "number",
+      "default": 0
+    },
+    "priority_count": {
+      "type": "number",
+      "default": 0
+    },
+    "emergency_count": {
+      "type": "number",
+      "default": 0
+    },
+    "report_generated": {
+      "type": "boolean",
+      "default": false
     },
     "forum_thread_id": {
       "type": "string",
       "description": "MyBB thread ID if log was posted"
     },
     "notes": {
+      "type": "string"
+    },
+    "community_id": {
+      "type": "string"
+    },
+    "community_name": {
       "type": "string"
     }
   },

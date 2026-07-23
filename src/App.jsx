@@ -36,7 +36,7 @@ import Community from '@/pages/Community';
 import CommunityThread from '@/pages/CommunityThread';
 import CommunityNewThread from '@/pages/CommunityNewThread';
 import CommunityDesktopShell from '@/components/community/desktop/CommunityDesktopShell';
-import NetControl from '@/pages/NetControl';
+import MissionControl from '@/pages/MissionControl';
 import CreateNet from '@/pages/CreateNet';
 import CreateAlert from '@/pages/CreateAlert';
 import LiveCams from '@/pages/LiveCams';
@@ -140,7 +140,7 @@ const AuthenticatedApp = () => {
           <Route path="/community/new" element={<CommunityNewThread />} />
         </Route>
         <Route path="/community/thread/:id" element={<CommunityThread />} />
-        <Route path="/nets/:netId/control" element={<NetControl />} />
+        <Route path="/nets/:netId/control" element={<MissionControl />} />
         <Route path="/nets/create" element={<CreateNet />} />
 
         <Route path="/alerts/create" element={<CreateAlert />} />

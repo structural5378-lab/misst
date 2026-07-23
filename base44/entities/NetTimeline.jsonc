@@ -1,0 +1,44 @@
+{
+  "name": "NetTimeline",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "NetSession ID"
+    },
+    "net_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "net_started",
+        "net_paused",
+        "net_resumed",
+        "net_closed",
+        "checkin",
+        "priority",
+        "emergency",
+        "weather_alert",
+        "note",
+        "member_joined"
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "actor_name": {
+      "type": "string"
+    },
+    "actor_avatar": {
+      "type": "string"
+    },
+    "actor_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "session_id",
+    "event_type"
+  ]
+}

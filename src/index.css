@@ -140,6 +140,12 @@
 }
 .mist-fab-halo { animation: mist-fab-halo 2.4s ease-in-out infinite; }
 
+/* ─── Mission Control ─── */
+@keyframes mist-wave { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+.mist-wave-bar { transform-origin: bottom; animation: mist-wave 1s ease-in-out infinite; }
+@keyframes mist-pulse-ring { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.7); opacity: 0; } }
+.mist-pulse-ring { animation: mist-pulse-ring 1.8s ease-out infinite; }
+
 /* Hide bottom navigation when keyboard is open */
 body.keyboard-open [data-bottom-nav] {
   transform: translateY(100%);

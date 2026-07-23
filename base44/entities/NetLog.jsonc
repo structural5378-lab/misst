@@ -9,11 +9,32 @@
     "net_name": {
       "type": "string"
     },
+    "user_id": {
+      "type": "string",
+      "description": "MIST user ID (if registered member)"
+    },
     "callsign": {
       "type": "string"
     },
+    "avatar": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name"
+    },
     "location": {
       "type": "string"
+    },
+    "location_lat": {
+      "type": "number"
+    },
+    "location_lon": {
+      "type": "number"
+    },
+    "distance": {
+      "type": "number",
+      "description": "Miles from repeater"
     },
     "signal_report": {
       "type": "string",
@@ -22,9 +43,37 @@
     "notes": {
       "type": "string"
     },
+    "status": {
+      "type": "string",
+      "enum": [
+        "checked_in",
+        "late",
+        "mobile",
+        "base",
+        "visitor",
+        "emergency",
+        "priority",
+        "monitoring",
+        "pending"
+      ],
+      "default": "checked_in"
+    },
     "checkin_number": {
       "type": "number",
-      "description": "Sequential check-in number"
+      "description": "Sequential check-in number (assigned on approval)"
+    },
+    "checked_in_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_guest": {
+      "type": "boolean",
+      "default": false
+    },
+    "approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Approved by Net Control (self check-ins start false)"
     }
   },
   "required": [
