@@ -2,7 +2,7 @@ import React from "react";
 import { Check, MapPin } from "lucide-react";
 import { statusConfig, fmtDistance } from "./helpers";
 
-export default function MissionCheckinList({ checkins, isOperator, onApprove }) {
+export default function MissionCheckinList({ checkins, isOperator, onApprove, onEditStatus }) {
   if (!checkins || checkins.length === 0) {
     return (
       <div className="rounded-2xl bg-card/60 border border-white/[0.06] p-10 text-center">
@@ -18,7 +18,8 @@ export default function MissionCheckinList({ checkins, isOperator, onApprove }) 
         return (
           <div
             key={c.id}
-            className={`msg-in flex items-center gap-3 p-3 rounded-2xl bg-card/60 border ${pending ? "border-yellow-500/40 bg-yellow-500/[0.04]" : "border-white/[0.06]"} backdrop-blur-md`}
+            onClick={() => !pending && isOperator && onEditStatus?.(c)}
+            className={`msg-in flex items-center gap-3 p-3 rounded-2xl bg-card/60 border ${pending ? "border-yellow-500/40 bg-yellow-500/[0.04]" : "border-white/[0.06]"} backdrop-blur-md ${!pending && isOperator ? "cursor-pointer hover:border-violet-500/30 active:scale-[0.99] transition" : ""}`}
           >
             <div className="relative shrink-0">
               {c.avatar ? (

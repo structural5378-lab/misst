@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Radio, ListChecks, Activity, BarChart3, ArrowLeft } from "lucide-react";
+import { Radio, ListChecks, Activity, BarChart3, ArrowLeft, MapPin } from "lucide-react";
 import MissionHeader from "@/components/mission/MissionHeader";
 import MissionMetrics from "@/components/mission/MissionMetrics";
 import MissionCheckinList from "@/components/mission/MissionCheckinList";
@@ -14,9 +14,13 @@ import SelfCheckinPanel from "@/components/mission/SelfCheckinPanel";
 import ManualCheckinModal from "@/components/mission/ManualCheckinModal";
 import AfterActionReport from "@/components/mission/AfterActionReport";
 import NetControlBar from "@/components/mission/NetControlBar";
+import MissionInfoGrid from "@/components/mission/MissionInfoGrid";
+import MissionMap from "@/components/mission/MissionMap";
+import MissionStatusSheet from "@/components/mission/MissionStatusSheet";
 
 const TABS = [
   { key: "checkins", label: "Check-ins", Icon: ListChecks },
+  { key: "map", label: "Map", Icon: MapPin },
   { key: "timeline", label: "Timeline", Icon: Activity },
   { key: "stats", label: "Stats", Icon: BarChart3 },
 ];
@@ -32,12 +36,20 @@ export default function MissionControl() {
   const [showManual, setShowManual] = useState(false);
   const [report, setReport] = useState(null);
   const [posting, setPosting] = useState(false);
+  const [editing, setEditing] = useState(null);
 
   const { data: net } = useQuery({
     queryKey: ["net", netId],
     queryFn: () => base44.entities.Net.filter({ id: netId }),
     select: (d) => d[0],
     enabled: !!netId,
+  });
+
+  const { data: repeater } = useQuery({
+    queryKey: ["net-repeater", net?.repeater_callsign],
+    queryFn: () => base44.entities.Repeater.filter({ callsign: net.repeater_callsign }),
+    select: (d) => d[0],
+    enabled: !!net?.repeater_callsign,
   });
 
   const { data: sessions = [] } = useQuery({
@@ -146,6 +158,15 @@ export default function MissionControl() {
     qc.invalidateQueries({ queryKey: ["net-log", activeSession.id] });
   };
 
+  const handleEditStatus = async (c, status) => {
+    if (!activeSession || c.status === status) return setEditing(null);
+    await base44.entities.NetLog.update(c.id, { status });
+    if (status === "priority") addTimeline(activeSession, "priority", `Priority traffic: ${c.callsign}`, { name: c.callsign });
+    if (status === "emergency") addTimeline(activeSession, "emergency", `Emergency traffic: ${c.callsign}`, { name: c.callsign });
+    qc.invalidateQueries({ queryKey: ["net-log", activeSession.id] });
+    setEditing(null);
+  };
+
   const handleManual = async (data) => {
     const nextNum = approved.length + 1;
     await base44.entities.NetLog.create({
@@ -201,6 +222,7 @@ export default function MissionControl() {
 
       <div className="px-4 pt-4 space-y-4 max-w-2xl mx-auto">
         <MissionHeader net={net} session={activeSession} />
+        {activeSession && <MissionInfoGrid net={net} session={activeSession} repeater={repeater} visitors={approved.filter((c) => c.status === "visitor").length} />}
         {activeSession && <MissionMetrics values={metrics} />}
 
         {isOperator && (
@@ -245,7 +267,8 @@ export default function MissionControl() {
             </div>
 
             <div className="mist-fade-up">
-              {tab === "checkins" && <MissionCheckinList checkins={sortedCheckins} isOperator={isOperator} onApprove={approveCheckin} />}
+              {tab === "checkins" && <MissionCheckinList checkins={sortedCheckins} isOperator={isOperator} onApprove={approveCheckin} onEditStatus={setEditing} />}
+              {tab === "map" && <MissionMap checkins={approved} repeater={repeater} netControlUid={activeSession.net_control_uid} />}
               {tab === "timeline" && <MissionTimeline events={timeline} />}
               {tab === "stats" && <MissionStats checkins={checkins} session={activeSession} />}
             </div>
@@ -254,6 +277,7 @@ export default function MissionControl() {
       </div>
 
       {showManual && <ManualCheckinModal onSubmit={handleManual} onClose={() => setShowManual(false)} />}
+      {editing && <MissionStatusSheet checkin={editing} onUpdate={(s) => handleEditStatus(editing, s)} onClose={() => setEditing(null)} />}
       {report && <AfterActionReport session={report} checkins={checkins} timeline={timeline} onClose={() => setReport(null)} onPostForum={postToForum} posting={posting} />}
     </div>
   );
