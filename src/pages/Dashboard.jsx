@@ -11,7 +11,6 @@ import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
 import RadioScopeTile from "@/components/radioscope/RadioScopeTile";
 import OperatorCard from "@/components/profile/OperatorCard";
 import NextNetCard from "@/components/dashboard/NextNetCard";
-import QuickActionGrid from "@/components/dashboard/QuickActionGrid";
 import StatsGrid from "@/components/dashboard/StatsGrid";
 import XPLevelCard from "@/components/dashboard/XPLevelCard";
 import MembershipFooter from "@/components/dashboard/MembershipFooter";
@@ -128,18 +127,13 @@ export default function Dashboard() {
           <OperatorCard onLogout={signOut} hideXpBar hidePrestige />
         </div>
 
-        {/* Quick Actions 2x2 */}
-        <div className="mist-fade-up" style={{ animationDelay: "120ms" }}>
-          <QuickActionGrid isAdmin={isAdmin} />
-        </div>
-
         {/* XP & Level */}
-        <div className="mist-fade-up" style={{ animationDelay: "160ms" }}>
+        <div className="mist-fade-up" style={{ animationDelay: "120ms" }}>
           <XPLevelCard xp={stats.xp || 0} />
         </div>
 
         {/* Statistics */}
-        <div className="mist-fade-up" style={{ animationDelay: "200ms" }}>
+        <div className="mist-fade-up" style={{ animationDelay: "160ms" }}>
           <StatsGrid stats={stats} />
           <div className="mt-3">
             <MembershipFooter
@@ -151,7 +145,7 @@ export default function Dashboard() {
         </div>
 
         {/* RadioScope */}
-        <div className="mist-fade-up" style={{ animationDelay: "240ms" }}>
+        <div className="mist-fade-up" style={{ animationDelay: "200ms" }}>
           <RadioScopeTile />
         </div>
 
