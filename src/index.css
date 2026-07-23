@@ -121,6 +121,25 @@
 }
 .fade-in { animation: fade-in 0.2s ease-out; }
 
+/* ─── MIST Premium Dashboard Animations ─── */
+@keyframes mist-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.mist-fade-up { animation: mist-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes mist-nextnet-glow {
+  0%, 100% { box-shadow: 0 0 18px rgba(24, 214, 124, 0.06); }
+  50% { box-shadow: 0 0 26px rgba(24, 214, 124, 0.18); }
+}
+.mist-nextnet-glow { animation: mist-nextnet-glow 3s ease-in-out infinite; }
+
+@keyframes mist-fab-halo {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.12); }
+}
+.mist-fab-halo { animation: mist-fab-halo 2.4s ease-in-out infinite; }
+
 /* Hide bottom navigation when keyboard is open */
 body.keyboard-open [data-bottom-nav] {
   transform: translateY(100%);

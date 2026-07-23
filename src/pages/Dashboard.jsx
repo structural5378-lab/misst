@@ -3,56 +3,40 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, MapPin, Users, Wrench, Globe, Info, AlertTriangle, Settings, LogOut, Sun, Camera, ChevronRight, UserCircle2, SignalHigh, BellRing, MessageCircle, MessageSquare, ShoppingBag, Trophy, Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Bell, Radio, Users, Info, AlertTriangle, Settings, MessageSquare, ChevronRight, MapPin, Sun, Wrench, Globe, Camera, UserCircle2, ShoppingBag, SignalHigh, Trophy, Shield } from "lucide-react";
 import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
 import PropagationGauge from "@/components/dashboard/PropagationGauge";
 import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
 import RadioScopeTile from "@/components/radioscope/RadioScopeTile";
 import OperatorCard from "@/components/profile/OperatorCard";
-
-const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/ef2f5095f_EA7D7629-51E2-49DA-AE8B-4017441D651F.png";
+import NextNetCard from "@/components/dashboard/NextNetCard";
+import QuickActionGrid from "@/components/dashboard/QuickActionGrid";
+import StatsGrid from "@/components/dashboard/StatsGrid";
+import XPLevelCard from "@/components/dashboard/XPLevelCard";
+import MembershipFooter from "@/components/dashboard/MembershipFooter";
 
 const quickItems = [
-  { icon: Radio, label: "Repeaters", path: "/repeaters", bg: "bg-primary/15", color: "text-primary" },
-  { icon: MapPin, label: "Map", path: "/map", bg: "bg-accent/15", color: "text-accent" },
-  { icon: Users, label: "Nets", path: "/nets", bg: "bg-info/15", color: "text-info" },
-  { icon: Sun, label: "Weather", path: "/weather", bg: "bg-warning/15", color: "text-warning" },
-  { icon: Wrench, label: "Tools", path: "/tools", bg: "bg-warning/15", color: "text-warning" },
-  { icon: Globe, label: "Forum", path: "/community-forum", bg: "bg-info/15", color: "text-info" },
-  { icon: Sun, label: "Live Cams", path: "/live-cams", bg: "bg-accent/15", color: "text-accent" },
-  { icon: Camera, label: "Gallery", path: "/gallery", bg: "bg-primary/15", color: "text-primary" },
-  { icon: UserCircle2, label: "Members", path: "/members", bg: "bg-accent/15", color: "text-accent" },
-  { icon: ShoppingBag, label: "Shopping", path: "/shopping", bg: "bg-warning/15", color: "text-warning" },
-  { icon: SignalHigh, label: "Simplex", path: "/cineplex", bg: "bg-success/15", color: "text-success" },
-  { icon: MessageCircle, label: "Live Chat", path: "/live-chat", bg: "bg-primary/15", color: "text-primary" },
-  { icon: Trophy, label: "Trophies", path: "/achievements", bg: "bg-warning/15", color: "text-warning" },
-  { icon: Settings, label: "Settings", path: "/settings", bg: "bg-muted", color: "text-muted-foreground" },
-  { icon: Shield, label: "Admin", path: "/platform/admin", bg: "bg-warning/15", color: "text-warning", adminOnly: true },
+  { icon: Radio, label: "Repeaters", path: "/repeaters", color: "text-violet-400", bg: "bg-violet-500/10" },
+  { icon: MapPin, label: "Map", path: "/map", color: "text-cyan-400", bg: "bg-cyan-500/10" },
+  { icon: Users, label: "Nets", path: "/nets", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  { icon: Sun, label: "Weather", path: "/weather", color: "text-amber-400", bg: "bg-amber-500/10" },
+  { icon: Wrench, label: "Tools", path: "/tools", color: "text-sky-400", bg: "bg-sky-500/10" },
+  { icon: Globe, label: "Forum", path: "/community-forum", color: "text-info", bg: "bg-info/10" },
+  { icon: Camera, label: "Live Cams", path: "/live-cams", color: "text-accent", bg: "bg-accent/10" },
+  { icon: Camera, label: "Gallery", path: "/gallery", color: "text-rose-400", bg: "bg-rose-500/10" },
+  { icon: UserCircle2, label: "Members", path: "/members", color: "text-indigo-400", bg: "bg-indigo-500/10" },
+  { icon: ShoppingBag, label: "Shopping", path: "/shopping", color: "text-orange-400", bg: "bg-orange-500/10" },
+  { icon: SignalHigh, label: "Simplex", path: "/cineplex", color: "text-success", bg: "bg-success/10" },
+  { icon: MessageSquare, label: "Live Chat", path: "/live-chat", color: "text-fuchsia-400", bg: "bg-fuchsia-500/10" },
+  { icon: Trophy, label: "Trophies", path: "/achievements", color: "text-yellow-400", bg: "bg-yellow-500/10" },
+  { icon: Settings, label: "Settings", path: "/account", color: "text-muted-foreground", bg: "bg-muted/40" },
+  { icon: Shield, label: "Admin", path: "/platform/admin", color: "text-rose-400", bg: "bg-rose-500/10", adminOnly: true },
 ];
 
 export default function Dashboard() {
-  const { mistUser, signOut } = useMistUser();
-  const [testingNotif, setTestingNotif] = useState(false);
-  const [notifPermission, setNotifPermission] = useState(() => {
-    try { return Notification.permission; } catch { return "default"; }
-  });
-
-  const handleEnableNotifications = () => {
-    // PushAlert SDK exposes pa_push object; fall back to native Notification API
-    if (window.pa_push) {
-      window.pa_push.subscribe();
-    } else if (window.PushAlertCo) {
-      window.PushAlertCo.subscribe ? window.PushAlertCo.subscribe() : window.PushAlertCo.triggerOptIn();
-    } else {
-      Notification.requestPermission().then(p => setNotifPermission(p));
-    }
-    setTimeout(() => {
-      try { setNotifPermission(Notification.permission); } catch {}
-    }, 3000);
-    localStorage.removeItem("pa_subscription_prompted");
-  };
+  const { mistUser, signOut, mybbUser } = useMistUser();
+  const [showOnlineSheet, setShowOnlineSheet] = useState(false);
 
   useEffect(() => {
     if (mistUser.id) {
@@ -65,24 +49,13 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Net.list("-created_date", 3),
     initialData: [],
   });
-
-  const { data: latestForumPost } = useQuery({
-    queryKey: ["latestForumPost"],
-    queryFn: async () => {
-      const res = await base44.functions.invoke("fetchMyBBForums", { action: "latest_posts" });
-      return res.data?.posts?.[0] || null;
-    },
-    initialData: null,
-    refetchInterval: 120000,
-  });
-
   const nextNet = nets.length > 0 ? nets[0] : null;
 
   const { data: alerts } = useQuery({
     queryKey: ["alerts"],
     queryFn: async () => {
       const all = await base44.entities.Alert.list("-created_date", 10);
-      return all.filter(a => !a.title?.startsWith("__")).slice(0, 3);
+      return all.filter((a) => !a.title?.startsWith("__")).slice(0, 3);
     },
     initialData: [],
   });
@@ -116,13 +89,22 @@ export default function Dashboard() {
   });
   const isAdmin = (platformData?.platform_roles || []).length > 0;
 
-  const typeIcons = {
-    info: Info,
-    warning: AlertTriangle,
-    emergency: Radio,
-    system: Settings,
-  };
+  // Shared stats (deduped with OperatorCard via the same query key)
+  const { data: syncData } = useQuery({
+    queryKey: ["operator-card-stats"],
+    queryFn: async () => {
+      const res = await base44.functions.invoke("syncUserStats", { uid: mybbUser?.uid || mistUser?.id });
+      return res.data;
+    },
+    enabled: !!mybbUser?.uid || !!mistUser?.id,
+    staleTime: 30000,
+  });
+  const stats = syncData?.stats || {};
+  const memberSince = mistUser.memberSince
+    ? new Date(mistUser.memberSince).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+    : null;
 
+  const typeIcons = { info: Info, warning: AlertTriangle, emergency: Radio, system: Settings };
   const typeColors = {
     info: "bg-primary/10 text-primary",
     warning: "bg-warning/10 text-warning",
@@ -130,54 +112,46 @@ export default function Dashboard() {
     system: "bg-muted text-muted-foreground",
   };
 
-  const [showOnlineSheet, setShowOnlineSheet] = useState(false);
-
-  const callsign = mistUser.callsign || "MIST Member";
-  const avatarUrl = mistUser.avatarUrl || LOGO_URL;
-  const location = mistUser.location || "GMRS Community";
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden">
-        {/* Purple glow background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background/80 to-background" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
+      {/* Ambient glow */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[28rem] h-80 bg-primary/15 rounded-full blur-3xl pointer-events-none -z-10" />
 
-        {/* Marquee Section */}
-        <div className="relative px-4 pt-4 pb-2">
-          <div className="w-full bg-card/50 border border-primary/20 rounded-xl overflow-hidden backdrop-blur-sm">
-            <div className="flex items-center gap-6 py-2">
-              {latestForumPost && (
-                <div className="flex items-center gap-2 min-w-fit">
-                  <MessageSquare className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">Latest:</span>
-                  <span className="text-xs text-foreground truncate max-w-[150px]">{latestForumPost.subject || latestForumPost.title}</span>
-                </div>
-              )}
-              {nextNet && (
-                <div className="flex items-center gap-2 min-w-fit">
-                  <Radio className="w-3.5 h-3.5 text-success shrink-0" />
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">Next Net:</span>
-                  <span className="text-xs text-success font-medium whitespace-nowrap">{nextNet.name} · {nextNet.time}</span>
-                </div>
-              )}
-            </div>
+      <div className="px-4 pt-4 space-y-5 pb-6 max-w-2xl mx-auto">
+        {/* Next Net */}
+        <div className="mist-fade-up">
+          <NextNetCard net={nextNet} />
+        </div>
+
+        {/* Hero Profile Card */}
+        <div className="mist-fade-up" style={{ animationDelay: "60ms" }}>
+          <OperatorCard onLogout={signOut} hideXpBar hidePrestige />
+        </div>
+
+        {/* Quick Actions 2x2 */}
+        <div className="mist-fade-up" style={{ animationDelay: "120ms" }}>
+          <QuickActionGrid isAdmin={isAdmin} />
+        </div>
+
+        {/* XP & Level */}
+        <div className="mist-fade-up" style={{ animationDelay: "160ms" }}>
+          <XPLevelCard xp={stats.xp || 0} />
+        </div>
+
+        {/* Statistics */}
+        <div className="mist-fade-up" style={{ animationDelay: "200ms" }}>
+          <StatsGrid stats={stats} />
+          <div className="mt-3">
+            <MembershipFooter
+              joined={memberSince ? `Joined ${memberSince}` : null}
+              club={stats.club_membership}
+              streak={stats.daily_login_streak}
+            />
           </div>
         </div>
 
-        {/* Operator Identity Card */}
-        <div className="relative pb-4">
-          <OperatorCard onLogout={signOut} />
-        </div>
-      </div>
-
-      <div className="px-4 pt-4 space-y-6 pb-4">
         {/* RadioScope */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-foreground">RadioScope</h3>
-          </div>
+        <div className="mist-fade-up" style={{ animationDelay: "240ms" }}>
           <RadioScopeTile />
         </div>
 
@@ -187,13 +161,12 @@ export default function Dashboard() {
         {/* Storm Tracker */}
         <StormTracker />
 
-        {/* Alerts Section */}
+        {/* Alerts */}
         {alerts.length > 0 && (
-          <div>
+          <section>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Bell className="w-4 h-4 text-primary" />
-                Important Updates
+                <Bell className="w-4 h-4 text-primary" /> Important Updates
               </h3>
               <Link to="/alerts" className="text-xs text-primary font-medium hover:text-primary/80">View All</Link>
             </div>
@@ -202,73 +175,40 @@ export default function Dashboard() {
                 const Icon = typeIcons[alert.type] || Info;
                 const colorClass = typeColors[alert.type] || typeColors.info;
                 return (
-                  <div
-                    key={alert.id}
-                    className={`flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border ${!alert.is_read ? "border-l-2 border-l-primary" : ""}`}
-                  >
+                  <div key={alert.id} className={`flex items-start gap-3 p-3 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md ${!alert.is_read ? "border-l-2 border-l-primary" : ""}`}>
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-medium text-foreground">{alert.title}</h4>
-                      {alert.message && (
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{alert.message}</p>
-                      )}
-                      <p className="text-[10px] text-muted-foreground mt-1">
-                        {alert.created_date && format(new Date(alert.created_date), "MMM d 'at' h:mm a")}
-                      </p>
+                      {alert.message && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{alert.message}</p>}
+                      <p className="text-[10px] text-muted-foreground mt-1">{alert.created_date && format(new Date(alert.created_date), "MMM d 'at' h:mm a")}</p>
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Stats strip */}
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { label: "Reputation", value: mistUser.reputation ?? 0 },
-            { label: "Threads", value: mistUser.threadCount ?? 0 },
-            { label: "Posts", value: mistUser.postCount ?? 0 },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex flex-col items-center py-3 rounded-xl bg-muted/30 border border-border">
-              <span className="text-xl font-bold text-foreground">{value}</span>
-              <span className="text-[10px] text-muted-foreground mt-0.5">{label}</span>
-            </div>
-          ))}
-        </div>
-
         {/* Online Members */}
-        <div>
+        <section>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Users className="w-4 h-4 text-success" />
-              Online Now
+              <Users className="w-4 h-4 text-success" /> Online Now
             </h3>
             {totalMembers != null && (
-              <span className="text-xs text-warning font-medium flex items-center gap-1">
-                <Users className="w-3 h-3" />{totalMembers} total
-              </span>
+              <span className="text-xs text-warning font-medium flex items-center gap-1"><Users className="w-3 h-3" />{totalMembers} total</span>
             )}
           </div>
-          <button
-            onClick={() => setShowOnlineSheet(true)}
-            className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border hover:border-success/30 hover:bg-success/5 transition-all active:scale-[0.99] text-left"
-          >
+          <button onClick={() => setShowOnlineSheet(true)} className="w-full flex items-center gap-3 p-3 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md hover:border-success/30 transition-all active:scale-[0.99] text-left">
             <div className="flex -space-x-2">
               {onlineMembers.slice(0, 5).map((member) => (
-                <div
-                  key={member.uid}
-                  className="w-8 h-8 rounded-full border-2 border-background bg-card/50 overflow-hidden"
-                  title={member.username}
-                >
+                <div key={member.uid} className="w-8 h-8 rounded-full border-2 border-background bg-card/50 overflow-hidden" title={member.username}>
                   {member.avatar ? (
                     <img src={member.avatar} alt={member.username} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = "none"; }} />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-primary">
-                      {(member.username || "?").charAt(0).toUpperCase()}
-                    </div>
+                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-primary">{(member.username || "?").charAt(0).toUpperCase()}</div>
                   )}
                 </div>
               ))}
@@ -283,28 +223,17 @@ export default function Dashboard() {
                 </span>
               )}
             </div>
-            <span className="text-xs font-semibold text-success border border-success/30 bg-success/10 px-2.5 py-1 rounded-lg">
-              View All
-            </span>
+            <span className="text-xs font-semibold text-success border border-success/30 bg-success/10 px-2.5 py-1 rounded-lg">View All</span>
           </button>
-        </div>
+        </section>
+        {showOnlineSheet && <OnlineMembersSheet members={onlineMembers} onClose={() => setShowOnlineSheet(false)} />}
 
-        {showOnlineSheet && (
-          <OnlineMembersSheet members={onlineMembers} onClose={() => setShowOnlineSheet(false)} />
-        )}
-
-        {/* Quick Access */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-foreground">Quick Access</h3>
-          </div>
+        {/* Explore (full nav grid — preserves all routes) */}
+        <section>
+          <h3 className="text-sm font-semibold text-foreground mb-3">Explore</h3>
           <div className="grid grid-cols-3 gap-3">
-            {quickItems.filter(item => item.adminOnly ? isAdmin : true).map(({ icon: Icon, label, path, bg, color }) => (
-              <Link
-                key={label}
-                to={path}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-muted/30 border border-border hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95"
-              >
+            {quickItems.filter(i => i.adminOnly ? isAdmin : true).map(({ icon: Icon, label, path, bg, color }) => (
+              <Link key={label + path} to={path} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95">
                 <div className={`w-11 h-11 rounded-xl ${bg} flex items-center justify-center`}>
                   <Icon className={`w-5 h-5 ${color}`} />
                 </div>
@@ -312,17 +241,17 @@ export default function Dashboard() {
               </Link>
             ))}
           </div>
-        </div>
+        </section>
 
         {/* Upcoming Nets */}
-        <div>
+        <section>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-foreground">Upcoming Nets</h3>
             <Link to="/nets" className="text-xs text-primary font-medium hover:text-primary/80">View All</Link>
           </div>
           <div className="space-y-2">
             {nets.slice(0, 3).map((net) => (
-              <div key={net.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border hover:border-primary/20 transition-colors">
+              <div key={net.id} className="flex items-center justify-between p-3 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md hover:border-primary/20 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
                     <Radio className="w-4 h-4 text-primary" />
@@ -337,11 +266,9 @@ export default function Dashboard() {
                 </Link>
               </div>
             ))}
-            {nets.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-6">No upcoming nets scheduled</p>
-            )}
+            {nets.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No upcoming nets scheduled</p>}
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );

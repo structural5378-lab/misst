@@ -38,39 +38,40 @@ export default function RadioScopeTile() {
     : null;
 
   return (
-    <Link
-      to="/radioscope"
-      className="relative w-full flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-slate-950 to-violet-950/50 border border-cyan-500/20 hover:border-cyan-500/40 transition-all active:scale-[0.98] overflow-hidden group"
-    >
-      <div className="absolute inset-0 opacity-30 pointer-events-none">
-        <div className="absolute top-1/2 left-4 w-20 h-20 -mt-10 rounded-full border-2 border-cyan-500/20" />
-        <div className="absolute top-1/2 left-4 w-14 h-14 -mt-7 rounded-full border border-cyan-500/30" />
-        <div className="rs-tile-radar absolute top-1/2 left-4 w-20 h-20 -mt-10 rounded-full" />
-      </div>
+    <Link to="/radioscope" className="block group">
+      <div className="relative w-full rounded-2xl bg-gradient-to-br from-slate-950 to-violet-950/60 border border-cyan-500/25 p-4 overflow-hidden active:scale-[0.99] transition-transform">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0 z-10">
-        <Radar className="w-7 h-7 text-cyan-400" />
-      </div>
+        <div className="relative flex items-center gap-4">
+          <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="absolute inset-0 rs-tile-radar opacity-60" />
+            <Radar className="w-8 h-8 text-cyan-300 relative z-10" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-bold text-foreground">RadioScope</h3>
+            <p className="text-[10px] text-cyan-400/80 uppercase tracking-widest">Tactical RF Map</p>
+          </div>
+          <span className="text-[11px] font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 px-3 py-1.5 rounded-full group-hover:bg-cyan-500/20 transition-colors shrink-0">
+            View All →
+          </span>
+        </div>
 
-      <div className="relative z-10 flex-1">
-        <h3 className="text-sm font-bold text-foreground">RadioScope</h3>
-        <p className="text-[10px] text-cyan-500/70 uppercase tracking-widest">Tactical RF Map</p>
-      </div>
-
-      <div className="relative z-10 flex gap-4">
-        <Stat icon={Radio} label="Repeaters" value={nearbyRepeaters.length} color="text-violet-400" />
-        <Stat icon={Users} label="Online" value={onlineCount} color="text-emerald-400" />
-        <Stat icon={MapPin} label="Closest" value={closestDist != null ? formatDistance(closestDist) : "—"} color="text-cyan-400" />
+        <div className="relative mt-4 grid grid-cols-3 gap-2">
+          <Stat icon={Radio} label="Repeaters" value={nearbyRepeaters.length} color="text-violet-400" />
+          <Stat icon={Users} label="Online" value={onlineCount} color="text-emerald-400" />
+          <Stat icon={MapPin} label="Coverage" value={closestDist != null ? formatDistance(closestDist) : "—"} color="text-cyan-400" />
+        </div>
       </div>
     </Link>
   );
 }
 
 function Stat({ icon, label, value, color }) {
+  const Icon = icon;
   return (
-    <div className="flex flex-col items-center min-w-[44px]">
-      {React.createElement(icon, { className: `w-4 h-4 ${color} mb-0.5` })}
-      <span className="text-sm font-bold text-foreground">{value}</span>
+    <div className="flex flex-col items-center min-w-[44px] rounded-xl bg-white/[0.03] border border-white/[0.06] py-2">
+      <Icon className={`w-4 h-4 ${color} mb-1`} />
+      <span className="text-sm font-bold text-foreground tabular-nums">{value}</span>
       <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{label}</span>
     </div>
   );
