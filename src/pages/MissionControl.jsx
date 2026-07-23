@@ -17,6 +17,8 @@ import NetControlBar from "@/components/mission/NetControlBar";
 import MissionInfoGrid from "@/components/mission/MissionInfoGrid";
 import MissionMap from "@/components/mission/MissionMap";
 import MissionStatusSheet from "@/components/mission/MissionStatusSheet";
+import XpToast from "@/components/mission/XpToast";
+import UnlockCelebration from "@/components/achievements/UnlockCelebration";
 
 const TABS = [
   { key: "checkins", label: "Check-ins", Icon: ListChecks },
@@ -37,6 +39,8 @@ export default function MissionControl() {
   const [report, setReport] = useState(null);
   const [posting, setPosting] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [xpToast, setXpToast] = useState(null);
+  const [unlock, setUnlock] = useState(null);
 
   const { data: net } = useQuery({
     queryKey: ["net", netId],
@@ -102,6 +106,17 @@ export default function MissionControl() {
     } catch {}
   };
 
+  const awardXp = async (userId, userName, action) => {
+    if (!userId) return;
+    try {
+      const res = await base44.functions.invoke("awardNetXp", { user_id: userId, user_name: userName, action });
+      if (res?.data?.xpAwarded > 0) setXpToast(res.data.xpAwarded);
+      if (res?.data?.newlyUnlocked?.length) setUnlock(res.data.newlyUnlocked[0].id);
+    } catch {}
+  };
+
+  const actionFor = (status) => (status === "visitor" ? "visitor" : status === "emergency" ? "emergency" : status === "priority" ? "priority" : "check_in");
+
   const startNet = async () => {
     if (!net) return;
     const session = await base44.entities.NetSession.create({
@@ -146,6 +161,7 @@ export default function MissionControl() {
     };
     await base44.entities.NetSession.update(activeSession.id, counters);
     addTimeline(activeSession, "net_closed", `Net closed by ${activeSession.net_control}`, { name: activeSession.net_control });
+    awardXp(activeSession.net_control_uid, activeSession.net_control, "host_net");
     qc.invalidateQueries({ queryKey: ["net-sessions", netId] });
     setReport({ ...activeSession, ...counters });
   };
@@ -155,6 +171,7 @@ export default function MissionControl() {
     await base44.entities.NetLog.update(c.id, { approved: true, checkin_number: nextNum });
     await base44.entities.NetSession.update(activeSession.id, { checkin_count: nextNum });
     addTimeline(activeSession, "checkin", `${c.callsign} checked in`, { name: c.callsign, avatar: c.avatar, id: c.user_id });
+    awardXp(c.user_id, c.name || c.callsign, actionFor(c.status));
     qc.invalidateQueries({ queryKey: ["net-log", activeSession.id] });
   };
 
@@ -178,6 +195,7 @@ export default function MissionControl() {
     });
     await base44.entities.NetSession.update(activeSession.id, { checkin_count: nextNum });
     addTimeline(activeSession, "checkin", `${data.callsign} checked in`, { name: data.callsign });
+    awardXp(data.user_id, data.name || data.callsign, actionFor(data.status));
     qc.invalidateQueries({ queryKey: ["net-log", activeSession.id] });
     setShowManual(false);
   };
@@ -279,6 +297,8 @@ export default function MissionControl() {
       {showManual && <ManualCheckinModal onSubmit={handleManual} onClose={() => setShowManual(false)} />}
       {editing && <MissionStatusSheet checkin={editing} onUpdate={(s) => handleEditStatus(editing, s)} onClose={() => setEditing(null)} />}
       {report && <AfterActionReport session={report} checkins={checkins} timeline={timeline} onClose={() => setReport(null)} onPostForum={postToForum} posting={posting} />}
+      <XpToast amount={xpToast} onDone={() => setXpToast(null)} />
+      {unlock && <UnlockCelebration achievementId={unlock} onClose={() => setUnlock(null)} onShare={() => setUnlock(null)} />}
     </div>
   );
 }
