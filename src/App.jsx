@@ -89,6 +89,9 @@ import PlatformAdminBackup from '@/pages/platform/PlatformAdminBackup';
 import PlatformAdminGallery from '@/pages/platform/PlatformAdminGallery';
 import PlatformAdminMarketplace from '@/pages/platform/PlatformAdminMarketplace';
 import PlatformAdminPrivateMessages from '@/pages/platform/PlatformAdminPrivateMessages';
+import PlatformAdminNetTemplates from '@/pages/platform/PlatformAdminNetTemplates';
+import PlatformAdminScheduledNets from '@/pages/platform/PlatformAdminScheduledNets';
+import PlatformAdminNetLogs from '@/pages/platform/PlatformAdminNetLogs';
 
 // Community-scoped pages
 import CommunityLayout from '@/components/community/CommunityLayout';
@@ -209,6 +212,9 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/private-messages" element={<PlatformAdminPrivateMessages />} />
           <Route path="/platform/admin/gallery" element={<PlatformAdminGallery />} />
           <Route path="/platform/admin/marketplace" element={<PlatformAdminMarketplace />} />
+          <Route path="/platform/admin/net-templates" element={<PlatformAdminNetTemplates />} />
+          <Route path="/platform/admin/scheduled-nets" element={<PlatformAdminScheduledNets />} />
+          <Route path="/platform/admin/net-logs" element={<PlatformAdminNetLogs />} />
         </Route>
       </Route>
 

@@ -2,7 +2,7 @@ import {
   LayoutDashboard, BarChart3, Users, ShieldCheck, ClipboardList,
   MessageSquare, MessagesSquare, Mail, RadioTower, Radio, CalendarClock,
   Image, ShoppingCart, Award, Bell, Palette, LayoutGrid, Server,
-  ShieldAlert, DatabaseBackup, Terminal,
+  ShieldAlert, DatabaseBackup, Terminal, LayoutTemplate,
 } from "lucide-react";
 
 // Role levels: platform_owner=3, platform_admin=2, platform_support=1
@@ -39,6 +39,9 @@ export const adminNavSections = [
       { label: "Repeaters", path: "/platform/admin/repeaters", icon: RadioTower, minRole: 2 },
       { label: "RadioScope", path: "/platform/admin/radioscope", icon: Radio, minRole: 2 },
       { label: "Nets & Events", path: "/platform/admin/nets", icon: CalendarClock, minRole: 2 },
+      { label: "Net Templates", path: "/platform/admin/net-templates", icon: LayoutTemplate, minRole: 2 },
+      { label: "Scheduled Nets", path: "/platform/admin/scheduled-nets", icon: CalendarClock, minRole: 2 },
+      { label: "Net Logs", path: "/platform/admin/net-logs", icon: ClipboardList, minRole: 1 },
     ],
   },
   {
