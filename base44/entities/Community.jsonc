@@ -80,6 +80,22 @@
       "type": "number",
       "description": "Default longitude for maps and weather"
     },
+    "primary_repeater": {
+      "type": "string",
+      "description": "Primary repeater name/callsign for the community (optional)"
+    },
+    "frequency": {
+      "type": "number",
+      "description": "Primary repeater frequency in MHz (optional)"
+    },
+    "pl_tone": {
+      "type": "string",
+      "description": "PL / DCS tone for the primary repeater (optional)"
+    },
+    "invite_link": {
+      "type": "string",
+      "description": "Generated invite URL for the community (optional)"
+    },
     "primary_color": {
       "type": "string",
       "default": "#8B5CF6"

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
+import { useUserCommunities } from "@/hooks/useUserCommunities";
 import AppLayout from "@/components/layout/AppLayout";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 
@@ -14,12 +15,13 @@ import UserNotRegisteredError from "@/components/UserNotRegisteredError";
  */
 export default function MistProtectedRoute({ unauthenticatedElement }) {
   const { isAuthenticated, isLoadingAuth, authChecked, authError, checkUserAuth } = useAuth();
+  const { data: communities, isLoading: commLoading } = useUserCommunities();
 
   useEffect(() => {
     if (!authChecked && !isLoadingAuth) checkUserAuth();
   }, [authChecked, isLoadingAuth, checkUserAuth]);
 
-  if (isLoadingAuth || !authChecked) {
+  if (isLoadingAuth || !authChecked || commLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
@@ -30,6 +32,11 @@ export default function MistProtectedRoute({ unauthenticatedElement }) {
   if (authError?.type === "user_not_registered") return <UserNotRegisteredError />;
   if (authError || !isAuthenticated) {
     return unauthenticatedElement || <Navigate to="/login" replace />;
+  }
+
+  // Mandatory community onboarding: users with no community are sent to onboarding.
+  if (!communities || communities.length === 0) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   return (

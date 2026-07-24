@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
-import { useMistUser } from "@/hooks/useMistUser";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useUserCommunities } from "@/hooks/useUserCommunities";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,115 +8,68 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Users, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Users, Plus, Check, ChevronsUpDown } from "lucide-react";
+
+const ROLE_LABEL = {
+  community_owner: "Owner",
+  community_admin: "Admin",
+  moderator: "Moderator",
+  trusted_member: "Trusted",
+  member: "Member",
+  guest: "Guest",
+};
 
 export default function CommunitySelector() {
   const navigate = useNavigate();
-  const { mybbUser } = useMistUser();
-  const [communities, setCommunities] = useState([]);
-  const [selectedId, setSelectedId] = useState("");
-  const [selectedName, setSelectedName] = useState("");
-  const [loading, setLoading] = useState(true);
+  const { data: communities = [], isLoading } = useUserCommunities();
 
-  useEffect(() => {
-    loadCommunities();
-  }, [mybbUser]);
+  if (isLoading || communities.length === 0) return null;
 
-  const loadCommunities = async () => {
-    if (!mybbUser) {
-      setLoading(false);
-      return;
-    }
+  const selectedId = localStorage.getItem("selected_community_id");
+  const selected = communities.find((c) => c.id === selectedId) || communities[0];
 
-    try {
-      // Get user's memberships
-      const memberships = await base44.entities.CommunityMember.filter({
-        user_id: mybbUser.uid,
-        is_active: true,
-      });
-
-      const communityIds = memberships.map((m) => m.community_id);
-      
-      if (communityIds.length === 0) {
-        setCommunities([]);
-        setLoading(false);
-        return;
-      }
-
-      // Get community details
-      const allCommunities = await base44.entities.Community.filter({
-        id: { $in: communityIds },
-        is_active: true,
-      });
-
-      setCommunities(allCommunities);
-
-      // Get selected from localStorage
-      const storedId = localStorage.getItem("selected_community_id");
-      const storedName = localStorage.getItem("selected_community_name");
-      
-      if (storedId && allCommunities.find((c) => c.id === storedId)) {
-        setSelectedId(storedId);
-        setSelectedName(storedName);
-      } else if (allCommunities.length > 0) {
-        // Default to first community
-        const first = allCommunities[0];
-        setSelectedId(first.id);
-        setSelectedName(first.name);
-        localStorage.setItem("selected_community_id", first.id);
-        localStorage.setItem("selected_community_name", first.name);
-      }
-    } catch (error) {
-      console.error("Failed to load communities:", error);
-    } finally {
-      setLoading(false);
-    }
+  const handleSelect = (c) => {
+    localStorage.setItem("selected_community_id", c.id);
+    localStorage.setItem("selected_community_name", c.name);
+    // Instant context switch — navigate to the selected community home.
+    navigate(`/c/${c.slug}`);
   };
-
-  const handleSelect = (community) => {
-    setSelectedId(community.id);
-    setSelectedName(community.name);
-    localStorage.setItem("selected_community_id", community.id);
-    localStorage.setItem("selected_community_name", community.name);
-    // Reload page to apply community filter
-    window.location.reload();
-  };
-
-  if (loading || communities.length === 0) {
-    return null;
-  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2 text-sm">
-          <Users className="w-4 h-4" />
-          <span className="hidden sm:inline">{selectedName || "Select"}</span>
+        <Button variant="ghost" size="sm" className="gap-2 px-2 h-8">
+          {selected?.logo_url ? (
+            <img src={selected.logo_url} alt="" className="w-5 h-5 rounded object-cover" />
+          ) : (
+            <Users className="w-4 h-4 text-violet-300" />
+          )}
+          <span className="hidden sm:inline max-w-[120px] truncate font-semibold text-foreground">
+            {selected?.name || "Community"}
+          </span>
+          <ChevronsUpDown className="w-3 h-3 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        {communities.map((community) => (
-          <DropdownMenuItem
-            key={community.id}
-            onClick={() => handleSelect(community)}
-            className="flex items-center gap-2"
-          >
-            {community.logo_url && (
-              <img src={community.logo_url} alt="" className="w-5 h-5 rounded" />
+      <DropdownMenuContent align="end" className="w-64">
+        {communities.map((c) => (
+          <DropdownMenuItem key={c.id} onClick={() => handleSelect(c)} className="flex items-center gap-2 py-2">
+            {c.logo_url ? (
+              <img src={c.logo_url} alt="" className="w-6 h-6 rounded object-cover" />
+            ) : (
+              <div className="w-6 h-6 rounded bg-violet-500/20 flex items-center justify-center">
+                <Users className="w-3 h-3 text-violet-300" />
+              </div>
             )}
-            <span className="flex-1">{community.name}</span>
-            {community.id === selectedId && (
-              <span className="text-xs text-primary">✓</span>
-            )}
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">{c.name}</div>
+              <div className="text-[10px] text-muted-foreground">{ROLE_LABEL[c.role] || c.role}</div>
+            </div>
+            {c.id === selected?.id && <Check className="w-4 h-4 text-primary" />}
           </DropdownMenuItem>
         ))}
-        <DropdownMenuItem
-          onClick={() => navigate("/community/create")}
-          className="text-primary"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create New Community
+        <div className="my-1 h-px bg-border" />
+        <DropdownMenuItem onClick={() => navigate("/community/create")} className="text-primary">
+          <Plus className="w-4 h-4 mr-2" /> Create Community
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

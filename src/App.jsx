@@ -52,6 +52,8 @@ import LiveChat from '@/pages/LiveChat';
 import TestNotifications from '@/pages/TestNotifications.jsx';
 import Shopping from '@/pages/Shopping';
 import CreateCommunity from '@/pages/CreateCommunity';
+import CommunityOnboarding from '@/pages/CommunityOnboarding';
+import OnboardingProtectedRoute from '@/components/OnboardingProtectedRoute';
 const RadioScope = lazy(() => import('@/pages/RadioScope'));
 import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
@@ -124,6 +126,12 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
+      {/* Mandatory community onboarding (full-screen, no app chrome) */}
+      <Route element={<OnboardingProtectedRoute />}>
+        <Route path="/onboarding" element={<CommunityOnboarding />} />
+        <Route path="/community/create" element={<CreateCommunity />} />
+      </Route>
+
       <Route element={<MistProtectedRoute />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/repeaters" element={<Repeaters />} />
@@ -163,7 +171,6 @@ const AuthenticatedApp = () => {
 
         <Route path="/test-notifications" element={<TestNotifications />} />
         <Route path="/shopping" element={<Shopping />} />
-        <Route path="/community/create" element={<CreateCommunity />} />
         <Route path="/radioscope" element={<RadioScope />} />
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
