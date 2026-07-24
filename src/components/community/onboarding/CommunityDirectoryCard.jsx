@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, MapPin, Radio, Lock, Globe, Loader2, Check } from "lucide-react";
+import { Users, MapPin, Radio, Lock, Globe, Loader2, Check, Clock } from "lucide-react";
 
 function distanceMi(lat1, lon1, lat2, lon2) {
   if (lat1 == null || lat2 == null) return null;
@@ -15,11 +15,25 @@ const VIS_BADGE = {
   private: { label: "Private", icon: Lock, cls: "bg-amber-500/15 text-amber-400 border-amber-500/30" },
 };
 
-export default function CommunityDirectoryCard({ community, coords, busy, onJoin }) {
+export default function CommunityDirectoryCard({ community, coords, busy, myStatus, onJoin, onRequest }) {
   const badge = VIS_BADGE[community.visibility] || VIS_BADGE.public;
   const VIcon = badge.icon;
   const dist = coords ? distanceMi(coords.lat, coords.lon, community.location_lat, community.location_lon) : null;
   const isPublic = community.visibility === "public";
+
+  const buttonContent = (() => {
+    if (myStatus === "active") return { label: "Member", icon: Check, disabled: true, cls: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" };
+    if (myStatus === "pending") return { label: "Pending Approval", icon: Clock, disabled: true, cls: "bg-amber-500/15 text-amber-400 border border-amber-500/30" };
+    if (myStatus === "banned") return { label: "Banned", icon: Lock, disabled: true, cls: "bg-rose-500/15 text-rose-400 border border-rose-500/30" };
+    if (isPublic) return { label: "Join Community", icon: Check, disabled: false, cls: "bg-primary text-primary-foreground hover:bg-primary/90" };
+    return { label: "Request to Join", icon: Lock, disabled: false, cls: "bg-secondary border border-border text-foreground hover:border-primary/40" };
+  })();
+
+  const handleClick = () => {
+    if (buttonContent.disabled) return;
+    if (isPublic) onJoin?.(community);
+    else onRequest?.(community);
+  };
 
   return (
     <div className="rounded-2xl overflow-hidden bg-card/60 border border-white/[0.08] backdrop-blur-md hover:border-primary/30 transition-all flex flex-col">
@@ -63,20 +77,14 @@ export default function CommunityDirectoryCard({ community, coords, busy, onJoin
         </div>
 
         <button
-          onClick={onJoin}
-          disabled={busy}
-          className={`mt-auto w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all active:scale-[0.98] ${
-            isPublic
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "bg-secondary border border-border text-foreground hover:border-primary/40"
-          }`}
+          onClick={handleClick}
+          disabled={buttonContent.disabled || busy}
+          className={`mt-auto w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all active:scale-[0.98] disabled:cursor-default ${buttonContent.cls}`}
         >
           {busy ? (
             <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {isPublic ? "Joining…" : "Sending…"}</>
-          ) : isPublic ? (
-            <><Check className="w-3.5 h-3.5" /> Join Community</>
           ) : (
-            <><Lock className="w-3.5 h-3.5" /> Request to Join</>
+            <>{React.createElement(buttonContent.icon, { className: "w-3.5 h-3.5" })} {buttonContent.label}</>
           )}
         </button>
       </div>

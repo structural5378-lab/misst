@@ -48,6 +48,7 @@ Deno.serve(async (req) => {
         pl_tone: c.pl_tone,
         primary_color: c.primary_color,
         accent_color: c.accent_color,
+        created_date: c.created_date,
       })),
     });
   } catch (error) {

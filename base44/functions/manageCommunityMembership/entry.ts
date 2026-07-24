@@ -1,12 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 /**
- * Community membership lifecycle: join (open), request (private), approve,
- * reject, leave. Enforces per-community join_mode. Admin actions (approve,
- * reject) require community_owner/community_admin or platform admin.
+ * Community membership lifecycle.
  *
- * @param {Request} req - JSON body: { action, community_id, target_user_id? }
- *   action: 'join' | 'request' | 'approve' | 'reject' | 'leave'
+ * Actions:
+ *   join    — open/public instant join (or instant join via valid invite_code)
+ *   request — request to join a private community (auto-approves if settings.auto_approve)
+ *   approve — admin approves a pending request
+ *   reject  — admin rejects a pending request (status -> 'rejected')
+ *   ban     — admin bans a member (status -> 'banned', deactivated)
+ *   leave   — member leaves the community
+ *
+ * Body: { action, community_id, target_user_id?, reason?, invite_code? }
  */
 Deno.serve(async (req) => {
   try {
@@ -15,7 +20,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
-    const { action, community_id, target_user_id } = body;
+    const { action, community_id, target_user_id, reason, invite_code } = body;
     if (!action || !community_id) {
       return Response.json({ error: 'action and community_id are required' }, { status: 400 });
     }
@@ -23,11 +28,20 @@ Deno.serve(async (req) => {
     const community = await base44.asServiceRole.entities.Community.get(community_id).catch(() => null);
     if (!community) return Response.json({ error: 'Community not found' }, { status: 404 });
 
-    // Resolve join_mode from settings, falling back to visibility-derived defaults.
+    // Resolve join_mode + invite settings from CommunitySettings.
     const settingsList = await base44.asServiceRole.entities.CommunitySettings.filter({ community_id });
     const settings = (settingsList && settingsList[0]) || null;
     const joinMode = settings?.join_mode ||
       (community.visibility === 'public' ? 'open' : community.visibility === 'private' ? 'request' : 'invite');
+
+    // Validate an invite code against the stored settings.
+    const inviteValid = (() => {
+      if (!invite_code || !settings?.invite_code) return false;
+      if (settings.invite_code !== invite_code) return false;
+      if (settings.invite_expires && new Date(settings.invite_expires) < new Date()) return false;
+      if (settings.invite_max_uses > 0 && (settings.invite_uses || 0) >= settings.invite_max_uses) return false;
+      return true;
+    })();
 
     const existing = await base44.asServiceRole.entities.CommunityMember.filter({ user_id: user.id, community_id });
     const member = (existing && existing[0]) || null;
@@ -43,20 +57,18 @@ Deno.serve(async (req) => {
       community_slug: community.slug,
       role: 'member',
       status,
+      join_reason: reason || '',
       joined_date: new Date().toISOString(),
-      is_active: true,
+      is_active: status === 'active' || status === 'pending',
     });
 
-    // --- join (open/public) ---
-    if (action === 'join') {
-      if (joinMode !== 'open') {
-        return Response.json({ error: 'This community requires approval or an invitation to join' }, { status: 403 });
-      }
-      if (member && member.is_active && member.status === 'active') {
-        return Response.json({ error: 'You are already a member' }, { status: 409 });
-      }
+    const grantActiveMembership = async () => {
       if (member) {
-        await base44.asServiceRole.entities.CommunityMember.update(member.id, { status: 'active', is_active: true, role: 'member', joined_date: new Date().toISOString() });
+        await base44.asServiceRole.entities.CommunityMember.update(member.id, {
+          status: 'active', is_active: true, role: 'member',
+          join_reason: reason || member.join_reason || '',
+          joined_date: new Date().toISOString()
+        });
       } else {
         await base44.asServiceRole.entities.CommunityMember.create(membershipPayload('active'));
       }
@@ -64,34 +76,66 @@ Deno.serve(async (req) => {
         user_id: user.id, user_email: user.email, community_id, community_name: community.name,
         role: 'member', assigned_by: user.id, assigned_by_email: user.email, is_active: true,
       }).catch(() => {});
-      await base44.asServiceRole.entities.Community.update(community.id, { member_count: (community.member_count || 0) + 1 });
+      await base44.asServiceRole.entities.Community.update(community.id, {
+        member_count: (community.member_count || 0) + 1
+      });
+    };
+
+    const consumeInvite = async () => {
+      if (inviteValid && settings?.id) {
+        await base44.asServiceRole.entities.CommunitySettings.update(settings.id, {
+          invite_uses: (settings.invite_uses || 0) + 1
+        }).catch(() => {});
+      }
+    };
+
+    // --- join (open/public, or instant via invite code) ---
+    if (action === 'join') {
+      if (joinMode !== 'open' && !inviteValid) {
+        return Response.json({ error: 'This community requires approval or an invitation to join' }, { status: 403 });
+      }
+      if (member && member.is_active && member.status === 'active') {
+        return Response.json({ error: 'You are already a member' }, { status: 409 });
+      }
+      await grantActiveMembership();
+      await consumeInvite();
       return Response.json({ success: true, status: 'active' });
     }
 
     // --- request (private) ---
     if (action === 'request') {
-      if (joinMode !== 'request') {
-        return Response.json({ error: joinMode === 'invite' ? 'This community is invite-only' : 'This community does not accept join requests' }, { status: 403 });
+      if (joinMode === 'invite' && !inviteValid) {
+        return Response.json({ error: 'This community is invite-only' }, { status: 403 });
       }
-      if (member && member.is_active) {
+      if (member && member.is_active && (member.status === 'active' || member.status === 'pending')) {
         return Response.json({ error: 'You already have a membership or pending request' }, { status: 409 });
       }
+      // Invite code grants instant access regardless of mode.
+      if (inviteValid) {
+        await grantActiveMembership();
+        await consumeInvite();
+        return Response.json({ success: true, status: 'active' });
+      }
+      // Auto-approve bypasses the pending queue.
+      if (settings?.auto_approve) {
+        await grantActiveMembership();
+        return Response.json({ success: true, status: 'active' });
+      }
       if (member) {
-        await base44.asServiceRole.entities.CommunityMember.update(member.id, { status: 'pending', is_active: true, role: 'member' });
+        await base44.asServiceRole.entities.CommunityMember.update(member.id, {
+          status: 'pending', is_active: true, role: 'member', join_reason: reason || ''
+        });
       } else {
         await base44.asServiceRole.entities.CommunityMember.create(membershipPayload('pending'));
       }
-      // Notify community admins/owners of the pending request.
       try {
-        const staff = await base44.asServiceRole.entities.CommunityMember.filter({
-          community_id, is_active: true
-        });
+        const staff = await base44.asServiceRole.entities.CommunityMember.filter({ community_id, is_active: true });
         const admins = (staff || []).filter(m => m.role === 'community_owner' || m.role === 'community_admin');
         for (const a of admins) {
           await base44.asServiceRole.integrations.Core.SendEmail({
             to: a.user_email,
             subject: `New join request for ${community.name}`,
-            body: `${user.full_name || user.email} has requested to join ${community.name}. Review pending requests in your community admin panel.`,
+            body: `${user.full_name || user.email} has requested to join ${community.name}.${reason ? `\n\nReason: ${reason}` : ''}\n\nReview pending requests in your community admin panel.`,
           }).catch(() => {});
         }
       } catch {}
@@ -107,13 +151,15 @@ Deno.serve(async (req) => {
         await Promise.all((roles || []).map(r => base44.asServiceRole.entities.CommunityRole.update(r.id, { is_active: false })));
       } catch {}
       if (member.status === 'active') {
-        await base44.asServiceRole.entities.Community.update(community.id, { member_count: Math.max(0, (community.member_count || 1) - 1) });
+        await base44.asServiceRole.entities.Community.update(community.id, {
+          member_count: Math.max(0, (community.member_count || 1) - 1)
+        });
       }
       return Response.json({ success: true });
     }
 
-    // --- admin actions (approve / reject) ---
-    if (action === 'approve' || action === 'reject') {
+    // --- admin actions (approve / reject / ban) ---
+    if (action === 'approve' || action === 'reject' || action === 'ban') {
       if (!target_user_id) return Response.json({ error: 'target_user_id is required' }, { status: 400 });
 
       const isAdmin = member && (member.role === 'community_owner' || member.role === 'community_admin');
@@ -130,8 +176,12 @@ Deno.serve(async (req) => {
       const target = (targetMembers && targetMembers[0]) || null;
       if (!target) return Response.json({ error: 'Membership request not found' }, { status: 404 });
 
+      const wasActive = target.status === 'active';
+
       if (action === 'approve') {
-        await base44.asServiceRole.entities.CommunityMember.update(target.id, { status: 'active', is_active: true, role: 'member' });
+        await base44.asServiceRole.entities.CommunityMember.update(target.id, {
+          status: 'active', is_active: true, role: 'member'
+        });
         const targetUser = await base44.asServiceRole.entities.User.get(target_user_id).catch(() => null);
         await base44.asServiceRole.entities.CommunityRole.create({
           user_id: target_user_id,
@@ -139,7 +189,11 @@ Deno.serve(async (req) => {
           community_id, community_name: community.name,
           role: 'member', assigned_by: user.id, assigned_by_email: user.email, is_active: true,
         }).catch(() => {});
-        await base44.asServiceRole.entities.Community.update(community.id, { member_count: (community.member_count || 0) + 1 });
+        if (!wasActive) {
+          await base44.asServiceRole.entities.Community.update(community.id, {
+            member_count: (community.member_count || 0) + 1
+          });
+        }
         try {
           await base44.asServiceRole.integrations.Core.SendEmail({
             to: targetUser?.email || target.user_email,
@@ -147,8 +201,28 @@ Deno.serve(async (req) => {
             body: `Your membership request for ${community.name} has been approved. You can now access the community.`,
           }).catch(() => {});
         } catch {}
-      } else {
-        await base44.asServiceRole.entities.CommunityMember.update(target.id, { status: 'left', is_active: false });
+      } else if (action === 'reject') {
+        await base44.asServiceRole.entities.CommunityMember.update(target.id, {
+          status: 'rejected', is_active: false
+        });
+        if (wasActive) {
+          await base44.asServiceRole.entities.Community.update(community.id, {
+            member_count: Math.max(0, (community.member_count || 1) - 1)
+          });
+        }
+      } else if (action === 'ban') {
+        await base44.asServiceRole.entities.CommunityMember.update(target.id, {
+          status: 'banned', is_active: false
+        });
+        try {
+          const roles = await base44.asServiceRole.entities.CommunityRole.filter({ user_id: target_user_id, community_id });
+          await Promise.all((roles || []).map(r => base44.asServiceRole.entities.CommunityRole.update(r.id, { is_active: false })));
+        } catch {}
+        if (wasActive) {
+          await base44.asServiceRole.entities.Community.update(community.id, {
+            member_count: Math.max(0, (community.member_count || 1) - 1)
+          });
+        }
       }
       return Response.json({ success: true });
     }

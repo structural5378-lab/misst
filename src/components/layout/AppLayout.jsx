@@ -12,6 +12,7 @@ import NotificationManager from "./NotificationManager";
 import Clock from "./Clock";
 import { Bell, User as UserIcon } from "lucide-react";
 import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
+import { useUserCommunities } from "@/hooks/useUserCommunities";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 
@@ -44,6 +45,8 @@ export default function AppLayout() {
   const temp = weather?.current?.temp ?? null;
   const { data: unread = 0 } = useUnreadNotifications();
   const { mistUser } = useMistUser();
+  const { data: memberships = [] } = useUserCommunities();
+  const showLimitedBanner = memberships.length === 0 && localStorage.getItem("onboarding_skipped") === "1";
 
   // Desktop full-bleed routes (community + Account Center) drop the mobile chrome;
   // their own shells own the full viewport.
@@ -105,6 +108,15 @@ export default function AppLayout() {
           </div>
         </div>
       </div>
+      {showLimitedBanner && (
+        <Link
+          to="/onboarding"
+          className="block mx-4 mb-3 max-w-2xl lg:mx-auto px-3 py-2.5 rounded-xl bg-primary/10 border border-primary/25 text-xs text-primary font-medium flex items-center gap-2 hover:bg-primary/15 transition-colors"
+        >
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          You're in limited access mode — join or create a community to unlock everything.
+        </Link>
+      )}
       <main className="pb-20 flex-1 w-full max-w-2xl mx-auto overflow-x-hidden">
         <Outlet />
       </main>

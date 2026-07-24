@@ -45,9 +45,15 @@
         "active",
         "pending",
         "suspended",
-        "left"
+        "left",
+        "banned",
+        "rejected"
       ],
       "default": "active"
+    },
+    "join_reason": {
+      "type": "string",
+      "description": "Optional note the user submitted when requesting to join"
     },
     "joined_date": {
       "type": "string",

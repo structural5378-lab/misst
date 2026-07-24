@@ -164,12 +164,19 @@ Deno.serve(async (req) => {
       { icon: 'Shield',        label: 'Admin',     path: `/c/${slug}/admin`,     roles: ['community_owner', 'community_admin'] }
     ];
 
+    // Generate a default invite code so the owner can onboard members instantly.
+    const inviteCode = `${slug}-${Math.random().toString(36).slice(2, 8)}`;
+
     await base44.asServiceRole.entities.CommunitySettings.create({
       community_id: community.id,
       features_enabled: JSON.stringify(defaultFeatures),
       dashboard_widgets: JSON.stringify(defaultWidgets),
       nav_config: JSON.stringify({ primary: defaultNav, extended: extendedNav }),
       join_mode,
+      auto_approve: visibility_mode === 'public',
+      invite_code: inviteCode,
+      invite_max_uses: 0,
+      invite_uses: 0,
       marketplace_public: false,
       forum_type: 'none',
       email_enabled: true
@@ -209,7 +216,8 @@ Deno.serve(async (req) => {
         id: community.id,
         name: community.name,
         slug: community.slug,
-        owner_id: community.owner_id
+        owner_id: community.owner_id,
+        invite_code: inviteCode
       }
     });
   } catch (error) {

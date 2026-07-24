@@ -1,8 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useCommunity } from '@/contexts/CommunityContext';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Shield, Users, Settings, Eye } from 'lucide-react';
+import { Shield, Users, Settings, Eye, Inbox } from 'lucide-react';
 
 export default function CommunityAdmin() {
   const { community, settings, permissions, hasPermission } = useCommunity();
@@ -18,6 +19,15 @@ export default function CommunityAdmin() {
       );
     },
     enabled: canManage,
+  });
+
+  const { data: pendingCount = 0 } = useQuery({
+    queryKey: ['community-pending-count', community.id],
+    queryFn: async () => {
+      const all = await base44.entities.CommunityMember.filter({ community_id: community.id, status: 'pending' });
+      return (all || []).length;
+    },
+    refetchInterval: 30000,
   });
 
   if (!canManage) {
@@ -45,6 +55,25 @@ export default function CommunityAdmin() {
         <Shield className="w-5 h-5 text-primary" />
         <h1 className="text-xl font-bold text-foreground">Community Admin</h1>
       </div>
+
+      {/* Join requests shortcut */}
+      <Link
+        to={`/c/${community.slug}/admin/requests`}
+        className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors"
+      >
+        <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+          <Inbox className="w-5 h-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-foreground">Join Requests</p>
+          <p className="text-xs text-muted-foreground">Review pending, approved, rejected, and banned members</p>
+        </div>
+        {pendingCount > 0 && (
+          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">
+            {pendingCount}
+          </span>
+        )}
+      </Link>
 
       {/* Community info */}
       <section className="p-4 rounded-xl bg-card border border-border">

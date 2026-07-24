@@ -28,6 +28,30 @@
       ],
       "default": "invite"
     },
+    "auto_approve": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, join requests are approved automatically."
+    },
+    "invite_code": {
+      "type": "string",
+      "description": "Active invite code for instant community access (optional)"
+    },
+    "invite_expires": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the current invite code expires (null = never)"
+    },
+    "invite_max_uses": {
+      "type": "number",
+      "default": 0,
+      "description": "Max uses for the invite code (0 = unlimited)"
+    },
+    "invite_uses": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times the invite code has been used"
+    },
     "marketplace_public": {
       "type": "boolean",
       "default": false

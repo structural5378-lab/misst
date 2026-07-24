@@ -34,8 +34,10 @@ export default function MistProtectedRoute({ unauthenticatedElement }) {
     return unauthenticatedElement || <Navigate to="/login" replace />;
   }
 
-  // Mandatory community onboarding: users with no community are sent to onboarding.
-  if (!communities || communities.length === 0) {
+  // Mandatory community onboarding: users with no community are sent to onboarding,
+  // unless they explicitly skipped it (limited access mode).
+  const skipped = localStorage.getItem("onboarding_skipped") === "1";
+  if ((!communities || communities.length === 0) && !skipped) {
     return <Navigate to="/onboarding" replace />;
   }
 

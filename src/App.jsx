@@ -110,6 +110,8 @@ import CommunityGallery from '@/pages/community/CommunityGallery';
 import CommunityFiles from '@/pages/community/CommunityFiles';
 import CommunityAdmin from '@/pages/community/CommunityAdmin';
 import CommunityMore from '@/pages/community/CommunityMore';
+import CommunityWelcome from '@/pages/community/CommunityWelcome';
+import CommunityJoinRequests from '@/pages/community/CommunityJoinRequests';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -190,6 +192,8 @@ const AuthenticatedApp = () => {
           <Route path="/c/:slug/gallery" element={<CommunityGallery />} />
           <Route path="/c/:slug/files" element={<CommunityFiles />} />
           <Route path="/c/:slug/admin" element={<CommunityAdmin />} />
+          <Route path="/c/:slug/admin/requests" element={<CommunityJoinRequests />} />
+          <Route path="/c/:slug/welcome" element={<CommunityWelcome />} />
           <Route path="/c/:slug/more" element={<CommunityMore />} />
         </Route>
       </Route>

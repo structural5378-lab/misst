@@ -83,8 +83,11 @@ export default function CreateCommunity() {
       const community = res.data?.community;
 
       if (community?.slug) {
-        // Redirect to the newly created community home page
-        navigate(`/c/${community.slug}`);
+        localStorage.setItem("selected_community_id", community.id);
+        localStorage.setItem("selected_community_name", community.name);
+        localStorage.removeItem("onboarding_skipped");
+        // Send the creator to the welcome screen, then into the community.
+        navigate(`/c/${community.slug}/welcome`);
       } else {
         navigate('/');
       }
