@@ -3,6 +3,7 @@ import { useCommunity } from '@/contexts/CommunityContext';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
+import LicenseBadge from '@/components/profile/LicenseBadge';
 
 const roleBadge = {
   community_owner: { label: 'Owner', color: 'bg-amber-500/20 text-amber-400' },
@@ -68,9 +69,12 @@ export default function CommunityMembers() {
               <p className="text-sm font-medium text-foreground truncate">
                 {member.user_name || 'Unknown'}
               </p>
-              {member.user_callsign && (
-                <p className="text-xs text-muted-foreground">{member.user_callsign}</p>
-              )}
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <LicenseBadge callsign={member.user_callsign} size="sm" showCallsign={false} className="!py-0.5 !px-2" />
+                {member.user_callsign && (
+                  <span className="text-[11px] font-semibold text-primary tracking-wider">{member.user_callsign}</span>
+                )}
+              </div>
             </div>
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.color}`}>
               {badge.label}

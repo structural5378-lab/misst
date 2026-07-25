@@ -11,6 +11,7 @@ import { heroSeed, heroTheme, heroPrompt } from '@/hooks/useHeroArtwork';
 import GroupTag from './GroupTag';
 import BadgeShowcase from './BadgeShowcase';
 import PrestigeStats from './PrestigeStats';
+import LicenseBadge from './LicenseBadge';
 import { getLevelProgress } from '@/components/achievements/LevelBar';
 import { RARITIES } from '@/lib/rarityConfig';
 import { ICON_MAP } from '@/components/achievements/iconMap';
@@ -168,8 +169,10 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {memberSince}</span>
             )}
             <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {club}</span>
-            {stats?.gmrs_license && (
-              <span className="flex items-center gap-1 text-emerald-400 font-medium"><BadgeCheck className="w-3 h-3" /> GMRS</span>
+            {user?.callsign || stats?.gmrs_license ? (
+              <LicenseBadge callsign={user?.callsign} size="sm" showCallsign={false} className="!py-0.5 !px-2" />
+            ) : (
+              <LicenseBadge callsign="" size="sm" showCallsign={false} className="!py-0.5 !px-2" />
             )}
             {stats?.ham_license_class && (
               <span className="flex items-center gap-1 text-violet-400 font-medium"><Award className="w-3 h-3" /> {stats.ham_license_class.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>

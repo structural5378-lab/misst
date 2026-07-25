@@ -4,16 +4,18 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
+import { UserPlus, Mail, Lock, Loader2, Radio } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
+import { normalizeCallsign, isValidGmrsCallsign } from "@/lib/gmrsCallsign";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [callsign, setCallsign] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
@@ -24,6 +26,11 @@ export default function Register() {
     setError("");
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+    const cs = normalizeCallsign(callsign);
+    if (cs && !isValidGmrsCallsign(cs)) {
+      setError("Enter a valid GMRS call sign (letters + numbers, e.g. WSEU790), or leave it blank.");
       return;
     }
     setLoading(true);
@@ -44,6 +51,16 @@ export default function Register() {
       const result = await base44.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
+      }
+      // Persist optional GMRS call sign (and derived license status) on the
+      // freshly-verified account. Best-effort: never block onboarding on failure.
+      const cs = normalizeCallsign(callsign);
+      if (cs) {
+        try {
+          await base44.auth.updateMe({ callsign: cs, license_status: "LICENSED" });
+        } catch {
+          /* user can add it later from the Account Center */
+        }
       }
       // New users land on community onboarding before reaching the dashboard.
       window.location.href = "/onboarding";
@@ -212,6 +229,28 @@ export default function Register() {
               required
             />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="callsign">
+            GMRS Call Sign <span className="text-muted-foreground font-normal">(optional)</span>
+          </Label>
+          <div className="relative">
+            <Radio className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <Input
+              id="callsign"
+              type="text"
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
+              placeholder="Example: WXXX123"
+              value={callsign}
+              onChange={(e) => setCallsign(normalizeCallsign(e.target.value))}
+              className="pl-10 h-12 uppercase tracking-widest font-semibold"
+            />
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Add your FCC GMRS call sign to display a licensed badge. You can always add or change this later.
+          </p>
         </div>
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (

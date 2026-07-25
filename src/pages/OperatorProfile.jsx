@@ -19,6 +19,7 @@ import StatsGrid from "@/components/achievements/StatsGrid";
 import TrophyCase from "@/components/achievements/TrophyCase";
 import BadgeShowcase from "@/components/profile/BadgeShowcase";
 import { deriveGroups, deriveBadges, selectBanner, getAvatarFrame } from "@/lib/profileConfig";
+import { normalizeCallsign, isValidGmrsCallsign, computeLicenseStatus } from "@/lib/gmrsCallsign";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
@@ -98,7 +99,8 @@ export default function OperatorProfile() {
 
   const handleSave = async () => {
     setSaving(true);
-    await updateProfile(form);
+    const cs = normalizeCallsign(form.callsign);
+    await updateProfile({ ...form, callsign: cs, license_status: computeLicenseStatus(cs) });
     setEditing(false);
     setSaving(false);
   };
@@ -210,7 +212,18 @@ export default function OperatorProfile() {
             <h3 className="text-sm font-semibold text-foreground">Edit Profile</h3>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">GMRS Callsign</Label>
-              <Input placeholder="e.g. WSEU790" value={form.callsign || ""} onChange={(e) => setForm((f) => ({ ...f, callsign: e.target.value.toUpperCase() }))} className="h-10 bg-background/50 uppercase" />
+              <Input
+                placeholder="e.g. WSEU790"
+                value={form.callsign || ""}
+                onChange={(e) => setForm((f) => ({ ...f, callsign: normalizeCallsign(e.target.value) }))}
+                className="h-10 bg-background/50 uppercase tracking-widest font-semibold"
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+              {form.callsign && !isValidGmrsCallsign(form.callsign) && (
+                <p className="text-[11px] text-destructive">Enter a valid FCC GMRS call sign (letters + numbers, e.g. WSEU790), or clear it to set status as unlicensed.</p>
+              )}
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Location</Label>

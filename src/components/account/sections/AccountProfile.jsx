@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { SectionCard, Field } from "../ui";
 import AvatarUploader from "../AvatarUploader";
 import BannerUploader from "../BannerUploader";
+import LicenseBadge from "@/components/profile/LicenseBadge";
+import { normalizeCallsign, isValidGmrsCallsign, computeLicenseStatus } from "@/lib/gmrsCallsign";
 import { Pencil, Check, X, MapPin, Link as LinkIcon, Award, Calendar, ShieldCheck } from "lucide-react";
 
 export default function AccountProfile() {
@@ -53,10 +55,12 @@ export default function AccountProfile() {
     if (!usernameOk) return;
     setSaving(true);
     try {
+      const cs = normalizeCallsign(form.callsign);
       await updateProfile({
         username: form.username,
         display_name: form.display_name,
-        callsign: form.callsign,
+        callsign: cs,
+        license_status: computeLicenseStatus(cs),
         bio: form.bio,
         about_me: form.about_me,
         location: form.location,
@@ -99,6 +103,9 @@ export default function AccountProfile() {
               {mistUser.callsign && <Badge variant="secondary" className="text-primary">{mistUser.callsign}</Badge>}
               {user?.email_verified && <ShieldCheck className="w-4 h-4 text-emerald-400" />}
               <Badge variant="outline" className="capitalize">{mistUser.role}</Badge>
+            </div>
+            <div className="mt-2">
+              <LicenseBadge callsign={mistUser.callsign} licenseStatus={mistUser.licenseStatus} size="md" />
             </div>
             {user?.bio && <p className="text-sm text-muted-foreground mt-1">{user.bio}</p>}
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
@@ -151,8 +158,19 @@ export default function AccountProfile() {
               <Field label="Display Name">
                 <Input value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })} />
               </Field>
-              <Field label="GMRS Callsign">
-                <Input value={form.callsign} onChange={(e) => setForm({ ...form, callsign: e.target.value })} />
+              <Field label="GMRS Callsign" hint="Optional · FCC format (e.g. WSEU790)">
+                <Input
+                  value={form.callsign || ""}
+                  onChange={(e) => setForm({ ...form, callsign: normalizeCallsign(e.target.value) })}
+                  placeholder="WSEU790"
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="uppercase tracking-widest font-semibold"
+                />
+                {form.callsign && !isValidGmrsCallsign(form.callsign) && (
+                  <p className="text-xs text-destructive mt-1">Enter a valid FCC GMRS call sign (letters + numbers, e.g. WSEU790), or clear the field.</p>
+                )}
               </Field>
               <Field label="Location (optional)">
                 <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />

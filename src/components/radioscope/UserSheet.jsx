@@ -5,6 +5,7 @@ import {
   isLocationLive, getLocationAgeMs, formatAge, formatSpeed, formatHeading, LOCATION_TTL_MS,
 } from "@/lib/radioScopeLocation";
 import DraggableSheet from "./DraggableSheet";
+import LicenseBadge from "@/components/profile/LicenseBadge";
 
 const STATUS_LABELS = {
   online: "Online", typing: "Typing", away: "Away", idle: "Idle",
@@ -69,6 +70,11 @@ export default function UserSheet({ user, userPosition, repeaters, now = Date.no
             {live ? "LIVE GPS" : "STALE"}
           </span>
         </div>
+        {(user.user_callsign || user.license_status) && (
+          <div className="mt-1.5">
+            <LicenseBadge callsign={user.user_callsign} licenseStatus={user.license_status} size="sm" showCallsign />
+          </div>
+        )}
       </div>
     </div>
   );

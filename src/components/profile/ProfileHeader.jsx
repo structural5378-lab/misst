@@ -3,6 +3,7 @@ import { Shield, BadgeCheck, MapPin, Calendar, Star, Award, MessageSquare, UserP
 import ProfileBanner from "./ProfileBanner";
 import GroupTag from "./GroupTag";
 import HeroArtwork from "./HeroArtwork";
+import LicenseBadge from "./LicenseBadge";
 import { heroSeed, heroTheme, heroPrompt } from "@/hooks/useHeroArtwork";
 
 export default function ProfileHeader({
@@ -46,6 +47,10 @@ export default function ProfileHeader({
               </span>
             )}
           </div>
+        </div>
+
+        <div className="mt-2">
+          <LicenseBadge callsign={callsign} licenseStatus={undefined} size="md" />
         </div>
 
         {groups.length > 0 && (
