@@ -87,6 +87,7 @@ import PlatformAdminMedia from '@/pages/platform/PlatformAdminMedia';
 import PlatformAdminAppBuilder from '@/pages/platform/PlatformAdminAppBuilder';
 import PlatformAdminDeveloper from '@/pages/platform/PlatformAdminDeveloper';
 import PlatformAdminSystem from '@/pages/platform/PlatformAdminSystem';
+import PlatformAdminSecrets from '@/pages/platform/PlatformAdminSecrets';
 import PlatformAdminThemeDiagnostic from '@/pages/platform/PlatformAdminThemeDiagnostic';
 import PlatformAdminReports from '@/pages/platform/PlatformAdminReports';
 import PlatformAdminRepeaters from '@/pages/platform/PlatformAdminRepeaters';
@@ -224,6 +225,7 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/app-builder" element={<PlatformAdminAppBuilder />} />
           <Route path="/platform/admin/developer" element={<PlatformAdminDeveloper />} />
           <Route path="/platform/admin/system" element={<PlatformAdminSystem />} />
+          <Route path="/platform/admin/secrets" element={<PlatformAdminSecrets />} />
           <Route path="/platform/admin/theme-diagnostic" element={<PlatformAdminThemeDiagnostic />} />
           <Route path="/platform/admin/reports" element={<PlatformAdminReports />} />
           <Route path="/platform/admin/repeaters" element={<PlatformAdminRepeaters />} />

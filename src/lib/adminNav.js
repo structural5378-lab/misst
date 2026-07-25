@@ -2,7 +2,7 @@ import {
   LayoutDashboard, BarChart3, Users, ShieldCheck, ClipboardList,
   MessageSquare, MessagesSquare, Mail, RadioTower, Radio, CalendarClock,
   Building2, Image, ShoppingCart, Award, Bell, Palette, LayoutGrid, Server,
-  ShieldAlert, DatabaseBackup, Terminal, LayoutTemplate,
+  ShieldAlert, DatabaseBackup, Terminal, LayoutTemplate, KeyRound,
   Home, User, Settings, CalendarDays,
 } from "lucide-react";
 
@@ -69,6 +69,7 @@ export const adminNavSections = [
       { label: "Security", path: "/platform/admin/audit-log", icon: ShieldAlert, minRole: 2 },
       { label: "Backup & Restore", path: "/platform/admin/backup", icon: DatabaseBackup, minRole: 3 },
       { label: "Developer Tools", path: "/platform/admin/developer", icon: Terminal, minRole: 3 },
+      { label: "Secrets & Config", path: "/platform/admin/secrets", icon: KeyRound, minRole: 3 },
     ],
   },
 ];
