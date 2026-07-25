@@ -4,6 +4,7 @@ import { ArrowLeft, Layers, Crosshair } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from "@tanstack/react-query";
+import RadioScopeStartup from "@/components/radioscope/RadioScopeStartup";
 import RadioScopeMap from "@/components/radioscope/RadioScopeMap";
 import RadioScopeSearch from "@/components/radioscope/RadioScopeSearch";
 import RadioScopeLayers from "@/components/radioscope/RadioScopeLayers";
@@ -117,95 +118,97 @@ export default function RadioScope() {
   const handleRecenter = useCallback(() => setRecenterTrigger((t) => t + 1), []);
 
   return (
-    <div className="fixed inset-0 z-[55] bg-black overflow-hidden" style={{ height: "100dvh" }}>
-      <div className="absolute inset-0 z-0">
-        <RadioScopeMap
-          userPosition={userPosition}
-          repeaters={repeaters}
-          onlineUsers={onlineUsers}
-          activeLayers={activeLayers}
-          activeFilter={activeFilter}
-          searchQuery={searchQuery}
-          tileMode={tileMode}
-          recenterTrigger={recenterTrigger}
-          selectedRepeater={selectedRepeater}
-          selectedUser={selectedUser}
-          onRepeaterClick={setSelectedRepeater}
-          onUserClick={setSelectedUser}
-        />
-      </div>
-
-      {/* Header */}
-      <header
-        className="absolute top-0 left-0 right-0 z-30 flex items-center gap-3 px-4 py-2.5 bg-black/70 backdrop-blur-md border-b border-cyan-500/10"
-        style={{ paddingTop: "calc(0.625rem + env(safe-area-inset-top))" }}
-      >
-        <Link to="/" className="p-2 -m-1 text-cyan-400">
-          <ArrowLeft className="w-6 h-6" />
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-base font-bold text-cyan-300 tracking-wide">RadioScope</h1>
-          <p className="text-[10px] text-cyan-500/70 tracking-widest uppercase">Tactical RF Map</p>
+    <RadioScopeStartup>
+      <div className="fixed inset-0 z-[55] bg-black overflow-hidden" style={{ height: "100dvh" }}>
+        <div className="absolute inset-0 z-0">
+          <RadioScopeMap
+            userPosition={userPosition}
+            repeaters={repeaters}
+            onlineUsers={onlineUsers}
+            activeLayers={activeLayers}
+            activeFilter={activeFilter}
+            searchQuery={searchQuery}
+            tileMode={tileMode}
+            recenterTrigger={recenterTrigger}
+            selectedRepeater={selectedRepeater}
+            selectedUser={selectedUser}
+            onRepeaterClick={setSelectedRepeater}
+            onUserClick={setSelectedUser}
+          />
         </div>
-        <button onClick={() => setShowLayers(true)} className="p-2 text-cyan-400">
-          <Layers className="w-6 h-6" />
+
+        {/* Header */}
+        <header
+          className="absolute top-0 left-0 right-0 z-30 flex items-center gap-3 px-4 py-2.5 bg-black/70 backdrop-blur-md border-b border-cyan-500/10"
+          style={{ paddingTop: "calc(0.625rem + env(safe-area-inset-top))" }}
+        >
+          <Link to="/" className="p-2 -m-1 text-cyan-400">
+            <ArrowLeft className="w-6 h-6" />
+          </Link>
+          <div className="flex-1">
+            <h1 className="text-base font-bold text-cyan-300 tracking-wide">RadioScope</h1>
+            <p className="text-[10px] text-cyan-500/70 tracking-widest uppercase">Tactical RF Map</p>
+          </div>
+          <button onClick={() => setShowLayers(true)} className="p-2 text-cyan-400">
+            <Layers className="w-6 h-6" />
+          </button>
+        </header>
+
+        {/* Search + Filters */}
+        <div className="absolute left-0 right-0 z-20 px-3" style={{ top: "calc(3.5rem + env(safe-area-inset-top))" }}>
+          <RadioScopeSearch
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            activeFilter={activeFilter}
+            onFilterChange={setActiveFilter}
+            repeaters={repeaters}
+            onlineUsers={onlineUsers}
+            onResultClick={(r) => {
+              if (r.type === "repeater") setSelectedRepeater(r);
+              else setSelectedUser(r);
+            }}
+          />
+        </div>
+
+        {/* Recenter button */}
+        <button
+          onClick={handleRecenter}
+          className="absolute right-4 z-20 w-12 h-12 rounded-full bg-black/80 backdrop-blur border border-cyan-500/30 flex items-center justify-center text-cyan-400 active:scale-90 transition-transform"
+          style={{ bottom: "calc(5rem + env(safe-area-inset-bottom))" }}
+        >
+          <Crosshair className="w-6 h-6" />
         </button>
-      </header>
 
-      {/* Search + Filters */}
-      <div className="absolute left-0 right-0 z-20 px-3" style={{ top: "calc(3.5rem + env(safe-area-inset-top))" }}>
-        <RadioScopeSearch
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          activeFilter={activeFilter}
-          onFilterChange={setActiveFilter}
-          repeaters={repeaters}
-          onlineUsers={onlineUsers}
-          onResultClick={(r) => {
-            if (r.type === "repeater") setSelectedRepeater(r);
-            else setSelectedUser(r);
-          }}
-        />
+        {/* Layer panel */}
+        {showLayers && (
+          <RadioScopeLayers
+            activeLayers={activeLayers}
+            onLayerChange={setActiveLayers}
+            tileMode={tileMode}
+            onTileModeChange={setTileMode}
+            onClose={() => setShowLayers(false)}
+          />
+        )}
+
+        {/* Sheets */}
+        {selectedRepeater && (
+          <RepeaterSheet
+            repeater={selectedRepeater}
+            userPosition={userPosition}
+            onlineUsers={onlineUsers}
+            repeaters={repeaters}
+            onClose={() => setSelectedRepeater(null)}
+          />
+        )}
+        {selectedUser && (
+          <UserSheet
+            user={selectedUser}
+            userPosition={userPosition}
+            repeaters={repeaters}
+            onClose={() => setSelectedUser(null)}
+          />
+        )}
       </div>
-
-      {/* Recenter button */}
-      <button
-        onClick={handleRecenter}
-        className="absolute right-4 z-20 w-12 h-12 rounded-full bg-black/80 backdrop-blur border border-cyan-500/30 flex items-center justify-center text-cyan-400 active:scale-90 transition-transform"
-        style={{ bottom: "calc(5rem + env(safe-area-inset-bottom))" }}
-      >
-        <Crosshair className="w-6 h-6" />
-      </button>
-
-      {/* Layer panel */}
-      {showLayers && (
-        <RadioScopeLayers
-          activeLayers={activeLayers}
-          onLayerChange={setActiveLayers}
-          tileMode={tileMode}
-          onTileModeChange={setTileMode}
-          onClose={() => setShowLayers(false)}
-        />
-      )}
-
-      {/* Sheets */}
-      {selectedRepeater && (
-        <RepeaterSheet
-          repeater={selectedRepeater}
-          userPosition={userPosition}
-          onlineUsers={onlineUsers}
-          repeaters={repeaters}
-          onClose={() => setSelectedRepeater(null)}
-        />
-      )}
-      {selectedUser && (
-        <UserSheet
-          user={selectedUser}
-          userPosition={userPosition}
-          repeaters={repeaters}
-          onClose={() => setSelectedUser(null)}
-        />
-      )}
-    </div>
+    </RadioScopeStartup>
   );
 }

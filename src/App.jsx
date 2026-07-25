@@ -55,7 +55,7 @@ import CreateCommunity from '@/pages/CreateCommunity';
 import CommunityOnboarding from '@/pages/CommunityOnboarding';
 import MyCommunities from '@/pages/MyCommunities';
 import OnboardingProtectedRoute from '@/components/OnboardingProtectedRoute';
-const RadioScope = lazy(() => import('@/pages/RadioScope'));
+import RadioScope from '@/pages/RadioScope';
 import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
 import Settings from '@/pages/Settings';
