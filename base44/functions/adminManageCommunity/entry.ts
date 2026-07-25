@@ -103,6 +103,13 @@ Deno.serve(async (req) => {
       const allowed = ['name', 'description', 'category', 'callsign', 'location', 'logo_url', 'banner_url', 'primary_color', 'accent_color', 'visibility', 'primary_repeater', 'frequency', 'pl_tone', 'is_listed'];
       const update = {};
       for (const k of allowed) if (fields && fields[k] !== undefined) update[k] = fields[k];
+      // Numeric columns must never receive an empty string — coerce blanks to null.
+      for (const k of ['frequency', 'location_lat', 'location_lon']) {
+        if (k in update) {
+          if (update[k] === '' || update[k] === null || update[k] === undefined) update[k] = null;
+          else { const n = Number(update[k]); update[k] = Number.isNaN(n) ? null : n; }
+        }
+      }
       const updated = await base44.asServiceRole.entities.Community.update(community_id, update);
       if (fields && fields.join_mode) {
         const s = await base44.asServiceRole.entities.CommunitySettings.filter({ community_id });

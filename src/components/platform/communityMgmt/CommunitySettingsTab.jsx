@@ -16,10 +16,12 @@ export default function CommunitySettingsTab({ community, onChanged }) {
     queryFn: async () => (await base44.entities.CommunitySettings.filter({ community_id: community.id }))?.[0] || {},
   });
   const [f, setF] = useState({});
+  const [initial, setInitial] = useState({});
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    setF({
+    const init = {
       name: community.name || "",
       description: community.description || "",
       category: community.category || "",
@@ -34,18 +36,50 @@ export default function CommunitySettingsTab({ community, onChanged }) {
       frequency: community.frequency ?? "",
       pl_tone: community.pl_tone || "",
       primary_repeater: community.primary_repeater || "",
-    });
+    };
+    setF(init);
+    setInitial(init);
+    setError("");
   }, [community, settings]);
 
   const set = (k, v) => setF((p) => ({ ...p, [k]: v }));
 
   const save = async () => {
+    setError("");
+    // Send only the fields that actually changed — preserves existing values
+    // for anything the user didn't touch, and never pushes invalid empty strings
+    // into numeric columns.
+    const numericFields = ["frequency"];
+    const payload = {};
+    for (const k of Object.keys(f)) {
+      if (f[k] === initial[k]) continue;
+      let v = f[k];
+      if (numericFields.includes(k)) {
+        if (v === "" || v === null || v === undefined) {
+          v = null;
+        } else {
+          const n = Number(v);
+          if (Number.isNaN(n)) {
+            setError("Please enter a valid frequency if you would like to specify one.");
+            return;
+          }
+          v = n;
+        }
+      }
+      payload[k] = v;
+    }
+    if (Object.keys(payload).length === 0) return; // nothing changed — no-op, no error
     setSaving(true);
     try {
-      await base44.functions.invoke("adminManageCommunity", { action: "update", community_id: community.id, fields: f });
+      await base44.functions.invoke("adminManageCommunity", { action: "update", community_id: community.id, fields: payload });
       onChanged();
     } catch (e) {
-      window.alert(e?.response?.data?.error || e?.message || "Save failed");
+      const msg = e?.response?.data?.error || e?.message || "";
+      if (/valid number|unable to parse/i.test(msg)) {
+        setError("Please enter a valid frequency if you would like to specify one.");
+      } else {
+        setError(msg || "Could not save changes. Please try again.");
+      }
     }
     setSaving(false);
   };
@@ -116,11 +150,14 @@ export default function CommunitySettingsTab({ community, onChanged }) {
           <div><Label>Location</Label><Input value={f.location || ""} onChange={(e) => set("location", e.target.value)} /></div>
           <div><Label>Callsign</Label><Input value={f.callsign || ""} onChange={(e) => set("callsign", e.target.value)} /></div>
           <div><Label>Primary Repeater</Label><Input value={f.primary_repeater || ""} onChange={(e) => set("primary_repeater", e.target.value)} /></div>
-          <div><Label>Frequency (MHz)</Label><Input type="number" step="0.001" value={f.frequency ?? ""} onChange={(e) => set("frequency", e.target.value ? parseFloat(e.target.value) : "")} /></div>
+          <div><Label>Frequency (MHz)</Label><Input type="number" step="0.001" value={f.frequency ?? ""} onChange={(e) => set("frequency", e.target.value)} placeholder="Optional" /></div>
           <div><Label>PL Tone</Label><Input value={f.pl_tone || ""} onChange={(e) => set("pl_tone", e.target.value)} /></div>
         </div>
       </div>
 
+      {error && (
+        <div className="rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm px-3 py-2">{error}</div>
+      )}
       <div className="flex justify-end">
         <Button onClick={save} disabled={saving}>
           {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving…</> : <><Save className="w-4 h-4" />Save Changes</>}
