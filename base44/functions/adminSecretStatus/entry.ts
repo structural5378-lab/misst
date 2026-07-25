@@ -5,16 +5,11 @@ import { getServiceAccount, getFcmAccessToken } from "../../shared/fcm.ts";
 // exposing values; test performs a live, non-destructive check of each
 // integration. Admin-only (auth.me + role admin), 403 otherwise.
 const SECRETS = [
-  { key: "PUSHALERT_API_KEY", label: "PushAlert (Web Push)", group: "push", docs: "https://pushalert.co/" },
   { key: "WEATHER_API_KEY", label: "Weather API (OpenWeather)", group: "weather", docs: "https://openweathermap.org/api" },
   { key: "MYBB_BOT_PASSWORD", label: "MyBB Bridge Bot Password", group: "forum", docs: "" },
   { key: "MIST_BRIDGE_SECRET", label: "MIST Bridge Shared Secret", group: "forum", docs: "" },
-  {
-    key: "FCM_SERVICE_ACCOUNT_JSON",
-    label: "Firebase Service Account (FCM)",
-    group: "firebase",
-    docs: "https://firebase.google.com/docs/cloud-messaging/send-message#authorize-send-requests",
-  },
+  { key: "FCM_SERVICE_ACCOUNT_JSON", label: "Firebase Service Account (FCM)", group: "firebase", docs: "https://firebase.google.com/docs/cloud-messaging/send-message#authorize-send-requests" },
+  { key: "FCM_WEB_VAPID_KEY", label: "Firebase Web Push VAPID Key", group: "firebase", docs: "https://firebase.google.com/docs/cloud-messaging/js/client#configure_web_credentials" },
 ];
 
 const BRIDGE_URL = "https://insomniacsgmrs.com/mist-api.php";
@@ -47,7 +42,6 @@ Deno.serve(async (req) => {
 
     if (action === "test") {
       const results = await Promise.allSettled([
-        testPushAlert(),
         testWeather(),
         testForum(),
         testFirebase(),
@@ -58,10 +52,9 @@ Deno.serve(async (req) => {
           : { ok: false, message: (r.reason && r.reason.message) || `${name} test failed` };
       return Response.json({
         services: {
-          push: unwrap(results[0], "PushAlert"),
-          weather: unwrap(results[1], "Weather"),
-          forum: unwrap(results[2], "Bridge"),
-          firebase: unwrap(results[3], "FCM"),
+          weather: unwrap(results[0], "Weather"),
+          forum: unwrap(results[1], "Bridge"),
+          firebase: unwrap(results[2], "FCM"),
         },
       });
     }
@@ -71,33 +64,6 @@ Deno.serve(async (req) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
-
-async function testPushAlert() {
-  const apiKey = Deno.env.get("PUSHALERT_API_KEY");
-  if (!apiKey) return { ok: false, message: "Not configured" };
-  const t0 = Date.now();
-  try {
-    // Read-only segments list (REST API v2). Auth via api_key header, same as send.
-    const res = await fetch("https://api.pushalert.co/rest/v2/web-push/segments", {
-      headers: { Authorization: `api_key=${apiKey}` },
-    });
-    const data = await res.json().catch(() => ({}));
-    if (res.status === 401 || res.status === 403) {
-      return { ok: false, message: "Invalid API key", latencyMs: Date.now() - t0 };
-    }
-    const ok = res.ok;
-    const segCount = Array.isArray(data.segments) ? data.segments.length : null;
-    return {
-      ok,
-      message: ok
-        ? `Reachable — ${segCount != null ? segCount + " segments" : "ok"}`
-        : data.error || `HTTP ${res.status}`,
-      latencyMs: Date.now() - t0,
-    };
-  } catch (e) {
-    return { ok: false, message: e.message || "Unreachable", latencyMs: Date.now() - t0 };
-  }
-}
 
 async function testWeather() {
   const apiKey = Deno.env.get("WEATHER_API_KEY");
@@ -158,5 +124,10 @@ async function testFirebase() {
   if (!sa) return { ok: false, message: "Service account missing or invalid", latencyMs: Date.now() - t0 };
   const r = await getFcmAccessToken();
   if (!r.ok) return { ok: false, message: r.error, latencyMs: Date.now() - t0 };
-  return { ok: true, message: `Token minted — project ${r.projectId}`, latencyMs: Date.now() - t0 };
+  const vapid = Deno.env.get("FCM_WEB_VAPID_KEY");
+  return {
+    ok: true,
+    message: `Token minted — project ${r.projectId}${vapid ? " (VAPID set)" : " (VAPID missing)"}`,
+    latencyMs: Date.now() - t0,
+  };
 }

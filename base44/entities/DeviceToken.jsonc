@@ -1,0 +1,81 @@
+{
+  "name": "DeviceToken",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner user ID (UUID)"
+    },
+    "token": {
+      "type": "string",
+      "description": "FCM registration token"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "web",
+        "android",
+        "ios"
+      ],
+      "default": "web"
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "Browser/device user agent at registration"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time this token was confirmed (subscription refresh)"
+    }
+  },
+  "required": [
+    "user_id",
+    "token"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

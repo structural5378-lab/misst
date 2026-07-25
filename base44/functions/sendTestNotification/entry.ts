@@ -1,27 +1,42 @@
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
+import { sendFcmMulticast } from "../../shared/fcm.ts";
+
+const ICON = "https://insomniacsgmrs.com/uploads/mist-icon.png";
+
+// Sends a test FCM push to the calling user's own registered device tokens.
+// Requires authentication so the test only reaches the admin's own devices.
 Deno.serve(async (req) => {
   try {
-    const apiKey = Deno.env.get("PUSHALERT_API_KEY");
-    if (!apiKey) return Response.json({ error: "No PushAlert API key" }, { status: 500 });
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me().catch(() => null);
+    if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const paRes = await fetch("https://api.pushalert.co/rest/v1/send", {
-      method: "POST",
-      headers: {
-        "Authorization": `api_key=${apiKey}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        title: "🔔 Test Notification",
-        message: "Notifications are working! INSOMNIACSGMRS.COM",
-        url: "https://mist.insomniacsgmrs.com",
-        icon: "https://insomniacsgmrs.com/uploads/mist-icon.png",
-        sound: "https://insomniacsgmrs.com/uploads/notification.mp3",
-      }).toString(),
+    const tokens = await base44.asServiceRole.entities.DeviceToken
+      .filter({ user_id: user.id, is_active: true }, "-created_date", 20)
+      .catch(() => []);
+    const tokenList = (tokens || []).map((t) => t.token).filter(Boolean);
+
+    if (tokenList.length === 0) {
+      return Response.json({
+        ok: false,
+        error: "No registered device tokens for your account. Subscribe on this device first.",
+      });
+    }
+
+    const res = await sendFcmMulticast(tokenList, {
+      notification: { title: "🔔 Test Notification", body: "FCM push is working! INSOMNIACSGMRS.COM" },
+      data: { link: "/", type: "system" },
+      android: { notification: { icon: ICON, sound: "default" } },
+      apns: { payload: { aps: { sound: "default" } } },
+      webpush: { notification: { icon: ICON } },
     });
 
-    const paData = await paRes.text();
-    console.log("PushAlert test response:", paRes.status, paData);
-
-    return Response.json({ ok: paRes.ok, status: paRes.status, detail: paData });
+    return Response.json({
+      ok: res.sent > 0,
+      sent: res.sent,
+      failed: res.failed,
+      errors: res.errors,
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

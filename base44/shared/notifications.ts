@@ -1,13 +1,14 @@
-// MIST Notification Engine — Phase 1 (in-app delivery).
+// MIST Notification Engine — in-app + FCM push delivery.
 //
-// This module is the single source of truth for notification logic. The `notify`
-// HTTP service and any other backend function import `dispatchNotifications` to
-// emit events. Chat, community, net, and badge modules never implement their own
-// notification logic — they route through here.
+// Single source of truth for notification logic. The `notify` HTTP service and
+// any backend function import `dispatchNotifications`. Chat, community, net,
+// and badge modules never implement their own push logic — they route here.
 //
-// Delivery is pluggable: today `deliver()` is an in-app no-op (the DB record IS
-// the in-app delivery). Phase 2 will add FCM push, email, and SMS inside
-// `deliver()` without changing any emitter.
+// Delivery: the DB record IS the in-app notification; `deliver()` additionally
+// pushes via Firebase Cloud Messaging (FCM HTTP v1) to the recipient's
+// registered device tokens. Email/SMS channels can be added later in deliver().
+
+import { sendFcmMulticast } from "./fcm.ts";
 
 export const NOTIF_TYPES = [
   "direct_message",
@@ -32,17 +33,16 @@ function parseJSON(value, fallback) {
 }
 
 // Resolve a user's per-type preference from the parsed notification_preferences object.
-// Supports both `false` (disable all channels) and `{ push: false, inapp: true }`.
 export function isTypeEnabled(prefs, type) {
   if (!prefs || typeof prefs !== "object") return true;
   const v = prefs[type];
   if (v === false) return false;
   if (v === true) return true;
   if (typeof v === "object" && v !== null) {
-    if (v.inapp === false) return false;
+    if (v.inapp === false && v.push === false) return false;
     return true;
   }
-  return true; // default: enabled
+  return true;
 }
 
 // Resolve a deep-link route from the event type + related object + metadata.
@@ -75,8 +75,7 @@ export function resolveLink(event) {
   }
 }
 
-// Fetch user records for a set of ids (for preference resolution + name lookup).
-// Small sets: parallel get. Large sets: batched list + in-memory match.
+// Fetch user records for a set of ids (preference resolution + name lookup).
 async function fetchUsers(base44, ids) {
   const set = new Set(ids.filter(Boolean));
   if (set.size === 0) return [];
@@ -104,7 +103,6 @@ async function fetchUsers(base44, ids) {
 }
 
 // Resolve the recipient list for an event.
-// Explicit recipient_ids win; otherwise fan out to all active community members.
 async function resolveRecipients(base44, event) {
   if (Array.isArray(event.recipient_ids) && event.recipient_ids.length > 0) {
     return [...new Set(event.recipient_ids.map(String).filter(Boolean))];
@@ -121,28 +119,63 @@ async function resolveRecipients(base44, event) {
   return [];
 }
 
-// Pluggable delivery hook. Phase 1: in-app only (record already created).
-// Phase 2 will route to FCM push / email / SMS here based on prefs + channels.
-// We return per-channel delivery metadata that gets merged into the record.
-async function deliver(record, recipient) {
-  // No-op for in-app. Future: const channels = resolveChannels(recipient, record.type);
+// Fetch active FCM device tokens for the recipients, grouped by user_id.
+// Runs as service role (bypasses RLS) so it can read all users' tokens.
+async function fetchTokensByUser(base44, recipientIds) {
+  const idSet = new Set(recipientIds.filter(Boolean).map(String));
+  const map = new Map();
+  if (idSet.size === 0) return map;
+  let all = [];
+  try {
+    all = await base44.asServiceRole.entities.DeviceToken.filter(
+      { is_active: true },
+      "-created_date",
+      2000
+    );
+  } catch {
+    all = [];
+  }
+  if (!Array.isArray(all)) all = [];
+  for (const t of all) {
+    if (!t.token || !t.user_id) continue;
+    const uid = String(t.user_id);
+    if (!idSet.has(uid)) continue;
+    if (!map.has(uid)) map.set(uid, []);
+    map.get(uid).push(t.token);
+  }
+  return map;
+}
+
+// Pluggable delivery: in-app (record is the delivery) + FCM push to the
+// recipient's device tokens. Returns per-channel state merged into metadata.
+async function deliver(base44, record, tokensByUser) {
+  const tokens = tokensByUser.get(String(record.recipient_id)) || [];
+  if (tokens.length === 0) {
+    return {
+      delivered_at: record.delivered_at,
+      delivery: { inapp: "delivered", push: "skipped" },
+    };
+  }
+  const payload = {
+    notification: { title: record.title || "MIST", body: record.message || "" },
+    data: {
+      link: String(record.link || "/notifications"),
+      type: String(record.type || "system"),
+      community_id: String(record.community_id || ""),
+    },
+    android: { notification: { icon: "https://insomniacsgmrs.com/uploads/mist-icon.png", sound: "default" } },
+    apns: { payload: { aps: { sound: "default" } } },
+    webpush: { notification: { icon: "https://insomniacsgmrs.com/uploads/mist-icon.png" } },
+  };
+  const res = await sendFcmMulticast(tokens, payload);
+  const push = res.failed === 0 ? "sent" : res.sent > 0 ? "partial" : "failed";
   return {
     delivered_at: record.delivered_at,
-    delivery: { inapp: "delivered", push: "pending", email: "pending", sms: "pending" },
+    delivery: { inapp: "delivered", push, pushSent: res.sent, pushTotal: tokens.length },
   };
 }
 
 // Main entry: dispatch a notification event to all eligible recipients.
-//
-// event: {
-//   type, title, message,
-//   sender_id?, sender_name?,
-//   recipient_ids?: string[],   // explicit recipients
-//   community_id?: string,      // OR fan out to active members of this community
-//   related_object_id?, related_object_type?,
-//   link?, metadata?,            // metadata may be an object or JSON string
-//   skip_sender?: boolean        // exclude sender from community fanout
-// }
 export async function dispatchNotifications(base44, event) {
   if (!NOTIF_TYPES.includes(event.type)) {
     throw new Error(`Unknown notification type: ${event.type}`);
@@ -153,6 +186,7 @@ export async function dispatchNotifications(base44, event) {
 
   const users = await fetchUsers(base44, recipients);
   const userMap = new Map(users.map((u) => [u.id, u]));
+  const tokensByUser = await fetchTokensByUser(base44, recipients);
 
   const senderId = event.sender_id ? String(event.sender_id) : "";
   const now = new Date().toISOString();
@@ -185,8 +219,7 @@ export async function dispatchNotifications(base44, event) {
       metadata: "",
     };
 
-    // Pluggable delivery — record the per-channel state for future phases.
-    const delivery = await deliver(base, recipient);
+    const delivery = await deliver(base44, base, tokensByUser);
     base.metadata = JSON.stringify({ ...baseMeta, link, delivery: delivery.delivery });
     base.delivered_at = delivery.delivered_at;
 

@@ -20,23 +20,12 @@ import {
   Loader2,
   FlaskConical,
   Send,
-  Bell,
   Cloud,
   Radio,
   Zap,
 } from "lucide-react";
 
 const INSTRUCTIONS = {
-  PUSHALERT_API_KEY: {
-    title: "PushAlert API Key",
-    steps: [
-      "Sign in to your PushAlert dashboard (pushalert.co).",
-      "Go to Settings → API.",
-      "Copy your REST API key.",
-      "Ask Base44 to update the PUSHALERT_API_KEY secret and paste it in the secure form.",
-    ],
-    docs: "https://pushalert.co/",
-  },
   WEATHER_API_KEY: {
     title: "Weather API Key",
     steps: [
@@ -70,9 +59,19 @@ const INSTRUCTIONS = {
       "Open Firebase Console → Project settings → Service accounts.",
       'Click "Generate new private key" and download the JSON file.',
       "Ask Base44 to replace FCM_SERVICE_ACCOUNT_JSON and paste the entire file contents into the secure form.",
-      "Optionally also paste your Web app config (apiKey, projectId, messagingSenderId, appId) in chat for the client/PWA side.",
+      "This is used server-side to mint FCM OAuth2 tokens for push delivery.",
     ],
     docs: "https://firebase.google.com/docs/cloud-messaging/send-message#authorize-send-requests",
+  },
+  FCM_WEB_VAPID_KEY: {
+    title: "Firebase Web Push VAPID Key",
+    steps: [
+      "Open Firebase Console → Project settings → Cloud Messaging → Web configuration.",
+      "Generate a Web Push certificate and copy the public key.",
+      "Ask Base44 to update FCM_WEB_VAPID_KEY and paste the public key in the secure form.",
+      "The public key is safe to expose to the browser; it is used to subscribe devices via the Push API.",
+    ],
+    docs: "https://firebase.google.com/docs/cloud-messaging/js/client#configure_web_credentials",
   },
 };
 
@@ -97,6 +96,7 @@ export default function PlatformAdminSecrets() {
   const byKey = Object.fromEntries(items.map((i) => [i.key, i]));
   const ready = (key) => byKey[key]?.configured;
   const fcmValid = byKey["FCM_SERVICE_ACCOUNT_JSON"]?.valid;
+  const vapidReady = ready("FCM_WEB_VAPID_KEY");
 
   const forumReady = ready("MYBB_BOT_PASSWORD") && ready("MIST_BRIDGE_SECRET");
   const forumStatus = forumReady
@@ -107,11 +107,16 @@ export default function PlatformAdminSecrets() {
     ? "Missing Bridge Secret"
     : "Missing Credentials";
 
+  const fcmStatus = !fcmValid
+    ? "Missing Service Account"
+    : !vapidReady
+    ? "Missing VAPID Key"
+    : "Ready";
+
   const readiness = [
-    { label: "Push Notifications", icon: Bell, status: ready("PUSHALERT_API_KEY") ? "Ready" : "Missing API Key" },
+    { label: "Push (FCM)", icon: Zap, status: fcmStatus },
     { label: "Weather", icon: Cloud, status: ready("WEATHER_API_KEY") ? "Ready" : "Missing API Key" },
     { label: "Forum Bridge", icon: Radio, status: forumStatus },
-    { label: "Firebase", icon: Zap, status: fcmValid ? "Ready" : "Missing Service Account" },
   ];
 
   async function runTests() {
@@ -132,7 +137,7 @@ export default function PlatformAdminSecrets() {
   return (
     <AdminSection
       title="Secrets & Configuration"
-      description="Detect, validate, and test platform integrations. Secret values are never exposed."
+      description="Detect, validate, and test platform integrations. Push notifications use Firebase Cloud Messaging (FCM). Secret values are never exposed."
       action={
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
@@ -146,7 +151,7 @@ export default function PlatformAdminSecrets() {
       }
     >
       {/* Readiness summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
         {readiness.map((r) => {
           const ok = r.status === "Ready";
           const Icon = r.icon;
@@ -206,6 +211,12 @@ export default function PlatformAdminSecrets() {
                       </a>
                     </p>
                   )}
+                  {item.key === "FCM_WEB_VAPID_KEY" && (
+                    <p className="text-[11px] text-muted-foreground mt-1.5">
+                      Public VAPID key from Firebase Console → Cloud Messaging → Web configuration. Used by the browser
+                      to subscribe to push. Safe to expose to the client.
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-col items-end gap-1.5">
                   <span
@@ -233,7 +244,7 @@ export default function PlatformAdminSecrets() {
           {testResults.error ? (
             <p className="text-sm text-destructive">{testResults.error}</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {Object.entries(testResults).map(([k, v]) => (
                 <div key={k} className="rounded-xl border border-border bg-secondary/20 p-3">
                   <div className="flex items-center gap-2">
