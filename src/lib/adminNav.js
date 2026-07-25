@@ -3,6 +3,7 @@ import {
   MessageSquare, MessagesSquare, Mail, RadioTower, Radio, CalendarClock,
   Building2, Image, ShoppingCart, Award, Bell, Palette, LayoutGrid, Server,
   ShieldAlert, DatabaseBackup, Terminal, LayoutTemplate,
+  Home, User, Settings, CalendarDays,
 } from "lucide-react";
 
 // Role levels: platform_owner=3, platform_admin=2, platform_support=1
@@ -71,3 +72,31 @@ export const adminNavSections = [
     ],
   },
 ];
+
+/**
+ * Application Navigation — links into the main MISST app (not the admin
+ * console). `slug` is the active community slug (optional). When present,
+ * community-scoped destinations point inside /c/:slug.
+ */
+export function getAppNavItems(slug) {
+  const c = slug ? `/c/${slug}` : null;
+  const items = [
+    { label: "Return to Dashboard", path: "/", icon: LayoutDashboard },
+  ];
+  if (c) items.push({ label: "Community Home", path: c, icon: Home });
+  items.push({ label: "My Communities", path: "/my-communities", icon: Users });
+  items.push({ label: "RadioScope", path: "/radioscope", icon: Radio });
+  items.push({ label: "Messages", path: "/messages", icon: Mail });
+  if (c) items.push({ label: "Events", path: `${c}/events`, icon: CalendarDays });
+  items.push({ label: "Members", path: "/members", icon: Users });
+  items.push({ label: "Profile", path: "/profile", icon: User });
+  items.push({ label: "Settings", path: "/settings", icon: Settings });
+  return items;
+}
+
+/**
+ * Flattened list of every admin destination (for the command palette).
+ */
+export function getAllAdminDestinations() {
+  return adminNavSections.flatMap((s) => s.items.map((i) => ({ label: i.label, path: i.path, icon: i.icon, group: s.title })));
+}

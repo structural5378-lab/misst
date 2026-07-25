@@ -12,17 +12,24 @@ export default function AdminBreadcrumb() {
 
   if (path === "/platform/admin") {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+        <Link to="/" className="hover:text-foreground transition-colors">MISST</Link>
+        <ChevronRight className="w-3 h-3" />
         <Shield className="w-3.5 h-3.5 text-primary" />
-        <span className="text-foreground font-medium">Dashboard</span>
+        <span className="text-foreground font-medium">Administration</span>
       </div>
     );
   }
 
   const label = labelMap[path];
   return (
-    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-      <Link to="/platform/admin" className="hover:text-foreground">Dashboard</Link>
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+      <Link to="/" className="hover:text-foreground transition-colors">MISST</Link>
+      <ChevronRight className="w-3 h-3" />
+      <Link to="/platform/admin" className="hover:text-foreground transition-colors flex items-center gap-1">
+        <Shield className="w-3.5 h-3.5 text-primary" />
+        Administration
+      </Link>
       <ChevronRight className="w-3 h-3" />
       <span className="text-foreground font-medium">{label || "Section"}</span>
     </div>

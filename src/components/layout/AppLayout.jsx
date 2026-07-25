@@ -53,6 +53,14 @@ export default function AppLayout() {
   const location = useLocation();
   const isDesktop = useMediaQuery("(min-width: 1280px)");
   const p = location.pathname;
+
+  // Remember the last app page the user viewed (excludes admin console) so the
+  // Admin Console's "Return to MISST" can drop them back where they were.
+  useEffect(() => {
+    if (!p.startsWith("/platform/admin") && !p.startsWith("/login") && !p.startsWith("/register")) {
+      try { sessionStorage.setItem("mist_last_app_path", p); } catch { /* ignore */ }
+    }
+  }, [p]);
   const isFullBleedDesktop =
     isDesktop &&
     (p === "/community-forum" || p.startsWith("/community/thread/") || p === "/community/new" || p === "/account");

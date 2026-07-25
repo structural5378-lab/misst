@@ -53,6 +53,7 @@ import TestNotifications from '@/pages/TestNotifications.jsx';
 import Shopping from '@/pages/Shopping';
 import CreateCommunity from '@/pages/CreateCommunity';
 import CommunityOnboarding from '@/pages/CommunityOnboarding';
+import MyCommunities from '@/pages/MyCommunities';
 import OnboardingProtectedRoute from '@/components/OnboardingProtectedRoute';
 const RadioScope = lazy(() => import('@/pages/RadioScope'));
 import Achievements from '@/pages/Achievements';
@@ -174,6 +175,7 @@ const AuthenticatedApp = () => {
 
         <Route path="/test-notifications" element={<TestNotifications />} />
         <Route path="/shopping" element={<Shopping />} />
+        <Route path="/my-communities" element={<MyCommunities />} />
         <Route path="/radioscope" element={<RadioScope />} />
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
