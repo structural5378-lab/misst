@@ -1,0 +1,108 @@
+{
+  "name": "Report",
+  "type": "object",
+  "properties": {
+    "reporter_id": {
+      "type": "string",
+      "description": "User ID who submitted the report"
+    },
+    "reporter_name": {
+      "type": "string"
+    },
+    "reporter_email": {
+      "type": "string"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "thread",
+        "post",
+        "chat_message",
+        "dm",
+        "member",
+        "community",
+        "repeater",
+        "marketplace",
+        "gallery",
+        "other"
+      ],
+      "default": "thread",
+      "description": "What is being reported"
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "target_name": {
+      "type": "string",
+      "description": "Denormalized title / content snippet for display"
+    },
+    "target_owner_id": {
+      "type": "string"
+    },
+    "target_owner_name": {
+      "type": "string"
+    },
+    "community_id": {
+      "type": "string"
+    },
+    "community_name": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "spam",
+        "harassment",
+        "offensive",
+        "misinformation",
+        "illegal",
+        "safety",
+        "other"
+      ],
+      "default": "spam"
+    },
+    "details": {
+      "type": "string",
+      "description": "Free-text description from the reporter"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "pending"
+    },
+    "resolution": {
+      "type": "string",
+      "enum": [
+        "none",
+        "warned",
+        "removed",
+        "banned",
+        "no_action"
+      ],
+      "default": "none"
+    },
+    "resolved_by": {
+      "type": "string"
+    },
+    "resolved_by_email": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "admin_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "reporter_id",
+    "target_type",
+    "target_id",
+    "reason"
+  ]
+}

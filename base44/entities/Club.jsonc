@@ -1,0 +1,54 @@
+{
+  "name": "Club",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Club name"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "description": "Club category / interest"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Parent community this club belongs to"
+    },
+    "community_name": {
+      "type": "string"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "User ID of the club owner / admin"
+    },
+    "owner_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "pending",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0
+    },
+    "logo_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
