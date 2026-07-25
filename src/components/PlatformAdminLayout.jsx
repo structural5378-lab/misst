@@ -9,6 +9,7 @@ import AdminBreadcrumb from "@/components/platform/AdminBreadcrumb";
 import AdminGlobalSearch from "@/components/platform/AdminGlobalSearch";
 import AdminNotificationBell from "@/components/platform/AdminNotificationBell";
 import AdminQuickAction from "@/components/platform/AdminQuickAction";
+import EnvironmentBadge from "@/components/platform/EnvironmentBadge";
 
 export default function PlatformAdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,6 +49,7 @@ export default function PlatformAdminLayout() {
           </div>
           <AdminGlobalSearch />
           <div className="flex items-center gap-2 shrink-0">
+            <EnvironmentBadge />
             <AdminNotificationBell />
             <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Exit →</Link>
             <button onClick={() => { signOut(); window.location.href = "/login"; }} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors">

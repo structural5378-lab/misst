@@ -4,11 +4,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  Rocket, Users, Search, MapPin, Radio, Globe, Lock, Loader2, ArrowRight, Sparkles, SkipForward, SlidersHorizontal,
+  Rocket, Users, Search, MapPin, Radio, Globe, Lock, Loader2, ArrowRight, Sparkles, SkipForward, SlidersHorizontal, Database,
 } from "lucide-react";
 import CommunityDirectoryCard from "@/components/community/onboarding/CommunityDirectoryCard";
 import JoinRequestSheet from "@/components/community/onboarding/JoinRequestSheet";
 import { useUserCommunities } from "@/hooks/useUserCommunities";
+import { useAppEnvironment } from "@/hooks/useAppEnvironment";
 import { CATEGORIES } from "@/components/community/wizard/StepBasics";
 
 const SORTS = [
@@ -40,11 +41,16 @@ export default function CommunityOnboarding() {
   const [busyId, setBusyId] = useState(null);
   const [requestCommunity, setRequestCommunity] = useState(null);
 
-  const { data: communities = [], isLoading, isError } = useQuery({
+  const { data: env } = useAppEnvironment();
+  const isTest = env?.isTest;
+
+  const { data: communities = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["public-communities"],
     queryFn: async () => {
       const res = await base44.functions.invoke("listCommunities", {});
-      return res.data?.communities || [];
+      const list = res.data?.communities || [];
+      console.log("[CommunityDirectory] listCommunities returned", list.length, "communities (env:", env?.environment ?? "unknown", ")");
+      return list;
     },
     staleTime: 60 * 1000,
   });
@@ -277,9 +283,12 @@ export default function CommunityOnboarding() {
             </div>
           ) : isError ? (
             <div className="text-center py-12 rounded-2xl bg-card/40 border border-white/[0.06]">
-              <p className="text-sm text-muted-foreground mb-3">We couldn't load communities. Please try again.</p>
+              <p className="text-sm text-muted-foreground mb-1">We couldn't load communities. Please try again.</p>
+              {isTest && error?.message && (
+                <p className="text-[11px] text-destructive/80 mb-3 font-mono break-all px-4">{error.message}</p>
+              )}
               <button
-                onClick={() => qc.invalidateQueries({ queryKey: ["public-communities"] })}
+                onClick={() => refetch()}
                 className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90"
               >
                 Retry
@@ -287,10 +296,35 @@ export default function CommunityOnboarding() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 rounded-2xl bg-card/40 border border-white/[0.06]">
-              <Radio className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
-                {query || category ? "No communities match your filters." : "No communities are listed yet. Be the first — create one!"}
-              </p>
+              {query || category ? (
+                <>
+                  <Radio className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No communities match your filters.</p>
+                </>
+              ) : isTest ? (
+                <>
+                  <Database className="w-8 h-8 text-amber-400 mx-auto mb-3" />
+                  <h3 className="text-sm font-bold text-foreground mb-1">No Communities Found</h3>
+                  <p className="text-xs text-muted-foreground mb-4 max-w-xs mx-auto">
+                    You are currently connected to the <span className="text-amber-400 font-semibold">Test</span> database. No communities have been created yet.
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <Link to="/community/create" className="px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90">Create Test Community</Link>
+                    <button
+                      onClick={() => toast({ title: "Switch to Production", description: "Turn off Test mode in the Base44 builder dashboard to use production data." })}
+                      className="px-3 py-2 rounded-xl bg-secondary border border-border text-foreground text-xs font-semibold hover:border-primary/40"
+                    >
+                      Switch to Production
+                    </button>
+                    <button onClick={() => refetch()} className="px-3 py-2 rounded-xl bg-card border border-border text-muted-foreground text-xs font-semibold hover:text-foreground">Refresh</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Radio className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No communities are listed yet. Be the first — create one!</p>
+                </>
+              )}
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">

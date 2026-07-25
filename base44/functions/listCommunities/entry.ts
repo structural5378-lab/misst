@@ -20,6 +20,7 @@ Deno.serve(async (req) => {
       100
     );
     communities = communities || [];
+    console.log('[listCommunities] x-data-env=', req.headers.get('x-data-env'), 'returned=', communities.length);
 
     if (q && q.trim()) {
       const ql = q.trim().toLowerCase();
@@ -52,9 +53,11 @@ Deno.serve(async (req) => {
         primary_color: c.primary_color,
         accent_color: c.accent_color,
         created_date: c.created_date,
+        updated_at: c.updated_date,
       })),
     });
   } catch (error) {
+    console.error('[listCommunities] error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
