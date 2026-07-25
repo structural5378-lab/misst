@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useMistUser } from "@/hooks/useMistUser";
+import { useMembersSearch } from "@/hooks/useMembersSearch";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
@@ -10,13 +11,6 @@ import { Radio, Search, Loader2, X, Check, MapPin, Signal, Navigation } from "lu
 import { notifyAccepted, notifyDeclined } from "@/components/simplex/SimplexNotify";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
-const FORUM_BASE = "https://insomniacsgmrs.com/";
-
-function normalizeAvatar(avatar) {
-  if (!avatar) return null;
-  if (avatar.startsWith("http")) return avatar;
-  return FORUM_BASE + avatar.replace(/^\//, "");
-}
 
 function makeIcon(color = "#8b5cf6") {
   return L.divIcon({
@@ -57,19 +51,18 @@ function haversineKm(lat1, lon1, lat2, lon2) {
 
 // ─── Step 1: Pick a user ──────────────────────────────────────────────────────
 function UserPicker({ onSelect }) {
-  const [search, setSearch] = useState("");
-  const { data: members = [], isLoading } = useQuery({
-    queryKey: ["forum-members"],
-    queryFn: async () => {
-      const res = await base44.functions.invoke("fetchMyBBForums", { action: "members" });
-      return res.data?.members || [];
-    },
-    staleTime: 60000,
-  });
+  const { query, setQuery, members, hasMore, isLoading, isFetchingMore, loadMore } = useMembersSearch({ pageSize: 30 });
+  const sentinelRef = useRef(null);
 
-  const filtered = members.filter(
-    (m) => !search || m.username?.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !hasMore) return;
+    const obs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) loadMore();
+    }, { rootMargin: "200px" });
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, [hasMore, loadMore]);
 
   return (
     <div className="px-4 py-4 space-y-4">
@@ -82,9 +75,9 @@ function UserPicker({ onSelect }) {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search members..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by name, username, or call sign…"
           className="w-full bg-secondary border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-violet-500"
         />
       </div>
@@ -96,28 +89,40 @@ function UserPicker({ onSelect }) {
       )}
 
       <div className="space-y-2">
-        {filtered.map((member) => (
+        {members.map((member) => (
           <button
-            key={member.uid}
+            key={member.id}
             onClick={() => onSelect(member)}
             className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.07] active:scale-[0.99] transition-all text-left"
           >
             <div className="w-10 h-10 rounded-xl overflow-hidden bg-violet-950/50 border border-violet-500/20 shrink-0">
               <img
-                src={normalizeAvatar(member.avatar) || LOGO_URL}
-                alt={member.username}
+                src={member.avatar_url || LOGO_URL}
+                alt={member.display_name}
                 className="w-full h-full object-cover"
                 onError={(e) => { e.target.src = LOGO_URL; }}
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground">{member.username}</p>
-              <p className="text-xs text-muted-foreground">{member.postcount ?? 0} posts</p>
+              <p className="text-sm font-semibold text-foreground truncate">{member.display_name}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {member.callsign ? member.callsign : member.username ? `@${member.username}` : "MIST Member"}
+              </p>
             </div>
             <Navigation className="w-4 h-4 text-violet-400 shrink-0" />
           </button>
         ))}
       </div>
+
+      {hasMore && (
+        <div ref={sentinelRef} className="flex justify-center py-4">
+          {isFetchingMore ? (
+            <Loader2 className="w-5 h-5 animate-spin text-violet-400" />
+          ) : (
+            <button onClick={loadMore} className="text-xs text-muted-foreground hover:text-foreground">Load more</button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -301,7 +306,7 @@ function LiveMap({ session, myUID, onEnd, onPing, repeaters }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function CineplexMode() {
-  const { mybbUser } = useMistUser();
+  const { mistUser } = useMistUser();
   const [session, setSession] = useState(null);
   const [step, setStep] = useState("pick"); // pick | waiting | incoming | live
   const pollRef = useRef(null);
@@ -312,7 +317,7 @@ export default function CineplexMode() {
     staleTime: 300000,
   });
 
-  const myUID = String(mybbUser?.uid || mybbUser?.username || "");
+  const myUID = String(mistUser?.id || "");
 
   // Auto-join from toast notification (role=target means we just accepted via the poller)
   useEffect(() => {
@@ -425,11 +430,11 @@ export default function CineplexMode() {
     const expires = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();
     const s = await base44.entities.LocationShare.create({
       initiator_uid: String(myUID),
-      initiator_username: mybbUser.username,
-      initiator_avatar: mybbUser.avatar || "",
-      target_uid: String(member.uid || member.username),
-      target_username: member.username,
-      target_avatar: member.avatar || "",
+      initiator_username: mistUser.displayName || mistUser.username || "MIST Member",
+      initiator_avatar: mistUser.avatarUrl || "",
+      target_uid: String(member.id),
+      target_username: member.display_name,
+      target_avatar: member.avatar_url || "",
       status: "pending",
       expires_at: expires,
     });

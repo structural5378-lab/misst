@@ -1,34 +1,37 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
-import { useQuery } from "@tanstack/react-query";
+import { useMembersSearch } from "@/hooks/useMembersSearch";
 import {
-  MessageSquare, Star, Award, Search, Users, Shield,
-  ChevronRight, X, Send, FileText, ExternalLink, Loader2
+  MessageSquare, Search, Users, Shield, ChevronRight, X, Loader2, BadgeCheck,
 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
+import LicenseBadge from "@/components/profile/LicenseBadge";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
-const FORUM_BASE = "https://insomniacsgmrs.com/";
 
-function normalizeAvatar(avatar) {
-  if (!avatar) return null;
-  if (avatar.startsWith("http")) return avatar;
-  return FORUM_BASE + avatar.replace(/^\//, "");
+function roleStyle(role) {
+  if (role === "admin") return { label: "Admin", cls: "bg-amber-500/20 text-amber-400 border-amber-500/30" };
+  return null;
 }
 
-function getRoleStyle(role) {
-  if (role === "admin") return { label: "Admin", cls: "bg-amber-500/20 text-amber-400 border-amber-500/30" };
-  if (role === "moderator") return { label: "Mod", cls: "bg-blue-500/20 text-blue-400 border-blue-500/30" };
-  return null;
+function relativeTime(iso) {
+  if (!iso) return "Never";
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "Never";
+  const diff = Date.now() - then;
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "Just now";
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 30) return `${day}d ago`;
+  return new Date(iso).toLocaleDateString();
 }
 
 // ─── Member Profile Sheet ─────────────────────────────────────────────────────
 function MemberSheet({ member, onClose, onMessage, isSelf }) {
-  const avatarUrl = normalizeAvatar(member.avatar);
-  const role = getRoleStyle(member.role);
-
   return (
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div
@@ -46,7 +49,7 @@ function MemberSheet({ member, onClose, onMessage, isSelf }) {
           {/* Avatar */}
           <div className="flex items-end justify-between mt-4 mb-4">
             <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-violet-500/50 bg-violet-950 shadow-lg shadow-violet-900/40">
-              <img src={avatarUrl || LOGO_URL} alt={member.username}
+              <img src={member.avatar_url || LOGO_URL} alt={member.display_name}
                 className="w-full h-full object-cover" onError={e => { e.target.src = LOGO_URL; }} />
             </div>
             {!isSelf && (
@@ -60,41 +63,37 @@ function MemberSheet({ member, onClose, onMessage, isSelf }) {
           </div>
 
           {/* Name & Role */}
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-lg font-bold text-foreground">{member.username}</h2>
-            {role && (
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-0.5 ${role.cls}`}>
-                <Shield className="w-2.5 h-2.5" />{role.label}
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h2 className="text-lg font-bold text-foreground">{member.display_name}</h2>
+            {member.is_verified && (
+              <BadgeCheck className="w-4 h-4 text-emerald-400" aria-label="Verified" />
+            )}
+            {roleStyle(member.role) && (
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-0.5 ${roleStyle(member.role).cls}`}>
+                <Shield className="w-2.5 h-2.5" />{roleStyle(member.role).label}
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mb-5">GMRS Community Member</p>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            {[
-              { icon: MessageSquare, label: "Posts", value: member.postcount ?? 0, color: "text-violet-400" },
-              { icon: FileText, label: "Threads", value: member.threadcount ?? 0, color: "text-cyan-400" },
-              { icon: Star, label: "Reputation", value: member.reputation ?? 0, color: "text-amber-400" },
-            ].map(({ icon: Icon, label, value, color }) => (
-              <div key={label} className="flex flex-col items-center py-3 rounded-xl bg-secondary/60 border border-border">
-                <Icon className={`w-4 h-4 ${color} mb-1`} />
-                <span className="text-lg font-bold text-foreground">{value}</span>
-                <span className="text-[10px] text-muted-foreground">{label}</span>
-              </div>
-            ))}
+          {member.username && <p className="text-xs text-muted-foreground">@{member.username}</p>}
+          <div className="mt-2">
+            <LicenseBadge callsign={member.callsign} licenseStatus={member.license_status} size="md" showCallsign />
           </div>
 
-          {/* Forum profile link */}
-          <a
-            href={`https://insomniacsgmrs.com/member.php?action=profile&username=${encodeURIComponent(member.username)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between w-full px-4 py-3 rounded-xl bg-secondary/40 border border-border hover:bg-secondary transition-colors"
-          >
-            <span className="text-sm text-foreground font-medium">View Forum Profile</span>
-            <ExternalLink className="w-4 h-4 text-muted-foreground" />
-          </a>
+          {/* Info */}
+          <div className="grid grid-cols-2 gap-3 mt-5">
+            <div className="flex flex-col items-center py-3 rounded-xl bg-secondary/60 border border-border">
+              <span className="text-sm font-bold text-foreground">{relativeTime(member.last_active)}</span>
+              <span className="text-[10px] text-muted-foreground">Last Active</span>
+            </div>
+            <div className="flex flex-col items-center py-3 rounded-xl bg-secondary/60 border border-border">
+              <span className="text-sm font-bold text-foreground truncate max-w-full px-2">{member.location || "—"}</span>
+              <span className="text-[10px] text-muted-foreground">Location</span>
+            </div>
+          </div>
+
+          {member.bio && (
+            <p className="text-sm text-muted-foreground mt-4 leading-relaxed">{member.bio}</p>
+          )}
         </div>
         {/* Safe area spacer for bottom nav */}
         <div className="h-24" />
@@ -105,49 +104,38 @@ function MemberSheet({ member, onClose, onMessage, isSelf }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Members() {
-  const { mybbUser } = useMistUser();
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all"); // all | admin | moderator
-  const [selectedMember, setSelectedMember] = useState(null);
+  const { mistUser } = useMistUser();
+  const navigate = useNavigate();
+  const {
+    query, setQuery, members, total, hasMore,
+    isLoading, isFetchingMore, loadMore,
+  } = useMembersSearch({ pageSize: 20 });
 
-  const { data: members = [], isLoading } = useQuery({
-    queryKey: ["forum-members"],
-    queryFn: async () => {
-      const res = await base44.functions.invoke("fetchMyBBForums", { action: "members" });
-      return res.data?.members || [];
-    },
-    staleTime: 60000,
-  });
+  const [selectedMember, setSelectedMember] = React.useState(null);
+  const sentinelRef = useRef(null);
 
-  const filtered = members.filter(m => {
-    const matchSearch = !search || m.username?.toLowerCase().includes(search.toLowerCase());
-    const matchFilter = filter === "all" || m.role === filter;
-    return matchSearch && matchFilter;
-  });
+  // Infinite scroll via IntersectionObserver.
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !hasMore) return;
+    const obs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) loadMore();
+    }, { rootMargin: "200px" });
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, [hasMore, loadMore]);
 
   const admins = members.filter(m => m.role === "admin").length;
-  const mods = members.filter(m => m.role === "moderator").length;
 
-  const navigate = useNavigate();
-  const handleMessage = async (member) => {
+  const handleMessage = (member) => {
     setSelectedMember(null);
-    try {
-      const res = await base44.functions.invoke("searchUsers", { query: member.username });
-      const found = (res.data?.users || []).find((u) => u.mybb_username === member.username);
-      if (found) {
-        const params = new URLSearchParams({
-          new_dm: found.id,
-          name: found.full_name || found.email || member.username,
-          avatar: found.avatar_url || "",
-          callsign: found.callsign || "",
-        });
-        navigate(`/messages?${params.toString()}`);
-      } else {
-        alert(`${member.username} hasn't registered with MIST native auth yet. They need to log in with their email to use direct messaging.`);
-      }
-    } catch {
-      alert("Failed to start conversation. Please try again.");
-    }
+    const params = new URLSearchParams({
+      new_dm: member.id,
+      name: member.display_name || member.username || "",
+      avatar: member.avatar_url || "",
+      callsign: member.callsign || "",
+    });
+    navigate(`/messages?${params.toString()}`);
   };
 
   return (
@@ -155,51 +143,27 @@ export default function Members() {
       <PageHeader title="Members" showBack />
 
       <div className="px-4 py-4 space-y-4">
-
         {/* Stats bar */}
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { label: "Total", value: members.length, color: "text-violet-400" },
-            { label: "Admins", value: admins, color: "text-amber-400" },
-            { label: "Mods", value: mods, color: "text-blue-400" },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="flex flex-col items-center py-3 rounded-xl bg-secondary/40 border border-border">
-              <span className={`text-xl font-bold ${color}`}>{value}</span>
-              <span className="text-[10px] text-muted-foreground">{label}</span>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col items-center py-3 rounded-xl bg-secondary/40 border border-border">
+            <span className="text-xl font-bold text-violet-400">{total}</span>
+            <span className="text-[10px] text-muted-foreground">Members</span>
+          </div>
+          <div className="flex flex-col items-center py-3 rounded-xl bg-secondary/40 border border-border">
+            <span className="text-xl font-bold text-amber-400">{admins}</span>
+            <span className="text-[10px] text-muted-foreground">Admins</span>
+          </div>
         </div>
 
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search members..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search by name, username, or call sign…"
             className="w-full bg-secondary border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-violet-500"
           />
-        </div>
-
-        {/* Filter tabs */}
-        <div className="flex gap-2">
-          {[
-            { key: "all", label: "All Members" },
-            { key: "admin", label: "Admins" },
-            { key: "moderator", label: "Mods" },
-          ].map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setFilter(key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                filter === key
-                  ? "bg-violet-600 text-white"
-                  : "bg-secondary text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
         </div>
 
         {/* Loading */}
@@ -211,7 +175,7 @@ export default function Members() {
         )}
 
         {/* Empty */}
-        {!isLoading && filtered.length === 0 && (
+        {!isLoading && members.length === 0 && (
           <div className="text-center py-20">
             <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground text-sm">No members found</p>
@@ -220,14 +184,12 @@ export default function Members() {
 
         {/* Member List */}
         <div className="space-y-2">
-          {filtered.map(member => {
-            const avatarUrl = normalizeAvatar(member.avatar);
-            const isSelf = mybbUser?.username === member.username;
-            const role = getRoleStyle(member.role);
-
+          {members.map(member => {
+            const isSelf = mistUser?.id === member.id;
+            const rs = roleStyle(member.role);
             return (
               <div
-                key={member.uid}
+                key={member.id}
                 onClick={() => setSelectedMember(member)}
                 className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] active:scale-[0.99] transition-all cursor-pointer"
               >
@@ -235,8 +197,8 @@ export default function Members() {
                 <div className="relative shrink-0">
                   <div className="w-12 h-12 rounded-2xl overflow-hidden bg-violet-950/50 border border-violet-500/20">
                     <img
-                      src={avatarUrl || LOGO_URL}
-                      alt={member.username}
+                      src={member.avatar_url || LOGO_URL}
+                      alt={member.display_name}
                       className="w-full h-full object-cover"
                       onError={e => { e.target.onerror = null; e.target.src = LOGO_URL; }}
                     />
@@ -246,24 +208,21 @@ export default function Members() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-sm font-semibold text-foreground truncate">{member.username}</span>
+                    <span className="text-sm font-semibold text-foreground truncate">{member.display_name}</span>
+                    {member.is_verified && <BadgeCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
                     {isSelf && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-400 border border-violet-500/30 font-bold">You</span>}
-                    {role && (
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${role.cls}`}>
-                        {role.label}
+                    {rs && (
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${rs.cls}`}>
+                        {rs.label}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                      <MessageSquare className="w-2.5 h-2.5" />{member.postcount ?? 0}
-                    </span>
-                    <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                      <Award className="w-2.5 h-2.5" />{member.threadcount ?? 0}
-                    </span>
-                    <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                      <Star className="w-2.5 h-2.5" />{member.reputation ?? 0} rep
-                    </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {member.username && (
+                      <span className="text-[11px] text-muted-foreground truncate">@{member.username}</span>
+                    )}
+                    <LicenseBadge callsign={member.callsign} licenseStatus={member.license_status} size="sm" showCallsign={false} className="!py-0.5 !px-2" />
+                    <span className="text-[10px] text-muted-foreground">· {relativeTime(member.last_active)}</span>
                   </div>
                 </div>
 
@@ -283,18 +242,30 @@ export default function Members() {
             );
           })}
         </div>
+
+        {/* Infinite scroll sentinel */}
+        {hasMore && (
+          <div ref={sentinelRef} className="flex justify-center py-4">
+            {isFetchingMore ? (
+              <Loader2 className="w-5 h-5 animate-spin text-violet-400" />
+            ) : (
+              <button onClick={loadMore} className="text-xs text-muted-foreground hover:text-foreground">
+                Load more
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Member Profile Sheet */}
       {selectedMember && (
         <MemberSheet
           member={selectedMember}
-          isSelf={mybbUser?.username === selectedMember.username}
+          isSelf={mistUser?.id === selectedMember.id}
           onClose={() => setSelectedMember(null)}
           onMessage={handleMessage}
         />
       )}
-
     </div>
   );
 }
