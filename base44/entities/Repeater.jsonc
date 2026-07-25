@@ -18,6 +18,18 @@
       "type": "string",
       "description": "PL tone or DCS code"
     },
+    "band": {
+      "type": "string",
+      "enum": [
+        "GMRS",
+        "Ham",
+        "Business",
+        "Public Safety",
+        "Other"
+      ],
+      "default": "GMRS",
+      "description": "Radio service band"
+    },
     "location": {
       "type": "string",
       "description": "City, State"
@@ -57,6 +69,37 @@
     "community_name": {
       "type": "string",
       "description": "Community name for display"
+    },
+    "coverage_radius": {
+      "type": "number",
+      "description": "Coverage radius in miles"
+    },
+    "coverage_color": {
+      "type": "string",
+      "default": "#8B5CF6",
+      "description": "Hex color for the coverage circle"
+    },
+    "coverage_opacity": {
+      "type": "number",
+      "default": 0.18,
+      "description": "Coverage circle fill opacity (0-1)"
+    },
+    "coverage_visible": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the coverage circle is drawn on the map"
+    },
+    "height_m": {
+      "type": "number",
+      "description": "Antenna height in meters"
+    },
+    "erp_watts": {
+      "type": "number",
+      "description": "Effective radiated power in watts"
+    },
+    "antenna_type": {
+      "type": "string",
+      "description": "Antenna type / model"
     }
   },
   "required": [
