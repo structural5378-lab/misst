@@ -36,10 +36,11 @@ export default function CommunityOnboarding() {
   const [sort, setSort] = useState("members");
   const [coords, setCoords] = useState(null);
   const [locating, setLocating] = useState(false);
+  const [locDenied, setLocDenied] = useState(false);
   const [busyId, setBusyId] = useState(null);
   const [requestCommunity, setRequestCommunity] = useState(null);
 
-  const { data: communities = [], isLoading } = useQuery({
+  const { data: communities = [], isLoading, isError } = useQuery({
     queryKey: ["public-communities"],
     queryFn: async () => {
       const res = await base44.functions.invoke("listCommunities", {});
@@ -94,7 +95,7 @@ export default function CommunityOnboarding() {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => { setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude }); setLocating(false); setSort("near"); },
-      () => setLocating(false),
+      () => { setLocating(false); setLocDenied(true); },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   };
@@ -257,6 +258,10 @@ export default function CommunityOnboarding() {
             ))}
           </div>
 
+          {sort === "near" && !coords && locDenied && (
+            <p className="text-xs text-muted-foreground mb-3">Location unavailable. Showing all communities.</p>
+          )}
+
           {isLoading ? (
             <div className="grid sm:grid-cols-2 gap-4">
               {[0, 1, 2, 3].map((i) => (
@@ -269,6 +274,16 @@ export default function CommunityOnboarding() {
                   </div>
                 </div>
               ))}
+            </div>
+          ) : isError ? (
+            <div className="text-center py-12 rounded-2xl bg-card/40 border border-white/[0.06]">
+              <p className="text-sm text-muted-foreground mb-3">We couldn't load communities. Please try again.</p>
+              <button
+                onClick={() => qc.invalidateQueries({ queryKey: ["public-communities"] })}
+                className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90"
+              >
+                Retry
+              </button>
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 rounded-2xl bg-card/40 border border-white/[0.06]">

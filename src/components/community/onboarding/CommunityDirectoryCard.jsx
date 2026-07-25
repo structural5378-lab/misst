@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, MapPin, Radio, Lock, Globe, Loader2, Check, Clock } from "lucide-react";
+import { Users, User, MapPin, Radio, Lock, Globe, Loader2, Check, Clock } from "lucide-react";
 
 function distanceMi(lat1, lon1, lat2, lon2) {
   if (lat1 == null || lat2 == null) return null;
@@ -43,6 +43,11 @@ export default function CommunityDirectoryCard({ community, coords, busy, myStat
           <img src={community.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+        {community.category && (
+          <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-background/70 border border-white/10 text-muted-foreground capitalize">
+            {community.category}
+          </span>
+        )}
         <span className={`absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badge.cls}`}>
           <VIcon className="w-2.5 h-2.5" /> {badge.label}
         </span>
@@ -70,6 +75,7 @@ export default function CommunityDirectoryCard({ community, coords, busy, myStat
 
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground mb-3">
           <span className="flex items-center gap-1"><Users className="w-3 h-3" />{community.member_count || 0}</span>
+          {community.owner_name && <span className="flex items-center gap-1"><User className="w-3 h-3" />{community.owner_name}</span>}
           {community.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{community.location}</span>}
           {dist != null && <span className="flex items-center gap-1 text-primary"><MapPin className="w-3 h-3" />{dist} mi</span>}
           {community.primary_repeater && <span className="flex items-center gap-1"><Radio className="w-3 h-3" />{community.primary_repeater}</span>}

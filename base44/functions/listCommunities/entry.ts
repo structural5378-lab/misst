@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     const { q } = body;
 
     let communities = await base44.asServiceRole.entities.Community.filter(
-      { is_listed: true, is_active: true },
+      { visibility: 'public', is_active: true },
       '-member_count',
       100
     );
@@ -38,7 +38,10 @@ Deno.serve(async (req) => {
         description: c.description,
         logo_url: c.logo_url,
         banner_url: c.banner_url,
+        owner_name: c.owner_name,
+        category: c.category,
         visibility: c.visibility,
+        status: c.status,
         member_count: c.member_count,
         location: c.location,
         location_lat: c.location_lat,
