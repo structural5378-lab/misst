@@ -1,0 +1,81 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "recipient_id": {
+      "type": "string",
+      "description": "User ID of the notification recipient"
+    },
+    "recipient_name": {
+      "type": "string",
+      "description": "Denormalized recipient display name (for admin views)"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "User ID of the sender (empty string when system-generated)"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "direct_message",
+        "community_chat",
+        "community_announcement",
+        "friend_request",
+        "user_mention",
+        "net_starting",
+        "emergency_alert",
+        "badge_earned",
+        "community_invite",
+        "system"
+      ],
+      "default": "system",
+      "description": "Notification category. Drives filtering, routing, and per-type preferences."
+    },
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "related_object_id": {
+      "type": "string",
+      "description": "ID of the object this notification references (thread, message, net, badge, community, etc.)"
+    },
+    "related_object_type": {
+      "type": "string",
+      "description": "Type of the referenced object (thread, conversation, net, badge, community, etc.)"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false
+    },
+    "read_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "delivered_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the most recent delivery attempt (in-app set on creation; push/email/SMS update this in later phases)"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Community context (optional; used for community-scoped notifications)"
+    },
+    "link": {
+      "type": "string",
+      "description": "In-app deep-link route for tap-to-navigate"
+    },
+    "metadata": {
+      "type": "string",
+      "description": "JSON string of extra event data (e.g. community_slug, achievement_id, channel). Also tracks per-channel delivery state for future push/email/SMS."
+    }
+  },
+  "required": [
+    "recipient_id",
+    "type"
+  ]
+}
