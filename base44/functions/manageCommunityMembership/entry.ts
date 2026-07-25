@@ -104,6 +104,12 @@ Deno.serve(async (req) => {
         join_mode: joinMode, has_member: !!member, member_status: member?.status ?? null,
         invite_valid: inviteValid, is_closed: isClosed, instant_allowed: instantAllowed,
       });
+      // Idempotent FIRST: an existing active membership always succeeds,
+      // never a 409/403 — even if the community was later closed or locked.
+      // Banned users are NOT "active members" and stay blocked below.
+      if (member && member.is_active && member.status === 'active') {
+        return Response.json({ success: true, status: 'active', already_member: true });
+      }
       if (isClosed && !inviteValid) {
         console.warn('[manageCommunityMembership][join] rejected: community closed');
         return Response.json({ error: 'This community is closed to new members', code: 'closed' }, { status: 403 });
@@ -111,11 +117,6 @@ Deno.serve(async (req) => {
       if (!instantAllowed) {
         console.warn('[manageCommunityMembership][join] rejected: approval/invite required');
         return Response.json({ error: 'This community requires approval or an invitation to join', code: 'approval_required' }, { status: 403 });
-      }
-      // Idempotent: an existing active membership is a success, never a 409,
-      // so retries and duplicate clicks navigate the user straight in.
-      if (member && member.is_active && member.status === 'active') {
-        return Response.json({ success: true, status: 'active', already_member: true });
       }
       // Banned users cannot rejoin on their own.
       if (member && member.status === 'banned') {
