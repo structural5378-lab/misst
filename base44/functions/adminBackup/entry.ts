@@ -53,6 +53,33 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, snapshot: snap, exported_at: new Date().toISOString(), exported_by: user.email });
     }
 
+    if (action === 'restore') {
+      // Destructive import: re-creates records from a previously-exported snapshot.
+      // Built-in fields (id, dates, created_by_id) are stripped so fresh records are made.
+      const snapshot = body.snapshot || {};
+      if (!snapshot || typeof snapshot !== 'object' || Object.keys(snapshot).length === 0) {
+        return Response.json({ error: 'Empty or invalid snapshot' }, { status: 400 });
+      }
+      const results = {};
+      let totalCreated = 0;
+      for (const [ename, rows] of Object.entries(snapshot)) {
+        const E = base44.asServiceRole.entities[ename];
+        if (!E) { results[ename] = { skipped: true, reason: 'unknown entity' }; continue; }
+        const clean = (Array.isArray(rows) ? rows : []).map(({ id, created_date, updated_date, created_by_id, is_sample, ...rest }) => rest);
+        if (!clean.length) { results[ename] = 0; continue; }
+        try {
+          const created = await E.bulkCreate(clean);
+          const n = Array.isArray(created) ? created.length : 0;
+          results[ename] = n;
+          totalCreated += n;
+        } catch (e) {
+          results[ename] = { error: e.message };
+        }
+      }
+      await logAudit(base44, user, ip, 'platform_restore', { notes: `Restored ${totalCreated} records across ${Object.keys(snapshot).length} entities` });
+      return Response.json({ success: true, results, totalCreated, restored_at: new Date().toISOString(), restored_by: user.email });
+    }
+
     return Response.json({ error: 'Unknown action' }, { status: 400 });
   } catch (error) {
     console.error('[adminBackup] error:', error.message);

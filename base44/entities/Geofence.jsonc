@@ -1,0 +1,47 @@
+{
+  "name": "Geofence",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Geofence name"
+    },
+    "description": {
+      "type": "string"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Owning community (optional)"
+    },
+    "community_name": {
+      "type": "string"
+    },
+    "shape": {
+      "type": "string",
+      "enum": [
+        "geojson",
+        "circle"
+      ],
+      "description": "geojson = standard GeoJSON geometry (Polygon/LineString/Point); circle = stored as center+radius"
+    },
+    "geo": {
+      "type": "string",
+      "description": "JSON-encoded GeoJSON geometry (for shape=geojson) or {center:[lat,lng], radius_m} (for shape=circle)"
+    },
+    "color": {
+      "type": "string",
+      "default": "#06B6D4"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_by_email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "shape",
+    "geo"
+  ]
+}

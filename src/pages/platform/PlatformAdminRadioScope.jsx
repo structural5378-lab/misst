@@ -14,7 +14,9 @@ import AdminSection from "@/components/platform/AdminSection";
 import RepeaterTable from "@/components/platform/radioscope/RepeaterTable";
 import RepeaterFormDialog from "@/components/platform/radioscope/RepeaterFormDialog";
 import RadioScopeMap from "@/components/platform/radioscope/RadioScopeMap";
-import { Radio, Plus, Search, Download, Upload, Trash2, Map as MapIcon, Table as TableIcon, RefreshCw, Loader2, ListTree } from "lucide-react";
+import GisAnalysisPanel from "@/components/platform/radioscope/GisAnalysisPanel";
+import { parseGeoFile, fcToPointList } from "@/lib/geoImport";
+import { Radio, Plus, Search, Download, Upload, Trash2, Map as MapIcon, Table as TableIcon, RefreshCw, Loader2, ListTree, Flame, MapPin, Shield } from "lucide-react";
 
 const STATUSES = ["online", "offline", "busy"];
 
@@ -32,6 +34,9 @@ export default function PlatformAdminRadioScope() {
   const [editing, setEditing] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirm, setConfirm] = useState(null); // { type:'single'|'bulk', repeater? }
+  const [heatEnabled, setHeatEnabled] = useState(false);
+  const [drawEnabled, setDrawEnabled] = useState(false);
+  const [geoName, setGeoName] = useState("");
 
   const { data: repeaters = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-repeaters"],
@@ -53,6 +58,37 @@ export default function PlatformAdminRadioScope() {
     queryFn: async () => (await base44.entities.PlatformAuditLog.filter({ target_type: "repeater" }, "-created_date", 8)) || [],
     staleTime: 30000,
   });
+  const { data: geofences = [], refetch: refetchGeofences } = useQuery({
+    queryKey: ["admin-geofences"],
+    queryFn: async () => (await base44.functions.invoke("adminManageGeofence", { action: "list" }))?.data?.geofences || [],
+    staleTime: 30000,
+  });
+
+  const onGeofenceCreated = async (shape) => {
+    const name = window.prompt("Name this geofence:", shape.shape === "circle" ? "Coverage Zone" : "Operational Area");
+    if (!name) return;
+    try {
+      const geo = shape.shape === "circle" ? { center: shape.center, radius_m: shape.radius_m } : shape.geo;
+      const res = await base44.functions.invoke("adminManageGeofence", {
+        action: "create",
+        fields: { name, shape: shape.shape, geo: JSON.stringify(geo), color: shape.shape === "circle" ? "#06B6D4" : "#8B5CF6" },
+      });
+      if (!res.data?.success) throw new Error(res.data?.error);
+      toast({ title: "Geofence created", description: name });
+      refetchGeofences();
+    } catch (e) {
+      toast({ title: "Geofence failed", description: e.message, variant: "destructive" });
+    }
+  };
+  const deleteGeofence = async (g) => {
+    if (!window.confirm(`Delete geofence "${g.name}"?`)) return;
+    try {
+      const res = await base44.functions.invoke("adminManageGeofence", { action: "delete", geofence_id: g.id });
+      if (!res.data?.success) throw new Error(res.data?.error);
+      toast({ title: "Geofence deleted" });
+      refetchGeofences();
+    } catch (e) { toast({ title: "Delete failed", description: e.message, variant: "destructive" }); }
+  };
 
   const filtered = useMemo(() => {
     let list = repeaters;
@@ -144,22 +180,23 @@ export default function PlatformAdminRadioScope() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const data = JSON.parse(await file.text());
-      const feats = Array.isArray(data?.features) ? data.features : [];
+      const fc = await parseGeoFile(file);
+      const feats = Array.isArray(fc?.features) ? fc.features : [];
       let ok = 0;
       for (const ft of feats) {
         const [lon, lat] = ft.geometry?.coordinates || [];
+        if (lat == null || lon == null) continue;
         const p = ft.properties || {};
         const res = await base44.functions.invoke("adminManageRepeater", {
           action: "create",
-          fields: { callsign: p.callsign, frequency: p.frequency, offset: p.offset, tone: p.tone, band: p.band || "GMRS", status: p.status || "online", location: p.location, owner_callsign: p.owner_callsign, community_name: p.community, latitude: lat, longitude: lon, coverage_radius: p.coverage_radius, coverage_color: p.coverage_color },
+          fields: { callsign: p.callsign || p.name || `Waypoint ${ok + 1}`, frequency: p.frequency, offset: p.offset, tone: p.tone, band: p.band || "GMRS", status: p.status || "online", location: p.location, owner_callsign: p.owner_callsign, community_name: p.community, latitude: lat, longitude: lon, coverage_radius: p.coverage_radius, coverage_color: p.coverage_color },
         });
         if (res.data?.success) ok++;
       }
-      toast({ title: `Imported ${ok} repeaters` });
+      toast({ title: `Imported ${ok} points`, description: file.name });
       qc.invalidateQueries({ queryKey: ["admin-repeaters"] });
     } catch (err) {
-      toast({ title: "Import failed", description: "Please upload a valid GeoJSON FeatureCollection.", variant: "destructive" });
+      toast({ title: "Import failed", description: err.message || "Unsupported or invalid file.", variant: "destructive" });
     } finally {
       if (fileRef.current) fileRef.current.value = "";
     }
@@ -168,12 +205,12 @@ export default function PlatformAdminRadioScope() {
   return (
     <AdminSection
       title="RadioScope Management"
-      description="Tactical GMRS GIS console — manage repeaters, coverage circles, and map layers."
+      description="Tactical GMRS GIS console — repeaters, coverage, heat maps, geofences, and multi-format GIS import."
       action={
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()}><RefreshCw className="w-4 h-4" /> Refresh</Button>
           <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}><Upload className="w-4 h-4" /> Import</Button>
-          <input ref={fileRef} type="file" accept="application/geo+json,application/json,.geojson" className="hidden" onChange={onImportFile} />
+          <input ref={fileRef} type="file" accept=".geojson,.json,.gpx,.kml,.kmz,application/geo+json,application/json,application/gpx+xml,application/vnd.google-earth.kml+xml,application/vnd.google-earth.kmz" className="hidden" onChange={onImportFile} />
           <Button variant="outline" size="sm" onClick={exportGeoJSON}><Download className="w-4 h-4" /> Export</Button>
           <Button size="sm" onClick={openCreate}><Plus className="w-4 h-4" /> Add Repeater</Button>
         </div>
@@ -248,7 +285,38 @@ export default function PlatformAdminRadioScope() {
           <p className="text-sm text-muted-foreground">{query || statusFilter || communityFilter ? "No repeaters match your filters." : "No repeaters yet. Add your first repeater to start mapping coverage."}</p>
         </div>
       ) : view === "map" ? (
-        <RadioScopeMap repeaters={filtered} onSelect={(r) => openEdit(r)} />
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => setHeatEnabled((v) => !v)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${heatEnabled ? "bg-orange-500/20 text-orange-400 border border-orange-500/40" : "bg-secondary text-muted-foreground border border-border"}`}>
+              <Flame className="w-3.5 h-3.5" /> Heat Map
+            </button>
+            <button onClick={() => setDrawEnabled((v) => !v)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${drawEnabled ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" : "bg-secondary text-muted-foreground border border-border"}`}>
+              <MapPin className="w-3.5 h-3.5" /> Draw Geofence
+            </button>
+            {drawEnabled && <span className="text-[11px] text-muted-foreground">Use the ▢ / ◯ / ⋯ tools (top-right of map) to draw, then name the geofence.</span>}
+          </div>
+          <RadioScopeMap repeaters={filtered} onSelect={(r) => openEdit(r)} heatEnabled={heatEnabled} drawEnabled={drawEnabled} geofences={geofences} onGeofenceCreated={onGeofenceCreated} />
+          <GisAnalysisPanel repeaters={filtered} geofences={geofences} />
+          {geofences.length > 0 && (
+            <div className="rounded-2xl border border-border bg-card overflow-hidden">
+              <div className="px-3 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Geofences ({geofences.length})</div>
+              <div className="divide-y divide-border max-h-52 overflow-y-auto">
+                {geofences.map((g) => (
+                  <div key={g.id} className="flex items-center justify-between px-3 py-2">
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: g.color || "#06B6D4" }} />
+                      <span className="text-sm font-medium text-foreground truncate">{g.name}</span>
+                      <span className="text-[10px] text-muted-foreground uppercase">{g.shape}</span>
+                    </span>
+                    <button className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => deleteGeofence(g)}><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
         <RepeaterTable repeaters={filtered} selectedIds={selectedIds} onToggle={toggle} onToggleAll={toggleAll} onEdit={openEdit} onDelete={(r) => setConfirm({ type: "single", repeater: r })} />
       )}

@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { MapContainer, TileLayer, Circle, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Radio } from "lucide-react";
+import { Radio, Flame, MapPin, Trash2 } from "lucide-react";
+import HeatLayer from "@/components/platform/radioscope/HeatLayer";
+import DrawControl from "@/components/platform/radioscope/DrawControl";
+import GeofenceLayer from "@/components/platform/radioscope/GeofenceLayer";
 
 const LAYERS = {
   streets: { url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", attr: "&copy; OpenStreetMap" },
@@ -13,29 +16,51 @@ const LAYERS = {
 const LABELS_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}";
 const STATUS_COLOR = { online: "#22c55e", offline: "#ef4444", busy: "#f59e0b" };
 
-export default function RadioScopeMap({ repeaters = [], selectedId, onSelect }) {
+export default function RadioScopeMap({
+  repeaters = [],
+  selectedId,
+  onSelect,
+  heatEnabled = false,
+  drawEnabled = false,
+  geofences = [],
+  onGeofenceCreated,
+}) {
   const [layer, setLayer] = useState("streets");
   const points = repeaters.filter((r) => r.latitude != null && r.longitude != null);
   const center = points[0] ? [points[0].latitude, points[0].longitude] : [39.5, -98.35];
   const cur = LAYERS[layer];
 
+  // Heat points: [lat, lng, intensity] — intensity scaled by coverage radius.
+  const heatPoints = points.map((r) => [r.latitude, r.longitude, Math.max(0.3, Math.min(1, (r.coverage_radius || 5) / 30))]);
+
   return (
     <div className="rounded-2xl overflow-hidden border border-border bg-card">
-      <div className="flex flex-wrap gap-1 p-2 bg-card/60 border-b border-border">
-        {Object.keys(LAYERS).map((k) => (
-          <button
-            key={k}
-            onClick={() => setLayer(k)}
-            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold capitalize transition-colors ${layer === k ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
-          >
-            {k}
-          </button>
-        ))}
+      {/* Layer + GIS tools bar */}
+      <div className="flex flex-wrap items-center gap-1 p-2 bg-card/60 border-b border-border">
+        <div className="flex flex-wrap gap-1">
+          {Object.keys(LAYERS).map((k) => (
+            <button key={k} onClick={() => setLayer(k)}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold capitalize transition-colors ${layer === k ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
+              {k}
+            </button>
+          ))}
+        </div>
+        <div className="ml-auto flex items-center gap-1.5 text-[10px]">
+          {heatEnabled && <span className="flex items-center gap-1 text-orange-400 font-semibold"><Flame className="w-3 h-3" /> Heat</span>}
+          {drawEnabled && <span className="flex items-center gap-1 text-cyan-400 font-semibold"><MapPin className="w-3 h-3" /> Drawing</span>}
+          {geofences.length > 0 && <span className="text-muted-foreground">{geofences.length} geofence(s)</span>}
+        </div>
       </div>
-      <div className="h-[380px] sm:h-[520px]">
+
+      <div className="h-[400px] sm:h-[560px]">
         <MapContainer center={center} zoom={points[0] ? 11 : 4} scrollWheelZoom className="w-full h-full">
           <TileLayer key={layer} url={cur.url} attribution={cur.attr} />
           {layer === "hybrid" && <TileLayer url={LABELS_URL} attribution="Esri" />}
+
+          <HeatLayer points={heatPoints} enabled={heatEnabled} />
+          <GeofenceLayer geofences={geofences} />
+          <DrawControl enabled={drawEnabled} onCreated={onGeofenceCreated} />
+
           {points.map((r) => {
             const radM = (r.coverage_radius || 0) * 1609.34;
             const showCov = r.coverage_visible !== false && radM > 0;
@@ -47,12 +72,9 @@ export default function RadioScopeMap({ repeaters = [], selectedId, onSelect }) 
                 {showCov && (
                   <Circle center={[r.latitude, r.longitude]} radius={radM} pathOptions={{ color: col, fillColor: col, fillOpacity: op, weight: 1 }} />
                 )}
-                <CircleMarker
-                  center={[r.latitude, r.longitude]}
-                  radius={sel ? 8 : 6}
+                <CircleMarker center={[r.latitude, r.longitude]} radius={sel ? 8 : 6}
                   pathOptions={{ color: STATUS_COLOR[r.status] || "#8B5CF6", fillOpacity: 0.95, weight: sel ? 3 : 1 }}
-                  eventHandlers={{ click: () => onSelect?.(r) }}
-                >
+                  eventHandlers={{ click: () => onSelect?.(r) }}>
                   <Popup>
                     <div className="text-xs space-y-0.5">
                       <div className="font-bold text-sm flex items-center gap-1"><Radio className="w-3 h-3" /> {r.callsign}</div>
