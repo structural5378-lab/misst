@@ -30,15 +30,52 @@
     },
     "latitude": {
       "type": "number",
-      "description": "User latitude for RadioScope tactical map"
+      "description": "Last live GPS latitude (only valid while sharing_location is true and location_updated_at is within TTL)"
     },
     "longitude": {
       "type": "number",
-      "description": "User longitude for RadioScope tactical map"
+      "description": "Last live GPS longitude (only valid while sharing_location is true and location_updated_at is within TTL)"
     },
     "current_repeater_id": {
       "type": "string",
       "description": "Repeater the user is currently connected to"
+    },
+    "sharing_location": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has explicitly enabled live GPS sharing on RadioScope. When false the user must NOT appear on the map regardless of cached coordinates."
+    },
+    "gps_accuracy": {
+      "type": "number",
+      "description": "GPS fix accuracy in meters"
+    },
+    "gps_speed": {
+      "type": "number",
+      "description": "Ground speed in m/s (if available)"
+    },
+    "gps_heading": {
+      "type": "number",
+      "description": "Heading in degrees from true north (if available)"
+    },
+    "location_source": {
+      "type": "string",
+      "enum": [
+        "gps",
+        "network",
+        "low",
+        "unknown"
+      ],
+      "description": "Inferred fix source: gps (<=25m), network (<=75m), low (>75m), unknown"
+    },
+    "location_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Server-validated timestamp of the last accepted GPS fix"
+    },
+    "location_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "location_updated_at + TTL; records past this time are considered stale and must not be displayed"
     }
   },
   "required": [

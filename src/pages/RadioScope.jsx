@@ -1,21 +1,27 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Layers, Crosshair } from "lucide-react";
+import { ArrowLeft, Layers, Crosshair, Bug } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import RadioScopeStartup from "@/components/radioscope/RadioScopeStartup";
 import RadioScopeMap from "@/components/radioscope/RadioScopeMap";
 import RadioScopeSearch from "@/components/radioscope/RadioScopeSearch";
 import RadioScopeLayers from "@/components/radioscope/RadioScopeLayers";
 import RepeaterSheet from "@/components/radioscope/RepeaterSheet";
 import UserSheet from "@/components/radioscope/UserSheet";
+import RadioScopeDebugPanel from "@/components/radioscope/RadioScopeDebugPanel";
+import {
+  GPS_WATCH_OPTS, GPS_UPDATE_THROTTLE_MS, LOCATION_TTL_MS,
+  classifySource, getLiveUsers,
+} from "@/lib/radioScopeLocation";
 
 const DEFAULT_CENTER = [25.77, -80.19];
 
 export default function RadioScope() {
   const { mybbUser } = useMistUser();
   const [userPosition, setUserPosition] = useState(null);
+  const [myFix, setMyFix] = useState(null); // last raw GPS fix for debug panel
   const [selectedRepeater, setSelectedRepeater] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [activeLayers, setActiveLayers] = useState({
@@ -25,95 +31,125 @@ export default function RadioScope() {
   const [searchQuery, setSearchQuery] = useState("");
   const [tileMode, setTileMode] = useState("dark");
   const [showLayers, setShowLayers] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
+  const [nowTick, setNowTick] = useState(Date.now()); // recomputes age-based expiration
+
   const watchIdRef = useRef(null);
-  const presenceIdRef = useRef(null);
-  const lastPresenceUpdateRef = useRef(0);
-  const [simSeed, setSimSeed] = useState(0);
+  const lastUpdateRef = useRef(0);
+  const clearingRef = useRef(false);
 
   const myUid = String(mybbUser?.uid || "");
 
-  // GPS tracking
+  // ── Presence data: poll + realtime subscription for instant marker updates ──
+  const { data: presenceData = [] } = useQuery({
+    queryKey: ["chat-presence"],
+    queryFn: () => base44.entities.ChatPresence.list("-last_active", 200),
+    refetchInterval: 8000,
+  });
+
+  const qc = useQueryClient();
+  useEffect(() => {
+    // Realtime: invalidate presence on any ChatPresence mutation so markers move/remove instantly
+    const unsub = base44.entities.ChatPresence.subscribe((event) => {
+      qc.invalidateQueries({ queryKey: ["chat-presence"] });
+    });
+    return unsub;
+  }, [qc]);
+
+  // ── Tick to re-evaluate age-based expiration between polls ──
+  useEffect(() => {
+    const t = setInterval(() => setNowTick(Date.now()), 3000);
+    return () => clearInterval(t);
+  }, []);
+
+  // ── Push validated live GPS to server (throttled) ──
+  const pushLocation = useCallback((pos) => {
+    const t = Date.now();
+    if (t - lastUpdateRef.current < GPS_UPDATE_THROTTLE_MS) return;
+    lastUpdateRef.current = t;
+    const source = classifySource(pos.coords.accuracy);
+    base44.functions.invoke("updateUserLocation", {
+      latitude: pos.coords.latitude,
+      longitude: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+      speed: pos.coords.speed,
+      heading: pos.coords.heading,
+      source,
+      timestamp: pos.timestamp || t,
+    }).catch(() => {});
+  }, []);
+
+  // ── Clear my location on the server ──
+  const clearLocation = useCallback(() => {
+    if (clearingRef.current) return;
+    clearingRef.current = true;
+    base44.functions.invoke("clearUserLocation").catch(() => {}).finally(() => {
+      clearingRef.current = false;
+    });
+  }, []);
+
+  // ── GPS watch: live, high-accuracy, no cache ──
   useEffect(() => {
     if (!navigator.geolocation) return;
     watchIdRef.current = navigator.geolocation.watchPosition(
-      (pos) => setUserPosition([pos.coords.latitude, pos.coords.longitude]),
-      () => {},
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+      (pos) => {
+        const pos2 = [pos.coords.latitude, pos.coords.longitude];
+        setUserPosition(pos2);
+        setMyFix({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+          speed: pos.coords.speed,
+          heading: pos.coords.heading,
+          source: classifySource(pos.coords.accuracy),
+          timestamp: pos.timestamp || Date.now(),
+        });
+        pushLocation(pos);
+      },
+      (err) => {
+        // Permission denied / unavailable → remove myself from the map immediately
+        if (err.code === err.PERMISSION_DENIED) clearLocation();
+      },
+      GPS_WATCH_OPTS
     );
     return () => {
       if (watchIdRef.current) navigator.geolocation.clearWatch(watchIdRef.current);
     };
-  }, []);
+  }, [pushLocation, clearLocation]);
 
-  // Fetch repeaters
+  // ── Clear on app close / tab hidden / logout ──
+  useEffect(() => {
+    const onVisibility = () => { if (document.visibilityState === "hidden") clearLocation(); };
+    const onUnload = () => { clearLocation(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("beforeunload", onUnload);
+    window.addEventListener("pagehide", onUnload);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("beforeunload", onUnload);
+      window.removeEventListener("pagehide", onUnload);
+      clearLocation(); // clear on unmount (navigating away / logout)
+    };
+  }, [clearLocation]);
+
+  // ── Fetch repeaters ──
   const { data: repeaters = [] } = useQuery({
     queryKey: ["repeaters"],
     queryFn: () => base44.entities.Repeater.list("-created_date", 200),
     refetchInterval: 30000,
   });
 
-  // Fetch online users
-  const { data: presenceData = [] } = useQuery({
-    queryKey: ["chat-presence"],
-    queryFn: () => base44.entities.ChatPresence.list("-last_active", 100),
-    refetchInterval: 10000,
-  });
+  // ── LIVE USERS ONLY: no simulation, no cached, no expired ──
+  const onlineUsers = useMemo(
+    () => getLiveUsers(presenceData, { now: nowTick, ttl: LOCATION_TTL_MS, excludeUid: myUid }),
+    [presenceData, nowTick, myUid]
+  );
 
-  // Update user's presence with GPS
-  useEffect(() => {
-    if (!mybbUser?.uid || !userPosition) return;
-    const now = Date.now();
-    if (now - lastPresenceUpdateRef.current < 8000) return;
-    lastPresenceUpdateRef.current = now;
-    (async () => {
-      try {
-        if (presenceIdRef.current) {
-          await base44.entities.ChatPresence.update(presenceIdRef.current, {
-            latitude: userPosition[0], longitude: userPosition[1],
-            last_active: new Date().toISOString(),
-          });
-        } else {
-          const existing = await base44.entities.ChatPresence.filter({ user_uid: String(mybbUser.uid) });
-          if (existing.length > 0) {
-            presenceIdRef.current = existing[0].id;
-            await base44.entities.ChatPresence.update(existing[0].id, {
-              latitude: userPosition[0], longitude: userPosition[1],
-              last_active: new Date().toISOString(),
-            });
-          }
-        }
-      } catch {}
-    })();
-  }, [userPosition, mybbUser?.uid]);
-
-  // Assign presenceId from fetched data
-  useEffect(() => {
-    if (!presenceIdRef.current && presenceData.length > 0 && mybbUser?.uid) {
-      const mine = presenceData.find((p) => p.user_uid === String(mybbUser.uid));
-      if (mine) presenceIdRef.current = mine.id;
-    }
-  }, [presenceData, mybbUser?.uid]);
-
-  // Simulate positions for users without location, update every 5s
-  useEffect(() => {
-    const t = setInterval(() => setSimSeed((s) => s + 1), 5000);
-    return () => clearInterval(t);
-  }, []);
-
-  const onlineUsers = useMemo(() => {
-    const center = userPosition || DEFAULT_CENTER;
-    return presenceData
-      .filter((p) => p.user_uid !== myUid && p.status !== "offline")
-      .map((p, i) => {
-        if (p.latitude && p.longitude) return p;
-        const angle = ((i * 137.5 + simSeed * 23) * Math.PI) / 180;
-        const dist = 1 + ((i + simSeed) % 5) * 1.5;
-        const lat = center[0] + (dist / 111) * Math.cos(angle);
-        const lon = center[1] + (dist / (111 * Math.cos((center[0] * Math.PI) / 180))) * Math.sin(angle);
-        return { ...p, latitude: lat, longitude: lon };
-      });
-  }, [presenceData, userPosition, myUid, simSeed]);
+  const myPresence = useMemo(
+    () => (presenceData || []).find((p) => p.user_uid === myUid) || null,
+    [presenceData, myUid]
+  );
 
   const handleRecenter = useCallback(() => setRecenterTrigger((t) => t + 1), []);
 
@@ -147,8 +183,11 @@ export default function RadioScope() {
           </Link>
           <div className="flex-1">
             <h1 className="text-base font-bold text-cyan-300 tracking-wide">RadioScope</h1>
-            <p className="text-[10px] text-cyan-500/70 tracking-widest uppercase">Tactical RF Map</p>
+            <p className="text-[10px] text-cyan-500/70 tracking-widest uppercase">Live GPS · {onlineUsers.length} operators</p>
           </div>
+          <button onClick={() => setShowDebug((v) => !v)} className="p-2 text-cyan-400">
+            <Bug className="w-6 h-6" />
+          </button>
           <button onClick={() => setShowLayers(true)} className="p-2 text-cyan-400">
             <Layers className="w-6 h-6" />
           </button>
@@ -169,6 +208,17 @@ export default function RadioScope() {
             }}
           />
         </div>
+
+        {/* Admin debug panel */}
+        {showDebug && (
+          <RadioScopeDebugPanel
+            myFix={myFix}
+            myPresence={myPresence}
+            liveUsers={onlineUsers}
+            allPresence={presenceData}
+            now={nowTick}
+          />
+        )}
 
         {/* Recenter button */}
         <button
@@ -205,6 +255,7 @@ export default function RadioScope() {
             user={selectedUser}
             userPosition={userPosition}
             repeaters={repeaters}
+            now={nowTick}
             onClose={() => setSelectedUser(null)}
           />
         )}

@@ -1,6 +1,9 @@
 import React, { useMemo } from "react";
 import { MessageSquare, Phone, UserCircle, Radio, Clock, MapPin, Ruler, Navigation } from "lucide-react";
 import { haversine, bearing, compassDirection, formatDistanceMixed } from "@/lib/geoUtils";
+import {
+  isLocationLive, getLocationAgeMs, formatAge, formatSpeed, formatHeading, LOCATION_TTL_MS,
+} from "@/lib/radioScopeLocation";
 import DraggableSheet from "./DraggableSheet";
 
 const STATUS_LABELS = {
@@ -13,7 +16,9 @@ const STATUS_COLORS = {
   offline: "text-gray-500",
 };
 
-export default function UserSheet({ user, userPosition, repeaters, onClose }) {
+export default function UserSheet({ user, userPosition, repeaters, now = Date.now(), onClose }) {
+  const live = isLocationLive(user, now);
+  const age = getLocationAgeMs(user, now);
   const distFromYou = userPosition && user.latitude
     ? haversine(userPosition[0], userPosition[1], user.latitude, user.longitude)
     : null;
@@ -56,9 +61,14 @@ export default function UserSheet({ user, userPosition, repeaters, onClose }) {
       </div>
       <div className="min-w-0">
         <h2 className="text-lg font-bold text-foreground truncate">{user.user_name}</h2>
-        <p className={`text-xs font-semibold ${STATUS_COLORS[status] || "text-muted-foreground"}`}>
-          ● {STATUS_LABELS[status] || status}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className={`text-xs font-semibold ${STATUS_COLORS[status] || "text-muted-foreground"}`}>
+            ● {STATUS_LABELS[status] || status}
+          </p>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${live ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"}`}>
+            {live ? "LIVE GPS" : "STALE"}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -139,6 +149,42 @@ export default function UserSheet({ user, userPosition, repeaters, onClose }) {
             </div>
             <span className="text-sm font-medium text-foreground">
               {user.latitude ? `${user.latitude.toFixed(3)}, ${user.longitude.toFixed(3)}` : "Unknown"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2.5 border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Fix Age</span>
+            </div>
+            <span className={`text-sm font-medium ${live ? "text-emerald-400" : "text-amber-400"}`}>
+              {formatAge(age)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2.5 border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Accuracy</span>
+            </div>
+            <span className={`text-sm font-medium ${user.gps_accuracy != null && user.gps_accuracy > 100 ? "text-red-400" : "text-foreground"}`}>
+              {user.gps_accuracy != null ? `${Math.round(user.gps_accuracy)} m` : "—"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2.5 border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <Navigation className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Speed / Heading</span>
+            </div>
+            <span className="text-sm font-medium text-foreground">
+              {formatSpeed(user.gps_speed)} · {formatHeading(user.gps_heading)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between py-2.5">
+            <div className="flex items-center gap-2">
+              <Radio className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Source</span>
+            </div>
+            <span className="text-sm font-medium text-foreground uppercase">
+              {(user.location_source || "—")}
             </span>
           </div>
         </div>
