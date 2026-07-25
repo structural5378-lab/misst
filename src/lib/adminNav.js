@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, BarChart3, Users, ShieldCheck, ClipboardList,
   MessageSquare, MessagesSquare, Mail, RadioTower, Radio, CalendarClock,
-  Image, ShoppingCart, Award, Bell, Palette, LayoutGrid, Server,
+  Building2, Image, ShoppingCart, Award, Bell, Palette, LayoutGrid, Server,
   ShieldAlert, DatabaseBackup, Terminal, LayoutTemplate,
 } from "lucide-react";
 
@@ -22,6 +22,12 @@ export const adminNavSections = [
     items: [
       { label: "User Management", path: "/platform/admin/users", icon: Users, minRole: 2 },
       { label: "Groups & Permissions", path: "/platform/admin/roles", icon: ShieldCheck, minRole: 3 },
+    ],
+  },
+  {
+    title: "Communities",
+    items: [
+      { label: "Community Management", path: "/platform/admin/communities", icon: Building2, minRole: 2 },
     ],
   },
   {

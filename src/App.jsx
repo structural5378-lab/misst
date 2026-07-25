@@ -66,6 +66,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 // Platform Admin pages
 import PlatformAdminDashboard from '@/pages/platform/PlatformAdminDashboard';
 import PlatformAdminCommunities from '@/pages/platform/PlatformAdminCommunities';
+import PlatformAdminCommunityDetail from '@/pages/platform/PlatformAdminCommunityDetail';
 import PlatformAdminUsers from '@/pages/platform/PlatformAdminUsers';
 import PlatformAdminRoles from '@/pages/platform/PlatformAdminRoles';
 import PlatformAdminAuditLog from '@/pages/platform/PlatformAdminAuditLog';
@@ -203,6 +204,7 @@ const AuthenticatedApp = () => {
         <Route element={<PlatformAdminLayout />}>
           <Route path="/platform/admin" element={<PlatformAdminDashboard />} />
           <Route path="/platform/admin/communities" element={<PlatformAdminCommunities />} />
+          <Route path="/platform/admin/communities/:id" element={<PlatformAdminCommunityDetail />} />
           <Route path="/platform/admin/users" element={<PlatformAdminUsers />} />
           <Route path="/platform/admin/roles" element={<PlatformAdminRoles />} />
           <Route path="/platform/admin/audit-log" element={<PlatformAdminAuditLog />} />
