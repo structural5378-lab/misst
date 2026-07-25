@@ -10,6 +10,7 @@ import CommunityDirectoryCard from "@/components/community/onboarding/CommunityD
 import JoinRequestSheet from "@/components/community/onboarding/JoinRequestSheet";
 import { useUserCommunities } from "@/hooks/useUserCommunities";
 import { useAppEnvironment } from "@/hooks/useAppEnvironment";
+import { friendlyMembershipError, isRetryableMembershipError } from "@/lib/communityMembership";
 import { CATEGORIES } from "@/components/community/wizard/StepBasics";
 
 const SORTS = [
@@ -108,20 +109,60 @@ export default function CommunityOnboarding() {
 
   const handleJoin = async (community) => {
     setBusyId(community.id);
+    const tag = `[JoinCommunity][${community.slug}]`;
+    const invokeJoin = () =>
+      base44.functions.invoke("manageCommunityMembership", { action: "join", community_id: community.id });
+
+    const finish = (data) => {
+      toast({
+        title: data?.already_member ? "You're already a member" : "Welcome aboard!",
+        description: `You joined ${community.name}.`,
+      });
+      localStorage.setItem("selected_community_id", community.id);
+      localStorage.setItem("selected_community_name", community.name);
+      localStorage.removeItem("onboarding_skipped");
+      qc.invalidateQueries({ queryKey: ["user-communities"] });
+      qc.invalidateQueries({ queryKey: ["my-memberships-all"] });
+      window.location.href = `/c/${community.slug}/welcome`;
+    };
+
     try {
-      const res = await base44.functions.invoke("manageCommunityMembership", { action: "join", community_id: community.id });
-      if (res.data?.success) {
-        toast({ title: "Welcome aboard!", description: `You joined ${community.name}.` });
-        localStorage.setItem("selected_community_id", community.id);
-        localStorage.setItem("selected_community_name", community.name);
-        localStorage.removeItem("onboarding_skipped");
-        await qc.invalidateQueries({ queryKey: ["user-communities"] });
-        window.location.href = `/c/${community.slug}/welcome`;
-      } else {
-        toast({ title: "Couldn't join", description: res.data?.error || "Try again later.", variant: "destructive" });
-      }
+      const me = await base44.auth.me().catch(() => null);
+      console.log(tag, "pre-flight", {
+        user_id: me?.id ?? null,
+        community_id: community.id,
+        authenticated: !!me,
+      });
+      const res = await invokeJoin();
+      console.log(tag, "response", { status: res?.status, data: res?.data });
+      if (res.data?.success) return finish(res.data);
+      // Non-2xx that didn't throw — still map to a friendly message.
+      toast({ title: "Couldn't join", description: friendlyMembershipError(res.data), variant: "destructive" });
     } catch (e) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      console.error(tag, "attempt 1 failed", {
+        status: e?.response?.status,
+        data: e?.response?.data,
+        message: e?.message,
+      });
+      // Retry once for transient / session-provisioning failures.
+      if (isRetryableMembershipError(e)) {
+        try {
+          console.log(tag, "retrying after short delay…");
+          await new Promise((r) => setTimeout(r, 800));
+          const res2 = await invokeJoin();
+          console.log(tag, "retry response", { status: res2?.status, data: res2?.data });
+          if (res2.data?.success) return finish(res2.data);
+          toast({ title: "Couldn't join", description: friendlyMembershipError(res2.data), variant: "destructive" });
+          return;
+        } catch (e2) {
+          console.error(tag, "retry failed", {
+            status: e2?.response?.status,
+            data: e2?.response?.data,
+            message: e2?.message,
+          });
+        }
+      }
+      toast({ title: "Couldn't join", description: friendlyMembershipError(e), variant: "destructive" });
     } finally {
       setBusyId(null);
     }

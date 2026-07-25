@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { X, Loader2, KeyRound, MessageSquare, Lock, Check } from "lucide-react";
+import { friendlyMembershipError } from "@/lib/communityMembership";
 
 /**
  * Bottom sheet for joining a private community.
@@ -44,7 +45,8 @@ export default function JoinRequestSheet({ community, onClose, onJoined }) {
         toast({ title: "Couldn't join", description: res.data?.error || "Try again later.", variant: "destructive" });
       }
     } catch (e) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      console.error("[JoinRequestSheet]", community?.slug, e?.response?.status, e?.response?.data, e);
+      toast({ title: "Couldn't join", description: friendlyMembershipError(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }

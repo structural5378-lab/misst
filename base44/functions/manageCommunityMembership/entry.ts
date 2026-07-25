@@ -90,12 +90,37 @@ Deno.serve(async (req) => {
     };
 
     // --- join (open/public, or instant via invite code) ---
+    // Public communities are always joinable by authenticated users unless
+    // explicitly locked (join_mode === 'closed'). This keeps the backend
+    // gate in sync with the directory card, which offers "Join Community"
+    // for every visibility='public' community regardless of join_mode —
+    // the previous gate (joinMode !== 'open') caused a 403 whenever a
+    // public community's settings carried a non-open join_mode.
     if (action === 'join') {
-      if (joinMode !== 'open' && !inviteValid) {
-        return Response.json({ error: 'This community requires approval or an invitation to join' }, { status: 403 });
+      const isClosed = joinMode === 'closed';
+      const instantAllowed = joinMode === 'open' || community.visibility === 'public' || inviteValid;
+      console.log('[manageCommunityMembership][join]', {
+        user_id: user.id, community_id, visibility: community.visibility,
+        join_mode: joinMode, has_member: !!member, member_status: member?.status ?? null,
+        invite_valid: inviteValid, is_closed: isClosed, instant_allowed: instantAllowed,
+      });
+      if (isClosed && !inviteValid) {
+        console.warn('[manageCommunityMembership][join] rejected: community closed');
+        return Response.json({ error: 'This community is closed to new members', code: 'closed' }, { status: 403 });
       }
+      if (!instantAllowed) {
+        console.warn('[manageCommunityMembership][join] rejected: approval/invite required');
+        return Response.json({ error: 'This community requires approval or an invitation to join', code: 'approval_required' }, { status: 403 });
+      }
+      // Idempotent: an existing active membership is a success, never a 409,
+      // so retries and duplicate clicks navigate the user straight in.
       if (member && member.is_active && member.status === 'active') {
-        return Response.json({ error: 'You are already a member' }, { status: 409 });
+        return Response.json({ success: true, status: 'active', already_member: true });
+      }
+      // Banned users cannot rejoin on their own.
+      if (member && member.status === 'banned') {
+        console.warn('[manageCommunityMembership][join] rejected: banned user', user.id);
+        return Response.json({ error: 'You are banned from this community', code: 'banned' }, { status: 403 });
       }
       await grantActiveMembership();
       await consumeInvite();
