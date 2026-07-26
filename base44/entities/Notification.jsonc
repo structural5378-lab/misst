@@ -35,7 +35,11 @@
         "radioscope_nearby",
         "weather_alert",
         "ai_assistant",
-        "event_reminder"
+        "event_reminder",
+        "forum_reply",
+        "news",
+        "repeater_added",
+        "achievement_unlocked"
       ],
       "default": "system",
       "description": "Notification category. Drives filtering, routing, per-type preferences, icon/color, sound, and deep-link."

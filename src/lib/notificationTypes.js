@@ -15,6 +15,7 @@ import {
   CloudLightning,
   Sparkles,
   CalendarClock,
+  Newspaper,
 } from "lucide-react";
 
 // Canonical notification categories + their presentation metadata.
@@ -36,6 +37,10 @@ export const NOTIF_CATEGORIES = {
   community_invite:      { label: "Invites",            color: "#8B5CF6", icon: UserCheck,      tag: "invite",    sound: true,  requireInteraction: false },
   user_mention:           { label: "Mentions",          color: "#06B6D4", icon: AtSign,         tag: "mention",   sound: true,  requireInteraction: false },
   event_reminder:         { label: "Event Reminders",   color: "#F97316", icon: CalendarClock,  tag: "event",     sound: true,  requireInteraction: false },
+  forum_reply:             { label: "Forum Replies",    color: "#8B5CF6", icon: MessageSquare,  tag: "forum",     sound: true,  requireInteraction: false },
+  news:                    { label: "News",              color: "#0EA5E9", icon: Newspaper,      tag: "news",      sound: true,  requireInteraction: false },
+  repeater_added:          { label: "Repeaters",         color: "#10B981", icon: Radio,          tag: "repeater",  sound: true,  requireInteraction: false },
+  achievement_unlocked:    { label: "Achievements",      color: "#F59E0B", icon: Award,          tag: "achievement",sound: true,  requireInteraction: false },
 };
 
 export const NOTIF_FILTERS = [

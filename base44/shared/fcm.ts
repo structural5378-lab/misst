@@ -171,7 +171,8 @@ export async function sendFcmMulticast(tokens, messagePayload) {
               /UNREGISTERED|not a valid|registration token/i.test(msg);
             return { token: tk, ok: false, status: res.status, code, error: msg, invalid };
           }
-          return { token: tk, ok: true, status: 200 };
+          const okData = await res.json().catch(() => ({}));
+          return { token: tk, ok: true, status: 200, messageId: okData.name || "" };
         } catch (e) {
           return { token: tk, ok: false, error: e.message, invalid: false };
         }

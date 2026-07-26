@@ -81,6 +81,18 @@ export function useNotifications() {
     },
   });
 
+  // Keep the PWA app-icon badge synchronized with the unread count across devices.
+  // Increment on new notifications, decrement on read, reset to zero on Mark All Read.
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && "setAppBadge" in navigator) {
+      const count = unreadQ.data || 0;
+      try {
+        if (count > 0) navigator.setAppBadge(count).catch(() => {});
+        else navigator.clearAppBadge().catch(() => {});
+      } catch { /* badge API unsupported — ignore */ }
+    }
+  }, [unreadQ.data]);
+
   return {
     list: listQ.data || [],
     unreadCount: unreadQ.data || 0,

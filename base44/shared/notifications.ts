@@ -1,18 +1,22 @@
-// MIST Notification Engine — in-app + FCM push delivery (production-hardened).
+// MIST Notification Engine — the centralized Notification Service.
 //
-// Single source of truth for notification logic. The `notify` HTTP service and
-// any backend function import `dispatchNotifications`. Chat, community, net,
-// and badge modules never implement their own push logic — they route here.
+// Single source of truth for notification logic. Every feature (forum, chat, DM,
+// nets, achievements, repeaters, alerts, admin broadcasts) routes here via the
+// `notify` HTTP endpoint or by calling `dispatchNotifications` directly. No
+// feature implements its own push/in-app/badge/deeplink logic.
 //
 // Production features:
 // - Per-category FCM payload (sound, vibration, tag, requireInteraction, color, image)
-// - Per-user NotificationPreferences (category toggles + timezone-aware quiet hours)
-// - NotificationDelivery records (sent/delivered/opened/failed/expired) for analytics + retry
+// - User preferences from User.notif_settings (Settings > Notification Categories)
+//   + NotificationPreferences (quiet hours + emergency sound/vibration)
+// - Disabled category => NO push, NO in-app record, NO badge increment (skipped entirely)
+// - NotificationDelivery records (sent/delivered/opened/failed/expired) with FCM
+//   message id + token preview for logging/analytics/retry
 // - Automatic invalid-token purge on UNREGISTERED / INVALID_ARGUMENT
 // - Emergency alerts bypass quiet hours (sound/vibration still respect preferences)
 
 import { NotificationService } from "./notificationService.ts";
-import { NOTIF_TYPES, getCategoryMeta } from "./notificationTypes.ts";
+import { NOTIF_TYPES, TYPE_TO_PREF_KEY, DEFAULT_NOTIF_SETTINGS, getCategoryMeta } from "./notificationTypes.ts";
 
 export { NOTIF_TYPES };
 
@@ -25,8 +29,16 @@ function parseJSON(value, fallback) {
   }
 }
 
-// Resolve a user's per-type preference from the parsed notification_preferences object
-// (legacy User.notification_preferences JSON). Returns true unless explicitly disabled.
+// Resolve a user's notif_settings (merged with defaults). Used to decide whether
+// a category is enabled and whether the push channel is on.
+function getNotifSettings(user) {
+  const ns = parseJSON(user?.notif_settings, null);
+  if (!ns || typeof ns !== "object") return DEFAULT_NOTIF_SETTINGS;
+  return { ...DEFAULT_NOTIF_SETTINGS, ...ns };
+}
+
+// Legacy per-type preference resolver (kept for backward compatibility with any
+// caller still reading User.notification_preferences). Returns true unless disabled.
 export function isTypeEnabled(prefs, type) {
   if (!prefs || typeof prefs !== "object") return true;
   const v = prefs[type];
@@ -40,6 +52,7 @@ export function isTypeEnabled(prefs, type) {
 }
 
 // Resolve a deep-link route from the event type + related object + metadata.
+// This is the single place that maps a notification category to its app screen.
 export function resolveLink(event) {
   if (event.link) return event.link;
   const meta = parseJSON(event.metadata, {});
@@ -58,6 +71,8 @@ export function resolveLink(event) {
       return event.related_object_type === "thread" && rid
         ? `/community/thread/${rid}`
         : "/community-forum";
+    case "forum_reply":
+      return rid ? `/community/thread/${rid}` : "/community-forum";
     case "net_starting":
       return rid ? `/nets/${rid}/display` : "/nets";
     case "net_ended":
@@ -74,6 +89,11 @@ export function resolveLink(event) {
       return "/notifications";
     case "event_reminder":
       return meta.community_slug ? `/c/${meta.community_slug}/events` : "/alerts";
+    case "news":
+      return "/notifications";
+    case "repeater_added":
+      return rid ? `/repeaters/${rid}` : "/repeaters";
+    case "achievement_unlocked":
     case "badge_earned":
       return "/achievements";
     default:
@@ -141,7 +161,7 @@ async function fetchTokensByUser(base44, recipientIds) {
   return map;
 }
 
-// Fetch NotificationPreferences rows for recipients (one row per user, if any).
+// Fetch NotificationPreferences rows for recipients (quiet hours + emergency sound/vibration).
 async function fetchPreferences(base44, recipientIds) {
   const map = new Map();
   if (!recipientIds || recipientIds.length === 0) return map;
@@ -159,7 +179,7 @@ async function fetchPreferences(base44, recipientIds) {
 }
 
 // Timezone-aware quiet-hours check. Returns true if `now` (in the user's tz)
-// falls within [start, end). Handles overnight wrap (e.g. 22:00→07:00).
+// falls within [start, end). Handles overnight wrap (e.g. 22:00->07:00).
 function isQuietHours(pref, now = new Date()) {
   if (!pref || !pref.quiet_hours_start || !pref.quiet_hours_end) return false;
   if (pref.quiet_hours_start === pref.quiet_hours_end) return false;
@@ -182,17 +202,9 @@ function isQuietHours(pref, now = new Date()) {
   }
 }
 
-// Does the user's NotificationPreferences allow PUSH for this type?
-function prefAllowsPush(prefRow, type) {
-  if (!prefRow) return true;
-  const prefs = typeof prefRow.prefs === "string" ? parseJSON(prefRow.prefs, {}) : prefRow.prefs || {};
-  const v = prefs[type];
-  if (v === false) return false;
-  if (v && typeof v === "object" && v.push === false) return false;
-  return true;
-}
-
 // Build the enriched FCM HTTP v1 payload from the category meta + record.
+// Per-category sound is configured here; swap `sound` for a custom sound file
+// per category later without changing any caller.
 function buildEnrichedPayload(record, meta) {
   const icon = "https://insomniacsgmrs.com/uploads/mist-icon.png";
   const extra = parseJSON(record.metadata, {});
@@ -225,17 +237,15 @@ function buildEnrichedPayload(record, meta) {
 // Deactivate device tokens that FCM rejected as invalid (UNREGISTERED / INVALID_ARGUMENT).
 async function purgeInvalidTokens(base44, tokens) {
   if (!tokens || tokens.length === 0) return 0;
-  let n = 0;
   try {
     await base44.asServiceRole.entities.DeviceToken.updateMany(
       { token: { $in: tokens } },
       { $set: { is_active: false } }
     ).catch(() => {});
-    n = tokens.length;
+    return tokens.length;
   } catch {
-    /* ignore */
+    return 0;
   }
-  return n;
 }
 
 // Main entry: dispatch a notification event to all eligible recipients.
@@ -259,17 +269,18 @@ export async function dispatchNotifications(base44, event) {
   const link = resolveLink(event);
   const meta = getCategoryMeta(event.type);
   const isEmergency = event.type === "emergency_alert";
+  const prefKey = TYPE_TO_PREF_KEY[event.type];
 
-  // 1) Build in-app records (honoring preferences).
+  // 1) Build in-app records, honoring per-user category preferences.
+  // A disabled category => skip entirely (no push, no in-app record, no badge).
   const records = [];
   for (const recipientId of recipients) {
     if (event.skip_sender && recipientId === senderId) continue;
     const recipient = userMap.get(recipientId);
-    const legacyPrefs = parseJSON(recipient?.notification_preferences, {});
-    const prefRow = prefsByUser.get(recipientId);
-    // In-app suppression: only skip if BOTH channels disabled for this type.
-    const inAppEnabled = isTypeEnabled(legacyPrefs, {}) && (prefRow ? inAppAllowed(prefRow, event.type) : true);
-    if (!inAppEnabled && !prefAllowsPush(prefRow, event.type) && !isTypeEnabled(legacyPrefs, event.type)) continue;
+    const ns = getNotifSettings(recipient);
+
+    // Category gate: if this type maps to a user toggle and it's off, skip the user.
+    if (prefKey && ns[prefKey] === false) continue;
 
     records.push({
       recipient_id: recipientId,
@@ -289,7 +300,7 @@ export async function dispatchNotifications(base44, event) {
       metadata: JSON.stringify({ ...baseMeta, link, category: meta.label }),
     });
   }
-  if (records.length === 0) return { created: 0, recipients: [] };
+  if (records.length === 0) return { created: 0, recipients, skipped: "all-disabled" };
 
   // 2) Persist in-app records (so we have ids for delivery tracking).
   const created = [];
@@ -299,17 +310,22 @@ export async function dispatchNotifications(base44, event) {
     if (Array.isArray(res)) created.push(...res);
   }
 
-  // 3) Deliver push + write NotificationDelivery records (analytics + retry).
+  // 3) Deliver push + write NotificationDelivery records (logging/analytics/retry).
   for (const rec of created) {
+    const recipient = userMap.get(rec.recipient_id);
+    const ns = getNotifSettings(recipient);
     const prefRow = prefsByUser.get(String(rec.recipient_id));
     const tokens = tokensByUser.get(String(rec.recipient_id)) || [];
+    const pushChannelOn = ns.push !== false;
     const quiet = !isEmergency && isQuietHours(prefRow);
-    const pushAllowed = isEmergency || prefAllowsPush(prefRow, event.type);
+    const pushAllowed = isEmergency || pushChannelOn;
 
     let status = "delivered";
     let lastError = "";
     let lastErrorCode = "";
     let sentAt = "";
+    let fcmMessageId = "";
+    let tokenPreview = "";
     let invalidTokens = [];
 
     if (tokens.length === 0) {
@@ -317,12 +333,15 @@ export async function dispatchNotifications(base44, event) {
     } else if (quiet) {
       status = "delivered"; // push suppressed during quiet hours (in-app delivered)
     } else if (!pushAllowed) {
-      status = "delivered"; // push disabled by preference (in-app delivered)
+      status = "delivered"; // push channel disabled by preference (in-app delivered)
     } else {
+      tokenPreview = tokens[0] ? tokens[0].slice(0, 16) + "…" : "";
       const payload = buildEnrichedPayload(rec, meta);
       const res = await NotificationService.sendPush(tokens, payload);
       invalidTokens = res.invalidTokens || [];
       if (invalidTokens.length) await purgeInvalidTokens(base44, invalidTokens);
+      const firstOk = (res.results || []).find((r) => r.ok);
+      fcmMessageId = firstOk?.messageId || "";
       if (res.failed === 0) {
         status = "sent";
         sentAt = new Date().toISOString();
@@ -336,11 +355,19 @@ export async function dispatchNotifications(base44, event) {
       }
     }
 
+    // Debug log: User ID | Category | Title | Timestamp | Token | FCM id | result.
+    console.log(
+      `[NOTIFY] user=${rec.recipient_id} cat=${rec.type} title="${(rec.title || "").slice(0, 60)}" ` +
+      `ts=${new Date().toISOString()} token=${tokenPreview || "none"} fcm=${fcmMessageId || "-"} ` +
+      `status=${status}${lastError ? ` err=${lastError}` : ""}`
+    );
+
     try {
       await base44.asServiceRole.entities.NotificationDelivery.create({
         notification_id: rec.id,
         recipient_id: rec.recipient_id,
         type: rec.type,
+        title: (rec.title || "").slice(0, 200),
         status,
         attempts: status === "failed" ? 1 : status === "sent" ? 1 : 0,
         max_attempts: 5,
@@ -348,6 +375,8 @@ export async function dispatchNotifications(base44, event) {
         last_error: lastError,
         last_error_code: lastErrorCode,
         token_count: tokens.length,
+        token_preview: tokenPreview,
+        fcm_message_id: fcmMessageId,
         platforms: JSON.stringify(["web"]),
         sent_at: sentAt,
         delivered_at: status === "delivered" ? new Date().toISOString() : "",
@@ -358,14 +387,5 @@ export async function dispatchNotifications(base44, event) {
     }
   }
 
-  return { created: created.length, recipients, purgedInvalidTokens: true };
-}
-
-function inAppAllowed(prefRow, type) {
-  if (!prefRow) return true;
-  const prefs = typeof prefRow.prefs === "string" ? parseJSON(prefRow.prefs, {}) : prefRow.prefs || {};
-  const v = prefs[type];
-  if (v && typeof v === "object" && v.inapp === false) return false;
-  if (v === false) return false;
-  return true;
+  return { created: created.length, recipients };
 }

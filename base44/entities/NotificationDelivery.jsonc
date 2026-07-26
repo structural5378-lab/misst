@@ -14,6 +14,10 @@
       "type": "string",
       "description": "Notification category (mirrors Notification.type)"
     },
+    "title": {
+      "type": "string",
+      "description": "Denormalized notification title (for log/debug views)"
+    },
     "status": {
       "type": "string",
       "enum": [
@@ -50,6 +54,14 @@
       "type": "number",
       "default": 0,
       "description": "Number of device tokens the push was sent to"
+    },
+    "token_preview": {
+      "type": "string",
+      "description": "Truncated first token (debug only)"
+    },
+    "fcm_message_id": {
+      "type": "string",
+      "description": "FCM HTTP v1 message name returned on success (e.g. projects/.../messages/...)"
     },
     "platforms": {
       "type": "string",
