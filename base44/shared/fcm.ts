@@ -139,19 +139,23 @@ export async function sendFcmMessage(token, messagePayload) {
 }
 
 // Send the same payload to many tokens. Mints one OAuth token, then sends with
-// bounded concurrency. Returns { sent, failed, errors }.
+// bounded concurrency. Returns { sent, failed, errors, invalidTokens, results }.
+// `invalidTokens` lists tokens FCM rejected as UNREGISTERED / INVALID_ARGUMENT
+// so the caller can deactivate them (retry system + invalid-token purge).
 export async function sendFcmMulticast(tokens, messagePayload) {
-  if (!tokens || tokens.length === 0) return { sent: 0, failed: 0, errors: [] };
+  if (!tokens || tokens.length === 0) return { sent: 0, failed: 0, errors: [], invalidTokens: [], results: [] };
   const auth = await getFcmAccessToken();
-  if (!auth.ok) return { sent: 0, failed: tokens.length, errors: [auth.error] };
+  if (!auth.ok) return { sent: 0, failed: tokens.length, errors: [auth.error], invalidTokens: [], results: [] };
   const url = `https://fcm.googleapis.com/v1/projects/${auth.projectId}/messages:send`;
   const CONC = 10;
   let sent = 0;
   let failed = 0;
   const errors = [];
+  const invalidTokens = [];
+  const results = [];
   for (let i = 0; i < tokens.length; i += CONC) {
     const chunk = tokens.slice(i, i + CONC);
-    const results = await Promise.all(
+    const chunkResults = await Promise.all(
       chunk.map(async (tk) => {
         try {
           const res = await fetch(url, {
@@ -161,21 +165,27 @@ export async function sendFcmMulticast(tokens, messagePayload) {
           });
           if (!res.ok) {
             const d = await res.json().catch(() => ({}));
-            return { ok: false, error: d.error?.message || `HTTP ${res.status}`, status: res.status };
+            const code = d.error?.status || "";
+            const msg = d.error?.message || `HTTP ${res.status}`;
+            const invalid = code === "NOT_FOUND" || code === "INVALID_ARGUMENT" ||
+              /UNREGISTERED|not a valid|registration token/i.test(msg);
+            return { token: tk, ok: false, status: res.status, code, error: msg, invalid };
           }
-          return { ok: true };
+          return { token: tk, ok: true, status: 200 };
         } catch (e) {
-          return { ok: false, error: e.message };
+          return { token: tk, ok: false, error: e.message, invalid: false };
         }
       })
     );
-    for (const r of results) {
+    for (const r of chunkResults) {
+      results.push(r);
       if (r.ok) sent++;
       else {
         failed++;
         if (errors.length < 10) errors.push(r.error);
+        if (r.invalid) invalidTokens.push(r.token);
       }
     }
   }
-  return { sent, failed, errors };
+  return { sent, failed, errors, invalidTokens, results };
 }

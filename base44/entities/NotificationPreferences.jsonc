@@ -1,0 +1,85 @@
+{
+  "name": "NotificationPreferences",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner user ID"
+    },
+    "prefs": {
+      "type": "string",
+      "description": "JSON map: { <type>: { push: bool, inapp: bool } }. A type omitted = enabled for both."
+    },
+    "quiet_hours_start": {
+      "type": "string",
+      "description": "HH:MM (24h) start of quiet hours, or empty = disabled"
+    },
+    "quiet_hours_end": {
+      "type": "string",
+      "description": "HH:MM (24h) end of quiet hours, or empty = disabled"
+    },
+    "quiet_hours_timezone": {
+      "type": "string",
+      "description": "IANA timezone for quiet-hours evaluation",
+      "default": "America/New_York"
+    },
+    "emergency_sound": {
+      "type": "boolean",
+      "default": true,
+      "description": "Emergency alerts cannot be disabled, but sound can be muted"
+    },
+    "emergency_vibration": {
+      "type": "boolean",
+      "default": true,
+      "description": "Emergency alerts vibration toggle"
+    },
+    "allow_marketing": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

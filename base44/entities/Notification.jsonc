@@ -26,19 +26,29 @@
         "friend_request",
         "user_mention",
         "net_starting",
+        "net_ended",
         "emergency_alert",
         "badge_earned",
         "community_invite",
-        "system"
+        "system",
+        "mission_control",
+        "radioscope_nearby",
+        "weather_alert",
+        "ai_assistant",
+        "event_reminder"
       ],
       "default": "system",
-      "description": "Notification category. Drives filtering, routing, and per-type preferences."
+      "description": "Notification category. Drives filtering, routing, per-type preferences, icon/color, sound, and deep-link."
     },
     "title": {
       "type": "string"
     },
     "message": {
       "type": "string"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Optional notification image (rich media)"
     },
     "related_object_id": {
       "type": "string",
@@ -55,6 +65,11 @@
     "read_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "opened_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the user opened/tapped the notification (deep-link click tracking)"
     },
     "delivered_at": {
       "type": "string",

@@ -25,14 +25,17 @@ const ACTIVE_PROVIDERS = [fcmProvider];
 
 export const NotificationService = {
   // Send a push notification to the given tokens via the active provider(s).
+  // Merges per-provider results, including `invalidTokens` for purge/retry.
   async sendPush(tokens, payload) {
-    if (!tokens || tokens.length === 0) return { sent: 0, failed: 0, errors: [] };
-    const merged = { sent: 0, failed: 0, errors: [] };
+    if (!tokens || tokens.length === 0) return { sent: 0, failed: 0, errors: [], invalidTokens: [], results: [] };
+    const merged = { sent: 0, failed: 0, errors: [], invalidTokens: [], results: [] };
     for (const provider of ACTIVE_PROVIDERS) {
       const res = await provider.send(tokens, payload);
       merged.sent += res.sent || 0;
       merged.failed += res.failed || 0;
       if (Array.isArray(res.errors)) merged.errors.push(...res.errors);
+      if (Array.isArray(res.invalidTokens)) merged.invalidTokens.push(...res.invalidTokens);
+      if (Array.isArray(res.results)) merged.results.push(...res.results);
     }
     return merged;
   },

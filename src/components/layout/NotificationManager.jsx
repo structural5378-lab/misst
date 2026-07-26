@@ -1,13 +1,13 @@
 import { useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
 import { ensureSubscribed } from "@/lib/fcmPush";
+import InAppNotificationCenter from "@/components/notifications/InAppNotificationCenter";
 
 // Mounted once in AppLayout. Ensures the FCM service worker is registered and, if
-// the user is already subscribed, keeps the backend token fresh. Also handles
-// foreground push (toast) and browser-initiated subscription refresh.
+// the user is already subscribed, keeps the backend token fresh. Also keeps the
+// service worker up to date and cleans up stale third-party workers. Foreground
+// push display is handled by <InAppNotificationCenter /> (rendered below), which
+// listens to the SW 'fcm-push' messages directly.
 export default function NotificationManager() {
-  const { toast } = useToast();
-
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
 
@@ -17,24 +17,11 @@ export default function NotificationManager() {
 
     const onMessage = async (event) => {
       const msg = event.data || {};
-      if (msg.type === "fcm-push") {
-        // Foreground: graceful in-app toast instead of a system notification.
-        const p = msg.payload || {};
-        const data = p.data || {};
-        const notif = p.notification || {};
-        const title = notif.title || data.title || "MIST";
-        const body = notif.body || data.body || "";
-        const link = data.link || (p.fcm_options && p.fcm_options.link) || "/notifications";
-        toast({
-          title,
-          description: body,
-          // Tap the toast to navigate to the relevant screen.
-          onClick: () => { try { window.location.href = link; } catch { /* ignore */ } },
-        });
-      } else if (msg.type === "fcm-subscription-changed") {
+      if (msg.type === "fcm-subscription-changed") {
         // Browser invalidated the subscription — re-mint & re-register via the SDK.
         try { await ensureSubscribed(); } catch (e) { console.warn("refresh on sub change", e); }
       }
+      // Foreground 'fcm-push' is handled by InAppNotificationCenter.
     };
 
     // Remove any stale third-party service workers (e.g. leftover PushAlert SW)
@@ -66,7 +53,7 @@ export default function NotificationManager() {
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("online", onFocus);
     };
-  }, [toast]);
+  }, []);
 
-  return null;
+  return <InAppNotificationCenter />;
 }

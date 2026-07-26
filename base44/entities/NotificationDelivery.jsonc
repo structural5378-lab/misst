@@ -1,0 +1,117 @@
+{
+  "name": "NotificationDelivery",
+  "type": "object",
+  "properties": {
+    "notification_id": {
+      "type": "string",
+      "description": "References Notification.id"
+    },
+    "recipient_id": {
+      "type": "string",
+      "description": "Recipient user ID"
+    },
+    "type": {
+      "type": "string",
+      "description": "Notification category (mirrors Notification.type)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "sent",
+        "delivered",
+        "opened",
+        "failed",
+        "expired"
+      ],
+      "default": "pending",
+      "description": "Delivery lifecycle state. delivered = in-app only / push suppressed (quiet hours or disabled); sent = push accepted by FCM; opened = user tapped; failed = push rejected; expired = retries exhausted."
+    },
+    "attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "max_attempts": {
+      "type": "number",
+      "default": 5
+    },
+    "next_retry_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the retry automation should next attempt a failed delivery"
+    },
+    "last_error": {
+      "type": "string"
+    },
+    "last_error_code": {
+      "type": "string"
+    },
+    "token_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of device tokens the push was sent to"
+    },
+    "platforms": {
+      "type": "string",
+      "description": "JSON array of platforms attempted (web/android/ios)"
+    },
+    "app_version": {
+      "type": "string"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "delivered_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "opened_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "failed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "notification_id",
+    "recipient_id",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.recipient_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.recipient_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.recipient_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
