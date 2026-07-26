@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Check, CheckCheck, Clock, AlertCircle, RotateCcw, Smile, CornerUpRight } from "lucide-react";
+import { Check, CheckCheck, Clock, AlertCircle, RotateCcw, Smile, CornerUpRight, Pin } from "lucide-react";
 import { formatTime, isTempId } from "@/lib/chatV2/chatV2Utils";
 import MessageContextMenuV2 from "./MessageContextMenuV2";
 import ReactionPickerV2 from "./ReactionPickerV2";
@@ -26,7 +26,7 @@ function StatusIcon({ status, onRetry }) {
   return null;
 }
 
-export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onRetry, onEdit, onDelete, onReact, onReply, onReplyJump }) {
+export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onRetry, onEdit, onDelete, onReact, onReply, onReplyJump, onPin, pinned }) {
   const [menu, setMenu] = useState(null); // {x,y}
   const [pickerOpen, setPickerOpen] = useState(false);
   const [hover, setHover] = useState(false);
@@ -175,6 +175,11 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
         )
       )}
 
+      {message.pinned && (
+        <div className={`absolute -top-2 ${isMine ? "right-6" : "left-6"} flex items-center gap-1 text-[9px] font-semibold text-primary bg-background/90 px-1.5 py-0.5 rounded-full border border-primary/30`}>
+          <Pin className="w-2.5 h-2.5" />Pinned
+        </div>
+      )}
       {menu && (
         <MessageContextMenuV2
           x={menu.x} y={menu.y} isMine={isMine}
@@ -183,6 +188,8 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
           onEdit={() => setEditing(true)}
           onDelete={() => onDelete?.(message.id)}
           onReact={() => { setPickerOpen(true); }}
+          onPin={onPin ? () => onPin?.(message) : undefined}
+          pinned={pinned}
           onClose={() => setMenu(null)}
         />
       )}

@@ -64,6 +64,7 @@ import AccountCenter from '@/pages/AccountCenter';
 import Search from '@/pages/Search';
 import Notifications from '@/pages/Notifications';
 import ChatV2 from '@/pages/ChatV2';
+import CommunityChatV2 from '@/pages/CommunityChatV2';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 
 // Platform Admin pages
@@ -193,6 +194,7 @@ const AuthenticatedApp = () => {
         <Route path="/search" element={<Search />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/chat-v2" element={<ChatV2 />} />
+        <Route path="/chat-v2/c/:slug" element={<CommunityChatV2 />} />
         <Route path="/chat-v2/:conversationId" element={<ChatV2 />} />
 
         {/* Community-scoped routes — /c/:slug/* (isolated per community) */}

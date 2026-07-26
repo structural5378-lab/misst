@@ -1,0 +1,143 @@
+{
+  "name": "ChatV2RoomMessage",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "References ChatV2Room.id"
+    },
+    "community_id": {
+      "type": "string"
+    },
+    "community_slug": {
+      "type": "string"
+    },
+    "room_name": {
+      "type": "string",
+      "description": "Denormalized room name for notification context"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "User ID of the sender"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "sender_avatar": {
+      "type": "string"
+    },
+    "sender_role": {
+      "type": "string",
+      "description": "Community role at send time (member/moderator/admin/owner)"
+    },
+    "body": {
+      "type": "string"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "image",
+        "file",
+        "system"
+      ],
+      "default": "text"
+    },
+    "attachments": {
+      "type": "string",
+      "description": "JSON array of attachment objects [{url, name, type, size}]"
+    },
+    "reactions": {
+      "type": "string",
+      "description": "JSON map { emoji: [userId, ...] }"
+    },
+    "reply_to_message_id": {
+      "type": "string"
+    },
+    "reply_to_preview": {
+      "type": "string",
+      "description": "Truncated body of the replied-to message"
+    },
+    "reply_to_sender_id": {
+      "type": "string",
+      "description": "Sender of the replied-to message (for reply notifications)"
+    },
+    "reply_to_sender_name": {
+      "type": "string"
+    },
+    "mentions": {
+      "type": "string",
+      "description": "JSON array of { type, user_id, name } parsed at send time"
+    },
+    "edited_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deleted": {
+      "type": "boolean",
+      "default": false
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false
+    },
+    "pinned_by": {
+      "type": "string"
+    },
+    "pinned_by_name": {
+      "type": "string"
+    },
+    "pinned_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sending",
+        "sent",
+        "failed"
+      ],
+      "default": "sent"
+    },
+    "client_temp_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "room_id",
+    "community_id",
+    "sender_id",
+    "body"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "data.sender_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.sender_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.sender_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

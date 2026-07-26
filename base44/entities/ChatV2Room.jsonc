@@ -1,0 +1,121 @@
+{
+  "name": "ChatV2Room",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Room display name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short room description shown in room info"
+    },
+    "icon": {
+      "type": "string",
+      "default": "Hash",
+      "description": "lucide-react icon name"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Owning community"
+    },
+    "community_name": {
+      "type": "string"
+    },
+    "community_slug": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "voice",
+        "readonly",
+        "admin",
+        "emergency",
+        "event"
+      ],
+      "default": "text",
+      "description": "Room type drives permissions, notifications, and UI"
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "description": "Sort order within the community room list"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_by_name": {
+      "type": "string"
+    },
+    "is_locked": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hidden rooms are only visible to admins"
+    },
+    "slow_mode_seconds": {
+      "type": "number",
+      "default": 0,
+      "description": "Minimum seconds between messages per user (0 = disabled)"
+    },
+    "permissions": {
+      "type": "string",
+      "description": "JSON: { view:[role], post:[role], upload:[role], react:[role], mention_everyone:[role], pin:[role] } \u2014 role slugs or ['*']"
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_message_id": {
+      "type": "string"
+    },
+    "last_message_preview": {
+      "type": "string"
+    },
+    "last_message_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_sender_id": {
+      "type": "string"
+    },
+    "last_sender_name": {
+      "type": "string"
+    },
+    "last_sender_avatar": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "community_id",
+    "type"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

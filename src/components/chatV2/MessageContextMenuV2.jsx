@@ -3,8 +3,9 @@ import { Reply, Copy, Pencil, Trash2, Smile, Pin, Forward } from "lucide-react";
 
 // MessageContextMenuV2 — right-click (desktop) / long-press (mobile) menu.
 // Renders a viewport-fixed backdrop + positioned menu. Closes on outside
-// click, scroll, or Escape. Pin/Forward are future-ready placeholders.
-export default function MessageContextMenuV2({ x, y, isMine, onReply, onCopy, onEdit, onDelete, onReact, onClose }) {
+// click, scroll, or Escape. Pin is functional only when onPin is provided
+// (community rooms); Forward is a future-ready placeholder.
+export default function MessageContextMenuV2({ x, y, isMine, onReply, onCopy, onEdit, onDelete, onReact, onPin, pinned, onClose }) {
   useEffect(() => {
     const onScroll = () => onClose?.();
     const onEsc = (e) => { if (e.key === "Escape") onClose?.(); };
@@ -38,7 +39,14 @@ export default function MessageContextMenuV2({ x, y, isMine, onReply, onCopy, on
         {item("React", <Smile className="w-4 h-4" />, onReact)}
         {item("Copy", <Copy className="w-4 h-4" />, onCopy)}
         {isMine && item("Edit", <Pencil className="w-4 h-4" />, onEdit)}
-        {item("Pin", <Pin className="w-4 h-4" />, () => {})}
+        {onPin && (
+          <button
+            onClick={() => { onPin?.(); onClose?.(); }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-muted/60 transition-colors text-foreground"
+          >
+            <Pin className="w-4 h-4" />{pinned ? "Unpin" : "Pin"}
+          </button>
+        )}
         {item("Forward", <Forward className="w-4 h-4" />, () => {})}
         {isMine && item("Delete", <Trash2 className="w-4 h-4" />, onDelete, true)}
       </div>

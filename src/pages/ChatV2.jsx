@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Plus, MessageSquare } from "lucide-react";
+import { Plus, MessageSquare, Users } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
+import { useCommunity } from "@/hooks/useCommunity";
 import { useChatV2Presence } from "@/hooks/useChatV2Presence";
 import { useConversationsV2 } from "@/hooks/useConversationsV2";
 import ConversationListV2 from "@/components/chatV2/ConversationListV2";
@@ -28,6 +29,7 @@ export default function ChatV2() {
 
   const presence = useChatV2Presence(mistUser);
   const { conversations, loading } = useConversationsV2(mistUser?.id);
+  const { community: activeCommunity } = useCommunity();
 
   const activeEntry = conversations.find((c) => c.conversation.id === activeId) || null;
   const activeConversation = activeEntry?.conversation || null;
@@ -66,6 +68,12 @@ export default function ChatV2() {
         </div>
         <div className="ml-auto flex items-center gap-2">
           <ConnectionBannerV2 online={presence.online} reconnecting={presence.reconnecting} />
+          <button
+            onClick={() => navigate(activeCommunity?.slug ? `/chat-v2/c/${activeCommunity.slug}` : "/my-communities")}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 transition-colors"
+          >
+            <Users className="w-4 h-4" /> Community Rooms
+          </button>
           <button
             onClick={() => setShowStart(true)}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
