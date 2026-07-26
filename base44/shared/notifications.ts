@@ -79,7 +79,7 @@ export function resolveLink(event) {
     case "weather_alert": return "/weather";
     case "ai_assistant": return "/notifications";
     case "event_reminder": return meta.community_slug ? `/c/${meta.community_slug}/events` : "/alerts";
-    case "news": return "/notifications";
+    case "news": return "/alerts";
     case "repeater_added": return rid ? `/repeaters/${rid}` : "/repeaters";
     case "achievement_unlocked":
     case "badge_earned": return "/achievements";
