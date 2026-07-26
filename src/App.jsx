@@ -132,6 +132,9 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
+      {/* Public FCM runtime diagnostics — no auth required */}
+      <Route path="/fcm-diagnostics" element={<FcmDiagnostics />} />
+
       {/* Mandatory community onboarding (full-screen, no app chrome) */}
       <Route element={<OnboardingProtectedRoute />}>
         <Route path="/onboarding" element={<CommunityOnboarding />} />
@@ -176,7 +179,6 @@ const AuthenticatedApp = () => {
         <Route path="/live-chat" element={<LiveChat />} />
 
         <Route path="/test-notifications" element={<TestNotifications />} />
-        <Route path="/fcm-diagnostics" element={<FcmDiagnostics />} />
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/my-communities" element={<MyCommunities />} />
         <Route path="/radioscope" element={<RadioScope />} />
