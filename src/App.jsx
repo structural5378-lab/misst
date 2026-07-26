@@ -78,6 +78,9 @@ import PlatformAdminAnalytics from '@/pages/platform/PlatformAdminAnalytics';
 import PlatformAdminFeatureFlags from '@/pages/platform/PlatformAdminFeatureFlags';
 import PlatformAdminThemeBuilder from '@/pages/platform/PlatformAdminThemeBuilder';
 import PlatformAdminNotifications from '@/pages/platform/PlatformAdminNotifications';
+import PlatformAdminNotificationLogs from '@/pages/platform/PlatformAdminNotificationLogs';
+import PlatformAdminNotificationTest from '@/pages/platform/PlatformAdminNotificationTest';
+import PlatformAdminNotificationMonitor from '@/pages/platform/PlatformAdminNotificationMonitor';
 import PlatformAdminContent from '@/pages/platform/PlatformAdminContent';
 import PlatformAdminBadges from '@/pages/platform/PlatformAdminBadges';
 const PlatformAdminRadioScope = lazy(() => import('@/pages/platform/PlatformAdminRadioScope'));
@@ -219,6 +222,9 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/feature-flags" element={<PlatformAdminFeatureFlags />} />
           <Route path="/platform/admin/theme-builder" element={<PlatformAdminThemeBuilder />} />
           <Route path="/platform/admin/notifications" element={<PlatformAdminNotifications />} />
+          <Route path="/platform/admin/notifications/logs" element={<PlatformAdminNotificationLogs />} />
+          <Route path="/platform/admin/notifications/test" element={<PlatformAdminNotificationTest />} />
+          <Route path="/platform/admin/notifications/monitor" element={<PlatformAdminNotificationMonitor />} />
           <Route path="/platform/admin/content" element={<PlatformAdminContent />} />
           <Route path="/platform/admin/badges" element={<PlatformAdminBadges />} />
           <Route path="/platform/admin/radioscope" element={<PlatformAdminRadioScope />} />

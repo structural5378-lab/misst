@@ -2,7 +2,7 @@ import {
   LayoutDashboard, BarChart3, Users, ShieldCheck, ClipboardList,
   MessageSquare, MessagesSquare, Mail, RadioTower, Radio, CalendarClock,
   Building2, Image, ShoppingCart, Award, Bell, Palette, LayoutGrid, Server,
-  ShieldAlert, DatabaseBackup, Terminal, LayoutTemplate, KeyRound,
+  ShieldAlert, DatabaseBackup, Terminal, LayoutTemplate, KeyRound, FlaskConical, Activity,
   Home, User, Settings, CalendarDays,
 } from "lucide-react";
 
@@ -57,7 +57,15 @@ export const adminNavSections = [
       { label: "Gallery", path: "/platform/admin/gallery", icon: Image, minRole: 2 },
       { label: "Marketplace", path: "/platform/admin/marketplace", icon: ShoppingCart, minRole: 2 },
       { label: "Badges & Achievements", path: "/platform/admin/badges", icon: Award, minRole: 2 },
-      { label: "Notifications", path: "/platform/admin/notifications", icon: Bell, minRole: 2 },
+    ],
+  },
+  {
+    title: "Notifications",
+    items: [
+      { label: "Analytics", path: "/platform/admin/notifications", icon: BarChart3, minRole: 2, end: true },
+      { label: "Delivery Logs", path: "/platform/admin/notifications/logs", icon: ClipboardList, minRole: 2 },
+      { label: "Test Console", path: "/platform/admin/notifications/test", icon: FlaskConical, minRole: 2 },
+      { label: "Live Monitor", path: "/platform/admin/notifications/monitor", icon: Activity, minRole: 2 },
     ],
   },
   {
