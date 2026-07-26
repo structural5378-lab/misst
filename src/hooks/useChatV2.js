@@ -195,6 +195,21 @@ export function useChatV2({ conversationId, user }) {
     }
   }, [conversationId, user?.id, messages]);
 
+  // Reactions: toggle the current user's emoji in the message's reactions map.
+  const react = useCallback(async (messageId, emoji) => {
+    if (!messageId || isTempId(messageId) || !user?.id) return;
+    const target = messages.find((m) => m.id === messageId);
+    if (!target) return;
+    const cur = { ...(target.reactions || {}) };
+    const list = cur[emoji] || [];
+    const has = list.includes(user.id);
+    const nextList = has ? list.filter((u) => u !== user.id) : [...list, user.id];
+    const next = { ...cur };
+    if (nextList.length) next[emoji] = nextList; else delete next[emoji];
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, reactions: next } : m)));
+    await base44.entities.ChatV2Message.update(messageId, { reactions: JSON.stringify(next) }).catch(() => {});
+  }, [messages, user?.id]);
+
   // Edit / delete (sender only).
   const editMessage = useCallback(async (messageId, newBody) => {
     if (!messageId || isTempId(messageId)) return;
@@ -210,6 +225,6 @@ export function useChatV2({ conversationId, user }) {
 
   return {
     messages, loading, loadingMore, hasMore, atBottom, setAtBottom,
-    loadMore, send, retry, markRead, editMessage, deleteMessage, scrollRef,
+    loadMore, send, retry, markRead, editMessage, deleteMessage, react, scrollRef,
   };
 }

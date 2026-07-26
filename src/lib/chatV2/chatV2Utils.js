@@ -68,6 +68,8 @@ export function formatDayLabel(iso) {
   const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
   if (isSameDay(iso, today.toISOString())) return "Today";
   if (isSameDay(iso, yesterday.toISOString())) return "Yesterday";
+  const diff = Math.floor((today - d) / 86400000);
+  if (diff < 7) return d.toLocaleDateString([], { weekday: "long" });
   return d.toLocaleDateString([], { month: "short", day: "numeric", year: d.getFullYear() !== today.getFullYear() ? "numeric" : undefined });
 }
 
@@ -80,6 +82,24 @@ export function timeAgo(iso) {
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}h`;
   const d = Math.floor(h / 24);
-  if (d < 7) return `${d}d`;
+  if (d === 1) return "Yesterday";
+  if (d < 7) return new Date(iso).toLocaleDateString([], { weekday: "long" });
   return new Date(iso).toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+// Human-readable presence line for a chat header: Online / Away / Last seen …
+export function lastSeenLabel(p, now = Date.now()) {
+  const s = presenceStatus(p, now);
+  if (s === "online") return "Online";
+  if (s === "away") return "Away";
+  if (!p?.last_seen) return "Offline";
+  const diff = now - new Date(p.last_seen).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "Last seen just now";
+  if (m < 60) return `Last seen ${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `Last seen ${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `Last seen ${d}d ago`;
+  return `Last seen ${new Date(p.last_seen).toLocaleDateString([], { month: "short", day: "numeric" })}`;
 }

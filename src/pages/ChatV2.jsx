@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Plus, MessageSquare } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useChatV2Presence } from "@/hooks/useChatV2Presence";
 import { useConversationsV2 } from "@/hooks/useConversationsV2";
@@ -28,7 +29,16 @@ export default function ChatV2() {
   const presence = useChatV2Presence(mistUser);
   const { conversations, loading } = useConversationsV2(mistUser?.id);
 
-  const activeConversation = conversations.find((c) => c.conversation.id === activeId)?.conversation || null;
+  const activeEntry = conversations.find((c) => c.conversation.id === activeId) || null;
+  const activeConversation = activeEntry?.conversation || null;
+  const activeParticipant = activeEntry?.participant || null;
+
+  const toggleMute = async () => {
+    if (!activeParticipant) return;
+    try {
+      await base44.entities.ChatV2Participant.update(activeParticipant.id, { muted: !activeParticipant.muted });
+    } catch {}
+  };
 
   const select = (conv) => {
     setActiveId(conv.id);
@@ -69,17 +79,14 @@ export default function ChatV2() {
       <div className="flex-1 flex overflow-hidden">
         {/* Conversation list — hidden on mobile when a window is open */}
         <aside className={`${showWindow ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 md:border-r border-border bg-card/30 min-h-0`}>
-          {loading ? (
-            <div className="flex-1 flex items-center justify-center"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
-          ) : (
-            <ConversationListV2
-              conversations={conversations}
-              activeId={activeId}
-              onSelect={select}
-              presenceByUser={presence.presenceByUser}
-              myId={mistUser?.id}
-            />
-          )}
+          <ConversationListV2
+            conversations={conversations}
+            activeId={activeId}
+            onSelect={select}
+            presenceByUser={presence.presenceByUser}
+            myId={mistUser?.id}
+            loading={loading}
+          />
         </aside>
 
         {/* Chat window */}
@@ -88,12 +95,14 @@ export default function ChatV2() {
             <ChatWindowV2
               conversationId={activeId}
               conversation={activeConversation}
+              participant={activeParticipant}
               user={mistUser}
               presenceByUser={presence.presenceByUser}
               setTyping={presence.setTyping}
               setActiveConversation={presence.setActiveConversation}
               online={presence.online}
               reconnecting={presence.reconnecting}
+              onToggleMute={toggleMute}
               onBack={() => { setActiveId(null); navigate("/chat-v2", { replace: true }); }}
             />
           ) : (
