@@ -40,21 +40,31 @@ export const TYPE_TO_PREF_KEY: Record<string, string> = {
   community_announcement: "announcements",
   achievement_unlocked: "achievements",
   badge_earned: "badges",
+  emergency_alert: "emergency_alerts",
+  community_chat: "community_chat",
+  system: "system",
 };
 
 // Mirrors DEFAULT_NOTIFS in src/hooks/useAccountPrefs.js so the engine's default
 // behavior matches what the Settings UI shows when a user has no stored prefs.
+// Per-category default channels: { push, inapp, sound, vibrate }. A category is
+// fully disabled for a user only when BOTH push and inapp are false (no push, no
+// in-app record, no badge). Emergency alerts are always delivered (sound/vibrate
+// still respect preferences). Legacy flat booleans are tolerated by categoryPrefs.
 export const DEFAULT_NOTIF_SETTINGS = {
-  forum_replies: true,
-  mentions: true,
-  messages: true,
-  friend_requests: true,
-  events: true,
-  repeaters: false,
-  news: true,
-  announcements: true,
-  achievements: true,
-  badges: true,
+  forum_replies: { push: true, inapp: true, sound: true, vibrate: true },
+  mentions: { push: true, inapp: true, sound: true, vibrate: true },
+  messages: { push: true, inapp: true, sound: true, vibrate: true },
+  friend_requests: { push: true, inapp: true, sound: true, vibrate: true },
+  events: { push: true, inapp: true, sound: true, vibrate: true },
+  repeaters: { push: false, inapp: false, sound: true, vibrate: true },
+  news: { push: true, inapp: true, sound: true, vibrate: true },
+  announcements: { push: true, inapp: true, sound: true, vibrate: true },
+  achievements: { push: true, inapp: true, sound: true, vibrate: true },
+  badges: { push: true, inapp: true, sound: true, vibrate: true },
+  emergency_alerts: { push: true, inapp: true, sound: true, vibrate: true },
+  community_chat: { push: true, inapp: true, sound: true, vibrate: true },
+  system: { push: false, inapp: true, sound: false, vibrate: false },
   push: true,
   email: true,
   sms: false,

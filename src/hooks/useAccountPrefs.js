@@ -28,10 +28,25 @@ export function useParsedField(field, defaultValue) {
 
 export const WHO_OPTIONS = ["Everyone", "Members Only", "Friends", "Nobody"];
 
+// Per-category channel defaults: { push, inapp, sound, vibrate }. A category is
+// disabled only when both push and inapp are false. Mirrors the server default.
 export const DEFAULT_NOTIFS = {
-  forum_replies: true, mentions: true, messages: true, friend_requests: true,
-  events: true, repeaters: false, news: true, announcements: true,
-  achievements: true, badges: true, push: true, email: true, sms: false,
+  forum_replies: { push: true, inapp: true, sound: true, vibrate: true },
+  mentions: { push: true, inapp: true, sound: true, vibrate: true },
+  messages: { push: true, inapp: true, sound: true, vibrate: true },
+  friend_requests: { push: true, inapp: true, sound: true, vibrate: true },
+  events: { push: true, inapp: true, sound: true, vibrate: true },
+  repeaters: { push: false, inapp: false, sound: true, vibrate: true },
+  news: { push: true, inapp: true, sound: true, vibrate: true },
+  announcements: { push: true, inapp: true, sound: true, vibrate: true },
+  achievements: { push: true, inapp: true, sound: true, vibrate: true },
+  badges: { push: true, inapp: true, sound: true, vibrate: true },
+  emergency_alerts: { push: true, inapp: true, sound: true, vibrate: true },
+  community_chat: { push: true, inapp: true, sound: true, vibrate: true },
+  system: { push: false, inapp: true, sound: false, vibrate: false },
+  push: true,
+  email: true,
+  sms: false,
 };
 
 export const DEFAULT_PRIVACY = {
