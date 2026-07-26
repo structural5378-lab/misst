@@ -7,7 +7,7 @@
 */
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
-const SW_VERSION = "mist-fcm-v2";
+const SW_VERSION = "mist-fcm-v3";
 
 self.addEventListener("install", () => { self.skipWaiting(); });
 self.addEventListener("activate", (event) => {

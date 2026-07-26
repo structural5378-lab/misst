@@ -5,7 +5,7 @@ import { SectionCard } from "../ui";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  isPushSupported, subscribeFcm, unsubscribeFcm, getCurrentToken,
+  isPushSupported, subscribeFcm, unsubscribeFcm, getCurrentToken, ensureSubscribed,
   refreshSubscription, listMyDevices, removeDeviceById, getLastRefresh, getVapidKey,
 } from "@/lib/fcmPush";
 import { Bell, Smartphone, Monitor, Tablet, Trash2, RefreshCw, Send, Loader2 } from "lucide-react";
@@ -51,6 +51,10 @@ export default function AccountPush() {
     try {
       setVapidReady(!!(await getVapidKey()));
       if (typeof Notification !== "undefined") setPermission(Notification.permission);
+      // Mint/register a real FCM token via the SDK before reporting status.
+      if (isPushSupported() && typeof Notification !== "undefined" && Notification.permission === "granted") {
+        await ensureSubscribed();
+      }
       setThisToken(await getCurrentToken());
       setLastRefresh(getLastRefresh());
       setDevices(await listMyDevices());

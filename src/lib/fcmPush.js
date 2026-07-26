@@ -1,29 +1,47 @@
 import { base44 } from "@/api/base44Client";
+import { initializeApp, getApps } from "firebase/app";
+import { getMessaging, getToken, deleteToken, onMessage } from "firebase/messaging";
 
-// FCM web push client — native Push API + FCM HTTP v1 backend. No Firebase JS SDK.
-// The VAPID public key is fetched from getFcmPublicConfig; the Push subscription
-// endpoint yields the FCM registration token, registered to the DeviceToken entity
-// (one record per device — supports multiple devices per user).
+// FCM web push client built on the official Firebase Messaging JS SDK.
+// Registration tokens are obtained EXCLUSIVELY via getToken(messaging, { vapidKey }).
+// Never derived from PushSubscription endpoints. One DeviceToken record per device
+// supports multiple devices per user. Token rotation is detected by comparing the
+// freshly-minted token against the stored one (onTokenRefresh was removed in v11).
 
 const SW_PATH = "/sw.js";
 const PROMPTED_KEY = "fcm_prompted";
 const TOKEN_KEY = "fcm_token";
 const LAST_REFRESH_KEY = "fcm_last_refresh";
 
+let _config = null;
+let _app = null;
+let _messaging = null;
+
 export async function getVapidKey() {
-  try {
-    const res = await base44.functions.invoke("getFcmPublicConfig", {});
-    return res?.data?.vapidPublicKey || null;
-  } catch {
-    return null;
-  }
+  const cfg = await getFcmConfig();
+  return cfg?.vapidPublicKey || null;
 }
 
-function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const raw = atob(base64);
-  return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+async function getFcmConfig() {
+  if (_config) return _config;
+  try {
+    const res = await base44.functions.invoke("getFcmPublicConfig", {});
+    _config = res?.data || null;
+  } catch {
+    _config = null;
+  }
+  return _config;
+}
+
+async function initMessaging() {
+  const cfg = await getFcmConfig();
+  if (!cfg || !cfg.messagingSenderId) return null;
+  if (!_app) {
+    if (getApps().length) _app = getApps()[0];
+    else _app = initializeApp({ messagingSenderId: cfg.messagingSenderId, projectId: cfg.projectId || undefined });
+  }
+  if (!_messaging) _messaging = getMessaging(_app);
+  return _messaging;
 }
 
 export function isPushSupported() {
@@ -37,27 +55,11 @@ export function isPushSupported() {
 
 export async function isSubscribed() {
   if (!isPushSupported()) return false;
-  try {
-    const reg = await navigator.serviceWorker.getRegistration(SW_PATH);
-    if (!reg) return false;
-    const sub = await reg.pushManager.getSubscription();
-    return !!sub;
-  } catch {
-    return false;
-  }
+  try { return !!localStorage.getItem(TOKEN_KEY); } catch { return false; }
 }
 
 export async function getCurrentToken() {
-  if (!isPushSupported()) return null;
-  try {
-    const reg = await navigator.serviceWorker.getRegistration(SW_PATH);
-    if (!reg) return null;
-    const sub = await reg.pushManager.getSubscription();
-    if (!sub) return null;
-    return sub.endpoint.split("/").pop();
-  } catch {
-    return null;
-  }
+  try { return localStorage.getItem(TOKEN_KEY) || null; } catch { return null; }
 }
 
 export function getLastRefresh() {
@@ -68,8 +70,7 @@ function markRefresh() {
   try { localStorage.setItem(LAST_REFRESH_KEY, new Date().toISOString()); } catch { /* ignore */ }
 }
 
-// Register / refresh a device token against the backend (idempotent per token).
-export async function registerToken(token) {
+async function registerToken(token) {
   if (!token) return null;
   try {
     const existing = await base44.entities.DeviceToken.filter({ token, is_active: true });
@@ -97,74 +98,89 @@ export async function registerToken(token) {
   return null;
 }
 
-export async function listMyDevices() {
-  try {
-    const me = await base44.auth.me();
-    const list = await base44.entities.DeviceToken.filter({ user_id: me.id, is_active: true }, "-last_seen", 50);
-    return list || [];
-  } catch {
-    return [];
+// Persist a freshly-minted token. When Firebase rotates the token, deactivate the
+// previous DeviceToken record so only the current token stays active.
+async function persistToken(token) {
+  const old = (await getCurrentToken()) || null;
+  await registerToken(token);
+  try { localStorage.setItem(TOKEN_KEY, token); localStorage.setItem(PROMPTED_KEY, "1"); } catch { /* ignore */ }
+  if (old && old !== token) {
+    try {
+      const stale = await base44.entities.DeviceToken.filter({ token: old });
+      for (const t of stale || []) await base44.entities.DeviceToken.update(t.id, { is_active: false }).catch(() => {});
+    } catch { /* ignore */ }
   }
 }
 
-export async function removeDeviceById(id) {
-  await base44.entities.DeviceToken.delete(id);
-}
-
-// Request permission, subscribe via Push API, register token. (Initial enable.)
-export async function subscribeFcm() {
+// Core: obtain a real FCM registration token via the Firebase Messaging SDK.
+export async function requestToken() {
   if (!isPushSupported()) return { ok: false, reason: "unsupported" };
-  const vapid = await getVapidKey();
-  if (!vapid) return { ok: false, reason: "no-vapid-key" };
-  const perm = await Notification.requestPermission();
-  if (perm !== "granted") return { ok: false, reason: "permission-denied" };
+  const cfg = await getFcmConfig();
+  if (!cfg || !cfg.vapidPublicKey) return { ok: false, reason: "no-vapid-key" };
+  if (!cfg.messagingSenderId) return { ok: false, reason: "no-sender-id" };
   try {
+    const messaging = await initMessaging();
+    if (!messaging) return { ok: false, reason: "init-failed" };
     const reg = await navigator.serviceWorker.register(SW_PATH, { scope: "/" });
     await navigator.serviceWorker.ready;
-    let sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapid),
-      });
+    // One-time migration: clear any stale subscription/SDK cache left by the old
+    // endpoint-extraction flow so the SDK mints a fresh, properly-enrolled token.
+    if (!localStorage.getItem("fcm_sdk_clean")) {
+      try { await deleteToken(messaging); } catch { /* no cached token — fine */ }
+      try { const oldSub = await reg.pushManager.getSubscription(); if (oldSub) await oldSub.unsubscribe(); } catch { /* ignore */ }
+      localStorage.setItem("fcm_sdk_clean", "1");
     }
-    const token = sub.endpoint.split("/").pop();
-    await registerToken(token);
-    try { localStorage.setItem(TOKEN_KEY, token); localStorage.setItem(PROMPTED_KEY, "1"); } catch { /* ignore */ }
+    const token = await getToken(messaging, { vapidKey: cfg.vapidPublicKey, serviceWorkerRegistration: reg });
+    if (!token) return { ok: false, reason: "no-token" };
     return { ok: true, token };
   } catch (e) {
     return { ok: false, reason: "subscribe-error", error: String(e?.message || e) };
   }
 }
 
-// Re-subscribe / re-register the current device (assumes permission already granted).
+// Ensure permission is granted and a valid token is registered (used on app load).
+export async function ensureSubscribed() {
+  if (!isPushSupported()) return { ok: false, reason: "unsupported" };
+  if (typeof Notification !== "undefined" && Notification.permission !== "granted") {
+    return { ok: false, reason: "permission-denied" };
+  }
+  const r = await requestToken();
+  if (!r.ok) return r;
+  await persistToken(r.token);
+  return r;
+}
+
+// Initial enable (asks permission first).
+export async function subscribeFcm() {
+  if (!isPushSupported()) return { ok: false, reason: "unsupported" };
+  const cfg = await getFcmConfig();
+  if (!cfg || !cfg.vapidPublicKey) return { ok: false, reason: "no-vapid-key" };
+  if (!cfg.messagingSenderId) return { ok: false, reason: "no-sender-id" };
+  if (typeof Notification !== "undefined") {
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") return { ok: false, reason: "permission-denied" };
+  }
+  const r = await requestToken();
+  if (!r.ok) return r;
+  await persistToken(r.token);
+  return r;
+}
+
 export async function refreshSubscription() {
   if (!isPushSupported()) return { ok: false, reason: "unsupported" };
   if (typeof Notification !== "undefined" && Notification.permission !== "granted") return { ok: false, reason: "permission-denied" };
-  const vapid = await getVapidKey();
-  if (!vapid) return { ok: false, reason: "no-vapid-key" };
-  try {
-    const reg = await navigator.serviceWorker.register(SW_PATH, { scope: "/" });
-    await navigator.serviceWorker.ready;
-    let sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapid),
-      });
-    }
-    const token = sub.endpoint.split("/").pop();
-    await registerToken(token);
-    try { localStorage.setItem(TOKEN_KEY, token); } catch { /* ignore */ }
-    return { ok: true, token };
-  } catch (e) {
-    return { ok: false, reason: "subscribe-error", error: String(e?.message || e) };
-  }
+  const r = await requestToken();
+  if (!r.ok) return r;
+  await persistToken(r.token);
+  return r;
 }
 
 export async function unsubscribeFcm() {
   try {
-    if (isPushSupported()) {
+    const messaging = await initMessaging().catch(() => null);
+    if (messaging) {
+      try { await deleteToken(messaging); } catch { /* ignore */ }
+    } else if (isPushSupported()) {
       const reg = await navigator.serviceWorker.getRegistration(SW_PATH);
       const sub = await reg?.pushManager?.getSubscription();
       if (sub) await sub.unsubscribe();
@@ -172,11 +188,24 @@ export async function unsubscribeFcm() {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       const existing = await base44.entities.DeviceToken.filter({ token });
-      for (const t of existing || []) {
-        await base44.entities.DeviceToken.delete(t.id).catch(() => {});
-      }
+      for (const t of existing || []) await base44.entities.DeviceToken.delete(t.id).catch(() => {});
     }
   } catch { /* ignore */ }
   try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(LAST_REFRESH_KEY); } catch { /* ignore */ }
   return { ok: true };
 }
+
+export async function listMyDevices() {
+  try {
+    const me = await base44.auth.me();
+    const list = await base44.entities.DeviceToken.filter({ user_id: me.id, is_active: true }, "-last_seen", 50);
+    return list || [];
+  } catch { return []; }
+}
+
+export async function removeDeviceById(id) {
+  await base44.entities.DeviceToken.delete(id);
+}
+
+// Foreground message hook for components that want live in-app toasts.
+export { onMessage };

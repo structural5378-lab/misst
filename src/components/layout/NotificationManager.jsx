@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { isSubscribed, getCurrentToken, registerToken, getVapidKey, refreshSubscription } from "@/lib/fcmPush";
+import { ensureSubscribed } from "@/lib/fcmPush";
 
 // Mounted once in AppLayout. Ensures the FCM service worker is registered and, if
 // the user is already subscribed, keeps the backend token fresh. Also handles
@@ -12,18 +12,7 @@ export default function NotificationManager() {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
 
     const ensureFresh = async () => {
-      try {
-        const vapid = await getVapidKey();
-        if (!vapid) return; // FCM web push not configured yet
-        await navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
-        await navigator.serviceWorker.ready;
-        if (await isSubscribed()) {
-          const token = await getCurrentToken();
-          if (token) await registerToken(token);
-        }
-      } catch (e) {
-        console.warn("FCM manager init", e);
-      }
+      try { await ensureSubscribed(); } catch (e) { console.warn("FCM manager init", e); }
     };
 
     const onMessage = async (event) => {
@@ -43,8 +32,8 @@ export default function NotificationManager() {
           onClick: () => { try { window.location.href = link; } catch { /* ignore */ } },
         });
       } else if (msg.type === "fcm-subscription-changed") {
-        // Browser invalidated the subscription — re-subscribe & re-register.
-        try { await refreshSubscription(); } catch (e) { console.warn("refresh on sub change", e); }
+        // Browser invalidated the subscription — re-mint & re-register via the SDK.
+        try { await ensureSubscribed(); } catch (e) { console.warn("refresh on sub change", e); }
       }
     };
 
