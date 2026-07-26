@@ -162,11 +162,13 @@ export default function FcmDiagnostics() {
       push("Match", "runtime senderId === CRM 135575197642", String(cfg.messagingSenderId) === EXPECTED_SENDER_ID, String(cfg.messagingSenderId) === EXPECTED_SENDER_ID);
 
       // ── getToken() ──
+      let clientToken = null;
       if (messaging && swReg && cfg.vapidPublicKey) {
         try {
           push("Token", "calling getToken()", "…");
           const token = await getToken(messaging, { vapidKey: cfg.vapidPublicKey, serviceWorkerRegistration: swReg });
           if (token) {
+            clientToken = token;
             push("Token", "resolved", true);
             push("Token", "typeof", typeof token);
             push("Token", "length", token.length);
@@ -182,11 +184,42 @@ export default function FcmDiagnostics() {
         push("Token", "skipped", "messaging/SW/vapid missing", false);
       }
 
+      // ── End-to-end: save exact token + send HTTP v1 test ──
+      if (clientToken) {
+        try {
+          push("E2E", "sending exact token to debugFcmSend", `${clientToken.slice(0,8)}…${clientToken.slice(-8)} (len ${clientToken.length})`);
+          const e2e = await base44.functions.invoke("debugFcmSend", { token: clientToken });
+          const d = e2e?.data || null;
+          if (!d) {
+            push("E2E", "debugFcmSend response", JSON.stringify(e2e), false);
+          } else {
+            push("E2E", "httpStatus", d.httpStatus ?? "(none)", d.ok === true);
+            push("E2E", "projectId", d.projectId || "(none)", d.projectId === EXPECTED_PROJECT_ID);
+            push("E2E", "token length (client→server)", `${clientToken.length} → ${d.tokenLength}`, clientToken.length === d.tokenLength);
+            push("E2E", "byte-for-byte (client token === tokenSent)", clientToken === d.tokenSent, clientToken === d.tokenSent);
+            if (d.saveResult) {
+              push("E2E", "DeviceToken stored byte-for-byte match", d.saveResult.byteForByteMatch, d.saveResult.byteForByteMatch);
+              push("E2E", "DeviceToken recordId", d.saveResult.recordId || "(none)");
+              push("E2E", "DeviceToken reused existing", d.saveResult.reused);
+              push("E2E", "deactivated stale tokens", d.saveResult.deactivatedOthers ?? 0);
+            }
+            push("E2E", "FCM responseBody", JSON.stringify(d.responseBody), d.ok === true);
+            if (d.ok === true) {
+              push("E2E", "delivery", "✅ ACCEPTED by FCM — notification should arrive on this device", true);
+            } else {
+              push("E2E", "delivery", "❌ REJECTED by FCM — see responseBody error", false);
+            }
+          }
+        } catch (e) {
+          push("E2E", "debugFcmSend threw", String(e?.message || e), false);
+        }
+      }
+
       setRunning(false);
     })();
   }, []);
 
-  const sections = ["Browser", "SW", "Cache", "Config", "Init", "Match", "Token"];
+  const sections = ["Browser", "SW", "Cache", "Config", "Init", "Match", "Token", "E2E"];
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 max-w-3xl mx-auto">
