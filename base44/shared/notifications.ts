@@ -8,7 +8,7 @@
 // pushes via Firebase Cloud Messaging (FCM HTTP v1) to the recipient's
 // registered device tokens. Email/SMS channels can be added later in deliver().
 
-import { sendFcmMulticast } from "./fcm.ts";
+import { NotificationService } from "./notificationService.ts";
 
 export const NOTIF_TYPES = [
   "direct_message",
@@ -167,7 +167,7 @@ async function deliver(base44, record, tokensByUser) {
     apns: { payload: { aps: { sound: "default" } } },
     webpush: { notification: { icon: "https://insomniacsgmrs.com/uploads/mist-icon.png" } },
   };
-  const res = await sendFcmMulticast(tokens, payload);
+  const res = await NotificationService.sendPush(tokens, payload);
   const push = res.failed === 0 ? "sent" : res.sent > 0 ? "partial" : "failed";
   return {
     delivered_at: record.delivered_at,

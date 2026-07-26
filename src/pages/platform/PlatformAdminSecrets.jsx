@@ -63,16 +63,6 @@ const INSTRUCTIONS = {
     ],
     docs: "https://firebase.google.com/docs/cloud-messaging/send-message#authorize-send-requests",
   },
-  FCM_WEB_VAPID_KEY: {
-    title: "Firebase Web Push VAPID Key",
-    steps: [
-      "Open Firebase Console → Project settings → Cloud Messaging → Web configuration.",
-      "Generate a Web Push certificate and copy the public key.",
-      "Ask Base44 to update FCM_WEB_VAPID_KEY and paste the public key in the secure form.",
-      "The public key is safe to expose to the browser; it is used to subscribe devices via the Push API.",
-    ],
-    docs: "https://firebase.google.com/docs/cloud-messaging/js/client#configure_web_credentials",
-  },
 };
 
 function statusBadge(item) {
@@ -96,7 +86,6 @@ export default function PlatformAdminSecrets() {
   const byKey = Object.fromEntries(items.map((i) => [i.key, i]));
   const ready = (key) => byKey[key]?.configured;
   const fcmValid = byKey["FCM_SERVICE_ACCOUNT_JSON"]?.valid;
-  const vapidReady = ready("FCM_WEB_VAPID_KEY");
 
   const forumReady = ready("MYBB_BOT_PASSWORD") && ready("MIST_BRIDGE_SECRET");
   const forumStatus = forumReady
@@ -107,14 +96,8 @@ export default function PlatformAdminSecrets() {
     ? "Missing Bridge Secret"
     : "Missing Credentials";
 
-  const fcmStatus = !fcmValid
-    ? "Missing Service Account"
-    : !vapidReady
-    ? "Missing VAPID Key"
-    : "Ready";
-
   const readiness = [
-    { label: "Push (FCM)", icon: Zap, status: fcmStatus },
+    { label: "Push (FCM)", icon: Zap, status: fcmValid ? "Ready" : "Missing Service Account" },
     { label: "Weather", icon: Cloud, status: ready("WEATHER_API_KEY") ? "Ready" : "Missing API Key" },
     { label: "Forum Bridge", icon: Radio, status: forumStatus },
   ];
@@ -209,12 +192,6 @@ export default function PlatformAdminSecrets() {
                       >
                         Firebase docs <ExternalLink className="w-3 h-3" />
                       </a>
-                    </p>
-                  )}
-                  {item.key === "FCM_WEB_VAPID_KEY" && (
-                    <p className="text-[11px] text-muted-foreground mt-1.5">
-                      Public VAPID key from Firebase Console → Cloud Messaging → Web configuration. Used by the browser
-                      to subscribe to push. Safe to expose to the client.
                     </p>
                   )}
                 </div>
