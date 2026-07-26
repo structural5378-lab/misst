@@ -39,11 +39,19 @@ async function initMessaging() {
   if (!_app) {
     // Use an isolated NAMED app so a stale default Firebase app (e.g. left over
     // from a previous build) cannot be reused and mint tokens for the wrong project.
+    // Full web config (apiKey, appId, authDomain, storageBucket, measurementId) is
+    // required so Firebase Installations initializes correctly (messagingSenderId
+    // alone triggers "Missing App configuration value: apiKey").
     const name = "mist-fcm";
-    _app = getApps().find((a) => a.name === name) || initializeApp(
-      { messagingSenderId: cfg.messagingSenderId, projectId: cfg.projectId || undefined },
-      name
-    );
+    _app = getApps().find((a) => a.name === name) || initializeApp({
+      apiKey: cfg.apiKey,
+      authDomain: cfg.authDomain,
+      projectId: cfg.projectId || undefined,
+      storageBucket: cfg.storageBucket,
+      messagingSenderId: cfg.messagingSenderId,
+      appId: cfg.appId,
+      measurementId: cfg.measurementId,
+    }, name);
   }
   if (!_messaging) _messaging = getMessaging(_app);
   return _messaging;

@@ -109,23 +109,32 @@ export default function FcmDiagnostics() {
       push("Config", "messagingSenderId", cfg.messagingSenderId, String(cfg.messagingSenderId) === EXPECTED_SENDER_ID);
       push("Config", "sender matches CRM 135575197642", String(cfg.messagingSenderId) === EXPECTED_SENDER_ID, String(cfg.messagingSenderId) === EXPECTED_SENDER_ID);
       push("Config", "vapidPublicKey (first 10)", cfg.vapidPublicKey ? cfg.vapidPublicKey.slice(0, 10) + "…" : null, !!cfg.vapidPublicKey);
-      push("Config", "apiKey (from config)", cfg.apiKey ? redact(cfg.apiKey) : "(not provided — web push via VAPID does not require apiKey)");
-      push("Config", "appId (from config)", cfg.appId || "(not provided — not required for getToken via VAPID)");
-      push("Config", "authDomain (from config)", cfg.authDomain || "(not provided — derived as <projectId>.firebaseapp.com if needed)");
+      push("Config", "apiKey", cfg.apiKey ? redact(cfg.apiKey) : "(absent)", !!cfg.apiKey);
+      push("Config", "appId", cfg.appId || "(absent)", !!cfg.appId);
+      push("Config", "authDomain", cfg.authDomain || "(absent)", !!cfg.authDomain);
+      push("Config", "storageBucket", cfg.storageBucket || "(absent)", !!cfg.storageBucket);
+      push("Config", "measurementId", cfg.measurementId || "(absent)", !!cfg.measurementId);
 
       // ── 4. Messaging Registration (raw, step by step) ──
       let app = null, messaging = null;
       try {
         const existing = getApps().find((a) => a.name === APP_NAME);
-        app = existing || initializeApp(
-          { messagingSenderId: cfg.messagingSenderId, projectId: cfg.projectId || undefined },
-          APP_NAME
-        );
+        app = existing || initializeApp({
+          apiKey: cfg.apiKey,
+          authDomain: cfg.authDomain,
+          projectId: cfg.projectId || undefined,
+          storageBucket: cfg.storageBucket,
+          messagingSenderId: cfg.messagingSenderId,
+          appId: cfg.appId,
+          measurementId: cfg.measurementId,
+        }, APP_NAME);
         push("Init", "initializeApp() name", app.name);
         push("Init", "initializeApp() options", JSON.stringify(app.options));
-        push("Init", "app.options.apiKey", app.options.apiKey ? redact(app.options.apiKey) : "(absent)");
-        push("Init", "app.options.appId", app.options.appId || "(absent)");
-        push("Init", "app.options.authDomain", app.options.authDomain || "(absent)");
+        push("Init", "app.options.apiKey", app.options.apiKey ? redact(app.options.apiKey) : "(absent)", !!app.options.apiKey);
+        push("Init", "app.options.appId", app.options.appId || "(absent)", !!app.options.appId);
+        push("Init", "app.options.authDomain", app.options.authDomain || "(absent)", !!app.options.authDomain);
+        push("Init", "app.options.storageBucket", app.options.storageBucket || "(absent)", !!app.options.storageBucket);
+        push("Init", "app.options.measurementId", app.options.measurementId || "(absent)", !!app.options.measurementId);
         push("Init", "app.options.projectId", app.options.projectId || "(absent)", app.options.projectId === EXPECTED_PROJECT_ID);
         push("Init", "app.options.messagingSenderId", app.options.messagingSenderId, String(app.options.messagingSenderId) === EXPECTED_SENDER_ID);
       } catch (e) {
