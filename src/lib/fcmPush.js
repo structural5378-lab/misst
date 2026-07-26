@@ -37,8 +37,13 @@ async function initMessaging() {
   const cfg = await getFcmConfig();
   if (!cfg || !cfg.messagingSenderId) return null;
   if (!_app) {
-    if (getApps().length) _app = getApps()[0];
-    else _app = initializeApp({ messagingSenderId: cfg.messagingSenderId, projectId: cfg.projectId || undefined });
+    // Use an isolated NAMED app so a stale default Firebase app (e.g. left over
+    // from a previous build) cannot be reused and mint tokens for the wrong project.
+    const name = "mist-fcm";
+    _app = getApps().find((a) => a.name === name) || initializeApp(
+      { messagingSenderId: cfg.messagingSenderId, projectId: cfg.projectId || undefined },
+      name
+    );
   }
   if (!_messaging) _messaging = getMessaging(_app);
   return _messaging;
@@ -110,6 +115,17 @@ async function persistToken(token) {
       for (const t of stale || []) await base44.entities.DeviceToken.update(t.id, { is_active: false }).catch(() => {});
     } catch { /* ignore */ }
   }
+  // Deactivate any other obviously-invalid (endpoint-style, colonless) tokens for
+  // this user so only properly-enrolled FCM tokens remain active.
+  try {
+    const me = await base44.auth.me();
+    const mine = await base44.entities.DeviceToken.filter({ user_id: me.id, is_active: true });
+    for (const t of mine || []) {
+      if (t.token && t.token !== token && !t.token.includes(":")) {
+        await base44.entities.DeviceToken.update(t.id, { is_active: false }).catch(() => {});
+      }
+    }
+  } catch { /* ignore */ }
 }
 
 // Core: obtain a real FCM registration token via the Firebase Messaging SDK.

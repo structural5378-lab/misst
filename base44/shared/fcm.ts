@@ -38,15 +38,16 @@ async function importPrivateKey(pem) {
   );
 }
 
-// Mints an OAuth2 access token for the firebase.messaging scope (RS256 JWT bearer grant).
-export async function getFcmAccessToken() {
+// Mints an OAuth2 access token for the given scope (RS256 JWT bearer grant). Defaults
+// to the firebase.messaging scope used for sending; pass cloud-platform for management API.
+export async function getFcmAccessToken(scope = "https://www.googleapis.com/auth/firebase.messaging") {
   const sa = getServiceAccount();
   if (!sa) return { ok: false, error: "FCM_SERVICE_ACCOUNT_JSON missing or invalid" };
   const now = Math.floor(Date.now() / 1000);
   const header = { alg: "RS256", typ: "JWT" };
   const payload = {
     iss: sa.client_email,
-    scope: "https://www.googleapis.com/auth/firebase.messaging",
+    scope,
     aud: "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600,
@@ -73,6 +74,33 @@ export async function getFcmAccessToken() {
   } catch (e) {
     return { ok: false, error: e.message || "Failed to sign FCM JWT" };
   }
+}
+
+// Fetch the Firebase project NUMBER (used as FCM messagingSenderId) from the Cloud
+// Resource Manager API using a cloud-platform-scoped service-account token. This is
+// authoritative — it guarantees the client SDK mints tokens for the SAME project whose
+// service account we use to send, eliminating sender-id mismatch. Result is cached.
+let _projectNumberCache = null;
+export async function getProjectNumber() {
+  if (_projectNumberCache != null) return _projectNumberCache;
+  const sa = getServiceAccount();
+  if (!sa) return null;
+  const auth = await getFcmAccessToken("https://www.googleapis.com/auth/cloud-platform");
+  if (!auth.ok) return null;
+  try {
+    const res = await fetch(`https://cloudresourcemanager.googleapis.com/v1/projects/${sa.project_id}`, {
+      headers: { Authorization: `Bearer ${auth.token}` },
+    });
+    if (!res.ok) return null;
+    const d = await res.json();
+    if (d.projectNumber != null) {
+      _projectNumberCache = String(d.projectNumber);
+      return _projectNumberCache;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
 }
 
 // Standard notification/data/android/apns/webpush block used by all MIST pushes.
