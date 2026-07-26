@@ -48,9 +48,26 @@ export default function NotificationManager() {
       }
     };
 
+    // Remove any stale third-party service workers (e.g. leftover PushAlert SW)
+    // so only the MIST FCM worker (sw.js) remains registered.
+    const purgeStaleWorkers = async () => {
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const r of regs) {
+          const url = (r.active && r.active.scriptURL) || (r.installing && r.installing.scriptURL) || (r.waiting && r.waiting.scriptURL) || "";
+          if (url && !url.includes("/sw.js")) {
+            await r.unregister().catch(() => {});
+          }
+        }
+      } catch { /* ignore */ }
+    };
+
     const onFocus = () => { ensureFresh(); };
 
     ensureFresh();
+    purgeStaleWorkers();
+    // Force-check for a new sw.js version on load.
+    navigator.serviceWorker.register("/sw.js", { scope: "/" }).then((reg) => reg.update().catch(() => {})).catch(() => {});
     navigator.serviceWorker.addEventListener("message", onMessage);
     window.addEventListener("focus", onFocus);
     window.addEventListener("online", onFocus);

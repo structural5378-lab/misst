@@ -7,8 +7,20 @@
 */
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
+const SW_VERSION = "mist-fcm-v2";
+
 self.addEventListener("install", () => { self.skipWaiting(); });
-self.addEventListener("activate", (event) => { event.waitUntil(self.clients.claim()); });
+self.addEventListener("activate", (event) => {
+  // Claim clients immediately so the new SW controls the page on update,
+  // replacing any stale PushAlert worker that was previously registered.
+  event.waitUntil((async () => {
+    await self.clients.claim();
+    try {
+      const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      clients.forEach((c) => c.postMessage({ type: "sw-activated", version: SW_VERSION }));
+    } catch { /* ignore */ }
+  })());
+});
 
 function readPayload(event) {
   if (!event.data) return {};
