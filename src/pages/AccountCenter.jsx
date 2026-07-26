@@ -3,13 +3,14 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useMistUser } from "@/hooks/useMistUser";
 import {
   User, Settings, Shield, Bell, Eye, Palette, Radio,
-  Users as UsersIcon, Image as ImageIcon, Monitor, Database,
+  Users as UsersIcon, Image as ImageIcon, Monitor, Database, Smartphone,
 } from "lucide-react";
 
 import AccountProfile from "@/components/account/sections/AccountProfile";
 import AccountSettings from "@/components/account/sections/AccountSettings";
 import AccountSecurity from "@/components/account/sections/AccountSecurity";
 import AccountNotifications from "@/components/account/sections/AccountNotifications";
+import AccountPush from "@/components/account/sections/AccountPush";
 import AccountPrivacy from "@/components/account/sections/AccountPrivacy";
 import AccountAppearance from "@/components/account/sections/AccountAppearance";
 import AccountRadio from "@/components/account/sections/AccountRadio";
@@ -23,6 +24,7 @@ const SECTIONS = [
   { id: "account", label: "Account", icon: Settings, Component: AccountSettings },
   { id: "security", label: "Security", icon: Shield, Component: AccountSecurity },
   { id: "notifications", label: "Notifications", icon: Bell, Component: AccountNotifications },
+  { id: "push", label: "Push", icon: Smartphone, Component: AccountPush },
   { id: "privacy", label: "Privacy", icon: Eye, Component: AccountPrivacy },
   { id: "appearance", label: "Appearance", icon: Palette, Component: AccountAppearance },
   { id: "radio", label: "Radio Profile", icon: Radio, Component: AccountRadio },

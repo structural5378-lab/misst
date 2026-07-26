@@ -1,50 +1,78 @@
-// MIST service worker — handles Firebase Cloud Messaging (FCM) web push.
-// Registered with scope "/" by src/lib/fcmPush.js. No external SDK required.
-self.addEventListener("install", (event) => {
-  self.skipWaiting();
-});
+/* MIST FCM Web Push service worker.
+   - Background push delivery (system notification)
+   - Foreground push forwarded to the focused client (graceful, no duplicate
+     system notification while the app is open)
+   - notificationclick deep-links into the correct app screen
+   - pushsubscriptionchange re-notifies the client to re-subscribe & re-register
+*/
+const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
-});
+self.addEventListener("install", () => { self.skipWaiting(); });
+self.addEventListener("activate", (event) => { event.waitUntil(self.clients.claim()); });
+
+function readPayload(event) {
+  if (!event.data) return {};
+  try { return event.data.json(); } catch { try { return JSON.parse(event.data.text()); } catch { return {}; } }
+}
+
+function extract(payload) {
+  const data = payload.data || {};
+  const notification = payload.notification || {};
+  let fcmOptions = payload.fcm_options || {};
+  if (!fcmOptions && data.fcm_options) {
+    try { fcmOptions = typeof data.fcm_options === "string" ? JSON.parse(data.fcm_options) : data.fcm_options; } catch { fcmOptions = {}; }
+  }
+  const title = notification.title || data.title || "MIST";
+  const body = notification.body || data.body || "";
+  const link = fcmOptions.link || data.link || "/notifications";
+  const tag = data.tag || data.related_object_type || "mist";
+  return { title, body, link, tag };
+}
 
 self.addEventListener("push", (event) => {
-  let data = {};
-  try {
-    data = event.data ? event.data.json() : {};
-  } catch {
+  const payload = readPayload(event);
+  const { title, body, link, tag } = extract(payload);
+  event.waitUntil((async () => {
     try {
-      data = { notification: { body: event.data ? event.data.text() : "" } };
-    } catch {
-      data = {};
-    }
-  }
-  const n = data.notification || {};
-  const d = data.data || {};
-  const title = n.title || "MIST";
-  const options = {
-    body: n.body || "",
-    icon: n.icon || "https://insomniacsgmrs.com/uploads/mist-icon.png",
-    badge: n.badge || "https://insomniacsgmrs.com/uploads/mist-icon.png",
-    data: { link: d.link || "/notifications", ...d },
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
+      const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const focused = clients.find((c) => c.focused);
+      if (focused) {
+        // App is in the foreground — forward and skip the system notification.
+        focused.postMessage({ type: "fcm-push", payload });
+        return;
+      }
+    } catch {}
+    await self.registration.showNotification(title, {
+      body,
+      icon: LOGO_URL,
+      badge: LOGO_URL,
+      data: { link },
+      tag,
+    });
+  })());
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const link = (event.notification.data && event.notification.data.link) || "/notifications";
-  event.waitUntil(
-    (async () => {
-      const allClients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      for (const client of allClients) {
-        if (client.url.includes(self.location.origin)) {
-          client.focus();
-          client.postMessage({ type: "navigate", link });
-          return;
-        }
+  event.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const c of all) {
+      if ("focus" in c) {
+        try {
+          await c.focus();
+          if (c.navigate) await c.navigate(new URL(link, self.location.origin).href);
+        } catch {}
+        return;
       }
-      return self.clients.openWindow(link);
-    })()
-  );
+    }
+    try { await self.clients.openWindow(link); } catch {}
+  })());
+});
+
+self.addEventListener("pushsubscriptionchange", () => {
+  // Browser invalidated the subscription — ask the open client to re-subscribe.
+  self.clients.matchAll({ type: "window", includeUncontrolled: true })
+    .then((clients) => clients.forEach((c) => c.postMessage({ type: "fcm-subscription-changed" })))
+    .catch(() => {});
 });

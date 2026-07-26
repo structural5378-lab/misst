@@ -1,13 +1,14 @@
 import { base44 } from "@/api/base44Client";
 
-// FCM web push client — native Push API + FCM HTTP v1 backend.
-// No Firebase JS SDK required. The VAPID public key is fetched from the
-// backend (getFcmPublicConfig); the subscription endpoint yields the FCM
-// registration token, which is registered against the DeviceToken entity.
+// FCM web push client — native Push API + FCM HTTP v1 backend. No Firebase JS SDK.
+// The VAPID public key is fetched from getFcmPublicConfig; the Push subscription
+// endpoint yields the FCM registration token, registered to the DeviceToken entity
+// (one record per device — supports multiple devices per user).
 
 const SW_PATH = "/sw.js";
 const PROMPTED_KEY = "fcm_prompted";
 const TOKEN_KEY = "fcm_token";
+const LAST_REFRESH_KEY = "fcm_last_refresh";
 
 export async function getVapidKey() {
   try {
@@ -26,7 +27,12 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 export function isPushSupported() {
-  return typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window;
+  return (
+    typeof window !== "undefined" &&
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    typeof Notification !== "undefined"
+  );
 }
 
 export async function isSubscribed() {
@@ -54,9 +60,17 @@ export async function getCurrentToken() {
   }
 }
 
-// Register / refresh the device token against the backend.
+export function getLastRefresh() {
+  try { return localStorage.getItem(LAST_REFRESH_KEY) || null; } catch { return null; }
+}
+
+function markRefresh() {
+  try { localStorage.setItem(LAST_REFRESH_KEY, new Date().toISOString()); } catch { /* ignore */ }
+}
+
+// Register / refresh a device token against the backend (idempotent per token).
 export async function registerToken(token) {
-  if (!token) return;
+  if (!token) return null;
   try {
     const existing = await base44.entities.DeviceToken.filter({ token, is_active: true });
     if (existing && existing.length > 0) {
@@ -64,6 +78,7 @@ export async function registerToken(token) {
         last_seen: new Date().toISOString(),
         is_active: true,
       });
+      markRefresh();
       return existing[0];
     }
     const me = await base44.auth.me();
@@ -75,37 +90,76 @@ export async function registerToken(token) {
       is_active: true,
       last_seen: new Date().toISOString(),
     });
+    markRefresh();
   } catch (e) {
     console.warn("registerToken failed", e);
   }
+  return null;
 }
 
-// Request permission, subscribe via Push API, and register the FCM token.
+export async function listMyDevices() {
+  try {
+    const me = await base44.auth.me();
+    const list = await base44.entities.DeviceToken.filter({ user_id: me.id, is_active: true }, "-last_seen", 50);
+    return list || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function removeDeviceById(id) {
+  await base44.entities.DeviceToken.delete(id);
+}
+
+// Request permission, subscribe via Push API, register token. (Initial enable.)
 export async function subscribeFcm() {
   if (!isPushSupported()) return { ok: false, reason: "unsupported" };
   const vapid = await getVapidKey();
   if (!vapid) return { ok: false, reason: "no-vapid-key" };
   const perm = await Notification.requestPermission();
   if (perm !== "granted") return { ok: false, reason: "permission-denied" };
-
-  const reg = await navigator.serviceWorker.register(SW_PATH, { scope: "/" });
-  await navigator.serviceWorker.ready;
-  let sub = await reg.pushManager.getSubscription();
-  if (!sub) {
-    sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapid),
-    });
-  }
-  const token = sub.endpoint.split("/").pop();
-  await registerToken(token);
   try {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(PROMPTED_KEY, "1");
-  } catch {
-    /* ignore */
+    const reg = await navigator.serviceWorker.register(SW_PATH, { scope: "/" });
+    await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapid),
+      });
+    }
+    const token = sub.endpoint.split("/").pop();
+    await registerToken(token);
+    try { localStorage.setItem(TOKEN_KEY, token); localStorage.setItem(PROMPTED_KEY, "1"); } catch { /* ignore */ }
+    return { ok: true, token };
+  } catch (e) {
+    return { ok: false, reason: "subscribe-error", error: String(e?.message || e) };
   }
-  return { ok: true, token };
+}
+
+// Re-subscribe / re-register the current device (assumes permission already granted).
+export async function refreshSubscription() {
+  if (!isPushSupported()) return { ok: false, reason: "unsupported" };
+  if (typeof Notification !== "undefined" && Notification.permission !== "granted") return { ok: false, reason: "permission-denied" };
+  const vapid = await getVapidKey();
+  if (!vapid) return { ok: false, reason: "no-vapid-key" };
+  try {
+    const reg = await navigator.serviceWorker.register(SW_PATH, { scope: "/" });
+    await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapid),
+      });
+    }
+    const token = sub.endpoint.split("/").pop();
+    await registerToken(token);
+    try { localStorage.setItem(TOKEN_KEY, token); } catch { /* ignore */ }
+    return { ok: true, token };
+  } catch (e) {
+    return { ok: false, reason: "subscribe-error", error: String(e?.message || e) };
+  }
 }
 
 export async function unsubscribeFcm() {
@@ -122,14 +176,7 @@ export async function unsubscribeFcm() {
         await base44.entities.DeviceToken.delete(t.id).catch(() => {});
       }
     }
-  } catch {
-    /* ignore */
-  }
-  try {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(PROMPTED_KEY);
-  } catch {
-    /* ignore */
-  }
+  } catch { /* ignore */ }
+  try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(LAST_REFRESH_KEY); } catch { /* ignore */ }
   return { ok: true };
 }
