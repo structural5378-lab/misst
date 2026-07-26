@@ -1,0 +1,72 @@
+{
+  "name": "ChatV2Participant",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "References ChatV2Conversation.id"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User ID of the participant"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "user_avatar": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "member",
+        "admin"
+      ],
+      "default": "member"
+    },
+    "last_read_message_id": {
+      "type": "string",
+      "description": "ID of the last message this user has read (for read-receipt anchoring)"
+    },
+    "last_read_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "unread_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Unread messages in this conversation for this participant"
+    },
+    "muted": {
+      "type": "boolean",
+      "default": false
+    },
+    "left": {
+      "type": "boolean",
+      "default": false,
+      "description": "true if the user left the conversation (excluded from list/notifications)"
+    },
+    "joined_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "conversation_id",
+    "user_id"
+  ],
+  "rls": {
+    "read": {
+      "data.user_id": "{{user.id}}"
+    },
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "update": {
+      "data.user_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.user_id": "{{user.id}}"
+    }
+  }
+}

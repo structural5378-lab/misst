@@ -1,0 +1,114 @@
+{
+  "name": "ChatV2Message",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "References ChatV2Conversation.id"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "User ID of the sender"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "sender_avatar": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string",
+      "description": "Message text body"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "image",
+        "file",
+        "system"
+      ],
+      "default": "text"
+    },
+    "attachments": {
+      "type": "string",
+      "description": "JSON array of attachment objects [{url, name, type, size}]"
+    },
+    "reactions": {
+      "type": "string",
+      "description": "JSON map { emoji: [userId, ...] }"
+    },
+    "reply_to_message_id": {
+      "type": "string"
+    },
+    "reply_to_preview": {
+      "type": "string",
+      "description": "Truncated body of the replied-to message for inline quote rendering"
+    },
+    "edited_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deleted": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sending",
+        "sent",
+        "delivered",
+        "read",
+        "failed"
+      ],
+      "default": "sent"
+    },
+    "read_by": {
+      "type": "string",
+      "description": "JSON array of user IDs that have read this message"
+    },
+    "delivered_to": {
+      "type": "string",
+      "description": "JSON array of user IDs whose client received this message"
+    },
+    "client_temp_id": {
+      "type": "string",
+      "description": "Client-generated id used for optimistic UI dedup and retry correlation"
+    }
+  },
+  "required": [
+    "conversation_id",
+    "sender_id",
+    "body"
+  ],
+  "rls": {
+    "create": {
+      "data.sender_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.sender_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.sender_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

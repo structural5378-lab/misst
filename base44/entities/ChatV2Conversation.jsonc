@@ -1,0 +1,54 @@
+{
+  "name": "ChatV2Conversation",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name for group chats; empty for 1:1 DMs (derived from the other participant)"
+    },
+    "is_group": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = group conversation; false = 1:1 direct message"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Optional community context for community-scoped chats"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "User ID of the conversation creator"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Optional group avatar"
+    },
+    "participants_summary": {
+      "type": "string",
+      "description": "JSON array of {id,name,avatar} for quick conversation-list rendering without cross-user reads"
+    },
+    "last_message_id": {
+      "type": "string"
+    },
+    "last_message_preview": {
+      "type": "string",
+      "description": "Truncated last message body for the conversation list"
+    },
+    "last_message_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_sender_id": {
+      "type": "string"
+    },
+    "last_sender_name": {
+      "type": "string"
+    },
+    "last_sender_avatar": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "is_group"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "name": "ChatV2Presence",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner user ID"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "user_avatar": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "online",
+        "offline",
+        "away"
+      ],
+      "default": "offline"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_heartbeat": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Updated every ~15s while the app is open. Clients derive online/away/offline from this."
+    },
+    "typing_conversation_id": {
+      "type": "string",
+      "description": "Conversation the user is currently typing in (empty = not typing)"
+    },
+    "typing_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last typing keystroke; valid for ~3s"
+    },
+    "active_conversation_id": {
+      "type": "string",
+      "description": "Conversation the user is currently viewing (used to suppress push while active)"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
