@@ -38,6 +38,48 @@ export default function CommunityChat() {
     return () => unsubscribe();
   }, [community.id]);
 
+  // Presence: signal that the user is actively viewing this community chat so the
+  // notification service suppresses community_chat alerts for new messages here.
+  // Heartbeat every 30s keeps the flag fresh. On unmount, clear it. Also mark any
+  // pre-existing unread community_chat notifications for this community as read
+  // (opening the chat decrements the badge).
+  useEffect(() => {
+    const uid = permissions.user?.id;
+    if (!uid) return;
+    let active = true;
+
+    const sync = async () => {
+      try {
+        const now = new Date().toISOString();
+        const mine = await base44.entities.ChatPresence.filter({ user_uid: uid }, "-last_active", 5);
+        if (mine.length) {
+          await base44.entities.ChatPresence.update(mine[0].id, { active_chat_community_id: community.id, last_active: now, status: "online" });
+        } else {
+          await base44.entities.ChatPresence.create({ user_uid: uid, user_name: permissions.user?.full_name || "User", active_chat_community_id: community.id, last_active: now, status: "online" });
+        }
+        await base44.entities.Notification.updateMany(
+          { recipient_id: uid, type: "community_chat", community_id: community.id, read: false },
+          { $set: { read: true, read_at: now } }
+        );
+      } catch (e) { /* best-effort */ }
+    };
+    sync();
+    const heartbeat = setInterval(sync, 30000);
+
+    return () => {
+      active = false;
+      clearInterval(heartbeat);
+      (async () => {
+        try {
+          const mine = await base44.entities.ChatPresence.filter({ user_uid: uid }, "-last_active", 5);
+          if (mine.length && mine[0].active_chat_community_id === community.id) {
+            await base44.entities.ChatPresence.update(mine[0].id, { active_chat_community_id: "" });
+          }
+        } catch { /* best-effort */ }
+      })();
+    };
+  }, [community.id, permissions.user?.id]);
+
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
