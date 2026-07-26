@@ -50,6 +50,7 @@ import CineplexMode from '@/pages/CineplexMode';
 import CreateEvent from '@/pages/CreateEvent';
 import LiveChat from '@/pages/LiveChat';
 import TestNotifications from '@/pages/TestNotifications.jsx';
+import FcmDiagnostics from '@/pages/FcmDiagnostics';
 import Shopping from '@/pages/Shopping';
 import CreateCommunity from '@/pages/CreateCommunity';
 import CommunityOnboarding from '@/pages/CommunityOnboarding';
@@ -175,6 +176,7 @@ const AuthenticatedApp = () => {
         <Route path="/live-chat" element={<LiveChat />} />
 
         <Route path="/test-notifications" element={<TestNotifications />} />
+        <Route path="/fcm-diagnostics" element={<FcmDiagnostics />} />
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/my-communities" element={<MyCommunities />} />
         <Route path="/radioscope" element={<RadioScope />} />
