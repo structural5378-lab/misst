@@ -110,22 +110,14 @@ async function persistToken(token) {
   await registerToken(token);
   try { localStorage.setItem(TOKEN_KEY, token); localStorage.setItem(PROMPTED_KEY, "1"); } catch { /* ignore */ }
   if (old && old !== token) {
+    // Firebase rotates the token — deactivate the PREVIOUS token only. We do NOT
+    // inspect token format (e.g. colon presence) to judge validity; format is not
+    // guaranteed. Stale tokens naturally fail at send time and are cleaned up there.
     try {
       const stale = await base44.entities.DeviceToken.filter({ token: old });
       for (const t of stale || []) await base44.entities.DeviceToken.update(t.id, { is_active: false }).catch(() => {});
     } catch { /* ignore */ }
   }
-  // Deactivate any other obviously-invalid (endpoint-style, colonless) tokens for
-  // this user so only properly-enrolled FCM tokens remain active.
-  try {
-    const me = await base44.auth.me();
-    const mine = await base44.entities.DeviceToken.filter({ user_id: me.id, is_active: true });
-    for (const t of mine || []) {
-      if (t.token && t.token !== token && !t.token.includes(":")) {
-        await base44.entities.DeviceToken.update(t.id, { is_active: false }).catch(() => {});
-      }
-    }
-  } catch { /* ignore */ }
 }
 
 // Core: obtain a real FCM registration token via the Firebase Messaging SDK.
@@ -147,9 +139,22 @@ export async function requestToken() {
       localStorage.setItem("fcm_sdk_clean", "1");
     }
     const token = await getToken(messaging, { vapidKey: cfg.vapidPublicKey, serviceWorkerRegistration: reg });
+    // Diagnostic: log the EXACT object returned by getToken() — unmodified.
+    // Firebase token formats are not guaranteed, so we report shape only (no
+    // validity assumptions like colon presence).
+    // eslint-disable-next-line no-console
+    console.log("[FCM] getToken() resolved", {
+      resolved: true,
+      typeofToken: typeof token,
+      isString: typeof token === "string",
+      length: typeof token === "string" ? token.length : null,
+      startsWith: typeof token === "string" ? token.slice(0, 8) : null,
+    });
     if (!token) return { ok: false, reason: "no-token" };
     return { ok: true, token };
   } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log("[FCM] getToken() threw", { resolved: false, error: String(e?.message || e) });
     return { ok: false, reason: "subscribe-error", error: String(e?.message || e) };
   }
 }

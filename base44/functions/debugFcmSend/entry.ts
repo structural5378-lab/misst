@@ -58,7 +58,6 @@ Deno.serve(async (req) => {
       projectId,
       tokenPreview: token.slice(0, 24) + "…" + token.slice(-12),
       tokenLength: token.length,
-      hasColon: token.includes(":"),
       responseBody: (() => { try { return JSON.parse(raw); } catch { return raw; } })(),
     });
   } catch (error) {
