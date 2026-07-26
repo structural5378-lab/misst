@@ -9,6 +9,7 @@ const SECRETS = [
   { key: "MYBB_BOT_PASSWORD", label: "MyBB Bridge Bot Password", group: "forum", docs: "" },
   { key: "MIST_BRIDGE_SECRET", label: "MIST Bridge Shared Secret", group: "forum", docs: "" },
   { key: "FCM_SERVICE_ACCOUNT_JSON", label: "Firebase Service Account (FCM)", group: "firebase", docs: "https://firebase.google.com/docs/cloud-messaging/send-message#authorize-send-requests" },
+  { key: "FCM_WEB_VAPID_KEY", label: "Firebase Web Push VAPID Key", group: "firebase", docs: "https://firebase.google.com/docs/cloud-messaging/concept-options#web" },
 ];
 
 const BRIDGE_URL = "https://insomniacsgmrs.com/mist-api.php";
@@ -119,9 +120,11 @@ async function testForum() {
 
 async function testFirebase() {
   const t0 = Date.now();
+  const vapid = Deno.env.get("FCM_WEB_VAPID_KEY");
   const sa = getServiceAccount();
   if (!sa) return { ok: false, message: "Service account missing or invalid", latencyMs: Date.now() - t0 };
+  if (!vapid) return { ok: false, message: "Web Push VAPID key missing — browsers cannot subscribe", latencyMs: Date.now() - t0 };
   const r = await getFcmAccessToken();
   if (!r.ok) return { ok: false, message: r.error, latencyMs: Date.now() - t0 };
-  return { ok: true, message: `Token minted — project ${r.projectId}`, latencyMs: Date.now() - t0 };
+  return { ok: true, message: `Token minted — project ${r.projectId} · VAPID set`, latencyMs: Date.now() - t0 };
 }
