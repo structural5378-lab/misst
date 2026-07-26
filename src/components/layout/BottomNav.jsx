@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, MessageSquare, MessageCircle, Mail, Plus, Shield } from "lucide-react";
+import { Home, MessageSquare, MessageCircle, Plus, Shield } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useMistUser } from "@/hooks/useMistUser";
 import { useAuth } from "@/lib/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import AdminBadge from "@/components/admin/AdminBadge";
@@ -11,13 +10,11 @@ const navItems = [
   { icon: Home, label: "Home", path: "/" },
   { icon: MessageSquare, label: "Community", path: "/community-forum" },
   { icon: null, label: "Add", path: "/add" }, // center action
-  { icon: MessageCircle, label: "Chat", path: "/live-chat" },
-  { icon: Mail, label: "Messages", path: "/messages" },
+  { icon: MessageCircle, label: "Chat", path: "/chat-v2" },
 ];
 
 export default function BottomNav() {
   const location = useLocation();
-  const { mybbUser } = useMistUser();
   const { user } = useAuth();
   const { isAdmin } = useAdminAccess();
 
@@ -26,27 +23,30 @@ export default function BottomNav() {
     ...(isAdmin ? [{ icon: Shield, label: "Admin", path: "/platform/admin", isAdmin: true }] : []),
   ];
 
-  const [dmUnreadCount, setDmUnreadCount] = useState(0);
+  const [chatUnread, setChatUnread] = useState(0);
   const [forumUnreadCount, setForumUnreadCount] = useState(0);
 
-  // Native MIST DM unread count (replaces MyBB PM badge)
+  // Chat V2 unread (DMs via ChatV2Participant + community rooms via ChatV2RoomMembership)
   useEffect(() => {
     if (!user?.id) return;
     const loadUnread = async () => {
       try {
-        const parts = await base44.entities.ConversationParticipant.filter({ user_id: user.id });
-        const total = parts.reduce((sum, p) => sum + (p.unread_count || 0), 0);
-        setDmUnreadCount(total);
+        const [parts, rooms] = await Promise.all([
+          base44.entities.ChatV2Participant.filter({ user_id: user.id }),
+          base44.entities.ChatV2RoomMembership.filter({ user_id: user.id }),
+        ]);
+        const dm = (parts || []).reduce((s, p) => s + (p.unread_count || 0), 0);
+        const room = (rooms || []).reduce((s, m) => s + (m.unread_count || 0), 0);
+        setChatUnread(dm + room);
       } catch {}
     };
     loadUnread();
-    const unsub = base44.entities.ConversationParticipant.subscribe((event) => {
-      if (event.data?.user_id === user.id) loadUnread();
-    });
-    return unsub;
+    const unsubA = base44.entities.ChatV2Participant.subscribe((e) => { if (e.data?.user_id === user.id) loadUnread(); });
+    const unsubB = base44.entities.ChatV2RoomMembership.subscribe((e) => { if (e.data?.user_id === user.id) loadUnread(); });
+    return () => { unsubA(); unsubB(); };
   }, [user?.id]);
 
-  // Native MIST Community forum unread count
+  // Community forum unread
   useEffect(() => {
     if (!user?.id) return;
     const loadForumUnread = async () => {
@@ -64,62 +64,25 @@ export default function BottomNav() {
   }, [user?.id]);
 
   const [hasNewChat, setHasNewChat] = React.useState(false);
-  const [hasNewPMs, setHasNewPMs] = React.useState(false);
-  const isOnChat = location.pathname === "/live-chat";
-  const isOnMessages = location.pathname === "/messages";
-  const isOnChatRef = React.useRef(isOnChat);
-  const myUidRef = React.useRef("");
+  const isOnChat = location.pathname.startsWith("/chat-v2");
   const prevUnreadRef = React.useRef(0);
   const isFirstLoadRef = React.useRef(true);
-  React.useEffect(() => { isOnChatRef.current = isOnChat; }, [isOnChat]);
-  React.useEffect(() => { myUidRef.current = String(mybbUser?.uid || mybbUser?.username || ""); }, [mybbUser]);
 
-  // Clear glow when user is on the chat page
-  React.useEffect(() => {
-    if (isOnChat) {
-      localStorage.setItem("chat_last_seen", Date.now().toString());
-      setHasNewChat(false);
-    }
-  }, [isOnChat]);
-
-  // Clear PM glow when user is on the messages page
-  React.useEffect(() => {
-    if (isOnMessages) {
-      localStorage.setItem("pms_last_seen", Date.now().toString());
-      setHasNewPMs(false);
-    }
-  }, [isOnMessages]);
-
-  // Set DM glow on count increase (skip initial load); clear when all read or viewing messages
+  // Glow on unread increase; clear when viewing chat or all read
   React.useEffect(() => {
     if (isFirstLoadRef.current) {
       isFirstLoadRef.current = false;
-      prevUnreadRef.current = dmUnreadCount;
+      prevUnreadRef.current = chatUnread;
       return;
     }
-    if (dmUnreadCount > prevUnreadRef.current && !isOnMessages) {
-      setHasNewPMs(true);
-    }
-    if (dmUnreadCount === 0 || isOnMessages) {
-      setHasNewPMs(false);
-    }
-    prevUnreadRef.current = dmUnreadCount;
-  }, [dmUnreadCount, isOnMessages]);
+    if (chatUnread > prevUnreadRef.current && !isOnChat) setHasNewChat(true);
+    if (chatUnread === 0 || isOnChat) setHasNewChat(false);
+    prevUnreadRef.current = chatUnread;
+  }, [chatUnread, isOnChat]);
 
-  // Subscribe to new chat messages (single stable subscription via refs)
   React.useEffect(() => {
-    const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
-      if (event.type === "create" && !isOnChatRef.current) {
-        const senderUid = String(event.data?.sender_uid || "");
-        if (senderUid !== myUidRef.current) {
-          setHasNewChat(true);
-        }
-      }
-    });
-    return unsubscribe;
-  }, []);
-
-
+    if (isOnChat) setHasNewChat(false);
+  }, [isOnChat]);
 
   return (
     <nav data-bottom-nav aria-label="Primary navigation" className="fixed bottom-0 left-0 right-0 z-[70] bg-background/80 backdrop-blur-2xl border-t border-white/[0.06] transition-transform duration-300 ease-out will-change-transform">
@@ -129,14 +92,12 @@ export default function BottomNav() {
             ? location.pathname === "/"
             : location.pathname === path || location.pathname.startsWith(path + "/");
           const isAdd = label === "Add";
-          const isMessages = label === "Messages";
           const isChat = label === "Chat";
           const isAdminItem = label === "Admin";
           const isCommunity = label === "Community";
-          const hasUnread = (isMessages && dmUnreadCount > 0) || (isCommunity && forumUnreadCount > 0);
-          const badgeCount = isMessages ? dmUnreadCount : (isCommunity ? forumUnreadCount : 0);
+          const hasUnread = (isChat && chatUnread > 0) || (isCommunity && forumUnreadCount > 0);
+          const badgeCount = isChat ? chatUnread : (isCommunity ? forumUnreadCount : 0);
           const chatGlow = isChat && hasNewChat;
-          const pmGlow = isMessages && hasNewPMs;
 
           return (
             <Link
@@ -166,10 +127,7 @@ export default function BottomNav() {
                         <div className="absolute inset-0 rounded-full bg-white blur-md opacity-50 chat-glow-flash" style={{borderRadius:'50%'}} />
                       </>
                     )}
-                    {pmGlow && (
-                      <div className="absolute inset-0 rounded-full bg-primary/40 blur-md mist-nav-glow-ring" />
-                    )}
-                    <Icon className={`w-5 h-5 transition-transform relative ${isActive ? "scale-110" : ""} ${chatGlow ? "text-white scale-125 chat-icon-flash" : ""} ${pmGlow ? "text-primary mist-nav-pulse" : ""}`} />
+                    <Icon className={`w-5 h-5 transition-transform relative ${isActive ? "scale-110" : ""} ${chatGlow ? "text-white scale-125 chat-icon-flash" : ""}`} />
                     {hasUnread && (
                       <span className="absolute -top-1 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shadow-md ring-2 ring-background">
                         {badgeCount > 9 ? "9+" : badgeCount}

@@ -153,7 +153,7 @@ const AuthenticatedApp = () => {
         <Route path="/repeaters/:id" element={<RepeaterDetail />} />
         <Route path="/map" element={<MapView />} />
         <Route path="/nets" element={<Nets />} />
-        <Route path="/messages" element={<Messages />} />
+        <Route path="/messages" element={<Navigate to="/chat-v2" replace />} />
         <Route path="/alerts" element={<Alerts />} />
         <Route path="/tools" element={<Tools />} />
         <Route path="/tools/antenna" element={<AntennaCalculator />} />
@@ -181,7 +181,7 @@ const AuthenticatedApp = () => {
         <Route path="/weather" element={<Weather />} />
         <Route path="/cineplex" element={<CineplexMode />} />
         <Route path="/events/create" element={<CreateEvent />} />
-        <Route path="/live-chat" element={<LiveChat />} />
+        <Route path="/live-chat" element={<Navigate to="/chat-v2" replace />} />
 
         <Route path="/test-notifications" element={<TestNotifications />} />
         <Route path="/shopping" element={<Shopping />} />

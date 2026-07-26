@@ -27,7 +27,7 @@ const quickItems = [
   { icon: UserCircle2, label: "Members", path: "/members", color: "text-indigo-400", bg: "bg-indigo-500/10" },
   { icon: ShoppingBag, label: "Shopping", path: "/shopping", color: "text-orange-400", bg: "bg-orange-500/10" },
   { icon: SignalHigh, label: "Simplex", path: "/cineplex", color: "text-success", bg: "bg-success/10" },
-  { icon: MessageSquare, label: "Live Chat", path: "/live-chat", color: "text-fuchsia-400", bg: "bg-fuchsia-500/10" },
+  { icon: MessageSquare, label: "Chat", path: "/chat-v2", color: "text-fuchsia-400", bg: "bg-fuchsia-500/10" },
   { icon: Trophy, label: "Trophies", path: "/achievements", color: "text-yellow-400", bg: "bg-yellow-500/10" },
   { icon: Settings, label: "Settings", path: "/account", color: "text-muted-foreground", bg: "bg-muted/40" },
   { icon: Shield, label: "Admin", path: "/platform/admin", color: "text-rose-400", bg: "bg-rose-500/10", adminOnly: true },
