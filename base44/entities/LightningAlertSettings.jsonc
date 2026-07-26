@@ -36,6 +36,26 @@
       "default": false,
       "description": "Automatically open RadioScope centered on the strike"
     },
+    "last_alert_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the most recent lightning notification delivered to this user. Drives the 60s grouping/throttle window (server-managed)."
+    },
+    "recent_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of in-radius strikes seen during the current grouping window (server-managed)."
+    },
+    "recent_window_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start of the current grouping window (server-managed)."
+    },
+    "recent_escalated": {
+      "type": "number",
+      "default": 0,
+      "description": "Escalation tier reached in the current window (0=none, 1=frequent, 2=storm). Prevents repeated escalation notifications (server-managed)."
+    },
     "updated_at": {
       "type": "string",
       "format": "date-time"

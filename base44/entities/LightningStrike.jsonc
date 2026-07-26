@@ -13,12 +13,20 @@
     "strike_time": {
       "type": "string",
       "format": "date-time",
-      "description": "When the strike occurred (provider-reported timestamp)"
+      "description": "When the strike occurred (provider-reported timestamp, UTC)"
     },
     "provider": {
       "type": "string",
       "default": "mock",
-      "description": "Source provider slug (mock, vaisala, earthnetworks, blitzortung, ...)"
+      "description": "Source provider slug (mock, live, vaisala, earthnetworks, blitzortung, ...)"
+    },
+    "provider_strike_id": {
+      "type": "string",
+      "description": "Provider-native unique strike ID. Used for cross-poll dedupe so the same strike is never persisted twice. Empty for mock/dev strikes."
+    },
+    "strike_type": {
+      "type": "string",
+      "description": "Strike type/polarity if reported by the provider (cloud-to-ground, positive, negative, ...)"
     },
     "intensity": {
       "type": "number",
@@ -26,7 +34,7 @@
     },
     "metadata": {
       "type": "string",
-      "description": "JSON of provider-specific extra data (peak current, polarity, etc.)"
+      "description": "JSON of provider-specific extra data (peak current, polarity, raw payload, etc.)"
     },
     "processed": {
       "type": "boolean",

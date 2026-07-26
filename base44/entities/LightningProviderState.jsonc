@@ -1,0 +1,93 @@
+{
+  "name": "LightningProviderState",
+  "type": "object",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "description": "Active provider slug (mock, live, ...)"
+    },
+    "health": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "degraded",
+        "down",
+        "not_configured",
+        "unknown"
+      ],
+      "default": "unknown",
+      "description": "Current provider health"
+    },
+    "last_successful_update": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last successful provider fetch"
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Most recent provider error message (empty when healthy)"
+    },
+    "last_error_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "avg_response_time_ms": {
+      "type": "number",
+      "default": 0,
+      "description": "Exponential moving average of provider response time in ms"
+    },
+    "total_strikes_today": {
+      "type": "number",
+      "default": 0,
+      "description": "Strikes received today (resets daily)"
+    },
+    "notifications_sent_today": {
+      "type": "number",
+      "default": 0,
+      "description": "Lightning notifications delivered today (resets daily)"
+    },
+    "rate_limit_status": {
+      "type": "string",
+      "description": "API rate-limit status (e.g. remaining quota) when available"
+    },
+    "last_poll_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last poller run; used as the 'since' cursor for live ingestion"
+    },
+    "consecutive_failures": {
+      "type": "number",
+      "default": 0,
+      "description": "Consecutive provider failures since the last success"
+    },
+    "stats_date": {
+      "type": "string",
+      "description": "YYYY-MM-DD of the current daily stats window (for reset)"
+    }
+  },
+  "required": [
+    "provider"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
