@@ -1,11 +1,12 @@
 import React from "react";
-import { X, Radio, Users, Cloud, Wifi, AlertTriangle, Circle, Mountain, Satellite } from "lucide-react";
+import { X, Radio, Users, Cloud, Wifi, AlertTriangle, Circle, Mountain, Satellite, Zap } from "lucide-react";
 
 const LAYERS = [
   { id: "repeaters", label: "Repeaters", icon: Radio },
   { id: "users", label: "Users", icon: Users },
   { id: "coverage", label: "Coverage Circles", icon: Circle },
   { id: "beams", label: "RF Connections", icon: Wifi },
+  { id: "lightning", label: "Lightning", icon: Zap },
   { id: "weather", label: "Weather", icon: Cloud, soon: true },
   { id: "nets", label: "Nets", icon: Wifi, soon: true },
   { id: "emergency", label: "Emergency", icon: AlertTriangle, soon: true },

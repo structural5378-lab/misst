@@ -1,0 +1,56 @@
+{
+  "name": "LightningAlertDelivery",
+  "type": "object",
+  "properties": {
+    "strike_id": {
+      "type": "string",
+      "description": "References LightningStrike.id"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Recipient user ID"
+    },
+    "distance_miles": {
+      "type": "number",
+      "description": "Distance from the user's live location to the strike at delivery time"
+    },
+    "strike_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Denormalized strike timestamp (for log/retention views)"
+    }
+  },
+  "required": [
+    "strike_id",
+    "user_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -25,7 +25,7 @@ export default function RadioScope() {
   const [selectedRepeater, setSelectedRepeater] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [activeLayers, setActiveLayers] = useState({
-    repeaters: true, users: true, coverage: false, beams: true,
+    repeaters: true, users: true, coverage: false, beams: true, lightning: true,
   });
   const [activeFilter, setActiveFilter] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -140,6 +140,22 @@ export default function RadioScope() {
     refetchInterval: 30000,
   });
 
+  // ── Fetch lightning strikes (real-time refresh) ──
+  const { data: strikes = [] } = useQuery({
+    queryKey: ["lightning-strikes"],
+    queryFn: () => base44.entities.LightningStrike.list("-strike_time", 500),
+    refetchInterval: 15000,
+  });
+
+  // ── Notification deep link: ?strike=<id> centers the map on a strike ──
+  const [focusStrikeId, setFocusStrikeId] = useState(
+    () => new URLSearchParams(window.location.search).get("strike")
+  );
+  const focusStrike = useMemo(
+    () => strikes.find((s) => s.id === focusStrikeId) || null,
+    [strikes, focusStrikeId]
+  );
+
   // ── LIVE USERS ONLY: no simulation, no cached, no expired ──
   const onlineUsers = useMemo(
     () => getLiveUsers(presenceData, { now: nowTick, ttl: LOCATION_TTL_MS, excludeUid: myUid }),
@@ -170,6 +186,11 @@ export default function RadioScope() {
             selectedUser={selectedUser}
             onRepeaterClick={setSelectedRepeater}
             onUserClick={setSelectedUser}
+            strikes={strikes}
+            focusStrike={focusStrike}
+            focusStrikeId={focusStrikeId}
+            now={nowTick}
+            onStrikeClick={(s) => setFocusStrikeId(s.id)}
           />
         </div>
 

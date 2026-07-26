@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Circle, Polyline, useMap } from "react-leaflet
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import AnimatedMarker from "./AnimatedMarker";
+import LightningLayer from "./LightningLayer";
 import { haversine } from "@/lib/geoUtils";
 import { useThemeColors } from "@/hooks/useThemeColors";
 
@@ -50,7 +51,7 @@ function createClusterIcon(count) {
   });
 }
 
-function MapController({ recenterTrigger, userPosition, selectedRepeater, selectedUser }) {
+function MapController({ recenterTrigger, userPosition, selectedRepeater, selectedUser, focusStrike }) {
   const map = useMap();
   const firstFix = useRef(true);
 
@@ -61,6 +62,13 @@ function MapController({ recenterTrigger, userPosition, selectedRepeater, select
       map.flyTo(userPosition, Math.max(map.getZoom(), 12), { duration: 1.5 });
     }
   }, [recenterTrigger, userPosition, map]);
+
+  // Fly to a lightning strike when one is focused (e.g. via notification deep link)
+  useEffect(() => {
+    if (focusStrike && focusStrike.latitude && focusStrike.longitude) {
+      map.flyTo([focusStrike.latitude, focusStrike.longitude], Math.max(map.getZoom(), 13), { duration: 1.2 });
+    }
+  }, [focusStrike, map]);
 
   // Fly to selected target when it's outside the current view (e.g. from search)
   useEffect(() => {
@@ -107,6 +115,7 @@ export default function RadioScopeMap({
   userPosition, repeaters, onlineUsers, activeLayers, activeFilter,
   searchQuery, tileMode, recenterTrigger, selectedRepeater, selectedUser,
   onRepeaterClick, onUserClick,
+  strikes, focusStrike, focusStrikeId, now, onStrikeClick,
 }) {
   const tc = useThemeColors();
   const center = userPosition || DEFAULT_CENTER;
@@ -262,6 +271,7 @@ export default function RadioScopeMap({
         userPosition={userPosition}
         selectedRepeater={selectedRepeater}
         selectedUser={selectedUser}
+        focusStrike={focusStrike}
       />
       <BoundsTracker onBoundsChange={handleBoundsChange} />
 
@@ -352,6 +362,11 @@ export default function RadioScopeMap({
           pathOptions={{ color: tc.primary, weight: 1, opacity: 0.25, dashArray: "2 6" }}
         />
       ))}
+
+      {/* Lightning strikes */}
+      {activeLayers.lightning && (
+        <LightningLayer strikes={strikes} now={now} focusStrikeId={focusStrikeId} onStrikeClick={onStrikeClick} />
+      )}
     </MapContainer>
   );
 }

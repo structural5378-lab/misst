@@ -2,7 +2,7 @@ import {
   LayoutDashboard, BarChart3, Users, ShieldCheck, ClipboardList,
   MessageSquare, MessagesSquare, Mail, RadioTower, Radio, CalendarClock,
   Building2, Image, ShoppingCart, Award, Bell, Palette, LayoutGrid, Server,
-  ShieldAlert, DatabaseBackup, Terminal, LayoutTemplate, KeyRound, FlaskConical, Activity,
+  ShieldAlert, DatabaseBackup, Terminal, LayoutTemplate, KeyRound, FlaskConical, Activity, CloudLightning,
   Home, User, Settings, CalendarDays,
 } from "lucide-react";
 
@@ -66,6 +66,12 @@ export const adminNavSections = [
       { label: "Delivery Logs", path: "/platform/admin/notifications/logs", icon: ClipboardList, minRole: 2 },
       { label: "Test Console", path: "/platform/admin/notifications/test", icon: FlaskConical, minRole: 2 },
       { label: "Live Monitor", path: "/platform/admin/notifications/monitor", icon: Activity, minRole: 2 },
+    ],
+  },
+  {
+    title: "Weather",
+    items: [
+      { label: "Lightning", path: "/platform/admin/lightning", icon: CloudLightning, minRole: 2 },
     ],
   },
   {

@@ -106,6 +106,7 @@ import PlatformAdminPrivateMessages from '@/pages/platform/PlatformAdminPrivateM
 import PlatformAdminNetTemplates from '@/pages/platform/PlatformAdminNetTemplates';
 import PlatformAdminScheduledNets from '@/pages/platform/PlatformAdminScheduledNets';
 import PlatformAdminNetLogs from '@/pages/platform/PlatformAdminNetLogs';
+import PlatformAdminLightning from '@/pages/platform/PlatformAdminLightning';
 
 // Community-scoped pages
 import CommunityLayout from '@/components/community/CommunityLayout';
@@ -253,6 +254,7 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/net-templates" element={<PlatformAdminNetTemplates />} />
           <Route path="/platform/admin/scheduled-nets" element={<PlatformAdminScheduledNets />} />
           <Route path="/platform/admin/net-logs" element={<PlatformAdminNetLogs />} />
+          <Route path="/platform/admin/lightning" element={<PlatformAdminLightning />} />
         </Route>
       </Route>
 

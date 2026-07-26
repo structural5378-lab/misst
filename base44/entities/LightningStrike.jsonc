@@ -1,0 +1,59 @@
+{
+  "name": "LightningStrike",
+  "type": "object",
+  "properties": {
+    "latitude": {
+      "type": "number",
+      "description": "Strike latitude"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Strike longitude"
+    },
+    "strike_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the strike occurred (provider-reported timestamp)"
+    },
+    "provider": {
+      "type": "string",
+      "default": "mock",
+      "description": "Source provider slug (mock, vaisala, earthnetworks, blitzortung, ...)"
+    },
+    "intensity": {
+      "type": "number",
+      "description": "Relative intensity 0-100 (provider-specific units)"
+    },
+    "metadata": {
+      "type": "string",
+      "description": "JSON of provider-specific extra data (peak current, polarity, etc.)"
+    },
+    "processed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the notification pipeline has processed this strike (dedupe/fallback flag)"
+    }
+  },
+  "required": [
+    "latitude",
+    "longitude"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
