@@ -6,38 +6,43 @@
       "type": "string",
       "description": "Global MIST user ID (UUID)"
     },
-    "user_name": {
-      "type": "string"
-    },
     "user_email": {
-      "type": "string"
+      "type": "string",
+      "description": "User email for display"
     },
-    "user_callsign": {
-      "type": "string"
+    "user_name": {
+      "type": "string",
+      "description": "Denormalized display name"
     },
     "user_avatar": {
-      "type": "string"
+      "type": "string",
+      "description": "Denormalized avatar URL"
+    },
+    "user_callsign": {
+      "type": "string",
+      "description": "Denormalized callsign"
     },
     "community_id": {
-      "type": "string"
+      "type": "string",
+      "description": "Community ID this membership belongs to"
     },
     "community_name": {
-      "type": "string"
-    },
-    "community_slug": {
-      "type": "string"
+      "type": "string",
+      "description": "Community name for display"
     },
     "role": {
       "type": "string",
       "enum": [
         "community_owner",
         "community_admin",
+        "net_control",
         "moderator",
         "trusted_member",
         "member",
         "guest"
       ],
-      "default": "member"
+      "default": "member",
+      "description": "Community-level role (drives community-scoped permissions via resolvePermissions)"
     },
     "status": {
       "type": "string",
@@ -45,19 +50,21 @@
         "active",
         "pending",
         "suspended",
-        "left",
         "banned",
-        "rejected"
+        "left"
       ],
       "default": "active"
-    },
-    "join_reason": {
-      "type": "string",
-      "description": "Optional note the user submitted when requesting to join"
     },
     "joined_date": {
       "type": "string",
       "format": "date-time"
+    },
+    "assigned_by": {
+      "type": "string",
+      "description": "User ID of who assigned the current role"
+    },
+    "assigned_by_email": {
+      "type": "string"
     },
     "is_active": {
       "type": "boolean",
@@ -66,6 +73,7 @@
   },
   "required": [
     "user_id",
+    "user_email",
     "community_id",
     "role"
   ]

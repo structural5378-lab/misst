@@ -13,19 +13,26 @@ const COMMUNITY_PERMISSIONS = {
     'community:transfer_ownership', 'community:create_custom_roles', 'community:override_permissions',
     'community:customize_branding', 'community:invite_members', 'community:upload_photos',
     'community:create_listings', 'community:create_threads', 'community:post_chat',
-    'community:delete_own_message', 'community:checkin_net', 'community:view_content'
+    'community:delete_any_message', 'community:checkin_net', 'community:view_content',
+    'community:warn', 'community:mute', 'community:suspend', 'community:remove', 'community:ban', 'community:review_reports'
   ],
   community_admin: [
     'community:admin', 'community:moderate', 'community:create_alert', 'community:create_event',
     'community:create_net', 'community:manage_members', 'community:manage_settings',
     'community:invite_members', 'community:upload_photos', 'community:create_listings',
+    'community:create_threads', 'community:post_chat', 'community:delete_any_message',
+    'community:checkin_net', 'community:view_content',
+    'community:warn', 'community:mute', 'community:suspend', 'community:remove', 'community:review_reports'
+  ],
+  net_control: [
+    'community:create_net', 'community:create_event', 'community:upload_photos',
     'community:create_threads', 'community:post_chat', 'community:delete_own_message',
     'community:checkin_net', 'community:view_content'
   ],
   moderator: [
-    'community:moderate', 'community:create_net', 'community:upload_photos',
-    'community:create_listings', 'community:create_threads', 'community:post_chat',
-    'community:delete_own_message', 'community:checkin_net', 'community:view_content'
+    'community:moderate', 'community:delete_any_message', 'community:warn', 'community:mute',
+    'community:suspend', 'community:remove', 'community:review_reports', 'community:create_threads',
+    'community:post_chat', 'community:delete_own_message', 'community:checkin_net', 'community:view_content'
   ],
   trusted_member: [
     'community:upload_photos', 'community:create_listings', 'community:create_threads',

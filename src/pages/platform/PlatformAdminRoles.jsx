@@ -10,6 +10,7 @@ import AdminSection from "@/components/platform/AdminSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RoleEditor from "@/components/admin/RoleEditor";
+import RolePermissionChecklist from "@/components/admin/RolePermissionChecklist";
 import { parseJsonArray, parseBadgeConfig } from "@/lib/rbacClient";
 
 const ICON_MAP = {
@@ -90,7 +91,7 @@ export default function PlatformAdminRoles() {
 
   return (
     <AdminSection
-      title="Role Manager"
+      title="Roles & Permissions"
       description="Unified RBAC — the single permission system for the entire platform"
       action={
         <Button onClick={() => setEditor({ open: true, mode: "create", role: null })} className="bg-primary text-primary-foreground">
@@ -162,21 +163,7 @@ export default function PlatformAdminRoles() {
               <div className="p-4">
                 {tab === "detail" && (
                   <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-bold text-foreground">Effective Permissions</h4>
-                      {selected.parent_role_id && (
-                        <span className="text-[10px] text-muted-foreground">inherits from {roles.find(r => r.id === selected.parent_role_id)?.name || "—"}</span>
-                      )}
-                    </div>
-                    {parseJsonArray(selected.permissions).includes("*") ? (
-                      <p className="text-sm text-warning">All permissions (wildcard)</p>
-                    ) : (
-                      <div className="flex flex-wrap gap-1.5">
-                        {[...parseJsonArray(selected.permissions), ...parseJsonArray(selected.denied_permissions).map((d) => `✕ ${d}`)].map((p, i) => (
-                          <span key={i} className={`text-[10px] px-2 py-1 rounded-md ${p.startsWith("✕") ? "bg-destructive/15 text-destructive" : "bg-primary/10 text-primary"}`}>{p}</span>
-                        ))}
-                      </div>
-                    )}
+                    <RolePermissionChecklist role={selected} allRoles={roles} onSaved={reload} />
                     <BadgePreview role={selected} />
                   </div>
                 )}

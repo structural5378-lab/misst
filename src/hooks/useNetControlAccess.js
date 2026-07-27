@@ -11,6 +11,7 @@ export function useNetControlAccess() {
   const canControl =
     !!isAdmin ||
     (permissions || []).includes("nets.manage") ||
+    (permissions || []).includes("nets.start") ||
     (permissions || []).includes("*") ||
     mybbUser?.role === "moderator";
   return { canControl, isAdmin, permissions };

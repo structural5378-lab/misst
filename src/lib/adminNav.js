@@ -22,7 +22,7 @@ export const adminNavSections = [
     title: "People",
     items: [
       { label: "User Management", path: "/platform/admin/users", icon: Users, minRole: 2 },
-      { label: "Groups & Permissions", path: "/platform/admin/roles", icon: ShieldCheck, minRole: 3 },
+      { label: "Roles & Permissions", path: "/platform/admin/roles", icon: ShieldCheck, minRole: 3 },
     ],
   },
   {

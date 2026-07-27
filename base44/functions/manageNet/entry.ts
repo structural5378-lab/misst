@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { logActionAudit } from '../../shared/rbac.ts';
 
 // manageNet — the single server-side gatekeeper for all Net Control actions.
 // Every mutating operation on a Net (create/update/delete/archive/disable/
@@ -30,6 +31,7 @@ export default async function(req: Request): Promise<Response> {
     const body = await req.json().catch(() => ({}));
     const action = body.action;
     const sr = base44.asServiceRole;
+    const log = (e: any) => logActionAudit(base44, { admin_id: user.id, admin_email: user.email || '', ...e });
 
     // ── Schedule management ──────────────────────────────────────────────
     if (action === 'create') {
@@ -64,6 +66,7 @@ export default async function(req: Request): Promise<Response> {
         created_by: user.id,
         created_by_name: user.full_name || user.email || '',
       });
+      await log({ action: 'net_create', target_type: 'net', target_id: net.id, target_name: net.name, community_id: net.community_id || '', community_name: net.community_name || '' });
       return Response.json({ ok: true, net });
     }
 
@@ -85,6 +88,7 @@ export default async function(req: Request): Promise<Response> {
     if (action === 'delete') {
       if (!body.id) return Response.json({ error: 'id required' }, { status: 400 });
       await sr.entities.Net.delete(body.id);
+      await log({ action: 'net_delete', target_type: 'net', target_id: body.id, target_name: body.name || '' });
       return Response.json({ ok: true });
     }
 
@@ -114,6 +118,7 @@ export default async function(req: Request): Promise<Response> {
         community_id: net.community_id || '', community_name: net.community_name || '',
       });
       await sr.entities.NetTimeline.create({ session_id: session.id, net_id: net.id, event_type: 'net_started', message: `Net started by ${session.net_control}`, actor_name: session.net_control, actor_id: user.id });
+      await log({ action: 'net_start', target_type: 'net', target_id: net.id, target_name: net.name, community_id: net.community_id || '', community_name: net.community_name || '', new_value: JSON.stringify({ session_id: session.id }) });
       return Response.json({ ok: true, session });
     }
 
@@ -141,6 +146,7 @@ export default async function(req: Request): Promise<Response> {
           emergency_count: approved.filter((l) => l.status === 'emergency').length,
         });
         await sr.entities.NetTimeline.create({ session_id: session.id, net_id: session.net_id, event_type: 'net_closed', message: `Net closed by ${session.net_control}`, actor_name: session.net_control, actor_id: user.id });
+        await log({ action: 'net_end', target_type: 'net', target_id: session.net_id, target_name: session.net_name, community_id: session.community_id || '', community_name: session.community_name || '' });
       }
       return Response.json({ ok: true });
     }
