@@ -3,10 +3,11 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, Users, Info, AlertTriangle, Settings, MessageSquare, ChevronRight, MapPin, Sun, Wrench, Globe, Camera, UserCircle2, ShoppingBag, SignalHigh, Trophy, Shield } from "lucide-react";
+import { Bell, Radio, Users, Info, AlertTriangle, Settings, MessageSquare, ChevronRight, MapPin, Sun, Wrench, Globe, Camera, UserCircle2, ShoppingBag, SignalHigh, Trophy, Shield, Mic } from "lucide-react";
 import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
 import PropagationGauge from "@/components/dashboard/PropagationGauge";
+import { useNetControlAccess } from "@/hooks/useNetControlAccess";
 import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
 import RadioScopeTile from "@/components/radioscope/RadioScopeTile";
 import OperatorCard from "@/components/profile/OperatorCard";
@@ -19,6 +20,7 @@ const quickItems = [
   { icon: Radio, label: "Repeaters", path: "/repeaters", color: "text-violet-400", bg: "bg-violet-500/10" },
   { icon: MapPin, label: "Map", path: "/map", color: "text-cyan-400", bg: "bg-cyan-500/10" },
   { icon: Users, label: "Nets", path: "/nets", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  { icon: Mic, label: "Net Control", path: "/net-control", color: "text-violet-400", bg: "bg-violet-500/10", netControlOnly: true },
   { icon: Sun, label: "Weather", path: "/weather", color: "text-amber-400", bg: "bg-amber-500/10" },
   { icon: Wrench, label: "Tools", path: "/tools", color: "text-sky-400", bg: "bg-sky-500/10" },
   { icon: Globe, label: "Forum", path: "/community-forum", color: "text-info", bg: "bg-info/10" },
@@ -35,6 +37,7 @@ const quickItems = [
 
 export default function Dashboard() {
   const { mistUser, signOut, mybbUser } = useMistUser();
+  const { canControl } = useNetControlAccess();
   const [showOnlineSheet, setShowOnlineSheet] = useState(false);
 
   useEffect(() => {
@@ -226,7 +229,7 @@ export default function Dashboard() {
         <section>
           <h3 className="text-sm font-semibold text-foreground mb-3">Explore</h3>
           <div className="grid grid-cols-3 gap-3">
-            {quickItems.filter(i => i.adminOnly ? isAdmin : true).map(({ icon: Icon, label, path, bg, color }) => (
+            {quickItems.filter(i => (i.adminOnly ? isAdmin : true) && (i.netControlOnly ? canControl : true)).map(({ icon: Icon, label, path, bg, color }) => (
               <Link key={label + path} to={path} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95">
                 <div className={`w-11 h-11 rounded-xl ${bg} flex items-center justify-center`}>
                   <Icon className={`w-5 h-5 ${color}`} />

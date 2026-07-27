@@ -57,6 +57,7 @@ import CommunityOnboarding from '@/pages/CommunityOnboarding';
 import MyCommunities from '@/pages/MyCommunities';
 import OnboardingProtectedRoute from '@/components/OnboardingProtectedRoute';
 import RadioScope from '@/pages/RadioScope';
+import NetControl from '@/pages/NetControl';
 import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
 import Settings from '@/pages/Settings';
@@ -174,6 +175,7 @@ const AuthenticatedApp = () => {
         <Route path="/nets/:netId/ops" element={<MissionOps />} />
         <Route path="/nets/:netId/wallboard" element={<MissionWallboard />} />
         <Route path="/nets/create" element={<CreateNet />} />
+        <Route path="/net-control" element={<NetControl />} />
 
         <Route path="/alerts/create" element={<CreateAlert />} />
         <Route path="/live-cams" element={<LiveCams />} />

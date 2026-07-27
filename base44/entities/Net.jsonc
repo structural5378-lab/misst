@@ -11,23 +11,102 @@
     },
     "schedule": {
       "type": "string",
-      "description": "e.g. Daily, Mon/Wed/Fri, Weekly"
+      "description": "Human-readable schedule e.g. Daily, Mon/Wed/Fri, Weekly"
+    },
+    "schedule_type": {
+      "type": "string",
+      "enum": [
+        "recurring",
+        "one_time"
+      ],
+      "default": "recurring",
+      "description": "recurring = repeats on day(s); one_time = single occurrence on start_date"
+    },
+    "days": {
+      "type": "string",
+      "description": "JSON array of weekday names for recurring nets e.g. [\"Monday\",\"Thursday\"]"
     },
     "time": {
       "type": "string",
-      "description": "Time with timezone e.g. 8:00 PM EST"
+      "description": "Start time e.g. 8:00 PM EST"
+    },
+    "timezone": {
+      "type": "string",
+      "description": "IANA timezone e.g. America/New_York",
+      "default": "America/New_York"
     },
     "day_of_week": {
       "type": "string"
     },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date for one-time nets (YYYY-MM-DD)"
+    },
     "frequency": {
-      "type": "number"
+      "type": "number",
+      "description": "Repeater frequency in MHz"
+    },
+    "offset": {
+      "type": "string",
+      "description": "Repeater offset e.g. +5.0 MHz"
+    },
+    "tone": {
+      "type": "string",
+      "description": "PL/DPL tone e.g. 141.3"
     },
     "repeater_callsign": {
       "type": "string"
     },
     "net_control": {
-      "type": "string"
+      "type": "string",
+      "description": "Primary net control callsign (legacy/display field)"
+    },
+    "primary_net_control": {
+      "type": "string",
+      "description": "Primary Net Control operator callsign"
+    },
+    "assistant_net_control": {
+      "type": "string",
+      "description": "Assistant Net Control operator callsign"
+    },
+    "expected_duration_minutes": {
+      "type": "number",
+      "description": "Estimated net duration in minutes"
+    },
+    "auto_start": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically start the net at the scheduled time (future)"
+    },
+    "auto_end": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically end the net after expected duration (future)"
+    },
+    "allow_visitor_checkins": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow non-member (visitor) check-ins"
+    },
+    "require_callsign": {
+      "type": "boolean",
+      "default": true,
+      "description": "Require a callsign to check in"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes for net control operators"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "disabled",
+        "archived"
+      ],
+      "default": "active",
+      "description": "active = listed publicly; disabled = hidden from public (operator-only); archived = retired"
     },
     "member_count": {
       "type": "number",
@@ -53,11 +132,38 @@
       "description": "Community this net belongs to (data isolation)"
     },
     "community_name": {
+      "type": "string"
+    },
+    "community_logo": {
       "type": "string",
-      "description": "Community name for display"
+      "description": "Community logo URL for the public card"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_by_name": {
+      "type": "string"
     }
   },
   "required": [
     "name"
-  ]
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
