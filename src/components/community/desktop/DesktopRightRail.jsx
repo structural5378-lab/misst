@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { PanelRightClose, PanelRightOpen } from "lucide-react";
 import { StatsWidget, OnlineWidget, TrendingWidget, PinnedWidget } from "./RightWidgets";
+import { useActiveCommunity } from "@/hooks/useActiveCommunity";
 
 const WIDGET_ORDER = ["stats", "online", "trending", "pinned"];
 const STORAGE_KEY = "mist-desktop-widget-collapsed";
@@ -25,6 +26,7 @@ function useCollapsedWidgets() {
 export default function DesktopRightRail() {
   const [hidden, setHidden] = useState(() => localStorage.getItem("mist-desktop-rail-hidden") === "true");
   const { collapsed, toggle } = useCollapsedWidgets();
+  const { community } = useActiveCommunity();
 
   useEffect(() => { localStorage.setItem("mist-desktop-rail-hidden", String(hidden)); }, [hidden]);
 
@@ -55,8 +57,8 @@ export default function DesktopRightRail() {
         </button>
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        <StatsWidget collapsed={collapsed.has("stats")} onToggle={() => toggle("stats")} />
-        <OnlineWidget collapsed={collapsed.has("online")} onToggle={() => toggle("online")} />
+        <StatsWidget collapsed={collapsed.has("stats")} onToggle={() => toggle("stats")} communityId={community?.id} />
+        <OnlineWidget collapsed={collapsed.has("online")} onToggle={() => toggle("online")} communityId={community?.id} />
         <TrendingWidget collapsed={collapsed.has("trending")} onToggle={() => toggle("trending")} />
         <PinnedWidget collapsed={collapsed.has("pinned")} onToggle={() => toggle("pinned")} />
       </div>

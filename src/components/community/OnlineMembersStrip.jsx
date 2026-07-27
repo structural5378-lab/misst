@@ -1,35 +1,29 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { useActiveCommunity } from "@/hooks/useActiveCommunity";
+import { useCommunityOnlineMembers } from "@/hooks/useCommunityOnlineMembers";
 import { Wifi, ShieldCheck } from "lucide-react";
 
-const PLATFORM_STAFF = ["owner", "administrator", "senior_moderator", "moderator"];
-const COMMUNITY_STAFF = ["community_owner", "community_admin", "moderator"];
-
-export default function OnlineMembersStrip() {
-  const { data: online = [] } = useQuery({
-    queryKey: ["forum-online-presence"],
-    queryFn: () => base44.entities.UserPresence.filter({ status: "online" }),
-    staleTime: 15000,
-  });
-  const { data: staffIds = [] } = useQuery({
-    queryKey: ["staff-user-ids"],
-    queryFn: async () => {
-      const all = await base44.entities.UserRole.filter({ is_active: true });
-      const ids = new Set();
-      (all || []).forEach((r) => {
-        if ((r.scope || "platform") === "platform" && PLATFORM_STAFF.includes(r.role_slug)) ids.add(r.user_id);
-        if (r.scope === "community" && COMMUNITY_STAFF.includes(r.role_slug)) ids.add(r.user_id);
-      });
-      return Array.from(ids);
-    },
-    staleTime: 60000,
-  });
+/**
+ * OnlineMembersStrip — community-scoped "who's online".
+ *
+ * Displays ONLY members of the active community who are currently online
+ * (UserPresence.status === 'online' INTERSECT active CommunityMember). The
+ * backend function enforces the community boundary and rejects unscooped
+ * queries, so a user from another community can never appear here.
+ *
+ * Accepts an optional `communityId` prop (for callers that already have a
+ * community context); otherwise resolves the active community.
+ */
+export default function OnlineMembersStrip({ communityId }) {
+  const { community } = useActiveCommunity();
+  const activeId = communityId || community?.id;
+  const { data } = useCommunityOnlineMembers(activeId);
+  const online = data?.online || [];
 
   if (!online.length) return null;
-  const staffSet = new Set(staffIds);
-  const staffOnline = online.filter((o) => staffSet.has(o.user_id));
-  const regularOnline = online.filter((o) => !staffSet.has(o.user_id));
+
+  const staffOnline = online.filter((o) => o.is_staff);
+  const regularOnline = online.filter((o) => !o.is_staff);
 
   return (
     <div className="px-4 pt-3 space-y-3">

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { useCommunityOnlineMembers } from "@/hooks/useCommunityOnlineMembers";
 import {
   MessageSquare, Reply, Users, Pin, Flame, Activity, ChevronDown,
 } from "lucide-react";
@@ -23,7 +24,7 @@ function Widget({ id, title, icon: Icon, collapsed, onToggle, children }) {
   );
 }
 
-export function StatsWidget({ collapsed, onToggle }) {
+export function StatsWidget({ collapsed, onToggle, communityId }) {
   const { data: threads = [] } = useQuery({
     queryKey: ["forum-threads"],
     queryFn: () => base44.entities.ForumThread.filter({ is_deleted: false }, "-last_reply_date", 100),
@@ -34,11 +35,9 @@ export function StatsWidget({ collapsed, onToggle }) {
     queryFn: () => base44.entities.ForumCategory.list("sort_order", 50),
     staleTime: 60000,
   });
-  const { data: online = [] } = useQuery({
-    queryKey: ["presence-online"],
-    queryFn: () => base44.entities.UserPresence.filter({ status: "online" }),
-    staleTime: 15000,
-  });
+  // Community-scoped online count (UserPresence INTERSECT CommunityMember).
+  const { data: onlineData } = useCommunityOnlineMembers(communityId);
+  const online = onlineData?.online || [];
   const posts = threads.reduce((s, t) => s + (t.reply_count || 0), 0);
   const stats = [
     { label: "Discussions", value: threads.length, icon: MessageSquare },
@@ -63,12 +62,10 @@ export function StatsWidget({ collapsed, onToggle }) {
   );
 }
 
-export function OnlineWidget({ collapsed, onToggle }) {
-  const { data: online = [] } = useQuery({
-    queryKey: ["presence-online"],
-    queryFn: () => base44.entities.UserPresence.filter({ status: "online" }),
-    staleTime: 15000,
-  });
+export function OnlineWidget({ collapsed, onToggle, communityId }) {
+  // Community-scoped online members (UserPresence INTERSECT CommunityMember).
+  const { data: onlineData } = useCommunityOnlineMembers(communityId);
+  const online = onlineData?.online || [];
   return (
     <Widget id="online" title="Who's Online" icon={Users} collapsed={collapsed} onToggle={onToggle}>
       {online.length === 0 ? (
