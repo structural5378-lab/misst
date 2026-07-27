@@ -253,6 +253,55 @@ Deno.serve(async (req) => {
       return Response.json({ success: true });
     }
 
+    // --- set_role (community admin/owner assigns a role to a member) ---
+    // Guarded: caller must be a community_owner/admin or platform admin. The
+    // community_owner role is protected (transfer is a separate concern), and
+    // only the owner (or platform admin) may assign the community_admin role.
+    // This is the ONLY path that changes a member's role — direct client
+    // CommunityMember.update is blocked by RLS.
+    if (action === 'set_role') {
+      const role = String(body.role || '').trim();
+      const VALID_ROLES = ['community_admin', 'net_control', 'moderator', 'trusted_member', 'member', 'guest'];
+      if (!target_user_id || !role) {
+        return Response.json({ error: 'target_user_id and role are required' }, { status: 400 });
+      }
+      if (!VALID_ROLES.includes(role)) {
+        return Response.json({ error: 'Invalid role' }, { status: 400 });
+      }
+
+      const isCallerAdmin = member && (member.role === 'community_owner' || member.role === 'community_admin');
+      let platformAdmin = false;
+      try {
+        const pr = await base44.asServiceRole.entities.PlatformRole.filter({ user_id: user.id, is_active: true });
+        platformAdmin = (pr || []).some(r => r.role === 'platform_owner' || r.role === 'platform_admin');
+      } catch {}
+      if (!isCallerAdmin && !platformAdmin) {
+        return Response.json({ error: 'Not authorized' }, { status: 403 });
+      }
+
+      const targetMembers = await base44.asServiceRole.entities.CommunityMember.filter({ user_id: target_user_id, community_id });
+      const target = (targetMembers && targetMembers[0]) || null;
+      if (!target) return Response.json({ error: 'Membership not found' }, { status: 404 });
+
+      // Protect the community_owner role — it cannot be reassigned here.
+      if (target.role === 'community_owner') {
+        return Response.json({ error: 'Cannot modify the community owner role' }, { status: 403 });
+      }
+      // Only the community owner (or platform admin) may grant community_admin.
+      const isCallerOwner = member && member.role === 'community_owner';
+      if (role === 'community_admin' && !isCallerOwner && !platformAdmin) {
+        return Response.json({ error: 'Only the community owner can assign the admin role' }, { status: 403 });
+      }
+
+      await base44.asServiceRole.entities.CommunityMember.update(target.id, { role });
+      // Keep the CommunityRole mirror in sync.
+      try {
+        const roles = await base44.asServiceRole.entities.CommunityRole.filter({ user_id: target_user_id, community_id });
+        await Promise.all((roles || []).map(r => base44.asServiceRole.entities.CommunityRole.update(r.id, { role, is_active: true })));
+      } catch {}
+      return Response.json({ success: true, role });
+    }
+
     return Response.json({ error: 'Unknown action' }, { status: 400 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

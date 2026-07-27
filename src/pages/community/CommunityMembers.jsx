@@ -21,16 +21,18 @@ export default function CommunityMembers() {
   const { community } = useCommunity();
   const [selected, setSelected] = useState(null);
 
-  const { data: members, isLoading } = useQuery({
+  // Membership-validated, community-scoped roster (server enforces isolation).
+  // The function denies access if the caller is not an active member of this
+  // community, and never reads the global User table — so users from other
+  // communities can never appear here.
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['community-members', community.id],
-    queryFn: async () => {
-      return await base44.entities.CommunityMember.filter(
-        { community_id: community.id, is_active: true },
-        'joined_date',
-        100
-      );
-    },
+    queryFn: async () =>
+      (await base44.functions.invoke('listCommunityMembers', { community_id: community.id })).data,
+    enabled: !!community?.id,
   });
+  const members = data?.members || [];
+  const counts = data?.counts;
 
   // Resolve the current user's community role so only owners/admins see the
   // per-member role manager (server still enforces the actual write).
@@ -43,16 +45,24 @@ export default function CommunityMembers() {
   return (
     <div className="p-4 space-y-3">
       <h1 className="text-xl font-bold text-foreground mb-2">
-        Members {members && `(${members.length})`}
+        Members {counts ? `(${counts.total})` : ''}
       </h1>
 
-      {isLoading && (
+      {isError && (
+        <div className="text-center py-12">
+          <Shield className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+          <p className="text-muted-foreground text-sm">Access Denied</p>
+          <p className="text-muted-foreground/60 text-xs mt-1">Join this community to view its members.</p>
+        </div>
+      )}
+
+      {!isError && isLoading && (
         <div className="flex justify-center py-8">
           <div className="w-6 h-6 border-2 border-muted border-t-primary rounded-full animate-spin" />
         </div>
       )}
 
-      {!isLoading && members?.length === 0 && (
+      {!isError && !isLoading && members?.length === 0 && (
         <div className="text-center py-12">
           <Users className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
           <p className="text-muted-foreground text-sm">No members found.</p>

@@ -1,8 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import {
   MessageSquare,
   MessageCircle,
@@ -18,17 +16,9 @@ export default function CommunityHome() {
   const navigate = useNavigate();
   const slug = community.slug;
 
-  const { data: memberCount } = useQuery({
-    queryKey: ['community-member-count', community.id],
-    queryFn: async () => {
-      const res = await base44.entities.CommunityMember.filter({
-        community_id: community.id,
-        is_active: true,
-      });
-      return res.length;
-    },
-    staleTime: 60 * 1000,
-  });
+  // Community-scoped member count — uses the denormalized, community-owned
+  // count maintained by manageCommunityMembership (never a cross-community query).
+  const memberCount = community.member_count ?? 0;
 
   const quickAccess = [
     { icon: MessageSquare, label: 'Forum', path: `/c/${slug}/forum`, perm: null },

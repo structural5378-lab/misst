@@ -31,17 +31,15 @@ export default function CommunityJoinRequests() {
   const [busyId, setBusyId] = useState(null);
   const [bulkBusy, setBulkBusy] = useState(false);
 
-  const { data: members = [], isLoading } = useQuery({
+  // Membership-validated, community-scoped roster (admin_view returns all
+  // statuses). Server enforces the community boundary — no cross-community data.
+  const { data: reqData, isLoading } = useQuery({
     queryKey: ["join-requests", community?.id],
-    queryFn: async () => {
-      return await base44.entities.CommunityMember.filter(
-        { community_id: community.id },
-        "-joined_date",
-        500
-      );
-    },
+    queryFn: async () =>
+      (await base44.functions.invoke("listCommunityMembers", { community_id: community.id, admin_view: true })).data,
     enabled: !!community?.id && canManage,
   });
+  const members = reqData?.members || [];
 
   const counts = useMemo(() => {
     const c = { pending: 0, active: 0, rejected: 0, banned: 0 };

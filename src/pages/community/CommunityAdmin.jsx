@@ -9,26 +9,17 @@ export default function CommunityAdmin() {
   const { community, settings, permissions, hasPermission } = useCommunity();
   const canManage = hasPermission('community:manage_settings');
 
-  const { data: members } = useQuery({
+  // Membership-validated, community-scoped roster (admin_view returns all
+  // statuses + counts). Server enforces the community boundary.
+  const { data: adminData } = useQuery({
     queryKey: ['community-admin-members', community.id],
-    queryFn: async () => {
-      return await base44.entities.CommunityMember.filter(
-        { community_id: community.id, is_active: true },
-        'joined_date',
-        100
-      );
-    },
-    enabled: canManage,
-  });
-
-  const { data: pendingCount = 0 } = useQuery({
-    queryKey: ['community-pending-count', community.id],
-    queryFn: async () => {
-      const all = await base44.entities.CommunityMember.filter({ community_id: community.id, status: 'pending' });
-      return (all || []).length;
-    },
+    queryFn: async () =>
+      (await base44.functions.invoke('listCommunityMembers', { community_id: community.id, admin_view: true })).data,
+    enabled: !!community?.id && canManage,
     refetchInterval: 30000,
   });
+  const members = (adminData?.members || []).filter((m) => m.status === 'active');
+  const pendingCount = adminData?.counts?.pending || 0;
 
   if (!canManage) {
     return (

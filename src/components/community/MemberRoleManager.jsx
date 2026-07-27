@@ -21,9 +21,21 @@ export default function MemberRoleManager({ member, onClose, onSaved }) {
     if (roleKey === currentRole || saving) return;
     setSaving(true);
     try {
-      await base44.entities.CommunityMember.update(member.id, { role: roleKey });
-      toast({ title: `Role set to ${communityRoleLabel(roleKey)}` });
-      onSaved?.({ ...member, role: roleKey });
+      // Role changes go through the guarded backend function (server validates
+      // the caller is a community admin/owner). Direct CommunityMember.update is
+      // blocked by RLS — this is the only authorized path.
+      const res = await base44.functions.invoke("manageCommunityMembership", {
+        action: "set_role",
+        community_id: member.community_id,
+        target_user_id: member.user_id,
+        role: roleKey,
+      });
+      if (res.data?.success) {
+        toast({ title: `Role set to ${communityRoleLabel(roleKey)}` });
+        onSaved?.({ ...member, role: roleKey });
+      } else {
+        toast({ title: "Failed to update role", description: res.data?.error || "Not authorized", variant: "destructive" });
+      }
     } catch (e) {
       toast({ title: "Failed to update role", description: e.message, variant: "destructive" });
     } finally {
@@ -35,9 +47,18 @@ export default function MemberRoleManager({ member, onClose, onSaved }) {
     if (currentRole === "member" || saving) return;
     setSaving(true);
     try {
-      await base44.entities.CommunityMember.update(member.id, { role: "member" });
-      toast({ title: "Role removed — set to Member" });
-      onSaved?.({ ...member, role: "member" });
+      const res = await base44.functions.invoke("manageCommunityMembership", {
+        action: "set_role",
+        community_id: member.community_id,
+        target_user_id: member.user_id,
+        role: "member",
+      });
+      if (res.data?.success) {
+        toast({ title: "Role removed — set to Member" });
+        onSaved?.({ ...member, role: "member" });
+      } else {
+        toast({ title: "Failed to remove role", description: res.data?.error || "Not authorized", variant: "destructive" });
+      }
     } catch (e) {
       toast({ title: "Failed to remove role", description: e.message, variant: "destructive" });
     } finally {
