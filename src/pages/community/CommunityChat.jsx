@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCommunity } from '@/contexts/CommunityContext';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useCommunityContent } from '@/hooks/useCommunityContent';
 import { Send } from 'lucide-react';
 
 export default function CommunityChat() {
@@ -11,32 +11,20 @@ export default function CommunityChat() {
   const [sending, setSending] = useState(false);
   const scrollRef = useRef(null);
 
-  const { data: initialMessages, isLoading } = useQuery({
-    queryKey: ['community-chat', community.id],
-    queryFn: async () => {
-      return await base44.entities.ChatMessage.filter(
-        { community_id: community.id },
-        '-created_date',
-        50
-      );
-    },
+  // Community-scoped, membership-validated message stream (polls the gated
+  // listCommunityContent function — no open entity reads, no cross-community
+  // subscription transit).
+  const { data: chatData, isLoading } = useCommunityContent(community.id, 'ChatMessage', {
+    sort: '-created_date',
+    limit: 50,
+    refetchInterval: 5000,
   });
 
   useEffect(() => {
-    if (initialMessages) setMessages(initialMessages);
-  }, [initialMessages]);
-
-  useEffect(() => {
-    const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
-      if (event.data?.community_id === community.id) {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === event.data.id)) return prev;
-          return [...prev, event.data];
-        });
-      }
-    });
-    return () => unsubscribe();
-  }, [community.id]);
+    if (chatData?.items) {
+      setMessages(chatData.items);
+    }
+  }, [chatData]);
 
   // Presence: signal that the user is actively viewing this community chat so the
   // notification service suppresses community_chat alerts for new messages here.

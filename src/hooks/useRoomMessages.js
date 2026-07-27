@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
-// useRoomMessages — realtime message stream for one Chat V2 room. Handles
-// initial load, cursor history pagination (position-preserving), optimistic
-// send with temp-id dedup, and react/pin/edit/delete via the roomMessageAction
-// backend function (service role).
+// useRoomMessages — realtime-style message stream for one Chat V2 room.
+//
+// SECURITY: all reads go through the membership-validated listCommunityContent
+// backend function (entity "ChatV2RoomMessage") — never a direct open entity
+// read or a cross-community realtime subscription. The stream is kept live via
+// short-interval polling, which also reconciles optimistic (temp) sends.
 function norm(m) {
   let reactions = {};
   try { reactions = typeof m.reactions === "string" ? JSON.parse(m.reactions) : (m.reactions || {}); } catch {}
@@ -20,7 +22,22 @@ function parseMentionsArr(body) {
   return arr;
 }
 
+// Fetch confirmed messages for a room via the gated community-content function.
+async function fetchRoomMessages(communityId, roomId, cursorIso) {
+  const extra = { room_id: roomId, deleted: false };
+  if (cursorIso) extra.created_date = { $lt: cursorIso };
+  const res = await base44.functions.invoke("listCommunityContent", {
+    community_id: communityId,
+    entity: "ChatV2RoomMessage",
+    sort: "-created_date",
+    limit: 50,
+    extra,
+  });
+  return (res?.data?.items || []).map(norm).reverse();
+}
+
 export function useRoomMessages({ roomId, user, community }) {
+  const communityId = community?.id;
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(!!roomId);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -29,65 +46,62 @@ export function useRoomMessages({ roomId, user, community }) {
   const scrollRef = useRef(null);
   const oldestRef = useRef(null);
 
-  const loadInitial = useCallback(async () => {
-    if (!roomId) { setMessages([]); setLoading(false); return; }
-    setLoading(true);
-    try {
-      const list = await base44.entities.ChatV2RoomMessage.filter({ room_id: roomId, deleted: false }, "-created_date", 50).catch(() => []);
-      const arr = (list || []).map(norm).reverse();
-      setMessages(arr);
-      oldestRef.current = arr[0]?.created_date || null;
-      setHasMore(arr.length === 50);
-    } finally { setLoading(false); }
-  }, [roomId]);
-
-  useEffect(() => { loadInitial(); }, [loadInitial]);
-
+  // Initial load + live polling (reconciles optimistic temps on each tick).
   useEffect(() => {
-    if (!roomId) return;
-    const unsub = base44.entities.ChatV2RoomMessage.subscribe((event) => {
-      const m = event.data;
-      if (!m || m.room_id !== roomId) return;
-      setMessages((prev) => {
-        if (event.type === "delete") return prev.filter((x) => x.id !== event.id);
-        const n = norm(m);
-        const idx = prev.findIndex((x) => x.id === n.id || (n.client_temp_id && x.client_temp_id === n.client_temp_id));
-        if (idx >= 0) { const next = [...prev]; next[idx] = { ...next[idx], ...n }; return next; }
-        const next = [...prev, n];
-        next.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
-        return next;
-      });
-    });
-    return unsub;
-  }, [roomId]);
+    if (!roomId || !communityId) { setMessages([]); setLoading(false); return; }
+    let active = true;
+    setLoading(true);
+
+    const poll = async () => {
+      try {
+        const list = await fetchRoomMessages(communityId, roomId);
+        if (!active) return;
+        oldestRef.current = list[0]?.created_date || null;
+        setHasMore(list.length === 50);
+        setMessages((prev) => {
+          // Keep optimistic temps (sending/failed) not yet confirmed by the server.
+          const temps = prev.filter((m) => String(m.id).startsWith("tmp_"));
+          const confirmedIds = new Set(list.map((m) => m.id));
+          const retainedTemps = temps.filter((t) => !confirmedIds.has(t.client_temp_id) && !(list.some((m) => m.client_temp_id === t.client_temp_id)));
+          const merged = [...list];
+          for (const t of retainedTemps) {
+            const idx = merged.findIndex((m) => new Date(m.created_date) > new Date(t.created_date));
+            if (idx === -1) merged.push(t); else merged.splice(idx, 0, t);
+          }
+          return merged;
+        });
+      } catch { /* best-effort */ }
+      finally { if (active) setLoading(false); }
+    };
+
+    poll();
+    const interval = setInterval(poll, 4000);
+    return () => { active = false; clearInterval(interval); };
+  }, [roomId, communityId]);
 
   const loadMore = useCallback(async () => {
-    if (!roomId || !hasMore || loadingMore || !oldestRef.current) return;
+    if (!roomId || !communityId || !hasMore || loadingMore || !oldestRef.current) return;
     setLoadingMore(true);
     try {
-      const list = await base44.entities.ChatV2RoomMessage.filter(
-        { room_id: roomId, deleted: false, created_date: { $lt: oldestRef.current } },
-        "-created_date", 50
-      ).catch(() => []);
-      const arr = (list || []).map(norm).reverse();
-      if (arr.length) {
+      const list = await fetchRoomMessages(communityId, roomId, oldestRef.current);
+      if (list.length) {
         const prevHeight = scrollRef.current?.scrollHeight || 0;
-        setMessages((prev) => [...arr, ...prev]);
-        oldestRef.current = arr[0]?.created_date || oldestRef.current;
-        setHasMore(arr.length === 50);
+        setMessages((prev) => [...list, ...prev]);
+        oldestRef.current = list[0]?.created_date || oldestRef.current;
+        setHasMore(list.length === 50);
         requestAnimationFrame(() => {
           if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight - prevHeight;
         });
       } else setHasMore(false);
     } finally { setLoadingMore(false); }
-  }, [roomId, hasMore, loadingMore]);
+  }, [roomId, communityId, hasMore, loadingMore]);
 
   const send = useCallback(async (body, opts = {}) => {
     if (!roomId || !user?.id || !body.trim()) return;
     const tempId = "tmp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
     const temp = {
       id: tempId, client_temp_id: tempId, room_id: roomId,
-      community_id: community?.id || "", community_slug: community?.slug || "", room_name: opts.roomName || "",
+      community_id: communityId || "", community_slug: community?.slug || "", room_name: opts.roomName || "",
       sender_id: user.id, sender_name: user.full_name || user.email || "", sender_avatar: user.avatar_url || "",
       body: body.trim(), created_date: new Date().toISOString(), status: "sending", reactions: {},
       reply_to_message_id: opts.replyTo?.id && !String(opts.replyTo.id).startsWith("tmp_") ? opts.replyTo.id : "",
@@ -99,7 +113,7 @@ export function useRoomMessages({ roomId, user, community }) {
     setMessages((prev) => [...prev, temp]);
     try {
       const created = await base44.entities.ChatV2RoomMessage.create({
-        room_id: roomId, community_id: community?.id || "", community_slug: community?.slug || "", room_name: opts.roomName || "",
+        room_id: roomId, community_id: communityId || "", community_slug: community?.slug || "", room_name: opts.roomName || "",
         sender_id: user.id, sender_name: user.full_name || user.email || "", sender_avatar: user.avatar_url || "",
         body: body.trim(), message_type: "text", reactions: "", mentions: JSON.stringify(parseMentionsArr(body)),
         reply_to_message_id: temp.reply_to_message_id, reply_to_preview: temp.reply_to_preview,
@@ -110,7 +124,7 @@ export function useRoomMessages({ roomId, user, community }) {
     } catch {
       setMessages((prev) => prev.map((m) => (m.client_temp_id === tempId ? { ...m, status: "failed" } : m)));
     }
-  }, [roomId, user, community]);
+  }, [roomId, communityId, user, community]);
 
   const react = useCallback(async (messageId, emoji) => {
     if (!user?.id) return;

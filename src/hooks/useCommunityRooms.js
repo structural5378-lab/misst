@@ -22,9 +22,10 @@ export function useCommunityRooms(communityId, user) {
       setRooms(r);
       return r;
     } catch {
-      const r = await base44.entities.ChatV2Room.filter({ community_id: communityId }, "order", 200).catch(() => []);
-      setRooms(r || []);
-      return r || [];
+      // ensureCommunityRooms now validates membership server-side; a failure
+      // means access denied — never fall back to an open entity read.
+      setRooms([]);
+      return [];
     }
   }, [communityId, user?.id, user?.full_name, user?.email]);
 

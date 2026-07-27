@@ -1,7 +1,6 @@
 import React from 'react';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useCommunityContent } from '@/hooks/useCommunityContent';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 
 const statusColor = {
@@ -14,16 +13,11 @@ const statusColor = {
 export default function CommunityEvents() {
   const { community } = useCommunity();
 
-  const { data: events, isLoading } = useQuery({
-    queryKey: ['community-events', community.id],
-    queryFn: async () => {
-      return await base44.entities.Event.filter(
-        { community_id: community.id },
-        'event_time',
-        50
-      );
-    },
+  const { data, isLoading } = useCommunityContent(community.id, 'Event', {
+    sort: 'event_time',
+    refetchInterval: 60000,
   });
+  const events = data?.items || [];
 
   const formatDate = (iso) => {
     if (!iso) return '';

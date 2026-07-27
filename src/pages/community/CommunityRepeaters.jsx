@@ -1,7 +1,6 @@
 import React from 'react';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useCommunityContent } from '@/hooks/useCommunityContent';
 import { Radio } from 'lucide-react';
 
 const statusColor = {
@@ -13,12 +12,8 @@ const statusColor = {
 export default function CommunityRepeaters() {
   const { community } = useCommunity();
 
-  const { data: repeaters, isLoading } = useQuery({
-    queryKey: ['community-repeaters', community.id],
-    queryFn: async () => {
-      return await base44.entities.Repeater.filter({ community_id: community.id }, '-created_date', 50);
-    },
-  });
+  const { data, isLoading } = useCommunityContent(community.id, 'Repeater');
+  const repeaters = data?.items || [];
 
   return (
     <div className="p-4 space-y-3">

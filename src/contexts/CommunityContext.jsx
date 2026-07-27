@@ -2,7 +2,7 @@ import React, { createContext, useContext, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-const CommunityContext = createContext(null);
+export const CommunityContext = createContext(null);
 
 export function CommunityProvider({ slug, children }) {
   const { data: communityData, isLoading: communityLoading, error: communityError } = useQuery({

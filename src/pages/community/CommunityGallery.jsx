@@ -1,22 +1,13 @@
 import React from 'react';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useCommunityContent } from '@/hooks/useCommunityContent';
 import { Image as ImageIcon } from 'lucide-react';
 
 export default function CommunityGallery() {
   const { community } = useCommunity();
 
-  const { data: photos, isLoading } = useQuery({
-    queryKey: ['community-gallery', community.id],
-    queryFn: async () => {
-      return await base44.entities.GatheringPhoto.filter(
-        { community_id: community.id },
-        '-created_date',
-        50
-      );
-    },
-  });
+  const { data, isLoading } = useCommunityContent(community.id, 'GatheringPhoto');
+  const photos = data?.items || [];
 
   return (
     <div className="p-4">

@@ -1,37 +1,80 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { logActionAudit } from '../../shared/rbac.ts';
+import { resolveCommunityAccess, canManageNets } from '../../shared/communityAccess.ts';
 
 // manageNet — the single server-side gatekeeper for all Net Control actions.
-// Every mutating operation on a Net (create/update/delete/archive/disable/
-// enable) and every net lifecycle action (start/pause/resume/end/broadcast)
-// goes through this function, which verifies the caller holds the
-// "nets.manage" permission (or is a platform admin) BEFORE acting. The
-// function runs as the service role, so non-admin Net Control operators can
-// manage nets even though the Net entity's RLS restricts direct writes to
-// admins. Users without the permission cannot perform any action, even by
-// invoking this endpoint manually.
+//
+// SECURITY (community isolation):
+//   Every action verifies the caller is an ACTIVE member of the target
+//   community AND holds an authorized community role (community_owner,
+//   community_admin, net_control) — or is a platform admin. The target
+//   community is resolved from:
+//     - create:   body.community_id
+//     - update/delete/archive/disable/enable/start: the Net record's
+//       community_id
+//     - pause/resume/end/broadcast: the NetSession's community_id
+//   Unauthorized callers receive HTTP 403 and no data is mutated.
+//
+// The platform-wide "nets.manage" RBAC permission is still honored as an
+// override for platform net managers, BUT only when the caller is also a
+// member of the target community (or a platform admin).
+
 export default async function(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Resolve the caller's effective permissions through the RBAC resolver.
+    // Resolve platform-level permissions (for the nets.manage override).
     let perms: string[] = [];
-    let is_admin = user.role === 'admin';
+    let is_platform_admin = user.role === 'admin';
     try {
       const rbacRes: any = await base44.functions.invoke('resolveRbac', {});
       perms = rbacRes?.data?.permissions || [];
-      is_admin = is_admin || !!rbacRes?.data?.is_admin;
+      is_platform_admin = is_platform_admin || !!rbacRes?.data?.is_admin;
     } catch { /* fall back to admin check only */ }
-
-    const canControl = is_admin || perms.includes('nets.manage') || perms.includes('*');
-    if (!canControl) return Response.json({ error: 'Forbidden — Net Control permission required' }, { status: 403 });
 
     const body = await req.json().catch(() => ({}));
     const action = body.action;
     const sr = base44.asServiceRole;
     const log = (e: any) => logActionAudit(base44, { admin_id: user.id, admin_email: user.email || '', ...e });
+
+    // Resolve the target community_id for this action.
+    let targetCommunityId: string = '';
+    if (action === 'create') {
+      targetCommunityId = String(body.community_id || '').trim();
+    } else if (['update', 'delete', 'archive', 'disable', 'enable', 'start'].includes(action)) {
+      if (action === 'start') {
+        const net: any = await sr.entities.Net.get(body.id).catch(() => null);
+        targetCommunityId = net?.community_id || '';
+      } else {
+        const net: any = await sr.entities.Net.get(body.id).catch(() => null);
+        targetCommunityId = net?.community_id || '';
+      }
+    } else if (['pause', 'resume', 'end', 'broadcast'].includes(action)) {
+      const session: any = await sr.entities.NetSession.get(body.session_id).catch(() => null);
+      targetCommunityId = session?.community_id || '';
+    }
+
+    // Enforce community membership + authorized role for the target community.
+    let access: any = null;
+    if (targetCommunityId) {
+      access = await resolveCommunityAccess(base44, user, targetCommunityId);
+      const allowed =
+        is_platform_admin ||
+        (access.isMember && (canManageNets(access) || perms.includes('nets.manage') || perms.includes('*')));
+      if (!allowed) {
+        return Response.json(
+          { error: 'Forbidden — active community membership with an authorized role (owner/admin/net control) is required' },
+          { status: 403 }
+        );
+      }
+    } else if (action !== 'create') {
+      // Could not resolve a community for a mutating action — refuse.
+      return Response.json({ error: 'Unable to resolve target community' }, { status: 400 });
+    } else {
+      return Response.json({ error: 'community_id is required to create a net' }, { status: 400 });
+    }
 
     // ── Schedule management ──────────────────────────────────────────────
     if (action === 'create') {
@@ -60,7 +103,7 @@ export default async function(req: Request): Promise<Response> {
         notes: body.notes || '',
         category: body.category || 'general',
         status: 'active',
-        community_id: body.community_id || '',
+        community_id: targetCommunityId,
         community_name: body.community_name || '',
         community_logo: body.community_logo || '',
         created_by: user.id,
@@ -73,7 +116,7 @@ export default async function(req: Request): Promise<Response> {
     if (action === 'update') {
       if (!body.id) return Response.json({ error: 'id required' }, { status: 400 });
       const patch: any = {};
-      for (const k of ['name','description','schedule','schedule_type','days','time','timezone','day_of_week','start_date','offset','tone','repeater_callsign','net_control','primary_net_control','assistant_net_control','notes','category','community_id','community_name','community_logo']) {
+      for (const k of ['name','description','schedule','schedule_type','days','time','timezone','day_of_week','start_date','offset','tone','repeater_callsign','net_control','primary_net_control','assistant_net_control','notes','category','community_name','community_logo']) {
         if (body[k] !== undefined) patch[k] = body[k];
       }
       if (body.frequency !== undefined) patch.frequency = body.frequency === '' ? null : +body.frequency;
@@ -104,7 +147,6 @@ export default async function(req: Request): Promise<Response> {
       if (!body.id) return Response.json({ error: 'id required' }, { status: 400 });
       const net: any = await sr.entities.Net.get(body.id).catch(() => null);
       if (!net) return Response.json({ error: 'Net not found' }, { status: 404 });
-      // prevent duplicate active session
       const existing: any[] = await sr.entities.NetSession.filter({ net_id: body.id, status: 'active' }, '-started_at', 5).catch(() => []);
       if (existing && existing.length) return Response.json({ error: 'Net is already active', session: existing[0] }, { status: 409 });
       const session = await sr.entities.NetSession.create({

@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
-import { X, MessageSquare, UserPlus, ExternalLink, Radio } from "lucide-react";
+import { X, MessageSquare, UserPlus, ExternalLink, Radio, ShieldX } from "lucide-react";
+import { CommunityContext } from "@/contexts/CommunityContext";
 import { useAuthorProfile } from "@/hooks/useAuthorProfile";
 import { getRoleBadge } from "@/lib/forumUtils";
 
@@ -12,24 +11,34 @@ function safeArr(v) {
   try { return JSON.parse(v); } catch { return []; }
 }
 
+// ProfilePopup — community-scoped author preview.
+//
+// Uses the active community context (when available) to fetch a
+// membership-validated, co-member-verified profile preview via
+// getCommunityProfilePreview. When launched outside a community context
+// (e.g. legacy global forum), only the passed-in name/role are shown and no
+// profile or recent-activity data is fetched — preventing cross-community
+// leaks via global User reads.
 export default function ProfilePopup({ authorId, role, name, onClose }) {
   const navigate = useNavigate();
-  const { data: profile } = useAuthorProfile(authorId);
-  const stats = profile?.stats || {};
-  const user = profile?.user || {};
-  const roleBadge = getRoleBadge(role || "member");
+  const ctx = useContext(CommunityContext);
+  const community = ctx?.community;
+  const { data } = useAuthorProfile(community?.id, authorId);
 
-  const { data: recent = [] } = useQuery({
-    queryKey: ["author-recent-threads", authorId],
-    queryFn: () => base44.entities.ForumThread.filter({ author_id: authorId }, "-created_date", 5),
-    enabled: !!authorId,
-    staleTime: 30000,
-  });
+  const stats = data?.stats || {};
+  const user = data?.profile || {};
+  const recent = data?.recent || [];
+  const coMember = data?.co_member;
+  const roleBadge = getRoleBadge(role || "member");
 
   if (!authorId) return null;
   const radios = safeArr(user.radios);
   const displayName = user.full_name || name || "Unknown";
   const callsign = stats.user_callsign || user.callsign;
+
+  // Outside a community context, or the author is not a co-member: show a
+  // minimal, leak-free stub.
+  const showProfile = community && coMember;
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -45,7 +54,7 @@ export default function ProfilePopup({ authorId, role, name, onClose }) {
         </div>
         <div className="px-4 -mt-10 pb-4">
           <div className="flex items-end gap-3">
-            {user.avatar_url ? (
+            {showProfile && user.avatar_url ? (
               <img src={user.avatar_url} alt="" className="w-16 h-16 rounded-2xl object-cover border-2 border-card" />
             ) : (
               <div className="w-16 h-16 rounded-2xl bg-primary/15 border-2 border-card flex items-center justify-center text-lg font-bold text-primary">
@@ -58,35 +67,46 @@ export default function ProfilePopup({ authorId, role, name, onClose }) {
               <span className={`mt-1 inline-flex items-center text-[9px] px-1.5 py-0.5 rounded border ${roleBadge.color}`}>{roleBadge.label}</span>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-            <Stat label="Level" value={stats.level || 1} />
-            <Stat label="Rep" value={stats.reputation || 0} />
-            <Stat label="Posts" value={stats.forum_posts || 0} />
-          </div>
-          {radios.length > 0 && (
-            <div className="mt-3">
-              <p className="text-[10px] text-muted-foreground mb-1">Equipment</p>
-              <div className="flex flex-wrap gap-1">
-                {radios.slice(0, 4).map((r, i) => (
-                  <span key={i} className="text-[10px] bg-muted/40 px-1.5 py-0.5 rounded flex items-center gap-1">
-                    <Radio className="w-2.5 h-2.5 text-primary" />{r}
-                  </span>
-                ))}
+
+          {showProfile ? (
+            <>
+              <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+                <Stat label="Level" value={stats.level || 1} />
+                <Stat label="Rep" value={stats.reputation || 0} />
+                <Stat label="Posts" value={stats.forum_posts || 0} />
               </div>
+              {radios.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-[10px] text-muted-foreground mb-1">Equipment</p>
+                  <div className="flex flex-wrap gap-1">
+                    {radios.slice(0, 4).map((r, i) => (
+                      <span key={i} className="text-[10px] bg-muted/40 px-1.5 py-0.5 rounded flex items-center gap-1">
+                        <Radio className="w-2.5 h-2.5 text-primary" />{r}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {recent.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-[10px] text-muted-foreground mb-1">Recent in {community?.name}</p>
+                  <div className="space-y-1">
+                    {recent.map((t) => (
+                      <button key={t.id} onClick={() => { onClose(); navigate(`/community/thread/${t.id}`); }} className="w-full text-left text-xs text-foreground hover:text-primary truncate">
+                        {t.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <ShieldX className="w-3.5 h-3.5" />
+              {community ? "This member's community activity isn't available." : "Profile details are only available within a community."}
             </div>
           )}
-          {recent.length > 0 && (
-            <div className="mt-3">
-              <p className="text-[10px] text-muted-foreground mb-1">Recent Activity</p>
-              <div className="space-y-1">
-                {recent.map((t) => (
-                  <button key={t.id} onClick={() => { onClose(); navigate(`/community/thread/${t.id}`); }} className="w-full text-left text-xs text-foreground hover:text-primary truncate">
-                    {t.title}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+
           <div className="flex gap-2 mt-4">
             <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium">
               <MessageSquare className="w-3.5 h-3.5" />Message
