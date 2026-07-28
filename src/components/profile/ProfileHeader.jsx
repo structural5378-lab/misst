@@ -25,9 +25,7 @@ export default function ProfileHeader({
       {/* Banner with the avatar section sitting on top of the image */}
       <div className="relative h-40">
         <HeroArtwork seed={heroSeedVal} prompt={heroPromptVal} />
-        {/* Top scrim for identity legibility */}
-        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/55 via-black/20 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/5 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
 
         {/* Identity + actions aligned at the top of the banner image */}
         <div className="absolute top-0 left-0 right-0 p-3 flex items-start gap-3">
