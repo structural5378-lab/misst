@@ -153,7 +153,7 @@ const AuthenticatedApp = () => {
         <Route path="/repeaters/:id" element={<RepeaterDetail />} />
         <Route path="/map" element={<MapView />} />
         <Route path="/nets" element={<Nets />} />
-        <Route path="/messages" element={<Navigate to="/chat-v2" replace />} />
+        <Route path="/messages" element={<Messages />} />
         <Route path="/alerts" element={<Alerts />} />
         <Route path="/tools" element={<Tools />} />
         <Route path="/tools/antenna" element={<AntennaCalculator />} />
@@ -182,7 +182,7 @@ const AuthenticatedApp = () => {
         <Route path="/weather" element={<Weather />} />
         <Route path="/cineplex" element={<CineplexMode />} />
         <Route path="/events/create" element={<CreateEvent />} />
-        <Route path="/live-chat" element={<Navigate to="/chat-v2" replace />} />
+        <Route path="/live-chat" element={<Navigate to="/messages" replace />} />
 
         <Route path="/test-notifications" element={<TestNotifications />} />
         <Route path="/shopping" element={<Shopping />} />
@@ -194,7 +194,7 @@ const AuthenticatedApp = () => {
         <Route path="/account" element={<AccountCenter />} />
         <Route path="/search" element={<Search />} />
         <Route path="/notifications" element={<Notifications />} />
-        <Route path="/chat-v2" element={<ChatV2 />} />
+        <Route path="/chat-v2" element={<Navigate to="/messages" replace />} />
         <Route path="/chat-v2/c/:slug" element={<CommunityChatV2 />} />
         <Route path="/chat-v2/:conversationId" element={<ChatV2 />} />
 
