@@ -3,6 +3,8 @@ import { Check, CheckCheck, Clock, AlertCircle, RotateCcw, Smile, CornerUpRight,
 import { formatTime, isTempId } from "@/lib/chatV2/chatV2Utils";
 import MessageContextMenuV2 from "./MessageContextMenuV2";
 import ReactionPickerV2 from "./ReactionPickerV2";
+import { detectCard } from "@/lib/messageCards";
+import MessageCardRouter from "./cards/MessageCardRouter";
 
 // MessageBubbleV2 — premium message rendering with grouping, reactions,
 // reply quotes, delivery/read receipts, edit/delete, and a context menu
@@ -122,14 +124,26 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
                 {message.is_sticky && <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-primary bg-primary/15 px-1.5 py-0.5 rounded-full"><Pin className="w-2.5 h-2.5" />Sticky</span>}
               </div>
             )}
-            <div className={`px-3.5 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${
-              isMine ? "bg-primary text-primary-foreground rounded-br-md"
-              : message.is_announcement ? "bg-amber-500/15 text-foreground border border-amber-500/40 rounded-bl-md"
-              : message.is_official ? "bg-violet-500/10 text-foreground border border-violet-500/40 rounded-bl-md"
-              : "bg-secondary text-secondary-foreground rounded-bl-md"
-            }`}>
-              {message.body}
-            </div>
+            {(() => {
+              const card = detectCard(message);
+              if (card) {
+                return (
+                  <div className="w-full msg-card-in">
+                    <MessageCardRouter message={message} card={card} isMine={isMine} onReply={() => onReply?.(message)} />
+                  </div>
+                );
+              }
+              return (
+                <div className={`px-3.5 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${
+                  isMine ? "bg-primary text-primary-foreground rounded-br-md"
+                  : message.is_announcement ? "bg-amber-500/15 text-foreground border border-amber-500/40 rounded-bl-md"
+                  : message.is_official ? "bg-violet-500/10 text-foreground border border-violet-500/40 rounded-bl-md"
+                  : "bg-secondary text-secondary-foreground rounded-bl-md"
+                }`}>
+                  {message.body}
+                </div>
+              );
+            })()}
           </>
         )}
 

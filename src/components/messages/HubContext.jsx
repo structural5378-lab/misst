@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { X, Hash, Radio, Image as ImageIcon, Info, Shield } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Hash, Radio, Image as ImageIcon, Info, Shield, Wifi, Calendar, Activity, CloudLightning, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 import { otherParticipant } from "@/lib/chatV2/chatV2Api";
 import { presenceStatus, lastSeenLabel } from "@/lib/chatV2/chatV2Utils";
 
@@ -74,9 +76,9 @@ function ChannelInfo({ community, room, members, onlineMembers, myRole, tab, set
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-2 border-b border-border">
-        {[{ id: "members", label: "Members" }, { id: "media", label: "Media" }, { id: "radio", label: "Radio" }].map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={`flex-1 h-8 rounded-lg text-[12px] font-semibold transition-colors ${tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{t.label}</button>
+      <div className="flex gap-1 p-2 border-b border-border overflow-x-auto scrollbar-hide">
+        {["members", "media", "net", "weather", "events", "radio"].map((id) => (
+          <button key={id} onClick={() => setTab(id)} className={`px-2.5 h-8 rounded-lg text-[12px] font-semibold transition-colors shrink-0 capitalize ${tab === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{id === "radio" ? "Radio" : id}</button>
         ))}
       </div>
 
@@ -106,6 +108,10 @@ function ChannelInfo({ community, room, members, onlineMembers, myRole, tab, set
           <p className="text-[11px] text-muted-foreground mt-3 text-center">Shared media appears here as it's posted.</p>
         </div>
       )}
+
+      {tab === "net" && <NetTab community={community} />}
+      {tab === "weather" && <WeatherTab community={community} />}
+      {tab === "events" && <EventsTab community={community} />}
 
       {tab === "radio" && (
         <div className="p-4 space-y-3">
@@ -186,6 +192,103 @@ function Row({ label, value }) {
     <div className="flex items-center justify-between py-1 text-xs">
       <span className="text-muted-foreground">{label}</span>
       <span className="text-foreground font-medium truncate ml-2">{value}</span>
+    </div>
+  );
+}
+
+function NetTab({ community }) {
+  const [nets, setNets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!community?.id) return;
+    let alive = true;
+    setLoading(true);
+    base44.entities.Net.filter({ community_id: community.id, status: "active" }, "-created_date", 20)
+      .then((r) => { if (alive) setNets(r || []); })
+      .catch(() => {})
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [community?.id]);
+  if (loading) return <div className="p-6 flex justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+  if (!nets.length) return <p className="p-6 text-sm text-muted-foreground text-center">No active nets right now.</p>;
+  return (
+    <div className="p-3 space-y-2">
+      {nets.map((n) => (
+        <Link key={n.id} to={`/nets/${n.id}/control`} className="block rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 hover:brightness-125 transition">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm font-bold text-foreground truncate">{n.name}</span>
+            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-300"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mist-pulse-ring" />LIVE</span>
+          </div>
+          {n.frequency && <Row label="Frequency" value={`${n.frequency} MHz`} />}
+          {n.primary_net_control && <Row label="Net Control" value={n.primary_net_control} />}
+          {n.time && <Row label="Time" value={n.time} />}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function WeatherTab({ community }) {
+  const [wx, setWx] = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!community?.id) return;
+    let alive = true;
+    setLoading(true);
+    base44.functions.invoke("getWeatherData", { community_id: community.id, lat: community.location_lat, lon: community.location_lon })
+      .then((r) => { if (alive) setWx(r); })
+      .catch(() => {})
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [community?.id]);
+  if (loading) return <div className="p-6 flex justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+  const temp = wx?.temp ?? wx?.temperature;
+  return (
+    <div className="p-3 space-y-3">
+      <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-3">
+        <div className="rs-tile-radar h-20 rounded-lg border border-sky-500/20 bg-slate-900/50 mb-2" />
+        <div className="flex items-center justify-between">
+          <span className="text-2xl font-bold text-foreground">{temp != null ? `${Math.round(temp)}°` : "—"}</span>
+          <span className="text-xs text-muted-foreground text-right">{wx?.condition || wx?.conditions || wx?.summary || "—"}</span>
+        </div>
+      </div>
+      <div className="rounded-xl border border-border bg-secondary/30 p-3 space-y-1">
+        {wx?.humidity != null && <Row label="Humidity" value={`${wx.humidity}%`} />}
+        {wx?.wind_speed != null && <Row label="Wind" value={`${wx.wind_speed} ${wx.wind_unit || "mph"}`} />}
+        {community?.location && <Row label="Location" value={community.location} />}
+      </div>
+    </div>
+  );
+}
+
+function EventsTab({ community }) {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!community?.id) return;
+    let alive = true;
+    setLoading(true);
+    base44.entities.Event.filter({ community_id: community.id }, "-created_date", 20)
+      .then((r) => { if (alive) setEvents(r || []); })
+      .catch(() => {})
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [community?.id]);
+  if (loading) return <div className="p-6 flex justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+  if (!events.length) return <p className="p-6 text-sm text-muted-foreground text-center">No upcoming events.</p>;
+  return (
+    <div className="p-3 space-y-2">
+      {events.map((e) => (
+        <div key={e.id} className="rounded-xl border border-violet-500/30 bg-violet-500/10 p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar className="w-4 h-4 text-violet-300" />
+            <span className="text-sm font-bold text-foreground truncate">{e.title || e.name || "Event"}</span>
+          </div>
+          {e.start_date && <Row label="Date" value={e.start_date} />}
+          {e.location && <Row label="Location" value={e.location} />}
+          {e.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{e.description}</p>}
+        </div>
+      ))}
     </div>
   );
 }

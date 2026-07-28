@@ -591,3 +591,16 @@ body.amoled-mode { background: #000; }
 /* iOS safe-area helpers */
 .mist-safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 8px); }
 .mist-safe-top { padding-top: env(safe-area-inset-top); }
+
+/* ─── MISST Premium Messaging Micro-animations ─── */
+@keyframes msg-card-in { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
+.msg-card-in { animation: msg-card-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes mist-dock-rise { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+.mist-dock-rise { animation: mist-dock-rise 0.32s cubic-bezier(0.32, 0.72, 0, 1) both; }
+
+@keyframes mist-emergency-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); } 50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } }
+.mist-emergency-pulse { animation: mist-emergency-pulse 1.6s ease-out infinite; }
+
+@keyframes mist-reaction-burst { 0% { transform: scale(0) rotate(-20deg); } 60% { transform: scale(1.35) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
+.mist-reaction-burst { animation: mist-reaction-burst 0.32s cubic-bezier(0.34, 1.56, 0.64, 1); }

@@ -4,7 +4,7 @@ import { useRoomMessages } from "@/hooks/useRoomMessages";
 import { useToast } from "@/components/ui/use-toast";
 import { base44 } from "@/api/base44Client";
 import { formatDayLabel, isSameDay, presenceStatus, isTypingNow } from "@/lib/chatV2/chatV2Utils";
-import RoomHeader from "@/components/chatV2/community/RoomHeader";
+import PremiumChannelHeader from "@/components/chatV2/PremiumChannelHeader";
 import RoomIcon from "@/components/chatV2/community/RoomIcon";
 import PinnedMessagesSheet from "@/components/chatV2/community/PinnedMessagesSheet";
 import ManageRoomDialog from "@/components/chatV2/community/ManageRoomDialog";
@@ -155,7 +155,7 @@ export default function ChannelWindow({
 
   return (
     <div className="flex flex-col h-full min-w-0 flex-1 bg-background">
-      <RoomHeader
+      <PremiumChannelHeader
         room={room}
         community={community}
         memberCount={members.length}
@@ -168,6 +168,7 @@ export default function ChannelWindow({
         onOpenInfo={onOpenInfo}
         onManage={isAdmin ? () => setShowManage(true) : null}
         onPinned={() => setShowPinned(true)}
+        isAdmin={isAdmin}
         forceBack
       />
 
