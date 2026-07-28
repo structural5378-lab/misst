@@ -47,10 +47,10 @@ export default function ProfileHeader({
       </div>
 
       {/* Identity row — overlaps the banner so the avatar integrates into it */}
-      <div className="px-4 pb-3 -mt-24 relative">
+      <div className="px-4 pb-3 -mt-28 relative">
         <div className="flex items-end gap-3">
           <div className={`avatar-frame avatar-frame-${avatarFrame || "common"}`}>
-            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-violet-950/50 flex items-center justify-center">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden bg-violet-950/50 flex items-center justify-center">
               {avatar ? (
                 <img src={avatar} alt="" className="w-full h-full object-cover" />
               ) : (
