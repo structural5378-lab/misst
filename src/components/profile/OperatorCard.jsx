@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery } from '@tanstack/react-query';
-import { Bell, LogOut, Calendar, Users, X, Share2, Shield, ChevronRight, Radio } from 'lucide-react';
+import { Bell, LogOut, Calendar, Users, X, Share2, Shield, Radio } from 'lucide-react';
 import ProfileBanner from './ProfileBanner';
 import HeroArtwork from './HeroArtwork';
 import { heroSeed, heroTheme, heroPrompt } from '@/hooks/useHeroArtwork';
@@ -89,7 +89,7 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
               </div>
               <div className="flex-1 min-w-0 pt-2">
                 <div className="flex items-start gap-2">
-                  <h2 className="text-base font-bold text-white leading-tight break-words drop-shadow-md">{displayName || callsign}</h2>
+                  <h2 className="text-lg font-bold text-white leading-tight break-words drop-shadow-md">{displayName || callsign}</h2>
                   <span className="relative flex h-2 w-2 shrink-0 mt-1">
                     <span className="absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75 animate-ping" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -98,16 +98,8 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
                 {callsign && callsign !== displayName && (
                   <p className="text-xs text-white/90 font-semibold break-words drop-shadow-md mt-0.5">{callsign}</p>
                 )}
-                {isAdmin && (
-                  <span className="inline-flex items-center gap-1 mt-2 px-1.5 py-0.5 text-[9px] font-bold rounded-full bg-rose-500/25 text-rose-200 border border-rose-400/40 backdrop-blur-sm">
-                    <Shield className="w-2.5 h-2.5" /> ADMINISTRATOR
-                  </span>
-                )}
               </div>
-              <div className="flex gap-2 shrink-0 self-center">
-                <Link to="/account" className="inline-flex items-center gap-0.5 text-[10px] text-white font-semibold hover:text-violet-200 px-2 py-1 rounded-lg bg-violet-500/30 border border-violet-400/40 backdrop-blur-md transition-colors">
-                  Edit <ChevronRight className="w-3 h-3" />
-                </Link>
+              <div className="flex gap-2.5 shrink-0 self-center">
                 <Link to={alertsLink} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10">
                   <Bell className="w-4 h-4" />
                 </Link>
@@ -122,6 +114,14 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
               </div>
             </div>
 
+            {/* Administrator badge — purple glow matching the profile photo */}
+            {isAdmin && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 border border-white/25 backdrop-blur-md shadow-[0_0_18px_rgba(139,92,246,0.55)]">
+                <Shield className="w-3.5 h-3.5 text-white" />
+                <span className="text-[10px] font-bold text-white tracking-wide uppercase">Administrator</span>
+              </span>
+            )}
+
             {/* Group Tags */}
             {groups.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
@@ -131,7 +131,7 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
 
             {/* Badge Showcase */}
             {badges.length > 0 && (
-              <BadgeShowcase badges={badges} onBadgeClick={setSelectedBadge} />
+              <BadgeShowcase badges={badges.filter(b => b.id !== 'administrator')} onBadgeClick={setSelectedBadge} />
             )}
 
             {/* Info Blocks — three evenly spaced, centered */}
