@@ -14,22 +14,22 @@ const CARDS = [
 
 export default function StatsGrid({ stats = {} }) {
   return (
-    <div className="grid grid-cols-4 gap-2.5">
+    <div className="grid grid-cols-4 gap-2">
       {CARDS.map((c, i) => {
         const Icon = c.icon;
         return (
           <div
             key={c.label}
-            className="mist-fade-up rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md p-3 flex flex-col items-center gap-1.5"
+            className="mist-fade-up rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md p-3 flex flex-col items-center justify-center gap-1.5"
             style={{ animationDelay: `${i * 45}ms` }}
           >
-            <div className={`w-8 h-8 rounded-lg ${c.bg} flex items-center justify-center`}>
-              <Icon className={`w-4 h-4 ${c.color}`} />
+            <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center`}>
+              <Icon className={`w-5 h-5 ${c.color}`} />
             </div>
             <span className="text-lg font-black text-foreground leading-none tabular-nums">
               {stats[c.key] ?? 0}
             </span>
-            <span className="text-[9px] text-muted-foreground uppercase tracking-wide">{c.label}</span>
+            <span className="text-[8px] text-muted-foreground uppercase tracking-wide">{c.label}</span>
           </div>
         );
       })}

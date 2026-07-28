@@ -582,3 +582,12 @@ body.amoled-mode { background: #000; }
 .forum-markdown a { color: hsl(var(--primary)); text-decoration: underline; }
 .forum-markdown img { max-width: 100%; border-radius: 8px; margin: 0.5em 0; }
 .forum-markdown hr { border: none; border-top: 1px solid hsl(var(--border)); margin: 1em 0; }
+
+/* ─── MIST Mobile Typography (responsive clamp) ─── */
+.mist-title { font-size: clamp(20px, 2vw, 26px); line-height: 1.2; }
+.mist-subtitle { font-size: clamp(14px, 1.5vw, 16px); line-height: 1.3; }
+.mist-body { font-size: clamp(12px, 1.2vw, 14px); line-height: 1.4; }
+
+/* iOS safe-area helpers */
+.mist-safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 8px); }
+.mist-safe-top { padding-top: env(safe-area-inset-top); }

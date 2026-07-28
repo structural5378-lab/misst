@@ -20,12 +20,12 @@ export default function HeroArtwork({ seed, prompt }) {
           src={url}
           alt=""
           className="absolute inset-0 w-full h-full object-cover scale-105 transition-opacity duration-700"
-          style={{ opacity: loading ? 0 : 1, filter: "blur(2px)" }}
+          style={{ opacity: loading ? 0 : 1, filter: "blur(4px) brightness(0.82)" }}
         />
       )}
 
       {/* Legibility gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/15 to-black/25" />
+      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/25 to-black/40" />
       <div className="absolute inset-0 bg-gradient-to-br from-violet-950/20 via-transparent to-fuchsia-950/10" />
 
       {/* Floating particles */}

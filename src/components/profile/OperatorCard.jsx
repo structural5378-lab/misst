@@ -4,14 +4,13 @@ import { base44 } from '@/api/base44Client';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery } from '@tanstack/react-query';
-import { Bell, LogOut, Calendar, Users, BadgeCheck, Award, Flame, X, Share2, Shield, ChevronRight } from 'lucide-react';
+import { Bell, LogOut, Calendar, Users, X, Share2, Shield, ChevronRight, Radio } from 'lucide-react';
 import ProfileBanner from './ProfileBanner';
 import HeroArtwork from './HeroArtwork';
 import { heroSeed, heroTheme, heroPrompt } from '@/hooks/useHeroArtwork';
 import GroupTag from './GroupTag';
 import BadgeShowcase from './BadgeShowcase';
 import PrestigeStats from './PrestigeStats';
-import LicenseBadge from './LicenseBadge';
 import { getLevelProgress } from '@/components/achievements/LevelBar';
 import { RARITIES } from '@/lib/rarityConfig';
 import { ICON_MAP } from '@/components/achievements/iconMap';
@@ -78,9 +77,9 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
         {/* Hero banner with identity, badges, and stats overlaid on the image */}
         <div className="relative">
           <HeroArtwork seed={heroSeedVal} prompt={heroPromptVal} />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-card" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-card" />
 
-          <div className="relative p-3 space-y-2.5 z-10">
+          <div className="relative pl-4 pr-3 py-3.5 space-y-3 z-10">
             {/* Identity + actions */}
             <div className="flex items-start gap-3">
               <div className={`avatar-frame avatar-frame-${avatarFrame || 'common'} shrink-0`}>
@@ -88,25 +87,25 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
                   <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
                 </div>
               </div>
-              <div className="flex-1 min-w-0 pt-2.5">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold text-white leading-tight truncate drop-shadow-md">{displayName || callsign}</h2>
-                  <span className="relative flex h-2 w-2 shrink-0">
+              <div className="flex-1 min-w-0 pt-2">
+                <div className="flex items-start gap-2">
+                  <h2 className="text-base font-bold text-white leading-tight break-words drop-shadow-md">{displayName || callsign}</h2>
+                  <span className="relative flex h-2 w-2 shrink-0 mt-1">
                     <span className="absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75 animate-ping" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                   </span>
                 </div>
                 {callsign && callsign !== displayName && (
-                  <p className="text-xs text-white/90 font-semibold truncate drop-shadow-md">{callsign}</p>
+                  <p className="text-xs text-white/90 font-semibold break-words drop-shadow-md mt-0.5">{callsign}</p>
                 )}
                 {isAdmin && (
-                  <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 text-[9px] font-bold rounded-full bg-rose-500/25 text-rose-200 border border-rose-400/40 backdrop-blur-sm">
+                  <span className="inline-flex items-center gap-1 mt-2 px-1.5 py-0.5 text-[9px] font-bold rounded-full bg-rose-500/25 text-rose-200 border border-rose-400/40 backdrop-blur-sm">
                     <Shield className="w-2.5 h-2.5" /> ADMINISTRATOR
                   </span>
                 )}
               </div>
-              <div className="flex gap-1.5 shrink-0 pt-1">
-                <Link to="/account" className="inline-flex items-center gap-1 text-[10px] text-white font-semibold hover:text-violet-200 px-2.5 py-1.5 rounded-lg bg-violet-500/30 border border-violet-400/40 backdrop-blur-md transition-colors">
+              <div className="flex gap-2 shrink-0 self-center">
+                <Link to="/account" className="inline-flex items-center gap-0.5 text-[10px] text-white font-semibold hover:text-violet-200 px-2 py-1 rounded-lg bg-violet-500/30 border border-violet-400/40 backdrop-blur-md transition-colors">
                   Edit <ChevronRight className="w-3 h-3" />
                 </Link>
                 <Link to={alertsLink} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10">
@@ -135,23 +134,23 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
               <BadgeShowcase badges={badges} onBadgeClick={setSelectedBadge} />
             )}
 
-            {/* Info Row */}
-            <div className="flex items-center gap-3 text-[10px] text-white/80 flex-wrap">
-              {memberSince && (
-                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {memberSince}</span>
-              )}
-              <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {club}</span>
-              {user?.callsign || stats?.gmrs_license ? (
-                <LicenseBadge callsign={user?.callsign} size="sm" showCallsign={false} className="!py-0.5 !px-2" />
-              ) : (
-                <LicenseBadge callsign="" size="sm" showCallsign={false} className="!py-0.5 !px-2" />
-              )}
-              {stats?.ham_license_class && (
-                <span className="flex items-center gap-1 text-violet-300 font-medium"><Award className="w-3 h-3" /> {stats.ham_license_class.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
-              )}
-              {streak > 0 && (
-                <span className="flex items-center gap-1 text-orange-300 font-medium"><Flame className="w-3 h-3" /> {streak}d streak</span>
-              )}
+            {/* Info Blocks — three evenly spaced, centered */}
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <div className="flex flex-col items-center text-center gap-0.5">
+                <Calendar className="w-3.5 h-3.5 text-white/70" />
+                <span className="text-[8px] uppercase tracking-wide text-white/50">Joined</span>
+                <span className="text-[10px] font-semibold text-white/90 leading-tight">{memberSince || "—"}</span>
+              </div>
+              <div className="flex flex-col items-center text-center gap-0.5 min-w-0">
+                <Users className="w-3.5 h-3.5 text-white/70" />
+                <span className="text-[8px] uppercase tracking-wide text-white/50">Community</span>
+                <span className="text-[10px] font-semibold text-white/90 leading-tight truncate w-full">{club}</span>
+              </div>
+              <div className="flex flex-col items-center text-center gap-0.5">
+                <Radio className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[8px] uppercase tracking-wide text-white/50">License</span>
+                <span className="text-[10px] font-semibold text-emerald-400 leading-tight">GMRS Licensed</span>
+              </div>
             </div>
           </div>
         </div>

@@ -14,10 +14,12 @@ export default function Clock({ temp }) {
     d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-      <span>{formatDate(dateTime)}</span>
-      <span className="text-violet-400">{formatTime(dateTime)}</span>
-      {temp != null && <span className="text-amber-400">{temp}°F</span>}
+    <div className="flex items-center gap-2">
+      <div className="flex flex-col items-end leading-tight">
+        <span className="text-[10px] text-muted-foreground">{formatDate(dateTime)}</span>
+        <span className="text-[11px] text-violet-400 font-semibold tabular-nums">{formatTime(dateTime)}</span>
+      </div>
+      {temp != null && <span className="text-xs text-amber-400 shrink-0">{temp}°F</span>}
     </div>
   );
 }

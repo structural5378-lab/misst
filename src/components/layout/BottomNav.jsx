@@ -145,8 +145,8 @@ export default function BottomNav() {
           );
         })}
       </div>
-      {/* iPhone safe area */}
-      <div style={{ height: "env(safe-area-inset-bottom)" }} />
+      {/* iPhone safe area + home indicator clearance */}
+      <div style={{ height: "max(env(safe-area-inset-bottom), 8px)" }} />
     </nav>
   );
 }

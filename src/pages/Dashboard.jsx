@@ -119,7 +119,7 @@ export default function Dashboard() {
       {/* Ambient glow */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[28rem] h-80 bg-primary/15 rounded-full blur-3xl pointer-events-none -z-10" />
 
-      <div className="px-4 pt-4 space-y-5 pb-6 max-w-2xl mx-auto">
+      <div className="px-4 pt-4 space-y-4 pb-6 max-w-2xl mx-auto">
         {/* Next Net */}
         <div className="mist-fade-up">
           <NextNetCard net={nextNet} />
@@ -132,7 +132,7 @@ export default function Dashboard() {
 
         {/* XP & Level */}
         <div className="mist-fade-up" style={{ animationDelay: "120ms" }}>
-          <XPLevelCard xp={stats.xp || 0} />
+          <XPLevelCard xp={stats.xp || 0} level={stats.level} />
         </div>
 
         {/* Statistics */}

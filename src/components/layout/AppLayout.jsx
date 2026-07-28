@@ -91,7 +91,7 @@ export default function AppLayout() {
             <span className="text-xs font-bold tracking-[0.25em] text-violet-300 uppercase">MISST</span>
           </div>
           <CommunitySelector />
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <Link to="/members" className="relative p-1.5 text-violet-300/80 hover:text-violet-200 transition-colors" aria-label="Friends">
               <UserIcon className="w-4 h-4" />
             </Link>
@@ -105,10 +105,10 @@ export default function AppLayout() {
             </Link>
             <Link to="/account" className="relative shrink-0" aria-label="Account Center">
               {mistUser?.avatarUrl ? (
-                <img src={mistUser.avatarUrl} alt="Account" className="w-6 h-6 rounded-full object-cover ring-2 ring-violet-500/40" />
+                <img src={mistUser.avatarUrl} alt="Account" className="w-9 h-9 rounded-full object-cover ring-2 ring-violet-500/40" />
               ) : (
-                <span className="w-6 h-6 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
-                  <UserIcon className="w-3.5 h-3.5 text-violet-300" />
+                <span className="w-9 h-9 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
+                  <UserIcon className="w-4 h-4 text-violet-300" />
                 </span>
               )}
             </Link>

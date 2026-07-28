@@ -5,7 +5,7 @@ import { RARITIES } from '@/lib/rarityConfig';
 export default function BadgeShowcase({ badges = [], onBadgeClick }) {
   if (badges.length === 0) return null;
   return (
-    <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-1 py-1">
+    <div className="flex justify-center gap-3 flex-wrap px-1 py-1">
       {badges.map(badge => {
         const rarity = RARITIES[badge.rarity] || RARITIES.common;
         const Icon = ICON_MAP[badge.icon] || ICON_MAP.Award;

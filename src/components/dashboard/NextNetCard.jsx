@@ -58,7 +58,7 @@ export default function NextNetCard({ net }) {
 
   return (
     <Link to="/nets" className="block">
-      <div className="relative px-4 py-3 rounded-2xl bg-card/60 border border-success/30 backdrop-blur-md overflow-hidden mist-nextnet-glow">
+      <div className="relative px-5 py-3.5 rounded-2xl bg-card/60 border border-success/30 backdrop-blur-md overflow-hidden mist-nextnet-glow">
         <div className="absolute inset-0 bg-gradient-to-r from-success/10 via-success/5 to-transparent pointer-events-none" />
         <div className="relative flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-success/15 flex items-center justify-center shrink-0">
@@ -66,15 +66,15 @@ export default function NextNetCard({ net }) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold tracking-widest text-success/80 uppercase">Next Net</p>
-            <p className="text-sm font-semibold text-foreground truncate">{net ? net.name : "No nets scheduled"}</p>
+            <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2 break-words">{net ? net.name : "No nets scheduled"}</p>
           </div>
           {net && (
-            <div className="text-right shrink-0">
-              <p className="text-sm font-bold text-foreground">{net.time}</p>
+            <div className="text-right shrink-0 ml-1">
+              <p className="text-sm font-bold text-foreground leading-tight">{net.time}</p>
               {countdown && <p className="text-[10px] text-muted-foreground tabular-nums">{countdown}</p>}
             </div>
           )}
-          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${BADGE_STYLES[badge]}`}>{badge}</span>
+          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ml-1 self-center ${BADGE_STYLES[badge]}`}>{badge}</span>
         </div>
       </div>
     </Link>
