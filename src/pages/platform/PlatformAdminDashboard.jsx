@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import AdminStatCard from "@/components/platform/AdminStatCard";
 import AdminSection from "@/components/platform/AdminSection";
+import PlatformOnlineNowWidget from "@/components/platform/PlatformOnlineNowWidget";
 
 function fmtDuration(start, end) {
   if (!start || !end) return "—";
@@ -85,6 +86,9 @@ export default function PlatformAdminDashboard() {
 
   return (
     <AdminSection title="Platform Overview" description="Real-time command center for the entire MIST platform.">
+      <div className="mb-6 max-w-sm">
+        <PlatformOnlineNowWidget />
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
         {stats.map((s) => (
           <AdminStatCard key={s.label} {...s} loading={isLoading} />
