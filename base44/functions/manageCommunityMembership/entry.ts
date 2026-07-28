@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     // Community-scoped audit log. Written via service role (bypasses RLS) for
     // every admin action in this function. Visible only to community admins
     // through getCommunityAdminStats — never exposed to other communities.
-    const logAudit = async (action, targetId, targetName, reasonText) => {
+    const logAudit = async (action, targetId, targetName, reasonText, extra = {}) => {
       try {
         await base44.asServiceRole.entities.CommunityAuditLog.create({
           community_id,
@@ -100,9 +100,18 @@ Deno.serve(async (req) => {
           admin_id: user.id,
           admin_name: user.full_name || user.email,
           action,
+          action_category: extra.action_category || '',
           target_user_id: targetId || '',
           target_user_name: targetName || '',
+          target_message_id: extra.target_message_id || '',
+          room_id: extra.room_id || '',
+          room_name: extra.room_name || '',
           reason: reasonText || '',
+          duration: extra.duration || '',
+          previous_state: extra.previous_state || '',
+          new_state: extra.new_state || '',
+          ip_address: extra.ip_address || '',
+          device_info: extra.device_info || '',
         });
       } catch (e) {
         console.error('[manageCommunityMembership][audit]', e.message);
@@ -355,17 +364,30 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Cannot moderate a member with equal or higher role' }, { status: 403 });
       }
 
+      const context = String(body.context || '').trim();
+      const auditAction = context === 'voice' ? `voice_${action}` : action;
+      const prevStatus = target.status;
+      const prevMuted = !!target.muted;
+      let newState = prevStatus;
+      let duration = '';
+
       if (action === 'suspend') {
+        newState = 'suspended';
         await base44.asServiceRole.entities.CommunityMember.update(target.id, { status: 'suspended', is_active: false });
       } else if (action === 'unsuspend') {
+        newState = 'active';
         await base44.asServiceRole.entities.CommunityMember.update(target.id, { status: 'active', is_active: true });
       } else if (action === 'mute') {
         const hours = body.mute_duration_hours ? Number(body.mute_duration_hours) : 0;
         const mutedUntil = hours > 0 ? new Date(Date.now() + hours * 3600 * 1000).toISOString() : '';
+        newState = hours > 0 ? `muted ${hours}h` : 'muted';
+        duration = hours > 0 ? `${hours}h` : 'permanent';
         await base44.asServiceRole.entities.CommunityMember.update(target.id, { muted: true, muted_until: mutedUntil });
       } else if (action === 'unmute') {
+        newState = 'unmuted';
         await base44.asServiceRole.entities.CommunityMember.update(target.id, { muted: false, muted_until: '' });
       } else if (action === 'kick') {
+        newState = 'left';
         const wasActive = target.status === 'active';
         await base44.asServiceRole.entities.CommunityMember.update(target.id, { status: 'left', is_active: false });
         try {
@@ -378,12 +400,17 @@ Deno.serve(async (req) => {
           });
         }
       } else if (action === 'unban') {
-        // Unbanning releases the member; they may re-request to join.
+        newState = 'left';
         await base44.asServiceRole.entities.CommunityMember.update(target.id, { status: 'left', is_active: false });
       }
 
-      await logAudit(action, target_user_id, target.user_name, reason);
-      return Response.json({ success: true, action });
+      await logAudit(auditAction, target_user_id, target.user_name, reason, {
+        action_category: 'moderation',
+        duration,
+        previous_state: `${prevStatus}${prevMuted ? ' (muted)' : ''}`,
+        new_state: newState,
+      });
+      return Response.json({ success: true, action: auditAction });
     }
 
     return Response.json({ error: 'Unknown action' }, { status: 400 });

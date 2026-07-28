@@ -4,12 +4,14 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, Users } from 'lucide-react';
 import CommunityMemberRow from './CommunityMemberRow';
+import MemberModerationProfile from './MemberModerationProfile';
 
 export default function CommunityMemberManager() {
   const { community } = useCommunity();
   const qc = useQueryClient();
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('active');
+  const [profileTarget, setProfileTarget] = useState(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['community-admin-members', community.id, query],
@@ -64,9 +66,13 @@ export default function CommunityMemberManager() {
       ) : (
         <div className="space-y-2">
           {members.map((m) => (
-            <CommunityMemberRow key={m.id} member={m} communityId={community.id} onChanged={invalidate} />
+            <CommunityMemberRow key={m.id} member={m} communityId={community.id} onChanged={invalidate} onOpenProfile={setProfileTarget} />
           ))}
         </div>
+      )}
+
+      {profileTarget && (
+        <MemberModerationProfile community={community} target={profileTarget} onClose={() => setProfileTarget(null)} onChanged={invalidate} />
       )}
     </div>
   );

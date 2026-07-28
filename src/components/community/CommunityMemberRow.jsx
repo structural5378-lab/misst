@@ -25,7 +25,7 @@ const STATUS_BADGE = {
   left: 'bg-slate-500/15 text-slate-400',
 };
 
-export default function CommunityMemberRow({ member, communityId, onChanged }) {
+export default function CommunityMemberRow({ member, communityId, onChanged, onOpenProfile }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const isOwner = member.role === 'community_owner';
@@ -133,6 +133,20 @@ export default function CommunityMemberRow({ member, communityId, onChanged }) {
                 <button disabled={busy} onClick={() => act('unban')} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Unban</button>
               )}
               <button disabled={busy} onClick={() => act('kick')} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-500/15 text-slate-300 border border-slate-500/30">Remove</button>
+              <button disabled={busy} onClick={() => onOpenProfile?.(member)} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-primary/15 text-primary border border-primary/30">Moderation Profile</button>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">Voice (future)</p>
+            <div className="flex flex-wrap gap-1.5 items-center">
+              {member.muted ? (
+                <button disabled={busy} onClick={() => act('unmute', { context: 'voice' })} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Voice Unmute</button>
+              ) : (
+                <button disabled={busy} onClick={() => act('mute', { context: 'voice' })} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30">Voice Mute</button>
+              )}
+              <button disabled={busy} onClick={() => act('kick', { context: 'voice' })} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-500/15 text-slate-300 border border-slate-500/30">Voice Kick</button>
+              <span className="text-[10px] text-muted-foreground/70">Disconnect / room-lock enforced when voice ships</span>
             </div>
           </div>
         </div>

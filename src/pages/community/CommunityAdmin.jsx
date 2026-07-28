@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { Shield, ChevronLeft, Inbox, LayoutDashboard, Users, Settings, History, Trash2 } from 'lucide-react';
+import { Shield, ChevronLeft, Inbox, LayoutDashboard, Users, Settings, History, Trash2, Activity } from 'lucide-react';
 import CommunityAdminOverview from '@/components/community/CommunityAdminOverview';
 import CommunityMemberManager from '@/components/community/CommunityMemberManager';
 import CommunitySettingsEditor from '@/components/community/CommunitySettingsEditor';
 import CommunityAuditLogViewer from '@/components/community/CommunityAuditLogViewer';
 import ModerationDashboard from '@/components/community/ModerationDashboard';
 import DeletedMessagesViewer from '@/components/community/DeletedMessagesViewer';
+import ModerationAnalytics from '@/components/community/ModerationAnalytics';
 
 export default function CommunityAdmin() {
   const { community, hasPermission } = useCommunity();
@@ -32,6 +33,7 @@ export default function CommunityAdmin() {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'members', label: 'Members', icon: Users },
     { id: 'moderation', label: 'Moderation', icon: Shield },
+    { id: 'analytics', label: 'Analytics', icon: Activity },
     { id: 'deleted', label: 'Deleted', icon: Trash2 },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'audit', label: 'Audit Log', icon: History },
@@ -75,6 +77,7 @@ export default function CommunityAdmin() {
       {tab === 'overview' && <CommunityAdminOverview />}
       {tab === 'members' && <CommunityMemberManager />}
       {tab === 'moderation' && <ModerationDashboard community={community} />}
+      {tab === 'analytics' && <ModerationAnalytics community={community} />}
       {tab === 'deleted' && <DeletedMessagesViewer community={community} />}
       {tab === 'settings' && <CommunitySettingsEditor />}
       {tab === 'audit' && <CommunityAuditLogViewer />}

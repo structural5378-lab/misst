@@ -15,6 +15,7 @@ function categoryOf(action) {
   if (['approve', 'reject'].includes(action)) return 'membership';
   if (['ban', 'unban', 'suspend', 'unsuspend', 'mute', 'unmute', 'kick'].includes(action)) return 'moderation';
   if (action.startsWith('message_') || action.startsWith('messages_bulk_') || action.startsWith('room_') || action === 'room_cleared' || action === 'slow_mode_enabled' || action === 'slow_mode_disabled') return 'chat';
+  if (action.startsWith('note_') || action.startsWith('voice_')) return 'moderation';
   return 'other';
 }
 
@@ -52,7 +53,7 @@ Deno.serve(async (req) => {
     const all = await base44.asServiceRole.entities.CommunityAuditLog.filter(
       { community_id }, '-created_date', 500
     );
-    let rows = (all || []).map((a) => ({ ...a, category: categoryOf(a.action) }));
+    let rows = (all || []).map((a) => ({ ...a, category: a.action_category || categoryOf(a.action) }));
 
     if (category && category !== 'all') rows = rows.filter((a) => a.category === category);
     if (search) {

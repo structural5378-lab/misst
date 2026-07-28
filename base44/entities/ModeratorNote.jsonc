@@ -1,0 +1,71 @@
+{
+  "name": "ModeratorNote",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "Community this note belongs to"
+    },
+    "target_user_id": {
+      "type": "string",
+      "description": "User ID of the member this note is about"
+    },
+    "target_user_name": {
+      "type": "string",
+      "description": "Denormalized target display name"
+    },
+    "author_id": {
+      "type": "string",
+      "description": "Moderator who wrote the note"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_role": {
+      "type": "string",
+      "description": "Community role of the author at write time"
+    },
+    "content": {
+      "type": "string",
+      "description": "Internal note text (visible to moderation staff only)"
+    },
+    "edited_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "edited_by": {
+      "type": "string"
+    },
+    "edited_by_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "community_id",
+    "target_user_id",
+    "author_id",
+    "content"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
