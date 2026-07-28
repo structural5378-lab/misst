@@ -51,7 +51,7 @@ function createClusterIcon(count) {
   });
 }
 
-function MapController({ recenterTrigger, userPosition, selectedRepeater, selectedUser, focusStrike }) {
+function MapController({ recenterTrigger, userPosition, selectedRepeater, selectedUser, focusStrike, communityKey, defaultCenter }) {
   const map = useMap();
   const firstFix = useRef(true);
 
@@ -62,6 +62,14 @@ function MapController({ recenterTrigger, userPosition, selectedRepeater, select
       map.flyTo(userPosition, Math.max(map.getZoom(), 12), { duration: 1.5 });
     }
   }, [recenterTrigger, userPosition, map]);
+
+  // Recenter on the active community whenever it changes (community switch).
+  useEffect(() => {
+    if (defaultCenter) {
+      map.flyTo(defaultCenter, 11, { duration: 1.2 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [communityKey, map]);
 
   // Fly to a lightning strike when one is focused (e.g. via notification deep link)
   useEffect(() => {
@@ -116,9 +124,10 @@ export default function RadioScopeMap({
   searchQuery, tileMode, recenterTrigger, selectedRepeater, selectedUser,
   onRepeaterClick, onUserClick,
   strikes, focusStrike, focusStrikeId, now, onStrikeClick,
+  defaultCenter, communityKey,
 }) {
   const tc = useThemeColors();
-  const center = userPosition || DEFAULT_CENTER;
+  const center = userPosition || defaultCenter || DEFAULT_CENTER;
   const repeaterIcon = useMemo(() => createRepeaterIcon(), []);
   const userPosIcon = useMemo(() => createUserPosIcon(), []);
   const [mapBounds, setMapBounds] = useState(null);
@@ -272,6 +281,8 @@ export default function RadioScopeMap({
         selectedRepeater={selectedRepeater}
         selectedUser={selectedUser}
         focusStrike={focusStrike}
+        communityKey={communityKey}
+        defaultCenter={defaultCenter}
       />
       <BoundsTracker onBoundsChange={handleBoundsChange} />
 

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Layers, Crosshair, Bug } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
+import { useUserCommunities } from "@/hooks/useUserCommunities";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import RadioScopeStartup from "@/components/radioscope/RadioScopeStartup";
 import RadioScopeMap from "@/components/radioscope/RadioScopeMap";
@@ -11,17 +12,45 @@ import RadioScopeLayers from "@/components/radioscope/RadioScopeLayers";
 import RepeaterSheet from "@/components/radioscope/RepeaterSheet";
 import UserSheet from "@/components/radioscope/UserSheet";
 import RadioScopeDebugPanel from "@/components/radioscope/RadioScopeDebugPanel";
+import RadioScopeCommunitySelector from "@/components/radioscope/RadioScopeCommunitySelector";
+import RadioScopeStatsBar from "@/components/radioscope/RadioScopeStatsBar";
+import { haversine } from "@/lib/geoUtils";
 import {
   GPS_WATCH_OPTS, GPS_UPDATE_THROTTLE_MS, LOCATION_TTL_MS,
   classifySource, getLiveUsers,
 } from "@/lib/radioScopeLocation";
 
 const DEFAULT_CENTER = [25.77, -80.19];
+const COMMUNITY_LIGHTNING_RADIUS_MI = 50;
 
 export default function RadioScope() {
-  const { mybbUser } = useMistUser();
+  const { mybbUser, mistUser } = useMistUser();
+  const { data: communities = [] } = useUserCommunities();
+
+  // ── Active community (localStorage source of truth + in-page switcher) ──
+  const [activeId, setActiveId] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("selected_community_id") : null
+  );
+  useEffect(() => {
+    const sync = () => setActiveId(localStorage.getItem("selected_community_id"));
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
+  const community = useMemo(
+    () => communities.find((c) => c.id === activeId) || communities[0] || null,
+    [communities, activeId]
+  );
+  const switchCommunity = useCallback((c) => {
+    if (!c?.id) return;
+    localStorage.setItem("selected_community_id", c.id);
+    localStorage.setItem("selected_community_name", c.name || "");
+    setActiveId(c.id);
+    // cross-tab + cross-component sync
+    window.dispatchEvent(new StorageEvent("storage", { key: "selected_community_id", newValue: c.id }));
+  }, []);
+
   const [userPosition, setUserPosition] = useState(null);
-  const [myFix, setMyFix] = useState(null); // last raw GPS fix for debug panel
+  const [myFix, setMyFix] = useState(null);
   const [selectedRepeater, setSelectedRepeater] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [activeLayers, setActiveLayers] = useState({
@@ -33,29 +62,44 @@ export default function RadioScope() {
   const [showLayers, setShowLayers] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
-  const [nowTick, setNowTick] = useState(Date.now()); // recomputes age-based expiration
+  const [nowTick, setNowTick] = useState(Date.now());
 
   const watchIdRef = useRef(null);
   const lastUpdateRef = useRef(0);
   const clearingRef = useRef(false);
 
-  const myUid = String(mybbUser?.uid || "");
+  const myUid = String(mybbUser?.uid || mistUser?.id || "");
 
-  // ── Presence data: poll + realtime subscription for instant marker updates ──
-  const { data: presenceData = [] } = useQuery({
-    queryKey: ["chat-presence"],
-    queryFn: () => base44.entities.ChatPresence.list("-last_active", 200),
+  // ── Community-scoped RadioScope data (single secure backend call) ──
+  // Keyed by community.id → switching communities drops old data + refetches.
+  const qc = useQueryClient();
+  const { data: scope, isLoading: scopeLoading } = useQuery({
+    queryKey: ["radioscope", community?.id],
+    queryFn: async () => {
+      const res = await base44.functions.invoke("getCommunityRadioScopeData", { community_id: community.id });
+      return res.data;
+    },
+    enabled: !!community?.id,
     refetchInterval: 8000,
+    staleTime: 4000,
   });
 
-  const qc = useQueryClient();
+  const members = scope?.members || [];
+  const repeaters = scope?.repeaters || [];
+  const nets = scope?.nets || [];
+  const stats = scope?.stats || {};
+  const communityRecord = scope?.community || community;
+
+  // ── Realtime: subscribe to presence changes for the ACTIVE community only.
+  // On community switch the effect cleanup unsubscribes the old community and
+  // re-subscribes the new one (invalidate is scoped by community.id key). ──
   useEffect(() => {
-    // Realtime: invalidate presence on any ChatPresence mutation so markers move/remove instantly
-    const unsub = base44.entities.ChatPresence.subscribe((event) => {
-      qc.invalidateQueries({ queryKey: ["chat-presence"] });
+    if (!community?.id) return;
+    const unsub = base44.entities.ChatPresence.subscribe(() => {
+      qc.invalidateQueries({ queryKey: ["radioscope", community.id] });
     });
     return unsub;
-  }, [qc]);
+  }, [qc, community?.id]);
 
   // ── Tick to re-evaluate age-based expiration between polls ──
   useEffect(() => {
@@ -63,7 +107,7 @@ export default function RadioScope() {
     return () => clearInterval(t);
   }, []);
 
-  // ── Push validated live GPS to server (throttled) ──
+  // ── Push validated live GPS to server (throttled) — user's own location ──
   const pushLocation = useCallback((pos) => {
     const t = Date.now();
     if (t - lastUpdateRef.current < GPS_UPDATE_THROTTLE_MS) return;
@@ -80,7 +124,6 @@ export default function RadioScope() {
     }).catch(() => {});
   }, []);
 
-  // ── Clear my location on the server ──
   const clearLocation = useCallback(() => {
     if (clearingRef.current) return;
     clearingRef.current = true;
@@ -89,7 +132,6 @@ export default function RadioScope() {
     });
   }, []);
 
-  // ── GPS watch: live, high-accuracy, no cache ──
   useEffect(() => {
     if (!navigator.geolocation) return;
     watchIdRef.current = navigator.geolocation.watchPosition(
@@ -108,7 +150,6 @@ export default function RadioScope() {
         pushLocation(pos);
       },
       (err) => {
-        // Permission denied / unavailable → remove myself from the map immediately
         if (err.code === err.PERMISSION_DENIED) clearLocation();
       },
       GPS_WATCH_OPTS
@@ -118,7 +159,6 @@ export default function RadioScope() {
     };
   }, [pushLocation, clearLocation]);
 
-  // ── Clear on app close / tab hidden / logout ──
   useEffect(() => {
     const onVisibility = () => { if (document.visibilityState === "hidden") clearLocation(); };
     const onUnload = () => { clearLocation(); };
@@ -129,45 +169,63 @@ export default function RadioScope() {
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("beforeunload", onUnload);
       window.removeEventListener("pagehide", onUnload);
-      clearLocation(); // clear on unmount (navigating away / logout)
+      clearLocation();
     };
   }, [clearLocation]);
 
-  // ── Fetch repeaters ──
-  const { data: repeaters = [] } = useQuery({
-    queryKey: ["repeaters"],
-    queryFn: () => base44.entities.Repeater.list("-created_date", 200),
-    refetchInterval: 30000,
-  });
-
-  // ── Fetch lightning strikes (real-time refresh) ──
+  // ── Lightning strikes (global feed, filtered to community radius) ──
   const { data: strikes = [] } = useQuery({
     queryKey: ["lightning-strikes"],
     queryFn: () => base44.entities.LightningStrike.list("-strike_time", 500),
     refetchInterval: 15000,
   });
 
-  // ── Notification deep link: ?strike=<id> centers the map on a strike ──
+  const communityCenter = useMemo(() => {
+    if (communityRecord?.location_lat != null && communityRecord?.location_lon != null) {
+      return [communityRecord.location_lat, communityRecord.location_lon];
+    }
+    return null;
+  }, [communityRecord]);
+
+  const communityStrikes = useMemo(() => {
+    if (!communityCenter) return strikes;
+    return strikes.filter((s) => {
+      if (s.latitude == null || s.longitude == null) return false;
+      return haversine(communityCenter[0], communityCenter[1], s.latitude, s.longitude) <= COMMUNITY_LIGHTNING_RADIUS_MI;
+    });
+  }, [strikes, communityCenter]);
+
   const [focusStrikeId, setFocusStrikeId] = useState(
     () => new URLSearchParams(window.location.search).get("strike")
   );
   const focusStrike = useMemo(
-    () => strikes.find((s) => s.id === focusStrikeId) || null,
-    [strikes, focusStrikeId]
+    () => communityStrikes.find((s) => s.id === focusStrikeId) || null,
+    [communityStrikes, focusStrikeId]
   );
 
-  // ── LIVE USERS ONLY: no simulation, no cached, no expired ──
+  // ── LIVE USERS ONLY: members of the active community with a valid live fix ──
   const onlineUsers = useMemo(
-    () => getLiveUsers(presenceData, { now: nowTick, ttl: LOCATION_TTL_MS, excludeUid: myUid }),
-    [presenceData, nowTick, myUid]
+    () => getLiveUsers(members, { now: nowTick, ttl: LOCATION_TTL_MS, excludeUid: myUid }),
+    [members, nowTick, myUid]
   );
 
   const myPresence = useMemo(
-    () => (presenceData || []).find((p) => p.user_uid === myUid) || null,
-    [presenceData, myUid]
+    () => members.find((m) => m.user_uid === myUid) || null,
+    [members, myUid]
   );
 
   const handleRecenter = useCallback(() => setRecenterTrigger((t) => t + 1), []);
+
+  if (!community) {
+    return (
+      <RadioScopeStartup>
+        <div className="fixed inset-0 z-[55] bg-black flex flex-col items-center justify-center p-6 text-center">
+          <p className="text-sm text-cyan-300/80">Join a community to access RadioScope.</p>
+          <Link to="/my-communities" className="mt-4 text-xs text-cyan-400 underline">Browse communities</Link>
+        </div>
+      </RadioScopeStartup>
+    );
+  }
 
   return (
     <RadioScopeStartup>
@@ -186,48 +244,53 @@ export default function RadioScope() {
             selectedUser={selectedUser}
             onRepeaterClick={setSelectedRepeater}
             onUserClick={setSelectedUser}
-            strikes={strikes}
+            strikes={communityStrikes}
             focusStrike={focusStrike}
             focusStrikeId={focusStrikeId}
             now={nowTick}
             onStrikeClick={(s) => setFocusStrikeId(s.id)}
+            defaultCenter={communityCenter}
+            communityKey={community?.id}
           />
         </div>
 
-        {/* Header */}
-        <header
-          className="absolute top-0 left-0 right-0 z-30 flex items-center gap-3 px-4 py-2.5 bg-black/70 backdrop-blur-md border-b border-cyan-500/10"
-          style={{ paddingTop: "calc(0.625rem + env(safe-area-inset-top))" }}
-        >
-          <Link to="/" className="p-2 -m-1 text-cyan-400">
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-base font-bold text-cyan-300 tracking-wide">RadioScope</h1>
-            <p className="text-[10px] text-cyan-500/70 tracking-widest uppercase">Live GPS · {onlineUsers.length} operators</p>
-          </div>
-          <button onClick={() => setShowDebug((v) => !v)} className="p-2 text-cyan-400">
-            <Bug className="w-6 h-6" />
-          </button>
-          <button onClick={() => setShowLayers(true)} className="p-2 text-cyan-400">
-            <Layers className="w-6 h-6" />
-          </button>
-        </header>
+        {/* Stacked top overlay: header + stats + search */}
+        <div className="absolute top-0 left-0 right-0 z-30 flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+          <header className="flex items-center gap-2 px-3 py-2.5 bg-black/70 backdrop-blur-md border-b border-cyan-500/10">
+            <Link to="/" className="p-2 -m-1 text-cyan-400 shrink-0">
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base font-bold text-cyan-300 tracking-wide leading-tight">RadioScope</h1>
+              <p className="text-[10px] text-cyan-500/70 tracking-widest uppercase truncate">
+                {community?.name || "—"} · {onlineUsers.length} operators
+              </p>
+            </div>
+            <RadioScopeCommunitySelector communities={communities} active={community} onChange={switchCommunity} />
+            <button onClick={() => setShowDebug((v) => !v)} className="p-2 text-cyan-400 shrink-0">
+              <Bug className="w-6 h-6" />
+            </button>
+            <button onClick={() => setShowLayers(true)} className="p-2 text-cyan-400 shrink-0">
+              <Layers className="w-6 h-6" />
+            </button>
+          </header>
 
-        {/* Search + Filters */}
-        <div className="absolute left-0 right-0 z-20 px-3" style={{ top: "calc(3.5rem + env(safe-area-inset-top))" }}>
-          <RadioScopeSearch
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-            repeaters={repeaters}
-            onlineUsers={onlineUsers}
-            onResultClick={(r) => {
-              if (r.type === "repeater") setSelectedRepeater(r);
-              else setSelectedUser(r);
-            }}
-          />
+          <RadioScopeStatsBar stats={stats} loading={scopeLoading && !scope} />
+
+          <div className="px-3 py-2 bg-black/40 backdrop-blur-sm">
+            <RadioScopeSearch
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+              repeaters={repeaters}
+              onlineUsers={onlineUsers}
+              onResultClick={(r) => {
+                if (r.type === "repeater") setSelectedRepeater(r);
+                else setSelectedUser(r);
+              }}
+            />
+          </div>
         </div>
 
         {/* Admin debug panel */}
@@ -236,7 +299,7 @@ export default function RadioScope() {
             myFix={myFix}
             myPresence={myPresence}
             liveUsers={onlineUsers}
-            allPresence={presenceData}
+            allPresence={members}
             now={nowTick}
           />
         )}
