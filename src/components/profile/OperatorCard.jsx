@@ -75,54 +75,56 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
   return (
     <>
       <div className="operator-card" style={{ boxShadow: '0 0 40px rgba(139,92,246,0.16), 0 0 14px rgba(139,92,246,0.10)' }}>
-        {/* Hero Artwork */}
+        {/* Hero Artwork with identity overlaid at the top of the banner */}
         <div className="relative h-44">
           <HeroArtwork seed={heroSeedVal} prompt={heroPromptVal} />
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
-          <div className="absolute top-3 right-3 flex gap-2 z-10">
-            <Link to={alertsLink} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10">
-              <Bell className="w-4 h-4" />
-            </Link>
-            <button onClick={handleShare} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10" title="Share Profile">
-              <Share2 className="w-4 h-4" />
-            </button>
-            {onLogout && (
-              <button onClick={onLogout} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-rose-400 transition-colors border border-white/10" title="Sign Out">
-                <LogOut className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
 
-        {/* Identity */}
-        <div className="px-4 pb-4 -mt-12 relative">
-          <div className="flex items-end gap-3">
-            <div className={`avatar-frame avatar-frame-${avatarFrame || 'common'}`}>
+          {/* Identity + actions aligned at the top of the banner image */}
+          <div className="absolute top-0 left-0 right-0 p-3 flex items-start gap-3 z-10">
+            <div className={`avatar-frame avatar-frame-${avatarFrame || 'common'} shrink-0`}>
               <div className="w-20 h-20 rounded-2xl overflow-hidden bg-violet-950/50 ring-2 ring-violet-500/30">
                 <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
               </div>
             </div>
-            <div className="flex-1 pb-1 min-w-0">
+            <div className="flex-1 min-w-0 pt-2.5">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-foreground leading-tight truncate">{displayName || callsign}</h2>
+                <h2 className="text-lg font-bold text-white leading-tight truncate drop-shadow-md">{displayName || callsign}</h2>
                 <span className="relative flex h-2 w-2 shrink-0">
                   <span className="absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75 animate-ping" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
               </div>
               {callsign && callsign !== displayName && (
-                <p className="text-xs text-muted-foreground truncate">{callsign}</p>
+                <p className="text-xs text-white/90 font-semibold truncate drop-shadow-md">{callsign}</p>
               )}
               {isAdmin && (
-                <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 text-[9px] font-bold rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 text-[9px] font-bold rounded-full bg-rose-500/25 text-rose-200 border border-rose-400/40 backdrop-blur-sm">
                   <Shield className="w-2.5 h-2.5" /> ADMINISTRATOR
                 </span>
               )}
             </div>
-            <Link to="/account" className="inline-flex items-center gap-1 text-[10px] text-violet-300 font-semibold hover:text-violet-200 px-2.5 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20 mb-1 shrink-0">
-              Edit <ChevronRight className="w-3 h-3" />
-            </Link>
+            <div className="flex gap-1.5 shrink-0 pt-1">
+              <Link to="/account" className="inline-flex items-center gap-1 text-[10px] text-white font-semibold hover:text-violet-200 px-2.5 py-1.5 rounded-lg bg-violet-500/30 border border-violet-400/40 backdrop-blur-md transition-colors">
+                Edit <ChevronRight className="w-3 h-3" />
+              </Link>
+              <Link to={alertsLink} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10">
+                <Bell className="w-4 h-4" />
+              </Link>
+              <button onClick={handleShare} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10" title="Share Profile">
+                <Share2 className="w-4 h-4" />
+              </button>
+              {onLogout && (
+                <button onClick={onLogout} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-rose-400 transition-colors border border-white/10" title="Sign Out">
+                  <LogOut className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
+        </div>
+
+        {/* Secondary details below the banner */}
+        <div className="px-4 pb-4 pt-3 relative">
 
           {/* Group Tags */}
           {groups.length > 0 && (
