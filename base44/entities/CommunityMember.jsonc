@@ -69,6 +69,16 @@
     "is_active": {
       "type": "boolean",
       "default": true
+    },
+    "muted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Muted from community chat (enforcement is applied at the chat layer)"
+    },
+    "muted_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the mute expires (empty = indefinite)"
     }
   },
   "required": [

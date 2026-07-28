@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCommunity } from '@/contexts/CommunityContext';
 import {
   MessageSquare,
@@ -9,6 +9,8 @@ import {
   Radio,
   Image as ImageIcon,
   FileText,
+  Shield,
+  ChevronRight,
 } from 'lucide-react';
 
 export default function CommunityHome() {
@@ -67,6 +69,22 @@ export default function CommunityHome() {
           );
         })}
       </div>
+
+      {(permissions.community_role === 'community_owner' || permissions.community_role === 'community_admin') && (
+        <Link
+          to={`/c/${slug}/admin`}
+          className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-violet-500/15 to-fuchsia-500/15 border border-violet-500/30 hover:border-violet-500/50 transition-colors"
+        >
+          <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+            <Shield className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-foreground">Community Admin</p>
+            <p className="text-xs text-muted-foreground">Manage members, roles & moderation</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+        </Link>
+      )}
 
       <div className="text-center text-muted-foreground text-xs pt-4">
         {memberCount !== undefined && `${memberCount} members · `}

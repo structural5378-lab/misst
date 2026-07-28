@@ -89,6 +89,26 @@ Deno.serve(async (req) => {
       }
     };
 
+    // Community-scoped audit log. Written via service role (bypasses RLS) for
+    // every admin action in this function. Visible only to community admins
+    // through getCommunityAdminStats — never exposed to other communities.
+    const logAudit = async (action, targetId, targetName, reasonText) => {
+      try {
+        await base44.asServiceRole.entities.CommunityAuditLog.create({
+          community_id,
+          community_name: community.name,
+          admin_id: user.id,
+          admin_name: user.full_name || user.email,
+          action,
+          target_user_id: targetId || '',
+          target_user_name: targetName || '',
+          reason: reasonText || '',
+        });
+      } catch (e) {
+        console.error('[manageCommunityMembership][audit]', e.message);
+      }
+    };
+
     // --- join (open/public, or instant via invite code) ---
     // Public communities are always joinable by authenticated users unless
     // explicitly locked (join_mode === 'closed'). This keeps the backend
@@ -250,6 +270,7 @@ Deno.serve(async (req) => {
           });
         }
       }
+      await logAudit(action, target_user_id, target.user_name, reason);
       return Response.json({ success: true });
     }
 
@@ -299,7 +320,65 @@ Deno.serve(async (req) => {
         const roles = await base44.asServiceRole.entities.CommunityRole.filter({ user_id: target_user_id, community_id });
         await Promise.all((roles || []).map(r => base44.asServiceRole.entities.CommunityRole.update(r.id, { role, is_active: true })));
       } catch {}
+      await logAudit('set_role:' + role, target_user_id, target.user_name, reason);
       return Response.json({ success: true, role });
+    }
+
+    // --- suspend / unsuspend / mute / unmute / kick / unban ---
+    // Community admin/owner moderation actions. The community_owner role is
+    // protected — it can never be moderated here. All actions are scoped to
+    // THIS community's membership and logged to the community audit log.
+    if (['suspend', 'unsuspend', 'mute', 'unmute', 'kick', 'unban'].includes(action)) {
+      if (!target_user_id) return Response.json({ error: 'target_user_id is required' }, { status: 400 });
+
+      const isAdmin = member && (member.role === 'community_owner' || member.role === 'community_admin');
+      let platformAdmin = false;
+      try {
+        const pr = await base44.asServiceRole.entities.PlatformRole.filter({ user_id: user.id, is_active: true });
+        platformAdmin = (pr || []).some(r => r.role === 'platform_owner' || r.role === 'platform_admin');
+      } catch {}
+      if (!isAdmin && !platformAdmin) {
+        return Response.json({ error: 'Not authorized' }, { status: 403 });
+      }
+
+      const targetMembers = await base44.asServiceRole.entities.CommunityMember.filter({ user_id: target_user_id, community_id });
+      const target = (targetMembers && targetMembers[0]) || null;
+      if (!target) return Response.json({ error: 'Membership not found' }, { status: 404 });
+
+      // The community owner is immune to moderation by other admins.
+      if (target.role === 'community_owner') {
+        return Response.json({ error: 'Cannot moderate the community owner' }, { status: 403 });
+      }
+
+      if (action === 'suspend') {
+        await base44.asServiceRole.entities.CommunityMember.update(target.id, { status: 'suspended', is_active: false });
+      } else if (action === 'unsuspend') {
+        await base44.asServiceRole.entities.CommunityMember.update(target.id, { status: 'active', is_active: true });
+      } else if (action === 'mute') {
+        const hours = body.mute_duration_hours ? Number(body.mute_duration_hours) : 0;
+        const mutedUntil = hours > 0 ? new Date(Date.now() + hours * 3600 * 1000).toISOString() : '';
+        await base44.asServiceRole.entities.CommunityMember.update(target.id, { muted: true, muted_until: mutedUntil });
+      } else if (action === 'unmute') {
+        await base44.asServiceRole.entities.CommunityMember.update(target.id, { muted: false, muted_until: '' });
+      } else if (action === 'kick') {
+        const wasActive = target.status === 'active';
+        await base44.asServiceRole.entities.CommunityMember.update(target.id, { status: 'left', is_active: false });
+        try {
+          const roles = await base44.asServiceRole.entities.CommunityRole.filter({ user_id: target_user_id, community_id });
+          await Promise.all((roles || []).map(r => base44.asServiceRole.entities.CommunityRole.update(r.id, { is_active: false })));
+        } catch {}
+        if (wasActive) {
+          await base44.asServiceRole.entities.Community.update(community.id, {
+            member_count: Math.max(0, (community.member_count || 1) - 1)
+          });
+        }
+      } else if (action === 'unban') {
+        // Unbanning releases the member; they may re-request to join.
+        await base44.asServiceRole.entities.CommunityMember.update(target.id, { status: 'left', is_active: false });
+      }
+
+      await logAudit(action, target_user_id, target.user_name, reason);
+      return Response.json({ success: true, action });
     }
 
     return Response.json({ error: 'Unknown action' }, { status: 400 });

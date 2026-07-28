@@ -1,0 +1,60 @@
+{
+  "name": "CommunityAuditLog",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "Community this action belongs to"
+    },
+    "community_name": {
+      "type": "string"
+    },
+    "admin_id": {
+      "type": "string",
+      "description": "User ID of the admin who performed the action"
+    },
+    "admin_name": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "description": "Action slug: approve, reject, ban, unban, suspend, unsuspend, mute, unmute, kick, set_role:<role>"
+    },
+    "target_user_id": {
+      "type": "string"
+    },
+    "target_user_name": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "community_id",
+    "admin_id",
+    "action"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

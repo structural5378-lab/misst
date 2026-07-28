@@ -129,6 +129,8 @@ Deno.serve(async (req) => {
         status: m.status || 'active',
         joined_date: m.joined_date || null,
         last_active: u.last_active || null,
+        muted: !!m.muted,
+        muted_until: m.muted_until || null,
         location: u.location || '',
         bio: u.bio || '',
         is_verified: !!u.is_verified,
