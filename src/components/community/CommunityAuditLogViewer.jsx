@@ -9,6 +9,7 @@ const CATEGORIES = [
   { id: 'all', label: 'All' },
   { id: 'membership', label: 'Membership' },
   { id: 'moderation', label: 'Moderation' },
+  { id: 'chat', label: 'Chat' },
   { id: 'roles', label: 'Role Changes' },
   { id: 'settings', label: 'Settings' },
   { id: 'other', label: 'Other' },
@@ -20,6 +21,14 @@ function formatAction(action) {
     approve: 'Approved', reject: 'Rejected', ban: 'Banned', unban: 'Unbanned',
     suspend: 'Suspended', unsuspend: 'Unsuspended', mute: 'Muted', unmute: 'Unmuted',
     kick: 'Removed', update_settings: 'Updated Settings',
+    message_deleted: 'Deleted Message', message_pinned: 'Pinned Message', message_unpinned: 'Unpinned Message',
+    message_announced: 'Marked Announcement', message_unannounced: 'Unmarked Announcement',
+    message_sticky: 'Sticky Message', message_unsticky: 'Unsticky Message',
+    message_official: 'Highlighted Official', message_unofficial: 'Unhighlighted Official',
+    messages_bulk_deleted: 'Bulk-Deleted Messages', room_cleared: 'Cleared Room History',
+    room_locked: 'Locked Room', room_unlocked: 'Unlocked Room',
+    slow_mode_enabled: 'Enabled Slow Mode', slow_mode_disabled: 'Disabled Slow Mode',
+    room_updated: 'Updated Room',
   };
   return map[action] || action;
 }

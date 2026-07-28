@@ -99,30 +99,32 @@ export function useRoomMessages({ roomId, user, community }) {
   const send = useCallback(async (body, opts = {}) => {
     if (!roomId || !user?.id || !body.trim()) return;
     const tempId = "tmp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+    const replyId = opts.replyTo?.id && !String(opts.replyTo.id).startsWith("tmp_") ? opts.replyTo.id : "";
     const temp = {
       id: tempId, client_temp_id: tempId, room_id: roomId,
       community_id: communityId || "", community_slug: community?.slug || "", room_name: opts.roomName || "",
       sender_id: user.id, sender_name: user.full_name || user.email || "", sender_avatar: user.avatar_url || "",
       body: body.trim(), created_date: new Date().toISOString(), status: "sending", reactions: {},
-      reply_to_message_id: opts.replyTo?.id && !String(opts.replyTo.id).startsWith("tmp_") ? opts.replyTo.id : "",
-      reply_to_preview: (opts.replyTo?.body || "").slice(0, 120),
-      reply_to_sender_id: opts.replyTo?.sender_id || "",
-      reply_to_sender_name: opts.replyTo?.sender_name || "",
+      reply_to_message_id: replyId, reply_to_preview: (opts.replyTo?.body || "").slice(0, 120),
+      reply_to_sender_id: opts.replyTo?.sender_id || "", reply_to_sender_name: opts.replyTo?.sender_name || "",
       mentions: JSON.stringify(parseMentionsArr(body)),
     };
     setMessages((prev) => [...prev, temp]);
     try {
-      const created = await base44.entities.ChatV2RoomMessage.create({
-        room_id: roomId, community_id: communityId || "", community_slug: community?.slug || "", room_name: opts.roomName || "",
-        sender_id: user.id, sender_name: user.full_name || user.email || "", sender_avatar: user.avatar_url || "",
-        body: body.trim(), message_type: "text", reactions: "", mentions: JSON.stringify(parseMentionsArr(body)),
-        reply_to_message_id: temp.reply_to_message_id, reply_to_preview: temp.reply_to_preview,
+      // Send through the server gate (enforces membership, mute, lock, slow mode).
+      const res = await base44.functions.invoke("sendRoomMessage", {
+        room_id: roomId, body: body.trim(),
+        reply_to_message_id: replyId, reply_to_preview: temp.reply_to_preview,
         reply_to_sender_id: temp.reply_to_sender_id, reply_to_sender_name: temp.reply_to_sender_name,
-        client_temp_id: tempId, status: "sent",
+        mentions: temp.mentions,
       });
-      setMessages((prev) => prev.map((m) => (m.client_temp_id === tempId ? { ...m, id: created.id, status: "sent", created_date: created.created_date } : m)));
-    } catch {
+      const created = res?.data?.message;
+      if (!created) throw new Error(res?.data?.error || "Send failed");
+      setMessages((prev) => prev.map((m) => (m.client_temp_id === tempId ? { ...m, id: created.id, status: "sent", created_date: created.created_date, body: created.body } : m)));
+      return created;
+    } catch (e) {
       setMessages((prev) => prev.map((m) => (m.client_temp_id === tempId ? { ...m, status: "failed" } : m)));
+      throw e;
     }
   }, [roomId, communityId, user, community]);
 
@@ -154,5 +156,20 @@ export function useRoomMessages({ roomId, user, community }) {
     try { await base44.functions.invoke("roomMessageAction", { action: "delete", message_id: messageId, user_id: user.id }); } catch {}
   }, [user?.id]);
 
-  return { messages, loading, loadingMore, hasMore, atBottom, setAtBottom, loadMore, send, react, pin, editMessage, deleteMessage, scrollRef };
+  // Server-gated moderation toggles (poll reconciles optimistic state).
+  const moderate = useCallback(async (messageId, action, opts = {}) => {
+    try {
+      await base44.functions.invoke("roomMessageAction", { action, message_id: messageId, user_id: user.id, user_name: user.full_name || user.email, ...opts });
+    } catch { /* poll reconciles */ }
+  }, [user?.id]);
+
+  const announce = useCallback((message) => moderate(message.id, "announce", { pinned: !message.is_announcement }), [moderate]);
+  const sticky = useCallback((message) => moderate(message.id, "sticky", { pinned: !message.is_sticky }), [moderate]);
+  const official = useCallback((message) => moderate(message.id, "official", { pinned: !message.is_official }), [moderate]);
+  const bulkDelete = useCallback((messageIds, reason) =>
+    base44.functions.invoke("roomMessageAction", { action: "bulk_delete", message_ids: messageIds, user_id: user.id, user_name: user.full_name || user.email, reason }), [user?.id]);
+  const clearHistory = useCallback((roomIdArg, reason) =>
+    base44.functions.invoke("roomMessageAction", { action: "clear_history", room_id: roomIdArg, user_id: user.id, user_name: user.full_name || user.email, reason }), [user?.id]);
+
+  return { messages, loading, loadingMore, hasMore, atBottom, setAtBottom, loadMore, send, react, pin, editMessage, deleteMessage, announce, sticky, official, bulkDelete, clearHistory, scrollRef };
 }

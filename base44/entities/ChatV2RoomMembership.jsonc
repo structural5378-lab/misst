@@ -43,6 +43,11 @@
     "joined_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "last_sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Server-managed timestamp of the user's last accepted message in this room (slow-mode cooldown)"
     }
   },
   "required": [

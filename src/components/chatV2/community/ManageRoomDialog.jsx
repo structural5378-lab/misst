@@ -20,6 +20,9 @@ export default function ManageRoomDialog({ community, room, user, onClose }) {
   const [description, setDescription] = useState(room?.description || "");
   const [icon, setIcon] = useState(room?.icon || "Hash");
   const [type, setType] = useState(room?.type || "text");
+  const [isLocked, setIsLocked] = useState(!!room?.is_locked);
+  const [isHidden, setIsHidden] = useState(!!room?.is_hidden);
+  const [slowMode, setSlowMode] = useState(room?.slow_mode_seconds || 0);
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
@@ -33,6 +36,7 @@ export default function ManageRoomDialog({ community, room, user, onClose }) {
         user_id: user.id,
         user_name: user.full_name || user.email,
         name, description, icon, type,
+        is_locked: isLocked, is_hidden: isHidden, slow_mode_seconds: Number(slowMode) || 0,
       });
       onClose();
     } catch (e) {
@@ -48,6 +52,19 @@ export default function ManageRoomDialog({ community, room, user, onClose }) {
       onClose();
     } catch (e) {
       alert(e?.message || "Failed to delete room");
+    } finally { setSaving(false); }
+  };
+
+  const clearHistory = async () => {
+    if (!window.confirm(`Clear ALL messages in "${room.name}"? Every message will be hidden and the action is logged.`)) return;
+    setSaving(true);
+    try {
+      await base44.functions.invoke("roomMessageAction", {
+        action: "clear_history", room_id: room.id, user_id: user.id, user_name: user.full_name || user.email,
+      });
+      onClose();
+    } catch (e) {
+      alert(e?.message || "Failed to clear history");
     } finally { setSaving(false); }
   };
 
@@ -85,12 +102,42 @@ export default function ManageRoomDialog({ community, room, user, onClose }) {
               ))}
             </div>
           </div>
+          <div className="space-y-2.5">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Slow Mode</label>
+              <select value={slowMode} onChange={(e) => setSlowMode(e.target.value)} className="mt-1 w-full rounded-xl bg-secondary/50 border border-border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring">
+                <option value={0}>Off</option>
+                <option value={5}>5 seconds</option>
+                <option value={10}>10 seconds</option>
+                <option value={30}>30 seconds</option>
+                <option value={60}>1 minute</option>
+                <option value={300}>5 minutes</option>
+              </select>
+            </div>
+            <button type="button" onClick={() => setIsLocked((v) => !v)} className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl bg-secondary/50 border border-border">
+              <span className="text-sm">Lock Room</span>
+              <span className={`w-10 h-6 rounded-full relative transition-colors ${isLocked ? "bg-primary" : "bg-muted"}`}>
+                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${isLocked ? "translate-x-4" : "translate-x-0.5"}`} />
+              </span>
+            </button>
+            <button type="button" onClick={() => setIsHidden((v) => !v)} className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl bg-secondary/50 border border-border">
+              <span className="text-sm">Hide from members</span>
+              <span className={`w-10 h-6 rounded-full relative transition-colors ${isHidden ? "bg-primary" : "bg-muted"}`}>
+                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${isHidden ? "translate-x-4" : "translate-x-0.5"}`} />
+              </span>
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-2 mt-5">
           <button onClick={save} disabled={saving || !name.trim()} className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50">
             {saving ? "Saving…" : isEdit ? "Save changes" : "Create room"}
           </button>
-          {isEdit && <button onClick={del} disabled={saving} className="px-4 py-2.5 rounded-xl bg-destructive/15 text-destructive text-sm font-medium">Delete</button>}
+          {isEdit && (
+            <>
+              <button onClick={clearHistory} disabled={saving} className="px-4 py-2.5 rounded-xl bg-amber-500/15 text-amber-500 text-sm font-medium">Clear History</button>
+              <button onClick={del} disabled={saving} className="px-4 py-2.5 rounded-xl bg-destructive/15 text-destructive text-sm font-medium">Delete</button>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -48,6 +48,22 @@ Deno.serve(async (req) => {
       for (const k of allowed) if (fields[k] !== undefined) update[k] = fields[k];
       if (update.name) update.name = String(update.name).trim();
       const room = await base44.asServiceRole.entities.ChatV2Room.update(room_id, update);
+      // Audit log room config changes (lock / slow mode / hidden / rename).
+      const changed = Object.keys(update);
+      const auditWorthy = ["is_locked", "slow_mode_seconds", "is_hidden", "type", "name"];
+      if (changed.some((k) => auditWorthy.includes(k))) {
+        let act = "room_updated";
+        if (changed.includes("is_locked")) act = update.is_locked ? "room_locked" : "room_unlocked";
+        else if (changed.includes("slow_mode_seconds")) act = update.slow_mode_seconds ? "slow_mode_enabled" : "slow_mode_disabled";
+        try {
+          await base44.asServiceRole.entities.CommunityAuditLog.create({
+            community_id, community_name: room.community_name || "",
+            admin_id: user_id, admin_name: user_name || "",
+            action: act, target_user_id: "", target_user_name: room.name || "",
+            reason: "Updated: " + changed.join(", "),
+          });
+        } catch {}
+      }
       return Response.json({ ok: true, room });
     }
 

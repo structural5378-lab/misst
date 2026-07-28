@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Check, CheckCheck, Clock, AlertCircle, RotateCcw, Smile, CornerUpRight, Pin } from "lucide-react";
+import { Check, CheckCheck, Clock, AlertCircle, RotateCcw, Smile, CornerUpRight, Pin, Megaphone, Shield } from "lucide-react";
 import { formatTime, isTempId } from "@/lib/chatV2/chatV2Utils";
 import MessageContextMenuV2 from "./MessageContextMenuV2";
 import ReactionPickerV2 from "./ReactionPickerV2";
@@ -26,7 +26,7 @@ function StatusIcon({ status, onRetry }) {
   return null;
 }
 
-export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onRetry, onEdit, onDelete, onReact, onReply, onReplyJump, onPin, pinned }) {
+export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onRetry, onEdit, onDelete, onReact, onReply, onReplyJump, onPin, pinned, canModerate, onAnnounce, onSticky, onMuteUser, onSuspendUser, onKickUser, onBanUser }) {
   const [menu, setMenu] = useState(null); // {x,y}
   const [pickerOpen, setPickerOpen] = useState(false);
   const [hover, setHover] = useState(false);
@@ -108,9 +108,23 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
             </div>
           </div>
         ) : (
-          <div className={`px-3.5 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${isMine ? "bg-primary text-primary-foreground rounded-br-md" : "bg-secondary text-secondary-foreground rounded-bl-md"}`}>
-            {message.body}
-          </div>
+          <>
+            {(message.is_announcement || message.is_official || message.is_sticky) && (
+              <div className={`flex flex-wrap gap-1 mb-0.5 ${isMine ? "justify-end" : "justify-start"}`}>
+                {message.is_announcement && <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded-full"><Megaphone className="w-2.5 h-2.5" />Announcement</span>}
+                {message.is_official && <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-violet-400 bg-violet-500/15 px-1.5 py-0.5 rounded-full"><Shield className="w-2.5 h-2.5" />Official</span>}
+                {message.is_sticky && <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-primary bg-primary/15 px-1.5 py-0.5 rounded-full"><Pin className="w-2.5 h-2.5" />Sticky</span>}
+              </div>
+            )}
+            <div className={`px-3.5 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${
+              isMine ? "bg-primary text-primary-foreground rounded-br-md"
+              : message.is_announcement ? "bg-amber-500/15 text-foreground border border-amber-500/40 rounded-bl-md"
+              : message.is_official ? "bg-violet-500/10 text-foreground border border-violet-500/40 rounded-bl-md"
+              : "bg-secondary text-secondary-foreground rounded-bl-md"
+            }`}>
+              {message.body}
+            </div>
+          </>
         )}
 
         {/* Reactions */}
@@ -182,7 +196,7 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
       )}
       {menu && (
         <MessageContextMenuV2
-          x={menu.x} y={menu.y} isMine={isMine}
+          x={menu.x} y={menu.y} isMine={isMine} canModerate={canModerate}
           onReply={() => onReply?.(message)}
           onCopy={doCopy}
           onEdit={() => setEditing(true)}
@@ -190,6 +204,14 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
           onReact={() => { setPickerOpen(true); }}
           onPin={onPin ? () => onPin?.(message) : undefined}
           pinned={pinned}
+          onAnnounce={onAnnounce ? () => onAnnounce?.(message) : undefined}
+          announced={message.is_announcement}
+          onSticky={onSticky ? () => onSticky?.(message) : undefined}
+          sticky={message.is_sticky}
+          onMuteUser={onMuteUser ? () => onMuteUser?.(message) : undefined}
+          onSuspendUser={onSuspendUser ? () => onSuspendUser?.(message) : undefined}
+          onKickUser={onKickUser ? () => onKickUser?.(message) : undefined}
+          onBanUser={onBanUser ? () => onBanUser?.(message) : undefined}
           onClose={() => setMenu(null)}
         />
       )}

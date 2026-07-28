@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, VolumeX } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useToast } from "@/components/ui/use-toast";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useChatV2Presence } from "@/hooks/useChatV2Presence";
 import { useCommunityRooms } from "@/hooks/useCommunityRooms";
@@ -35,6 +36,7 @@ export default function CommunityChatV2() {
   const [community, setCommunity] = useState(null);
   const [members, setMembers] = useState([]);
   const [myRole, setMyRole] = useState(null);
+  const [myMember, setMyMember] = useState(null);
   const [activeRoomId, setActiveRoomId] = useState(null);
   const [replyTo, setReplyTo] = useState(null);
   const [showManage, setShowManage] = useState(false);
@@ -59,12 +61,21 @@ export default function CommunityChatV2() {
         setMembers(m || []);
         const me = (m || []).find((x) => x.user_id === mistUser?.id);
         setMyRole(me?.role || null);
+        setMyMember(me || null);
       }
     })();
     return () => { active = false; };
   }, [slug, mistUser?.id]);
 
   const isAdmin = ["community_owner", "community_admin"].includes(myRole);
+  const canModerate = ["community_owner", "community_admin", "moderator"].includes(myRole);
+  const { toast } = useToast();
+
+  const meMuted = useMemo(() => {
+    if (!myMember?.muted) return false;
+    if (!myMember.muted_until) return true;
+    return new Date(myMember.muted_until).getTime() > Date.now();
+  }, [myMember]);
   const { rooms, memberships, loading, reload, markRead, updateMembership } = useCommunityRooms(community?.id, mistUser);
   const presence = useChatV2Presence(mistUser);
 
@@ -109,12 +120,13 @@ export default function CommunityChatV2() {
 
   const canPost = useMemo(() => {
     if (!activeRoom || !myRole) return false;
+    if (meMuted) return false;
     if (activeRoom.is_archived) return false;
     if (activeRoom.is_locked && !isAdmin) return false;
     if (activeRoom.type === "readonly") return false;
     if (activeRoom.type === "admin") return isAdmin;
     return true;
-  }, [activeRoom, myRole, isAdmin]);
+  }, [activeRoom, myRole, isAdmin, meMuted]);
 
   const scrollToMessage = (id) => {
     if (!id || !msgs.scrollRef.current) return;
@@ -136,9 +148,52 @@ export default function CommunityChatV2() {
     }
   };
 
-  const handleSend = (body) => {
-    msgs.send(body, { replyTo, roomName: activeRoom?.name });
-    setReplyTo(null);
+  const moderateUser = async (action, message, extra = {}) => {
+    try {
+      await base44.functions.invoke("manageCommunityMembership", {
+        action, community_id: community.id, target_user_id: message.sender_id, ...extra,
+      });
+      toast({ title: "Action complete", description: `${action} applied to ${message.sender_name}.` });
+    } catch (e) {
+      toast({ title: "Action failed", description: e?.response?.data?.error || e?.message, variant: "destructive" });
+    }
+  };
+  const onMuteUser = async (message) => {
+    const hours = window.prompt("Mute duration in hours (leave blank for permanent):", "1");
+    if (hours === null) return;
+    const reason = window.prompt("Reason (optional):", "") || "";
+    const extra = { reason };
+    if (hours.trim() && !isNaN(Number(hours))) extra.mute_duration_hours = Number(hours);
+    await moderateUser("mute", message, extra);
+  };
+  const onSuspendUser = async (message) => {
+    const reason = window.prompt("Reason for suspension (optional):", "") || "";
+    await moderateUser("suspend", message, { reason });
+  };
+  const onKickUser = async (message) => {
+    const reason = window.prompt("Reason for removal (optional):", "") || "";
+    await moderateUser("kick", message, { reason });
+  };
+  const onBanUser = async (message) => {
+    const reason = window.prompt("Reason for ban (optional):", "") || "";
+    await moderateUser("ban", message, { reason });
+  };
+
+  const handleSend = async (body) => {
+    try {
+      await msgs.send(body, { replyTo, roomName: activeRoom?.name });
+      setReplyTo(null);
+    } catch (e) {
+      const data = e?.response?.data || e?.data || {};
+      if (data.muted) {
+        setMyMember((m) => ({ ...(m || {}), muted: true, muted_until: data.muted_until || "" }));
+        toast({ title: "You are muted", description: data.error, variant: "destructive" });
+      } else if (data.slow_mode) {
+        toast({ title: "Slow mode active", description: data.error });
+      } else {
+        toast({ title: "Message not sent", description: data.error || e?.message, variant: "destructive" });
+      }
+    }
   };
 
   const doSearch = (e) => {
@@ -239,8 +294,15 @@ export default function CommunityChatV2() {
                           onReact={msgs.react}
                           onReply={setReplyTo}
                           onReplyJump={scrollToMessage}
-                          onPin={isAdmin ? msgs.pin : undefined}
+                          onPin={canModerate ? msgs.pin : undefined}
                           pinned={m.pinned}
+                          canModerate={canModerate && m.sender_id !== mistUser?.id}
+                          onAnnounce={canModerate ? msgs.announce : undefined}
+                          onSticky={canModerate ? msgs.sticky : undefined}
+                          onMuteUser={canModerate ? onMuteUser : undefined}
+                          onSuspendUser={canModerate ? onSuspendUser : undefined}
+                          onKickUser={canModerate ? onKickUser : undefined}
+                          onBanUser={canModerate ? onBanUser : undefined}
                         />
                       </div>
                     );
@@ -248,6 +310,14 @@ export default function CommunityChatV2() {
                 )}
               </div>
 
+              {meMuted && (
+                <div className="border-t border-border bg-amber-500/10 px-4 py-2.5 flex items-center justify-center gap-2 text-xs text-amber-400">
+                  <VolumeX className="w-4 h-4 shrink-0" />
+                  <span>{myMember?.muted_until
+                    ? `You have been muted by the community administration until ${new Date(myMember.muted_until).toLocaleString()}.`
+                    : "You have been permanently muted in this community."}</span>
+                </div>
+              )}
               {canPost ? (
                 <>
                   {typingNames.length > 0 && (
@@ -263,7 +333,8 @@ export default function CommunityChatV2() {
                 </>
               ) : (
                 <div className="border-t border-border bg-background/60 px-4 py-3 text-center text-sm text-muted-foreground">
-                  {activeRoom.type === "readonly" ? "This room is read-only."
+                  {meMuted ? "You are muted — read-only until the mute is lifted."
+                    : activeRoom.type === "readonly" ? "This room is read-only."
                     : activeRoom.type === "admin" && !isAdmin ? "Only admins can post here."
                     : activeRoom.is_locked ? "This room is locked."
                     : "You cannot post in this room."}

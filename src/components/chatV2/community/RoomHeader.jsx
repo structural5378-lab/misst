@@ -24,6 +24,8 @@ export default function RoomHeader({ room, community, memberCount, onlineCount, 
         <div className="flex items-center gap-1.5">
           <h2 className="text-sm font-semibold truncate">{room.name}</h2>
           {room.is_locked && <span className="text-[10px] text-muted-foreground">· locked</span>}
+          {room.slow_mode_seconds > 0 && <span className="text-[10px] text-muted-foreground">· slow {room.slow_mode_seconds}s</span>}
+          {room.is_hidden && <span className="text-[10px] text-muted-foreground">· hidden</span>}
           {room.type === "emergency" && <span className="text-[10px] text-destructive font-semibold">· emergency</span>}
         </div>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">

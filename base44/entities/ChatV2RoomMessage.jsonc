@@ -77,6 +77,20 @@
       "type": "boolean",
       "default": false
     },
+    "deleted_by": {
+      "type": "string",
+      "description": "User ID who deleted the message (retained for admin history)"
+    },
+    "deleted_by_name": {
+      "type": "string"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deleted_reason": {
+      "type": "string"
+    },
     "pinned": {
       "type": "boolean",
       "default": false
@@ -90,6 +104,21 @@
     "pinned_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "is_announcement": {
+      "type": "boolean",
+      "default": false,
+      "description": "Moderator-marked announcement \u2014 badge + persistent highlight"
+    },
+    "is_sticky": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sticky message \u2014 stays surfaced"
+    },
+    "is_official": {
+      "type": "boolean",
+      "default": false,
+      "description": "Highlighted official moderator/admin message"
     },
     "status": {
       "type": "string",

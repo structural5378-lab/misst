@@ -331,13 +331,15 @@ Deno.serve(async (req) => {
     if (['suspend', 'unsuspend', 'mute', 'unmute', 'kick', 'unban'].includes(action)) {
       if (!target_user_id) return Response.json({ error: 'target_user_id is required' }, { status: 400 });
 
-      const isAdmin = member && (member.role === 'community_owner' || member.role === 'community_admin');
+      const MOD_ROLES_LOCAL = ['community_owner', 'community_admin', 'moderator'];
+      const RANK_LOCAL = { guest: 0, member: 1, trusted_member: 2, net_control: 3, moderator: 4, community_admin: 5, community_owner: 6 };
+      const isMod = member && MOD_ROLES_LOCAL.includes(member.role);
       let platformAdmin = false;
       try {
         const pr = await base44.asServiceRole.entities.PlatformRole.filter({ user_id: user.id, is_active: true });
         platformAdmin = (pr || []).some(r => r.role === 'platform_owner' || r.role === 'platform_admin');
       } catch {}
-      if (!isAdmin && !platformAdmin) {
+      if (!isMod && !platformAdmin) {
         return Response.json({ error: 'Not authorized' }, { status: 403 });
       }
 
@@ -345,9 +347,12 @@ Deno.serve(async (req) => {
       const target = (targetMembers && targetMembers[0]) || null;
       if (!target) return Response.json({ error: 'Membership not found' }, { status: 404 });
 
-      // The community owner is immune to moderation by other admins.
-      if (target.role === 'community_owner') {
-        return Response.json({ error: 'Cannot moderate the community owner' }, { status: 403 });
+      // Privilege escalation: a moderator cannot act on equal/higher roles.
+      // Platform admins override. The community owner is always immune.
+      const targetRank = RANK_LOCAL[target.role] ?? 1;
+      const callerRank = RANK_LOCAL[member?.role] ?? 0;
+      if (target.role === 'community_owner' || (targetRank >= callerRank && !platformAdmin)) {
+        return Response.json({ error: 'Cannot moderate a member with equal or higher role' }, { status: 403 });
       }
 
       if (action === 'suspend') {
