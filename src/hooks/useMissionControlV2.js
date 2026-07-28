@@ -113,9 +113,74 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
     doc.save(`net-log-${String(net?.slug || activeSession?.net_name || "net").replace(/\s+/g, "-").toLowerCase()}.pdf`);
   };
 
+  const dl = (content, filename, mime = "text/plain") => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  };
+  const safeSlug = String(net?.slug || activeSession?.net_name || "net").replace(/\s+/g, "-").toLowerCase();
+
+  const exportCsv = () => {
+    const rows = [["#", "Callsign", "Name", "Status", "Location", "Signal", "Joined", "Notes"]];
+    approved.forEach((c) => rows.push([c.checkin_number || "", c.callsign || "", c.name || "", c.status || "", c.location || "", c.signal_report || "", c.checked_in_at ? new Date(c.checked_in_at).toISOString() : "", c.notes || ""]));
+    rows.push([], ["Time", "Actor", "Type", "Message"]);
+    timeline.forEach((e) => rows.push([e.created_date ? new Date(e.created_date).toISOString() : "", e.actor_name || "", e.event_type || "", e.message || ""]));
+    const csv = rows.map((r) => r.map((cell) => `"${String(cell || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    dl(csv, `net-log-${safeSlug}.csv`, "text/csv");
+  };
+
+  const exportIcs214 = () => {
+    const started = activeSession?.started_at ? new Date(activeSession.started_at).toLocaleString() : "—";
+    const lines = [
+      "INCIDENT COMMAND SYSTEM (ICS) - FORM 214 - ACTIVITY LOG",
+      "==============================================",
+      `Incident/Net Name: ${net?.name || activeSession?.net_name || "—"}`,
+      `Operational Period: ${started} to ${new Date().toLocaleString()}`,
+      `Net Control: ${activeSession?.net_control || "—"}`,
+      `Assistant NCS: ${net?.assistant_net_control || activeSession?.co_host || "—"}`,
+      `Community: ${activeSession?.community_name || net?.community_name || "—"}`,
+      "",
+      "PERSONNEL ROSTER",
+      "----------------------------------------------",
+      "#  Callsign     Name                Status        Location",
+    ];
+    approved.forEach((c) => {
+      lines.push(`${String(c.checkin_number || "").padEnd(3)} ${(c.callsign || "").padEnd(12)} ${(c.name || "").padEnd(19)} ${(c.status || "").padEnd(13)} ${c.location || ""}`);
+    });
+    lines.push("", "ACTIVITY LOG", "----------------------------------------------", "Time              Activity");
+    timeline.forEach((e) => {
+      lines.push(`${(e.created_date ? new Date(e.created_date).toLocaleTimeString() : "").padEnd(17)} ${e.message || ""}`);
+    });
+    lines.push("", `Prepared by: ${activeSession?.net_control || "Net Control"}`, `Generated: ${new Date().toLocaleString()}`);
+    dl(lines.join("\n"), `ics-214-${safeSlug}.txt`, "text/plain");
+  };
+
+  const exportIcs309 = () => {
+    const started = activeSession?.started_at ? new Date(activeSession.started_at).toLocaleString() : "—";
+    const lines = [
+      "INCIDENT COMMAND SYSTEM (ICS) - FORM 309 - COMMUNICATIONS LOG",
+      "==============================================",
+      `Incident/Net Name: ${net?.name || activeSession?.net_name || "—"}`,
+      `Operational Period: ${started} to ${new Date().toLocaleString()}`,
+      `Net Control: ${activeSession?.net_control || "—"}`,
+      `Frequency: ${net?.frequency ? net.frequency + " MHz" : "—"}   Tone: ${net?.tone || "—"}`,
+      "",
+      "Time         Call Sign     Message",
+      "----------------------------------------------",
+    ];
+    timeline.forEach((e) => {
+      lines.push(`${(e.created_date ? new Date(e.created_date).toLocaleTimeString() : "").padEnd(12)} ${(e.actor_name || "System").padEnd(13)} ${e.message || ""}`);
+    });
+    lines.push("", `Prepared by: ${activeSession?.net_control || "Net Control"}`, `Generated: ${new Date().toLocaleString()}`);
+    dl(lines.join("\n"), `ics-309-${safeSlug}.txt`, "text/plain");
+  };
+
   return {
     ...mc, effectiveNetId, now, runtimeMs, weather, allSessions,
     callNext, callEntry, skipEntry, removeEntry, requestSpeak,
     addIncident, removeIncident, rollCall, generateSummary, exportPdf,
+    exportCsv, exportIcs214, exportIcs309,
   };
 }

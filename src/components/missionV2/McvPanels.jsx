@@ -5,16 +5,16 @@ import { Radio, MapPin, CloudRain, Calendar, Users, FileDown, Square, X } from "
 // McvPanels — shared small panels for the footer-nav views: Panel wrapper,
 // ResourcesPanel, ReportsPanel, SettingsPanel, and the After-Action ReportPanel.
 
-export function Panel({ title, children, right }) {
+export function Panel({ title, children, right, fill }) {
   return (
-    <div className="rounded-xl bg-[#15191e] border border-white/[0.06] flex flex-col">
+    <div className="rounded-xl bg-[#15191e] border border-white/[0.06] flex flex-col h-full min-h-0">
       {title && (
-        <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06] shrink-0">
           <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{title}</h3>
           {right}
         </div>
       )}
-      <div className="p-3">{children}</div>
+      <div className={`p-3 ${fill ? "flex-1 min-h-0 overflow-y-auto" : ""}`}>{children}</div>
     </div>
   );
 }

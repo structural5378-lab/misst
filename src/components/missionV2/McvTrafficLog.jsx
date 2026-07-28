@@ -17,7 +17,7 @@ export default function McvTrafficLog({ v2, full }) {
     return true;
   });
   return (
-    <div className={`rounded-xl bg-[#15191e] border border-white/[0.06] flex flex-col ${full ? "min-h-[60vh]" : ""}`}>
+    <div className="rounded-xl bg-[#15191e] border border-white/[0.06] flex flex-col h-full min-h-0">
       <div className="flex items-center gap-1 px-2 py-2 border-b border-white/[0.06]">
         <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground px-1 hidden sm:block">Live Traffic Log</h3>
         <div className="flex gap-1 sm:ml-auto">
@@ -26,7 +26,7 @@ export default function McvTrafficLog({ v2, full }) {
           ))}
         </div>
       </div>
-      <div className={`overflow-y-auto p-2 space-y-1 ${full ? "flex-1" : "max-h-[36vh]"}`}>
+      <div className="overflow-y-auto p-2 space-y-1 flex-1 min-h-0">
         {filtered.length === 0 ? <p className="text-xs text-muted-foreground text-center py-6">No traffic yet.</p> : filtered.map((e) => {
           const ti = TIMELINE_ICONS[e.event_type] || TIMELINE_ICONS.note;
           return (

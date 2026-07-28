@@ -36,6 +36,7 @@ export default function McvHeader({ v2, onEmergency, onSettings }) {
         <Tick label="Community" value={activeSession?.community_name || net?.community_name || "—"} />
         <Tick label="Participants" value={approved.length} />
         <Tick label="Online" value={approved.length} />
+        <Tick label="Weather" value={v2.weather?.current ? `${Math.round(v2.weather.current.temp)}° ${v2.weather.current.condition || ""}` : "—"} />
       </div>
     </header>
   );

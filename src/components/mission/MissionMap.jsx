@@ -27,7 +27,7 @@ function repeaterIcon() {
   return L.divIcon({ html, className: "rs-divicon", iconSize: [40, 40], iconAnchor: [20, 20] });
 }
 
-export default function MissionMap({ checkins = [], repeater, netControlUid }) {
+export default function MissionMap({ checkins = [], repeater, netControlUid, showOperators = true, showRepeater = true, showCoverage = true, showBeams = true, height = 340 }) {
   const [geo, setGeo] = useState({});
   const cacheRef = useRef({});
 
@@ -82,24 +82,24 @@ export default function MissionMap({ checkins = [], repeater, netControlUid }) {
   ];
 
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-white/[0.06]">
-      <div style={{ height: 340 }} className="w-full">
+    <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] h-full">
+      <div style={{ height }} className="w-full h-full">
         <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} className="w-full h-full" style={{ background: "#0a0a0c" }}>
           <TileLayer attribution='&copy; CARTO' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-          {repeater?.latitude != null && (
-            <>
-              <Marker position={[repeater.latitude, repeater.longitude]} icon={repeaterIcon()}>
-                <Popup>
-                  <div>
-                    <p style={{ fontWeight: 700 }}>{repeater.callsign}</p>
-                    <p style={{ color: "#888", fontSize: 11 }}>{repeater.location || ""}</p>
-                  </div>
-                </Popup>
-              </Marker>
-              <Circle center={[repeater.latitude, repeater.longitude]} radius={40000} pathOptions={{ color: "#8B5CF6", weight: 1, opacity: 0.4, fillOpacity: 0.05 }} />
-            </>
+          {showRepeater && repeater?.latitude != null && (
+            <Marker position={[repeater.latitude, repeater.longitude]} icon={repeaterIcon()}>
+              <Popup>
+                <div>
+                  <p style={{ fontWeight: 700 }}>{repeater.callsign}</p>
+                  <p style={{ color: "#888", fontSize: 11 }}>{repeater.location || ""}</p>
+                </div>
+              </Popup>
+            </Marker>
           )}
-          {markers.map(({ c, pos, color }) => (
+          {showCoverage && repeater?.latitude != null && (
+            <Circle center={[repeater.latitude, repeater.longitude]} radius={40000} pathOptions={{ color: "#8B5CF6", weight: 1, opacity: 0.4, fillOpacity: 0.05 }} />
+          )}
+          {showOperators && markers.map(({ c, pos, color }) => (
             <Marker key={c.id} position={pos} icon={memberIcon(c, color)}>
               <Popup>
                 <div>
@@ -111,7 +111,7 @@ export default function MissionMap({ checkins = [], repeater, netControlUid }) {
               </Popup>
             </Marker>
           ))}
-          {repeater?.latitude != null && markers.map(({ pos }, i) => (
+          {showBeams && repeater?.latitude != null && markers.map(({ pos }, i) => (
             <Polyline key={i} positions={[pos, [repeater.latitude, repeater.longitude]]} pathOptions={{ color: "#8B5CF6", weight: 1, opacity: 0.15 }} />
           ))}
         </MapContainer>

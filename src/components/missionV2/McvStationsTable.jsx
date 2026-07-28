@@ -8,8 +8,8 @@ const HEADERS = ["Callsign", "Last TX", "Signal", "Status", "Location", "Type", 
 
 export default function McvStationsTable({ checkins }) {
   return (
-    <div className="rounded-xl bg-[#15191e] border border-white/[0.06] overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="rounded-xl bg-[#15191e] border border-white/[0.06] overflow-hidden h-full min-h-0 flex flex-col">
+      <div className="overflow-auto flex-1 min-h-0">
         <table className="w-full text-xs">
           <thead className="bg-white/[0.03] text-muted-foreground">
             <tr>{HEADERS.map((h) => <th key={h} className="text-left font-semibold px-2.5 py-2 whitespace-nowrap">{h}</th>)}</tr>
