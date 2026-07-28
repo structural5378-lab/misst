@@ -75,7 +75,7 @@ export default function Messages() {
 
   return (
     <div className="mist-hub h-full xl:h-[100dvh] w-full flex flex-col bg-background text-foreground overflow-hidden">
-      <div className="flex-1 min-h-0 flex w-full">
+      <div className="flex-1 min-h-0 flex w-full pt-[env(safe-area-inset-top)] xl:pt-0">
       {/* Left nav */}
       <aside className={`${sel ? "hidden" : "flex"} xl:flex flex-col w-full xl:w-72 shrink-0 border-r border-border bg-card/40 backdrop-blur-xl min-h-0`}>
         <HubNav
@@ -143,7 +143,9 @@ export default function Messages() {
       )}
       </div>
 
-      <MissionControlDock community={community} />
+      <div className="hidden xl:block shrink-0">
+        <MissionControlDock community={community} />
+      </div>
 
       <StartConversationDialog open={showStart} onClose={() => setShowStart(false)} onStarted={onStarted} me={mistUser} />
     </div>

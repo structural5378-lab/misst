@@ -65,6 +65,22 @@ export default function AppLayout() {
     isDesktop &&
     (p === "/community-forum" || p.startsWith("/community/thread/") || p === "/community/new" || p === "/account" || p === "/messages");
 
+  // Mobile messaging hub: own the full viewport with a definite 100dvh height
+  // so only the message list scrolls and the composer stays docked above the
+  // keyboard. (Desktop keeps its existing full-bleed shell below.)
+  if (!isDesktop && (p === "/messages" || p.startsWith("/messages/"))) {
+    return (
+      <div className="fixed top-0 left-0 right-0 h-[100dvh] z-0 bg-background overflow-hidden">
+        <Outlet />
+        <NotificationManager />
+        <AlertPoller />
+        <SimplexRequestPoller />
+        <NotificationPrompt />
+        <InstallBanner />
+      </div>
+    );
+  }
+
   if (isFullBleedDesktop) {
     return (
       <div className="min-h-screen bg-background w-full overflow-x-hidden">

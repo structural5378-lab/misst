@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Hash, Star, MessageCircle, Radio, ChevronDown, BellOff } from "lucide-react";
+import { Plus, Hash, Star, MessageCircle, Radio, ChevronDown, BellOff, ChevronLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import RoomList from "@/components/chatV2/community/RoomList";
 import ConversationListV2 from "@/components/chatV2/ConversationListV2";
 import ManageRoomDialog from "@/components/chatV2/community/ManageRoomDialog";
@@ -45,7 +46,12 @@ export default function HubNav({
           <img src={LOGO} alt="MISST" className="w-6 h-6 object-contain shrink-0 drop-shadow-[0_0_6px_rgba(139,92,246,0.5)]" />
           <span className="text-sm font-extrabold tracking-[0.2em] text-violet-300 uppercase truncate">MISST</span>
         </div>
-        <span className="xl:hidden text-sm font-bold text-foreground">Messages</span>
+        <div className="xl:hidden flex items-center gap-1 min-w-0">
+          <Link to="/" className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted/60 text-muted-foreground shrink-0" aria-label="Back to dashboard">
+            <ChevronLeft className="w-5 h-5" />
+          </Link>
+          <span className="text-sm font-bold text-foreground">Messages</span>
+        </div>
         <button
           onClick={onNewMessage}
           className="inline-flex items-center gap-1.5 px-3 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white text-sm font-semibold shadow-lg shadow-violet-500/20 hover:brightness-110 active:scale-95 transition-all"

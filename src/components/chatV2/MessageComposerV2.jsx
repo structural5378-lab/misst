@@ -69,7 +69,7 @@ export default function MessageComposerV2({ onSend, onTyping, disabled, placehol
   const nearLimit = value.length > MAX * 0.9;
 
   return (
-    <div className="border-t border-border bg-background/80 backdrop-blur relative">
+    <div className="border-t border-border bg-background/80 backdrop-blur relative pb-[max(env(safe-area-inset-bottom),8px)] xl:pb-0">
       <ReplyPreviewBarV2 replyTo={replyTo} onCancel={onCancelReply} />
       <div className="px-3 py-2.5 flex items-end gap-1.5 max-w-4xl mx-auto">
         <div className="relative">
