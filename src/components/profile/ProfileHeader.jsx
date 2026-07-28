@@ -1,6 +1,5 @@
 import React from "react";
 import { Shield, BadgeCheck, MapPin, Calendar, Star, Award, MessageSquare, UserPlus, Edit, LogOut } from "lucide-react";
-import ProfileBanner from "./ProfileBanner";
 import GroupTag from "./GroupTag";
 import HeroArtwork from "./HeroArtwork";
 import LicenseBadge from "./LicenseBadge";
@@ -18,13 +17,37 @@ export default function ProfileHeader({
   const heroSeedVal = heroSeed({ uid: callsign || displayName, role, level });
   const heroPromptVal = heroPrompt(heroTheme({ role, level }));
 
+  const glassBtn =
+    "flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium backdrop-blur-md bg-black/30 hover:bg-black/45 border border-white/15 text-white transition-colors";
+
   return (
-    <div className="operator-card" style={{ boxShadow: "0 0 40px rgba(139,92,246,0.16), 0 0 14px rgba(139,92,246,0.10)" }}>
+    <div className="operator-card overflow-hidden" style={{ boxShadow: "0 0 40px rgba(139,92,246,0.16), 0 0 14px rgba(139,92,246,0.10)" }}>
+      {/* Banner */}
       <div className="relative h-40">
         <HeroArtwork seed={heroSeedVal} prompt={heroPromptVal} />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
+
+        {/* Secondary actions aligned within the banner (glassmorphic) */}
+        <div className="absolute top-3 right-3 flex gap-2">
+          {isSelf ? (
+            <button onClick={onSignOut} className={glassBtn} title="Sign out" aria-label="Sign out">
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          ) : (
+            <>
+              <button onClick={onMessage} className={glassBtn}>
+                <MessageSquare className="w-3.5 h-3.5" />Message
+              </button>
+              <button onClick={onFollow} className={glassBtn}>
+                <UserPlus className="w-3.5 h-3.5" />Follow
+              </button>
+            </>
+          )}
+        </div>
       </div>
-      <div className="px-4 pb-3 -mt-12 relative">
+
+      {/* Identity row — overlaps the banner so the avatar integrates into it */}
+      <div className="px-4 pb-3 -mt-24 relative">
         <div className="flex items-end gap-3">
           <div className={`avatar-frame avatar-frame-${avatarFrame || "common"}`}>
             <div className="w-16 h-16 rounded-2xl overflow-hidden bg-violet-950/50 flex items-center justify-center">
@@ -35,18 +58,26 @@ export default function ProfileHeader({
               )}
             </div>
           </div>
-          <div className="flex-1 pb-1 min-w-0">
+          <div className="flex-1 pb-1.5 min-w-0">
             <div className="flex items-center gap-1.5">
-              <h2 className="text-lg font-bold text-foreground truncate">{displayName || "MIST Member"}</h2>
-              <BadgeCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <h2 className="text-lg font-bold text-foreground truncate drop-shadow-sm">{displayName || "MIST Member"}</h2>
+              <BadgeCheck className="w-4 h-4 text-emerald-400 shrink-0 drop-shadow-sm" />
             </div>
-            {callsign && callsign !== displayName && <p className="text-xs text-primary truncate">{callsign}</p>}
+            {callsign && callsign !== displayName && <p className="text-xs text-primary truncate drop-shadow-sm">{callsign}</p>}
             {role && (
               <span className={`mt-1 inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded border ${roleBadge}`}>
                 <Shield className="w-2.5 h-2.5" />{role.charAt(0).toUpperCase() + role.slice(1)}
               </span>
             )}
           </div>
+          {isSelf && (
+            <button
+              onClick={onEdit}
+              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium mb-1.5 shrink-0 hover:bg-primary/90 transition-colors"
+            >
+              <Edit className="w-3.5 h-3.5" />Edit
+            </button>
+          )}
         </div>
 
         <div className="mt-2">
@@ -64,28 +95,6 @@ export default function ProfileHeader({
           {joinDate && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Joined {new Date(joinDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>}
           <span className="flex items-center gap-1 text-yellow-400"><Star className="w-3 h-3" />Lv {level}</span>
           <span className="flex items-center gap-1 text-emerald-400"><Award className="w-3 h-3" />{reputation} rep</span>
-        </div>
-
-        <div className="flex gap-2 mt-3">
-          {isSelf ? (
-            <>
-              <button onClick={onEdit} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium">
-                <Edit className="w-3.5 h-3.5" />Edit Profile
-              </button>
-              <button onClick={onSignOut} className="flex items-center justify-center py-2 px-3 rounded-lg bg-secondary border border-border text-destructive text-xs font-medium">
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
-            </>
-          ) : (
-            <>
-              <button onClick={onMessage} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium">
-                <MessageSquare className="w-3.5 h-3.5" />Message
-              </button>
-              <button onClick={onFollow} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-secondary border border-border text-foreground text-xs font-medium">
-                <UserPlus className="w-3.5 h-3.5" />Follow
-              </button>
-            </>
-          )}
         </div>
       </div>
     </div>
