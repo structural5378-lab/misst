@@ -63,7 +63,7 @@ export default function AppLayout() {
   }, [p]);
   const isFullBleedDesktop =
     isDesktop &&
-    (p === "/community-forum" || p.startsWith("/community/thread/") || p === "/community/new" || p === "/account");
+    (p === "/community-forum" || p.startsWith("/community/thread/") || p === "/community/new" || p === "/account" || p === "/messages");
 
   if (isFullBleedDesktop) {
     return (

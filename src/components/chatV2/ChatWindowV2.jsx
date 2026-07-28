@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, CheckCheck, Flag } from "lucide-react";
+import { ArrowDown, CheckCheck, Flag, PanelRight } from "lucide-react";
 import { useChatV2 } from "@/hooks/useChatV2";
 import { otherParticipant } from "@/lib/chatV2/chatV2Api";
 import { formatDayLabel, isSameDay, isTypingNow } from "@/lib/chatV2/chatV2Utils";
@@ -15,7 +15,7 @@ import ChatV2EmptyState from "./ChatV2EmptyState";
 // scroll-to-message, jump-to-newest, in-chat search, and the more menu.
 export default function ChatWindowV2({
   conversationId, conversation, participant, user, presenceByUser,
-  setTyping, setActiveConversation, online, reconnecting, onBack, onToggleMute,
+  setTyping, setActiveConversation, online, reconnecting, onBack, onToggleMute, onOpenInfo, forceBack,
 }) {
   const {
     messages, loading, loadingMore, hasMore, atBottom, setAtBottom,
@@ -118,6 +118,7 @@ export default function ChatWindowV2({
         onToggleMute={onToggleMute}
         onSearch={() => setShowSearch((v) => !v)}
         onMore={() => setMoreOpen((v) => !v)}
+        forceBack={forceBack}
       />
 
       {moreOpen && (
@@ -126,6 +127,11 @@ export default function ChatWindowV2({
             className="sheet-fade absolute top-14 right-3 w-44 rounded-xl border border-border bg-popover shadow-xl py-1"
             onClick={(e) => e.stopPropagation()}
           >
+            {onOpenInfo && (
+              <button onClick={() => { onOpenInfo(); setMoreOpen(false); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-muted/60">
+                <PanelRight className="w-4 h-4" /> Conversation info
+              </button>
+            )}
             <button onClick={() => { markRead(); setMoreOpen(false); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-muted/60">
               <CheckCheck className="w-4 h-4" /> Mark as read
             </button>

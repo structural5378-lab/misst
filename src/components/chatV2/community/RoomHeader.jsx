@@ -1,4 +1,4 @@
-import { ArrowLeft, Search, Info, BellOff, Bell, Users, Settings2 } from "lucide-react";
+import { ArrowLeft, Search, Info, BellOff, Bell, Users, Settings2, Pin } from "lucide-react";
 import RoomIcon from "./RoomIcon";
 
 // RoomHeader — room name + community context + member/online counts + typing
@@ -11,10 +11,10 @@ function IconBtn({ onClick, label, children }) {
   );
 }
 
-export default function RoomHeader({ room, community, memberCount, onlineCount, typingNames, muted, onBack, onToggleMute, onSearch, onOpenInfo, onManage }) {
+export default function RoomHeader({ room, community, memberCount, onlineCount, typingNames, muted, onBack, onToggleMute, onSearch, onOpenInfo, onManage, forceBack, onPinned }) {
   return (
     <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-background/80 backdrop-blur">
-      <button onClick={onBack} className="md:hidden p-2 -ml-1 rounded-lg hover:bg-muted/60 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Back">
+      <button onClick={onBack} className={`${forceBack ? "xl:hidden" : "md:hidden"} p-2 -ml-1 rounded-lg hover:bg-muted/60 min-w-[44px] min-h-[44px] flex items-center justify-center`} aria-label="Back">
         <ArrowLeft className="w-5 h-5" />
       </button>
       <div className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
@@ -37,6 +37,7 @@ export default function RoomHeader({ room, community, memberCount, onlineCount, 
       </div>
       <div className="flex items-center gap-0.5">
         <IconBtn onClick={onSearch} label="Search"><Search className="w-4 h-4" /></IconBtn>
+        {onPinned && <IconBtn onClick={onPinned} label="Pinned messages"><Pin className="w-4 h-4" /></IconBtn>}
         <IconBtn onClick={onOpenInfo} label="Room info"><Info className="w-4 h-4" /></IconBtn>
         <IconBtn onClick={onToggleMute} label="Mute">{muted ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}</IconBtn>
         {onManage && <IconBtn onClick={onManage} label="Manage room"><Settings2 className="w-4 h-4" /></IconBtn>}

@@ -11,11 +11,11 @@ function Avatar({ name, avatar, isGroup }) {
   return <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-semibold text-secondary-foreground">{initials}</div>;
 }
 
-export default function ChatHeaderV2({ name, avatar, isGroup, presence, typingText, muted, onBack, onToggleMute, onSearch, onMore }) {
+export default function ChatHeaderV2({ name, avatar, isGroup, presence, typingText, muted, onBack, onToggleMute, onSearch, onMore, forceBack }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 border-b border-border bg-background/80 backdrop-blur sticky top-0 z-10">
       {onBack && (
-        <button onClick={onBack} className="md:hidden p-2 -ml-1 text-muted-foreground hover:text-foreground rounded-lg min-w-[40px] min-h-[40px] flex items-center justify-center" aria-label="Back">
+        <button onClick={onBack} className={`${forceBack ? "xl:hidden" : "md:hidden"} p-2 -ml-1 text-muted-foreground hover:text-foreground rounded-lg min-w-[40px] min-h-[40px] flex items-center justify-center`} aria-label="Back">
           <ArrowLeft className="w-5 h-5" />
         </button>
       )}

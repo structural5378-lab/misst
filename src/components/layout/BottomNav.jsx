@@ -11,7 +11,7 @@ const navItems = [
   { icon: Home, label: "Home", path: "/" },
   { icon: MessageSquare, label: "Community", path: "/community-forum" },
   { icon: null, label: "Add", path: "/add" }, // center action
-  { icon: MessageCircle, label: "Chat", path: "/chat-v2" },
+  { icon: MessageCircle, label: "Chat", path: "/messages" },
 ];
 
 export default function BottomNav() {
@@ -67,7 +67,7 @@ export default function BottomNav() {
   }, [user?.id]);
 
   const [hasNewChat, setHasNewChat] = React.useState(false);
-  const isOnChat = location.pathname.startsWith("/chat-v2");
+  const isOnChat = location.pathname.startsWith("/messages") || location.pathname.startsWith("/chat-v2");
   const prevUnreadRef = React.useRef(0);
   const isFirstLoadRef = React.useRef(true);
 

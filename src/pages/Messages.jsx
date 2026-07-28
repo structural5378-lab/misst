@@ -1,175 +1,146 @@
-import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Loader2, MessageSquare } from "lucide-react";
-import { useMistMessaging } from "@/hooks/useMistMessaging";
-import MistConversationList from "@/components/messages/MistConversationList";
-import MistChatView from "@/components/messages/MistChatView";
-import MistConversationInfo from "@/components/messages/MistConversationInfo";
-import MistNewChatModal from "@/components/messages/MistNewChatModal";
+import { useEffect, useState } from "react";
+import { useMistUser } from "@/hooks/useMistUser";
+import { useChatV2Presence } from "@/hooks/useChatV2Presence";
+import { useConversationsV2 } from "@/hooks/useConversationsV2";
+import { useActiveCommunity } from "@/hooks/useActiveCommunity";
+import { useCommunityRooms } from "@/hooks/useCommunityRooms";
+import { base44 } from "@/api/base44Client";
+import HubNav from "@/components/messages/HubNav";
+import HubConversation from "@/components/messages/HubConversation";
+import HubContext from "@/components/messages/HubContext";
+import HubEmpty from "@/components/messages/HubEmpty";
+import StartConversationDialog from "@/components/chatV2/StartConversationDialog";
 
-const HEADER_HEIGHT = 37;
-const NAV_HEIGHT = 64;
-
+// Messages — the unified MISST messaging hub.
+//
+// One 3-pane shell (left nav · conversation · context) that merges direct
+// messages (ChatV2Conversation) and community channels (ChatV2Room) under a
+// single surface, reusing the existing realtime hooks + backend. On wide
+// desktop it renders full-bleed (AppLayout drops the app chrome for /messages);
+// on mobile it collapses to a single pane inside the normal app shell.
 export default function Messages() {
-  const messaging = useMistMessaging();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [showNewChat, setShowNewChat] = useState(false);
-  const [showInfoPanel, setShowInfoPanel] = useState(false);
-  const [bottomOffset, setBottomOffset] = useState(
-    `calc(${NAV_HEIGHT}px + env(safe-area-inset-bottom))`
-  );
+  const { mistUser } = useMistUser();
+  const presence = useChatV2Presence(mistUser);
+  const { conversations, loading: dmLoading } = useConversationsV2(mistUser?.id);
+  const { community, communities, isLoading: commLoading } = useActiveCommunity();
 
-  // Handle "new_dm" query param (from MistStartDMButton integration)
+  // sel = { type: 'dm' | 'channel', id, communityId }
+  const [sel, setSel] = useState(null);
+  const [showStart, setShowStart] = useState(false);
+  const [showContext, setShowContext] = useState(false);
+  const [navTab, setNavTab] = useState("channels"); // channels | dm | starred
+
+  const [members, setMembers] = useState([]);
+  const [myMember, setMyMember] = useState(null);
+
+  const { rooms, memberships, loading: roomsLoading, reload, markRead, updateMembership } =
+    useCommunityRooms(community?.id, mistUser);
+
+  // Load active community members + my membership (drives role, mute, canPost).
   useEffect(() => {
-    const newDmUserId = searchParams.get("new_dm");
-    if (newDmUserId && messaging.user) {
-      const name = searchParams.get("name") || "";
-      const avatar = searchParams.get("avatar") || "";
-      const callsign = searchParams.get("callsign") || "";
-      messaging.createDirectConversation(newDmUserId, name, avatar, callsign).then((convId) => {
-        if (convId) {
-          messaging.selectConversation(convId);
-          setSearchParams({});
-        }
-      });
-    }
-  }, [searchParams, messaging.user]);
+    if (!community?.id || !mistUser?.id) { setMembers([]); setMyMember(null); return; }
+    let active = true;
+    (async () => {
+      const m = await base44.entities.CommunityMember
+        .filter({ community_id: community.id, status: "active" }, "-joined_date", 500)
+        .catch(() => []);
+      if (!active) return;
+      setMembers(m || []);
+      setMyMember((m || []).find((x) => x.user_id === mistUser.id) || null);
+    })();
+    return () => { active = false; };
+  }, [community?.id, mistUser?.id]);
 
-  // Keyboard handling: keep composer visible above keyboard on mobile
+  const myRole = myMember?.role || null;
+
+  // Invalidate a channel selection if its room disappears (community switch).
   useEffect(() => {
-    const onResize = () => {
-      if (window.visualViewport) {
-        const keyboardHeight = window.innerHeight - window.visualViewport.height;
-        if (keyboardHeight > 50) {
-          // Keyboard open — nav is hidden, place bottom at top of keyboard
-          setBottomOffset(`${keyboardHeight}px`);
-        } else {
-          // Keyboard closed — place bottom above nav + safe area
-          setBottomOffset(`calc(${NAV_HEIGHT}px + env(safe-area-inset-bottom))`);
-        }
-      }
-    };
-    window.visualViewport?.addEventListener('resize', onResize);
-    window.visualViewport?.addEventListener('scroll', onResize);
-    return () => {
-      window.visualViewport?.removeEventListener('resize', onResize);
-      window.visualViewport?.removeEventListener('scroll', onResize);
-    };
-  }, []);
+    if (sel?.type === "channel" && community && !rooms.find((r) => r.id === sel.id)) setSel(null);
+  }, [rooms, community, sel]);
 
-  // Not authenticated via Base44
-  if (!messaging.user) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
-          <MessageSquare className="w-7 h-7 text-muted-foreground" />
-        </div>
-        <h2 className="text-base font-bold text-foreground">Messages Unavailable</h2>
-        <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-          MIST Direct Messaging requires a native MIST account. Please log out and sign in with your email to access messages.
-        </p>
-      </div>
-    );
-  }
+  const selectDM = (conv) => setSel({ type: "dm", id: conv.id, communityId: null });
+  const selectChannel = (roomId) => setSel({ type: "channel", id: roomId, communityId: community?.id });
+  const onStarted = (id) => { setShowStart(false); setSel({ type: "dm", id, communityId: null }); setNavTab("dm"); };
+  const onBack = () => { setSel(null); setShowContext(false); };
 
-  // Loading state
-  if (messaging.loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-      </div>
-    );
-  }
+  const totalDMUnread = conversations.reduce((n, c) => n + (c.participant?.unread_count || 0), 0);
+  const totalChannelUnread = rooms.reduce((n, r) => n + (memberships[r.id]?.unread_count || 0), 0);
+  const starredRooms = rooms.filter((r) => memberships[r.id]?.favorite || memberships[r.id]?.pinned);
 
-  const hasActive = !!messaging.activeConversationId;
+  const ctxProps = {
+    sel, mistUser, community, members, myRole,
+    presenceByUser: presence.presenceByUser, conversations, rooms,
+  };
 
   return (
-    <div
-      className="fixed left-0 right-0 z-30 flex justify-center overflow-hidden bg-background"
-      style={{ top: `${HEADER_HEIGHT}px`, bottom: bottomOffset }}
-    >
-      <div className="flex w-full h-full max-w-6xl mx-auto overflow-hidden">
-        {/* Left: Conversation List */}
-        <div className={`${hasActive ? "hidden lg:flex" : "flex"} w-full lg:w-80 lg:border-r border-border flex-col`}>
-          <MistConversationList
-            conversations={messaging.conversations}
-            activeConversationId={messaging.activeConversationId}
-            unreadTotal={messaging.unreadTotal}
-            onlineUserIds={messaging.onlineUserIds}
-            searchQuery={messaging.searchQuery}
-            setSearchQuery={messaging.setSearchQuery}
-            showArchived={messaging.showArchived}
-            setShowArchived={messaging.setShowArchived}
-            onSelect={messaging.selectConversation}
-            onCompose={() => setShowNewChat(true)}
-          />
-        </div>
+    <div className="h-full xl:h-[100dvh] w-full flex bg-background text-foreground overflow-hidden">
+      {/* Left nav */}
+      <aside className={`${sel ? "hidden" : "flex"} xl:flex flex-col w-full xl:w-72 shrink-0 border-r border-border bg-card/40 backdrop-blur-xl min-h-0`}>
+        <HubNav
+          mistUser={mistUser}
+          community={community}
+          communities={communities}
+          commLoading={commLoading}
+          rooms={rooms}
+          memberships={memberships}
+          roomsLoading={roomsLoading}
+          reloadRooms={reload}
+          conversations={conversations}
+          dmLoading={dmLoading}
+          presenceByUser={presence.presenceByUser}
+          sel={sel}
+          navTab={navTab}
+          setNavTab={setNavTab}
+          onSelectChannel={selectChannel}
+          onSelectDM={selectDM}
+          onNewMessage={() => setShowStart(true)}
+          totalDMUnread={totalDMUnread}
+          totalChannelUnread={totalChannelUnread}
+          starredRooms={starredRooms}
+          myRole={myRole}
+          updateMembership={updateMembership}
+        />
+      </aside>
 
-        {/* Center: Chat View */}
-        <div className={`${hasActive ? "flex" : "hidden lg:flex"} flex-1 flex-col min-w-0`}>
-          <MistChatView
-            conversation={messaging.activeConversation}
-            messages={messaging.messages}
-            messagesLoading={messaging.messagesLoading}
-            onlineUserIds={messaging.onlineUserIds}
-            typingUsers={messaging.typingUsers}
-            currentUserId={messaging.user.id}
-            onSend={messaging.sendMessage}
-            onTyping={messaging.setTyping}
-            onReply={() => {}}
-            onEdit={messaging.editMessage}
-            onDelete={messaging.deleteMessage}
-            onBack={() => messaging.selectConversation(null)}
-            onToggleInfo={() => setShowInfoPanel(!showInfoPanel)}
-            messageSearchQuery={messaging.messageSearchQuery}
-            setMessageSearchQuery={messaging.setMessageSearchQuery}
+      {/* Center conversation */}
+      <main className={`${sel ? "flex" : "hidden"} xl:flex flex-1 min-w-0 min-h-0 flex-col`}>
+        {sel ? (
+          <HubConversation
+            sel={sel}
+            mistUser={mistUser}
+            presence={presence}
+            conversations={conversations}
+            community={community}
+            rooms={rooms}
+            memberships={memberships}
+            members={members}
+            myRole={myRole}
+            myMember={myMember}
+            markRead={markRead}
+            updateMembership={updateMembership}
+            onBack={onBack}
+            onOpenContext={() => setShowContext(true)}
           />
-        </div>
+        ) : (
+          <HubEmpty onNewMessage={() => setShowStart(true)} />
+        )}
+      </main>
 
-        {/* Right: Info Panel (desktop) */}
-        {showInfoPanel && messaging.activeConversation && (
-          <div className="hidden lg:flex w-80 border-l border-border">
-            <MistConversationInfo
-              conversation={messaging.activeConversation}
-              onlineUserIds={messaging.onlineUserIds}
-              onTogglePin={messaging.togglePin}
-              onToggleArchive={messaging.toggleArchive}
-              onToggleMute={messaging.toggleMute}
-              onBlock={messaging.blockUser}
-              onLeave={messaging.leaveConversation}
-              isUserBlocked={messaging.isUserBlocked}
-            />
+      {/* Right context (desktop) */}
+      <aside className="hidden xl:flex w-80 shrink-0 border-l border-border bg-card/40 backdrop-blur-xl min-h-0">
+        {sel && <HubContext {...ctxProps} />}
+      </aside>
+
+      {/* Right context (mobile slide-over) */}
+      {showContext && sel && (
+        <div className="xl:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm fade-in" onClick={() => setShowContext(false)}>
+          <div className="absolute right-0 top-0 bottom-0 w-80 max-w-[85%] bg-card sheet-up" onClick={(e) => e.stopPropagation()}>
+            <HubContext {...ctxProps} onClose={() => setShowContext(false)} />
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Info Panel (mobile slide-in) */}
-        {showInfoPanel && messaging.activeConversation && (
-          <div className="lg:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm" onClick={() => setShowInfoPanel(false)}>
-            <div className="absolute right-0 top-0 bottom-0 w-80 max-w-[85%] bg-card" onClick={(e) => e.stopPropagation()}>
-              <MistConversationInfo
-                conversation={messaging.activeConversation}
-                onlineUserIds={messaging.onlineUserIds}
-                onTogglePin={messaging.togglePin}
-                onToggleArchive={messaging.toggleArchive}
-                onToggleMute={messaging.toggleMute}
-                onBlock={messaging.blockUser}
-                onLeave={messaging.leaveConversation}
-                isUserBlocked={messaging.isUserBlocked}
-                onBack={() => setShowInfoPanel(false)}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* New Chat Modal */}
-        {showNewChat && (
-          <MistNewChatModal
-            onClose={() => setShowNewChat(false)}
-            onConversationCreated={messaging.createDirectConversation}
-            onGroupCreated={messaging.createGroupConversation}
-          />
-        )}
-      </div>
+      <StartConversationDialog open={showStart} onClose={() => setShowStart(false)} onStarted={onStarted} me={mistUser} />
     </div>
   );
 }
