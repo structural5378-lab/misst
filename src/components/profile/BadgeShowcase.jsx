@@ -2,10 +2,10 @@ import React from 'react';
 import { ICON_MAP } from '@/components/achievements/iconMap';
 import { RARITIES } from '@/lib/rarityConfig';
 
-export default function BadgeShowcase({ badges = [], onBadgeClick }) {
+export default function BadgeShowcase({ badges = [], onBadgeClick, align = 'center' }) {
   if (badges.length === 0) return null;
   return (
-    <div className="flex justify-center gap-3 flex-wrap px-1 py-1">
+    <div className={align === 'start' ? 'flex justify-start gap-3 flex-wrap px-1 py-1' : 'flex justify-center gap-3 flex-wrap px-1 py-1'}>
       {badges.map(badge => {
         const rarity = RARITIES[badge.rarity] || RARITIES.common;
         const Icon = ICON_MAP[badge.icon] || ICON_MAP.Award;

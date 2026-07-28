@@ -123,15 +123,15 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
             )}
 
             {/* Group Tags */}
-            {groups.length > 0 && (
+            {groups.filter(g => g.id !== 'administrator').length > 0 && (
               <div className="flex flex-wrap gap-1.5">
-                {groups.slice(0, 4).map(g => <GroupTag key={g.id} group={g} />)}
+                {groups.filter(g => g.id !== 'administrator').slice(0, 4).map(g => <GroupTag key={g.id} group={g} />)}
               </div>
             )}
 
             {/* Badge Showcase */}
             {badges.length > 0 && (
-              <BadgeShowcase badges={badges.filter(b => b.id !== 'administrator')} onBadgeClick={setSelectedBadge} />
+              <BadgeShowcase badges={badges.filter(b => b.id !== 'administrator')} onBadgeClick={setSelectedBadge} align="start" />
             )}
 
             {/* Info Blocks — three evenly spaced, centered */}
