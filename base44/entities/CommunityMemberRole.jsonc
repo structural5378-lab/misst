@@ -1,0 +1,78 @@
+{
+  "name": "CommunityMemberRole",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "Community this assignment belongs to"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Global MIST user ID"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Denormalized display name"
+    },
+    "role_id": {
+      "type": "string",
+      "description": "References CommunityRoleDefinition.id"
+    },
+    "role_slug": {
+      "type": "string"
+    },
+    "role_name": {
+      "type": "string",
+      "description": "Denormalized for display"
+    },
+    "role_color": {
+      "type": "string"
+    },
+    "role_icon": {
+      "type": "string"
+    },
+    "role_position": {
+      "type": "number",
+      "description": "Denormalized role position for hierarchy sort"
+    },
+    "is_primary": {
+      "type": "boolean",
+      "default": false,
+      "description": "Primary role determines display color / badge / hierarchy"
+    },
+    "assigned_by": {
+      "type": "string"
+    },
+    "assigned_by_email": {
+      "type": "string"
+    },
+    "assigned_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "community_id",
+    "user_id",
+    "role_id",
+    "role_slug"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

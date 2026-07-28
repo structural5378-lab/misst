@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { ChevronDown, Crown } from 'lucide-react';
+import { ChevronDown, Crown, Users } from 'lucide-react';
 import { format } from 'date-fns';
+import MemberRoleManager from './MemberRoleManager';
 
 const ROLES = [
   { value: 'member', label: 'Member' },
@@ -28,6 +29,7 @@ const STATUS_BADGE = {
 export default function CommunityMemberRow({ member, communityId, onChanged, onOpenProfile }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [showRoles, setShowRoles] = useState(false);
   const isOwner = member.role === 'community_owner';
 
   const act = async (action, extra = {}) => {
@@ -95,21 +97,10 @@ export default function CommunityMemberRow({ member, communityId, onChanged, onO
       {open && !isOwner && (
         <div className="border-t border-border p-3 space-y-3 bg-secondary/20">
           <div>
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">Role</p>
-            <div className="flex flex-wrap gap-1.5">
-              {ROLES.map((r) => (
-                <button
-                  key={r.value}
-                  disabled={busy}
-                  onClick={() => setRole(r.value)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
-                    member.role === r.value ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary/40'
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1.5">Roles</p>
+            <button disabled={busy} onClick={() => setShowRoles(true)} className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary/15 text-primary border border-primary/30">
+              <Users className="w-3.5 h-3.5" /> Manage Roles
+            </button>
           </div>
 
           <div>
@@ -150,6 +141,10 @@ export default function CommunityMemberRow({ member, communityId, onChanged, onO
             </div>
           </div>
         </div>
+      )}
+
+      {showRoles && (
+        <MemberRoleManager member={member} onClose={() => setShowRoles(false)} onSaved={onChanged} />
       )}
     </div>
   );

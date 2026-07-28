@@ -1,0 +1,101 @@
+{
+  "name": "CommunityRoleDefinition",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "Community this role belongs to"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-safe unique key within the community e.g. moderator"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name"
+    },
+    "description": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string",
+      "default": "#94a3b8",
+      "description": "Hex color for badge / name accent"
+    },
+    "icon": {
+      "type": "string",
+      "default": "Shield",
+      "description": "lucide-react icon name"
+    },
+    "position": {
+      "type": "number",
+      "default": 100,
+      "description": "Hierarchy order \u2014 lower = higher rank"
+    },
+    "permissions": {
+      "type": "string",
+      "description": "JSON array of permission keys; '*' = all community permissions"
+    },
+    "is_system": {
+      "type": "boolean",
+      "default": false,
+      "description": "Protected default role (seeded for every community)"
+    },
+    "is_protected": {
+      "type": "boolean",
+      "default": false,
+      "description": "Cannot be deleted (Owner, Member)"
+    },
+    "mentionable": {
+      "type": "boolean",
+      "default": false
+    },
+    "hoisted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Display separately / pinned in member lists"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_by_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "community_id",
+    "slug",
+    "name",
+    "position"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { Shield, ChevronLeft, Inbox, LayoutDashboard, Users, Settings, History, Trash2, Activity } from 'lucide-react';
+import { Shield, ChevronLeft, Inbox, LayoutDashboard, Users, Settings, History, Trash2, Activity, ShieldCheck } from 'lucide-react';
 import CommunityAdminOverview from '@/components/community/CommunityAdminOverview';
 import CommunityMemberManager from '@/components/community/CommunityMemberManager';
 import CommunitySettingsEditor from '@/components/community/CommunitySettingsEditor';
@@ -9,6 +9,7 @@ import CommunityAuditLogViewer from '@/components/community/CommunityAuditLogVie
 import ModerationDashboard from '@/components/community/ModerationDashboard';
 import DeletedMessagesViewer from '@/components/community/DeletedMessagesViewer';
 import ModerationAnalytics from '@/components/community/ModerationAnalytics';
+import CommunityRoleManager from '@/components/community/rbac/CommunityRoleManager';
 
 export default function CommunityAdmin() {
   const { community, hasPermission } = useCommunity();
@@ -32,6 +33,7 @@ export default function CommunityAdmin() {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'members', label: 'Members', icon: Users },
+    { id: 'roles', label: 'Roles', icon: ShieldCheck },
     { id: 'moderation', label: 'Moderation', icon: Shield },
     { id: 'analytics', label: 'Analytics', icon: Activity },
     { id: 'deleted', label: 'Deleted', icon: Trash2 },
@@ -76,6 +78,7 @@ export default function CommunityAdmin() {
 
       {tab === 'overview' && <CommunityAdminOverview />}
       {tab === 'members' && <CommunityMemberManager />}
+      {tab === 'roles' && <CommunityRoleManager community={community} />}
       {tab === 'moderation' && <ModerationDashboard community={community} />}
       {tab === 'analytics' && <ModerationAnalytics community={community} />}
       {tab === 'deleted' && <DeletedMessagesViewer community={community} />}

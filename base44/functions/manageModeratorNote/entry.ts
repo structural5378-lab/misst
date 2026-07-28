@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { resolveCommunityAuth } from '../../shared/communityAuth.ts';
 
 // manageModeratorNote — internal staff-only notes attached to community member
 // profiles. Actions: list, create, update, delete. Notes are NEVER exposed to
@@ -21,16 +22,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'action and community_id are required' }, { status: 400 });
     }
 
-    const mine = await base44.asServiceRole.entities.CommunityMember.filter({ user_id: user.id, community_id, is_active: true });
-    const membership = (mine && mine[0]) || null;
-    const isPlatformAdmin = user.role === 'admin';
-    let platformMod = false;
-    try {
-      const pr = await base44.asServiceRole.entities.PlatformRole.filter({ user_id: user.id, is_active: true });
-      platformMod = (pr || []).some(r => r.role === 'platform_owner' || r.role === 'platform_admin');
-    } catch {}
-    const isMod = membership && MOD_ROLES.includes(membership.role);
-    if (!isMod && !isPlatformAdmin && !platformMod) {
+    const { membership, ok } = await resolveCommunityAuth(base44, user, community_id, { requireAdmin: false });
+    if (!ok) {
       return Response.json({ error: 'Access denied: moderator role required' }, { status: 403 });
     }
 

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { resolveCallerPerms } from '../../shared/rbac.ts';
+import { unionPermissions, safeParseArr } from '../../shared/communityRbac.ts';
 
 // Permission resolver — platform permissions now come from the centralized RBAC
 // engine (single source of truth). Community-scoped permissions remain derived
@@ -121,6 +122,23 @@ Deno.serve(async (req) => {
         result.is_member = membership.role === 'member';
         result.is_guest = membership.role === 'guest';
         result.community_permissions = COMMUNITY_PERMISSIONS[membership.role] || [];
+
+        // Flexible RBAC: union custom-role permissions when the member has
+        // CommunityMemberRole assignments. Falls back to the legacy map above
+        // for members not yet migrated, so nothing regresses.
+        result.community_roles = [];
+        result.highest_role = null;
+        try {
+          const assigns = await base44.asServiceRole.entities.CommunityMemberRole.filter({ community_id: community.id, user_id: user.id }, 'role_position', 50);
+          if (assigns && assigns.length) {
+            const roleDefs = await base44.asServiceRole.entities.CommunityRoleDefinition.filter({ community_id: community.id });
+            const byId: any = {}; (roleDefs || []).forEach((r: any) => { byId[r.id] = r; });
+            const permArrays = assigns.map((a: any) => byId[a.role_id] ? safeParseArr(byId[a.role_id].permissions) : []);
+            result.community_permissions = unionPermissions(permArrays);
+            result.community_roles = assigns.map((a: any) => a.role_slug).filter(Boolean);
+            result.highest_role = (assigns.slice().sort((a: any, b: any) => (a.role_position || 999) - (b.role_position || 999))[0] || {}).role_slug || null;
+          }
+        } catch { /* RBAC optional — keep legacy permissions */ }
       } else {
         result.community_role = null;
         result.is_guest = community.visibility === 'public';
