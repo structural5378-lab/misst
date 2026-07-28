@@ -81,3 +81,14 @@ export function validateAvatarFile(file) {
   if (!typeOk && !extOk) return { ok: false, error: "Unsupported format. Use JPG, PNG, WEBP, or HEIC." };
   return { ok: true };
 }
+
+// ── Banner validation ──
+const BANNER_MAX_BYTES = 15 * 1024 * 1024;
+export function validateBannerFile(file) {
+  if (!file) return { ok: false, error: "No file selected." };
+  if (file.size > BANNER_MAX_BYTES) return { ok: false, error: "File too large. Maximum size is 15 MB." };
+  const typeOk = file.type && AVATAR_TYPES.includes(file.type.toLowerCase());
+  const extOk = AVATAR_EXTS.some((ext) => (file.name || "").toLowerCase().endsWith(ext));
+  if (!typeOk && !extOk) return { ok: false, error: "Unsupported format. Use JPG, PNG, WEBP, or HEIC." };
+  return { ok: true };
+}
