@@ -6,6 +6,17 @@ import ReactionPickerV2 from "./ReactionPickerV2";
 import { detectCard } from "@/lib/messageCards";
 import MessageCardRouter from "./cards/MessageCardRouter";
 
+// Renders message body with URLs linkified into subtle inline links.
+function renderBody(body) {
+  if (!body) return null;
+  const parts = String(body).split(/(https?:\/\/[^\s]+)/g);
+  return parts.map((p, i) =>
+    /^https?:\/\//.test(p)
+      ? <a key={i} href={p} target="_blank" rel="noreferrer" className="mist-link" onClick={(e) => e.stopPropagation()}>{p}</a>
+      : <span key={i}>{p}</span>
+  );
+}
+
 // MessageBubbleV2 — premium message rendering with grouping, reactions,
 // reply quotes, delivery/read receipts, edit/delete, and a context menu
 // triggered by right-click (desktop) or long-press (mobile).
@@ -134,13 +145,13 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
                 );
               }
               return (
-                <div className={`px-3.5 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${
+                <div className={`px-3.5 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words shadow-sm ${
                   isMine ? "bg-primary text-primary-foreground rounded-br-md"
                   : message.is_announcement ? "bg-amber-500/15 text-foreground border border-amber-500/40 rounded-bl-md"
                   : message.is_official ? "bg-violet-500/10 text-foreground border border-violet-500/40 rounded-bl-md"
                   : "bg-secondary text-secondary-foreground rounded-bl-md"
                 }`}>
-                  {message.body}
+                  {renderBody(message.body)}
                 </div>
               );
             })()}
@@ -156,7 +167,7 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
                 <button
                   key={emoji}
                   onClick={selectMode ? undefined : () => onReact?.(message.id, emoji)}
-                  className={`reaction-pop flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border ${mine ? "border-primary bg-primary/15 text-primary" : "border-border bg-secondary/60 text-secondary-foreground"}`}
+                  className={`mist-reaction-burst flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border ${mine ? "border-primary bg-primary/15 text-primary" : "border-border bg-secondary/60 text-secondary-foreground"}`}
                 >
                   <span>{emoji}</span>
                   {users.length > 1 && <span className="text-[10px] font-semibold">{users.length}</span>}

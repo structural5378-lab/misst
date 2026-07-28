@@ -604,3 +604,71 @@ body.amoled-mode { background: #000; }
 
 @keyframes mist-reaction-burst { 0% { transform: scale(0) rotate(-20deg); } 60% { transform: scale(1.35) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
 .mist-reaction-burst { animation: mist-reaction-burst 0.32s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ─── MISST Messaging — Unified Polish & Motion System ─── */
+.mist-hub { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* Premium, consistent scrollbars */
+.mist-hub ::-webkit-scrollbar { width: 8px; height: 8px; }
+.mist-hub ::-webkit-scrollbar-track { background: transparent; }
+.mist-hub ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 9999px; border: 2px solid transparent; background-clip: padding-box; }
+.mist-hub ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.45); background-clip: padding-box; }
+.mist-hub * { scrollbar-width: thin; scrollbar-color: hsl(var(--border)) transparent; }
+
+/* Unified motion: every interactive element transitions smoothly and presses in */
+.mist-hub button { transition: transform 0.12s cubic-bezier(0.32,0.72,0,1), background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease, box-shadow 0.2s ease, filter 0.16s ease; }
+.mist-hub button:active:not(:disabled) { transform: scale(0.96); }
+.mist-hub a { transition: color 0.15s ease, filter 0.15s ease, transform 0.12s ease; }
+.mist-hub a:active { transform: scale(0.98); }
+
+/* Glass layer separation on the side panels */
+.mist-hub aside[class*="backdrop-blur"] { box-shadow: inset 1px 0 0 hsl(var(--foreground) / 0.04), inset -1px 0 0 hsl(var(--foreground) / 0.03); }
+.mist-hub .mist-panel { background: hsl(var(--card) / 0.55); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+
+/* Natural message entrance */
+.mist-hub .msg-in { animation: mist-msg-in 0.22s ease-out both; }
+@keyframes mist-msg-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Card hover lift (desktop only) */
+@media (hover: hover) {
+  .mist-hub .msg-card-in { transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease; }
+  .mist-hub .msg-card-in:hover { transform: translateY(-2px); filter: brightness(1.03); }
+  .mist-hub .msg-in:hover { filter: brightness(1.04); }
+}
+
+/* Reaction bounce */
+.mist-hub .mist-reaction-burst { animation: mist-reaction-burst 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+/* Smooth typing dots */
+.mist-hub .typing-dot { width: 6px; height: 6px; border-radius: 9999px; background: hsl(var(--muted-foreground)); animation: mist-typing 1.2s infinite ease-in-out; }
+.mist-hub .typing-dot:nth-child(2) { animation-delay: 0.18s; }
+.mist-hub .typing-dot:nth-child(3) { animation-delay: 0.36s; }
+@keyframes mist-typing { 0%,60%,100% { opacity: 0.25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+
+/* Refined unread badge pulse */
+.mist-hub .badge-pulse { animation: mist-badge-pulse 2.2s ease-in-out infinite; }
+@keyframes mist-badge-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+
+/* Composer focus glow + send button */
+.mist-hub textarea:focus { box-shadow: 0 0 0 3px hsl(var(--ring) / 0.22), 0 0 0 1px hsl(var(--ring) / 0.55); }
+.mist-send { box-shadow: 0 4px 14px hsl(var(--primary) / 0.3); transition: transform 0.16s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s ease, background-color 0.15s ease; }
+.mist-send:hover:not(:disabled) { transform: translateY(-1px) scale(1.04); box-shadow: 0 6px 20px hsl(var(--primary) / 0.42); }
+.mist-send:active:not(:disabled) { transform: scale(0.94); }
+
+/* Drawer glide — fade + slide together */
+.mist-hub .sheet-up { animation: mist-sheet-up 0.34s cubic-bezier(0.32,0.72,0,1) both; }
+@keyframes mist-sheet-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.mist-hub .sheet-fade { animation: mist-sheet-fade 0.16s ease-out both; }
+@keyframes mist-sheet-fade { from { opacity: 0; transform: translateY(-4px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+/* Linkified links inside messages */
+.mist-link { color: hsl(var(--accent)); text-decoration: none; border-bottom: 1px solid hsl(var(--accent) / 0.4); transition: color 0.15s ease, border-color 0.15s ease; }
+.mist-link:hover { color: hsl(var(--accent) / 0.85); border-bottom-color: hsl(var(--accent)); }
+
+/* Premium empty-state orb glow */
+.mist-hub .mist-empty-orb { background: radial-gradient(circle at 50% 35%, hsl(var(--accent) / 0.28), transparent 70%); }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .mist-hub *, .mist-hub *::before, .mist-hub *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

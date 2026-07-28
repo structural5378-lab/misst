@@ -112,7 +112,7 @@ export default function MessageComposerV2({ onSend, onTyping, disabled, placehol
         <button
           onClick={submit}
           disabled={disabled || !value.trim()}
-          className={`w-11 h-11 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors ${sending ? "send-pop" : ""}`}
+          className={`mist-send w-11 h-11 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 ${sending ? "send-pop" : ""}`}
           aria-label="Send message"
         >
           <Send className="w-5 h-5" />
