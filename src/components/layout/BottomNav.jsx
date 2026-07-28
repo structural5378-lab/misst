@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, MessageSquare, MessageCircle, Plus, Shield } from "lucide-react";
+import { Home, MessageSquare, MessageCircle, Plus, Shield, Radio } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { useNetControlAccess } from "@/hooks/useNetControlAccess";
 import AdminBadge from "@/components/admin/AdminBadge";
 
 const navItems = [
@@ -17,9 +18,11 @@ export default function BottomNav() {
   const location = useLocation();
   const { user } = useAuth();
   const { isAdmin } = useAdminAccess();
+  const { canControl } = useNetControlAccess();
 
   const items = [
     ...navItems,
+    ...(canControl ? [{ icon: Radio, label: "Mission", path: "/net-control", isMission: true }] : []),
     ...(isAdmin ? [{ icon: Shield, label: "Admin", path: "/platform/admin", isAdmin: true }] : []),
   ];
 
@@ -90,7 +93,8 @@ export default function BottomNav() {
         {items.map(({ icon: Icon, label, path }) => {
           const isActive = path === "/"
             ? location.pathname === "/"
-            : location.pathname === path || location.pathname.startsWith(path + "/");
+            : location.pathname === path || location.pathname.startsWith(path + "/") ||
+              (label === "Mission" && /\/nets\/[^/]+\/(control|ops|display|wallboard)/.test(location.pathname));
           const isAdd = label === "Add";
           const isChat = label === "Chat";
           const isAdminItem = label === "Admin";
