@@ -26,7 +26,7 @@ function StatusIcon({ status, onRetry }) {
   return null;
 }
 
-export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onRetry, onEdit, onDelete, onReact, onReply, onReplyJump, onPin, pinned, canModerate, onAnnounce, onSticky, onMuteUser, onSuspendUser, onKickUser, onBanUser }) {
+export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onRetry, onEdit, onDelete, onReact, onReply, onReplyJump, onPin, pinned, canModerate, onAnnounce, onSticky, onMuteUser, onSuspendUser, onKickUser, onBanUser, selectMode, selected, onToggleSelect }) {
   const [menu, setMenu] = useState(null); // {x,y}
   const [pickerOpen, setPickerOpen] = useState(false);
   const [hover, setHover] = useState(false);
@@ -73,16 +73,22 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
 
   return (
     <div
-      className={`group relative flex items-end gap-2 px-3 my-0.5 msg-in select-none ${isMine ? "flex-row-reverse" : "flex-row"}`}
+      className={`group relative flex items-end gap-2 px-3 my-0.5 msg-in select-none ${isMine ? "flex-row-reverse" : "flex-row"} ${selectMode ? "cursor-pointer" : ""} ${selectMode && selected ? "bg-primary/10 rounded-lg" : ""}`}
       style={{ WebkitTouchCallout: "none" }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => { setHover(false); setPickerOpen(false); }}
-      onContextMenu={onContextMenu}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-      onTouchMove={onTouchMove}
+      onContextMenu={selectMode ? (e) => e.preventDefault() : onContextMenu}
+      onTouchStart={selectMode ? undefined : onTouchStart}
+      onTouchEnd={selectMode ? undefined : onTouchEnd}
+      onTouchMove={selectMode ? undefined : onTouchMove}
+      onClick={selectMode ? (e) => { e.stopPropagation(); onToggleSelect?.(message.id); } : undefined}
       data-msg-id={message.id || message.client_temp_id}
     >
+      {selectMode && (
+        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 mb-1 ${selected ? "bg-primary border-primary" : "border-muted-foreground/40"}`}>
+          {selected && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
+        </div>
+      )}
       {!isMine && (showAvatar ? <Avatar name={message.sender_name} avatar={message.sender_avatar} /> : <div className="w-8" />)}
       <div className={`max-w-[78%] flex flex-col ${isMine ? "items-end" : "items-start"}`}>
         {!isMine && showAvatar && (
@@ -90,7 +96,7 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
         )}
         {message.reply_to_preview && (
           <button
-            onClick={() => onReplyJump?.(message.reply_to_message_id)}
+            onClick={selectMode ? undefined : () => onReplyJump?.(message.reply_to_message_id)}
             className={`text-[11px] px-2.5 py-1 rounded-lg mb-0.5 border-l-2 max-w-full truncate text-left ${isMine ? "border-primary-foreground/50 bg-primary/20" : "border-primary/50 bg-primary/10"} text-muted-foreground hover:brightness-125`}
           >
             <CornerUpRight className="w-3 h-3 inline mr-1" />{message.reply_to_preview}
@@ -135,7 +141,7 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
               return (
                 <button
                   key={emoji}
-                  onClick={() => onReact?.(message.id, emoji)}
+                  onClick={selectMode ? undefined : () => onReact?.(message.id, emoji)}
                   className={`reaction-pop flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border ${mine ? "border-primary bg-primary/15 text-primary" : "border-border bg-secondary/60 text-secondary-foreground"}`}
                 >
                   <span>{emoji}</span>

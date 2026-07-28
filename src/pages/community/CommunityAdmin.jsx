@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { Shield, ChevronLeft, Inbox, LayoutDashboard, Users, Settings, History } from 'lucide-react';
+import { Shield, ChevronLeft, Inbox, LayoutDashboard, Users, Settings, History, Trash2 } from 'lucide-react';
 import CommunityAdminOverview from '@/components/community/CommunityAdminOverview';
 import CommunityMemberManager from '@/components/community/CommunityMemberManager';
 import CommunitySettingsEditor from '@/components/community/CommunitySettingsEditor';
 import CommunityAuditLogViewer from '@/components/community/CommunityAuditLogViewer';
+import ModerationDashboard from '@/components/community/ModerationDashboard';
+import DeletedMessagesViewer from '@/components/community/DeletedMessagesViewer';
 
 export default function CommunityAdmin() {
   const { community, hasPermission } = useCommunity();
@@ -29,6 +31,8 @@ export default function CommunityAdmin() {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'members', label: 'Members', icon: Users },
+    { id: 'moderation', label: 'Moderation', icon: Shield },
+    { id: 'deleted', label: 'Deleted', icon: Trash2 },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'audit', label: 'Audit Log', icon: History },
   ];
@@ -51,14 +55,14 @@ export default function CommunityAdmin() {
         </Link>
       </div>
 
-      <div className="flex gap-1 p-1 rounded-xl bg-card border border-border">
+      <div className="flex gap-1 p-1 rounded-xl bg-card border border-border overflow-x-auto scrollbar-hide">
         {tabs.map((t) => {
           const Icon = t.icon;
           return (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-semibold transition-colors ${
+              className={`shrink-0 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-[11px] font-semibold transition-colors ${
                 tab === t.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -70,6 +74,8 @@ export default function CommunityAdmin() {
 
       {tab === 'overview' && <CommunityAdminOverview />}
       {tab === 'members' && <CommunityMemberManager />}
+      {tab === 'moderation' && <ModerationDashboard community={community} />}
+      {tab === 'deleted' && <DeletedMessagesViewer community={community} />}
       {tab === 'settings' && <CommunitySettingsEditor />}
       {tab === 'audit' && <CommunityAuditLogViewer />}
     </div>

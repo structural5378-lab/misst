@@ -11,14 +11,27 @@
     },
     "admin_id": {
       "type": "string",
-      "description": "User ID of the admin who performed the action"
+      "description": "User ID of the admin/moderator who performed the action"
     },
     "admin_name": {
       "type": "string"
     },
     "action": {
       "type": "string",
-      "description": "Action slug: approve, reject, ban, unban, suspend, unsuspend, mute, unmute, kick, set_role:<role>"
+      "description": "Action slug: approve, reject, ban, unban, suspend, unsuspend, mute, unmute, kick, set_role:<role>, message_deleted, message_pinned, message_announced, message_sticky, message_official, messages_bulk_deleted, messages_bulk_<field>_set/unset, room_cleared, room_locked, room_unlocked, slow_mode_enabled/disabled, room_updated"
+    },
+    "action_category": {
+      "type": "string",
+      "enum": [
+        "membership",
+        "moderation",
+        "chat",
+        "roles",
+        "settings",
+        "other"
+      ],
+      "default": "moderation",
+      "description": "Broad category for filtering/dashboard grouping"
     },
     "target_user_id": {
       "type": "string"
@@ -26,8 +39,39 @@
     "target_user_name": {
       "type": "string"
     },
+    "target_message_id": {
+      "type": "string",
+      "description": "Message ID affected (for chat-moderation actions)"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Room ID affected (for chat-moderation / room actions)"
+    },
+    "room_name": {
+      "type": "string"
+    },
     "reason": {
       "type": "string"
+    },
+    "duration": {
+      "type": "string",
+      "description": "Human-readable duration for time-bounded actions (e.g. mute 1h)"
+    },
+    "previous_state": {
+      "type": "string",
+      "description": "JSON or short label of the state before the action"
+    },
+    "new_state": {
+      "type": "string",
+      "description": "JSON or short label of the state after the action"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "Caller IP (admin views only)"
+    },
+    "device_info": {
+      "type": "string",
+      "description": "Caller user-agent / device (optional)"
     }
   },
   "required": [

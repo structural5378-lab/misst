@@ -45,6 +45,8 @@ export default function CommunityChatV2() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const [highlightId, setHighlightId] = useState(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState(() => new Set());
 
   // Load community + active members + my role.
   useEffect(() => {
@@ -204,6 +206,40 @@ export default function CommunityChatV2() {
     if (found) scrollToMessage(found.id);
   };
 
+  // ---- Bulk moderation (Module 1) ----
+  const toggleSelect = (id) => setSelected((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const selectableIds = () => msgs.messages.filter((m) => m.id && !String(m.id).startsWith("tmp_")).map((m) => m.id);
+  const selectAll = () => setSelected(new Set(selectableIds()));
+  const deselectAll = () => setSelected(new Set());
+  const exitSelectMode = () => { setSelectMode(false); setSelected(new Set()); };
+
+  const runBulk = async (fn, label) => {
+    const ids = [...selected];
+    if (!ids.length) return;
+    try {
+      await fn(ids);
+      toast({ title: label, description: `${ids.length} message(s) updated.` });
+      exitSelectMode();
+    } catch (e) {
+      toast({ title: "Bulk action failed", description: e?.response?.data?.error || e?.message, variant: "destructive" });
+    }
+  };
+  const bulkDelete = () => {
+    if (!selected.size) return;
+    if (!window.confirm(`Delete ${selected.size} selected message(s)? This action is logged.`)) return;
+    runBulk((ids) => msgs.bulkDelete(ids, "bulk moderation"), "Deleted");
+  };
+  const bulkPin = () => runBulk((ids) => msgs.bulkSet(ids, "pinned", true), "Pinned");
+  const bulkUnpin = () => runBulk((ids) => msgs.bulkSet(ids, "pinned", false), "Unpinned");
+  const bulkAnnounce = () => runBulk((ids) => msgs.bulkSet(ids, "is_announcement", true), "Marked as Announcement");
+  const bulkUnannounce = () => runBulk((ids) => msgs.bulkSet(ids, "is_announcement", false), "Removed Announcement");
+  const bulkSticky = () => runBulk((ids) => msgs.bulkSet(ids, "is_sticky", true), "Sticky set");
+  const bulkUnsticky = () => runBulk((ids) => msgs.bulkSet(ids, "is_sticky", false), "Sticky removed");
+
   if (!community) {
     return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   }
@@ -265,6 +301,14 @@ export default function CommunityChatV2() {
                 </form>
               )}
 
+              {canModerate && !selectMode && (
+                <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border bg-card/30">
+                  <button onClick={() => setSelectMode(true)} className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-secondary/60 text-secondary-foreground hover:bg-secondary">
+                    Select Messages
+                  </button>
+                </div>
+              )}
+
               <div ref={msgs.scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto py-3">
                 {msgs.loadingMore && <div className="flex justify-center py-2"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}
                 {msgs.loading ? (
@@ -303,6 +347,9 @@ export default function CommunityChatV2() {
                           onSuspendUser={canModerate ? onSuspendUser : undefined}
                           onKickUser={canModerate ? onKickUser : undefined}
                           onBanUser={canModerate ? onBanUser : undefined}
+                          selectMode={selectMode}
+                          selected={selected.has(m.id)}
+                          onToggleSelect={toggleSelect}
                         />
                       </div>
                     );
@@ -310,35 +357,57 @@ export default function CommunityChatV2() {
                 )}
               </div>
 
-              {meMuted && (
-                <div className="border-t border-border bg-amber-500/10 px-4 py-2.5 flex items-center justify-center gap-2 text-xs text-amber-400">
-                  <VolumeX className="w-4 h-4 shrink-0" />
-                  <span>{myMember?.muted_until
-                    ? `You have been muted by the community administration until ${new Date(myMember.muted_until).toLocaleString()}.`
-                    : "You have been permanently muted in this community."}</span>
+              {selectMode ? (
+                <div className="border-t border-border bg-card/50 px-3 py-2 mist-safe-bottom">
+                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+                    <span className="text-xs font-semibold text-foreground shrink-0 mr-1">{selected.size} selected</span>
+                    <button onClick={selectAll} className="text-[11px] px-2 py-1 rounded-lg bg-secondary/60 hover:bg-secondary shrink-0">Select All</button>
+                    <button onClick={deselectAll} className="text-[11px] px-2 py-1 rounded-lg bg-secondary/60 hover:bg-secondary shrink-0">Deselect</button>
+                    <div className="w-px h-5 bg-border shrink-0" />
+                    <button onClick={bulkDelete} className="text-[11px] px-2 py-1 rounded-lg bg-destructive/15 text-destructive hover:bg-destructive/25 shrink-0">Delete</button>
+                    <button onClick={bulkPin} className="text-[11px] px-2 py-1 rounded-lg bg-primary/15 text-primary hover:bg-primary/25 shrink-0">Pin</button>
+                    <button onClick={bulkUnpin} className="text-[11px] px-2 py-1 rounded-lg bg-secondary/60 hover:bg-secondary shrink-0">Unpin</button>
+                    <button onClick={bulkAnnounce} className="text-[11px] px-2 py-1 rounded-lg bg-amber-500/15 text-amber-500 hover:bg-amber-500/25 shrink-0">Announce</button>
+                    <button onClick={bulkUnannounce} className="text-[11px] px-2 py-1 rounded-lg bg-secondary/60 hover:bg-secondary shrink-0">Unannounce</button>
+                    <button onClick={bulkSticky} className="text-[11px] px-2 py-1 rounded-lg bg-primary/15 text-primary hover:bg-primary/25 shrink-0">Sticky</button>
+                    <button onClick={bulkUnsticky} className="text-[11px] px-2 py-1 rounded-lg bg-secondary/60 hover:bg-secondary shrink-0">Unsticky</button>
+                    <div className="flex-1 min-w-1" />
+                    <button onClick={exitSelectMode} className="text-[11px] px-2.5 py-1 rounded-lg bg-primary text-primary-foreground font-medium shrink-0">Done</button>
+                  </div>
                 </div>
-              )}
-              {canPost ? (
-                <>
-                  {typingNames.length > 0 && (
-                    <div className="px-4 pb-1 text-[11px] text-muted-foreground italic">{typingNames.join(", ")} typing…</div>
-                  )}
-                  <MessageComposerV2
-                    onSend={handleSend}
-                    placeholder={`Message #${activeRoom.name}`}
-                    replyTo={replyTo}
-                    onCancelReply={() => setReplyTo(null)}
-                    onTyping={(v) => presence.setTyping(`room:${activeRoom.id}`, v)}
-                  />
-                </>
               ) : (
-                <div className="border-t border-border bg-background/60 px-4 py-3 text-center text-sm text-muted-foreground">
-                  {meMuted ? "You are muted — read-only until the mute is lifted."
-                    : activeRoom.type === "readonly" ? "This room is read-only."
-                    : activeRoom.type === "admin" && !isAdmin ? "Only admins can post here."
-                    : activeRoom.is_locked ? "This room is locked."
-                    : "You cannot post in this room."}
-                </div>
+                <>
+                  {meMuted && (
+                    <div className="border-t border-border bg-amber-500/10 px-4 py-2.5 flex items-center justify-center gap-2 text-xs text-amber-400">
+                      <VolumeX className="w-4 h-4 shrink-0" />
+                      <span>{myMember?.muted_until
+                        ? `You have been muted by the community administration until ${new Date(myMember.muted_until).toLocaleString()}.`
+                        : "You have been permanently muted in this community."}</span>
+                    </div>
+                  )}
+                  {canPost ? (
+                    <>
+                      {typingNames.length > 0 && (
+                        <div className="px-4 pb-1 text-[11px] text-muted-foreground italic">{typingNames.join(", ")} typing…</div>
+                      )}
+                      <MessageComposerV2
+                        onSend={handleSend}
+                        placeholder={`Message #${activeRoom.name}`}
+                        replyTo={replyTo}
+                        onCancelReply={() => setReplyTo(null)}
+                        onTyping={(v) => presence.setTyping(`room:${activeRoom.id}`, v)}
+                      />
+                    </>
+                  ) : (
+                    <div className="border-t border-border bg-background/60 px-4 py-3 text-center text-sm text-muted-foreground">
+                      {meMuted ? "You are muted — read-only until the mute is lifted."
+                        : activeRoom.type === "readonly" ? "This room is read-only."
+                        : activeRoom.type === "admin" && !isAdmin ? "Only admins can post here."
+                        : activeRoom.is_locked ? "This room is locked."
+                        : "You cannot post in this room."}
+                    </div>
+                  )}
+                </>
               )}
             </>
           ) : (

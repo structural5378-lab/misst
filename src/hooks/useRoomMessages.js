@@ -168,8 +168,10 @@ export function useRoomMessages({ roomId, user, community }) {
   const official = useCallback((message) => moderate(message.id, "official", { pinned: !message.is_official }), [moderate]);
   const bulkDelete = useCallback((messageIds, reason) =>
     base44.functions.invoke("roomMessageAction", { action: "bulk_delete", message_ids: messageIds, user_id: user.id, user_name: user.full_name || user.email, reason }), [user?.id]);
+  const bulkSet = useCallback((messageIds, field, value) =>
+    base44.functions.invoke("roomMessageAction", { action: "bulk_set", message_ids: messageIds, field, value, user_id: user.id, user_name: user.full_name || user.email }), [user?.id]);
   const clearHistory = useCallback((roomIdArg, reason) =>
     base44.functions.invoke("roomMessageAction", { action: "clear_history", room_id: roomIdArg, user_id: user.id, user_name: user.full_name || user.email, reason }), [user?.id]);
 
-  return { messages, loading, loadingMore, hasMore, atBottom, setAtBottom, loadMore, send, react, pin, editMessage, deleteMessage, announce, sticky, official, bulkDelete, clearHistory, scrollRef };
+  return { messages, loading, loadingMore, hasMore, atBottom, setAtBottom, loadMore, send, react, pin, editMessage, deleteMessage, announce, sticky, official, bulkDelete, bulkSet, clearHistory, scrollRef };
 }

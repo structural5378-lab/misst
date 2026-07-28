@@ -14,7 +14,7 @@ function categoryOf(action) {
   if (action === 'update_settings') return 'settings';
   if (['approve', 'reject'].includes(action)) return 'membership';
   if (['ban', 'unban', 'suspend', 'unsuspend', 'mute', 'unmute', 'kick'].includes(action)) return 'moderation';
-  if (action.startsWith('message_') || action.startsWith('room_') || action === 'messages_bulk_deleted' || action === 'room_cleared' || action === 'slow_mode_enabled' || action === 'slow_mode_disabled') return 'chat';
+  if (action.startsWith('message_') || action.startsWith('messages_bulk_') || action.startsWith('room_') || action === 'room_cleared' || action === 'slow_mode_enabled' || action === 'slow_mode_disabled') return 'chat';
   return 'other';
 }
 
