@@ -36,10 +36,7 @@ import Community from '@/pages/Community';
 import CommunityThread from '@/pages/CommunityThread';
 import CommunityNewThread from '@/pages/CommunityNewThread';
 import CommunityDesktopShell from '@/components/community/desktop/CommunityDesktopShell';
-import MissionControl from '@/pages/MissionControl';
-import MissionDisplay from '@/pages/MissionDisplay';
-import MissionOps from '@/pages/MissionOps';
-import MissionWallboard from '@/pages/MissionWallboard';
+import MissionControlV2 from '@/pages/MissionControlV2';
 import CreateNet from '@/pages/CreateNet';
 import CreateAlert from '@/pages/CreateAlert';
 import LiveCams from '@/pages/LiveCams';
@@ -57,7 +54,7 @@ import CommunityOnboarding from '@/pages/CommunityOnboarding';
 import MyCommunities from '@/pages/MyCommunities';
 import OnboardingProtectedRoute from '@/components/OnboardingProtectedRoute';
 import RadioScope from '@/pages/RadioScope';
-import NetControl from '@/pages/NetControl';
+// Net Control merged into MissionControlV2
 import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
 import Settings from '@/pages/Settings';
@@ -171,12 +168,12 @@ const AuthenticatedApp = () => {
           <Route path="/community/new" element={<CommunityNewThread />} />
         </Route>
         <Route path="/community/thread/:id" element={<CommunityThread />} />
-        <Route path="/nets/:netId/control" element={<MissionControl />} />
-        <Route path="/nets/:netId/display" element={<MissionDisplay />} />
-        <Route path="/nets/:netId/ops" element={<MissionOps />} />
-        <Route path="/nets/:netId/wallboard" element={<MissionWallboard />} />
+        <Route path="/nets/:netId/control" element={<MissionControlV2 />} />
+        <Route path="/nets/:netId/display" element={<MissionControlV2 />} />
+        <Route path="/nets/:netId/ops" element={<MissionControlV2 />} />
+        <Route path="/nets/:netId/wallboard" element={<MissionControlV2 />} />
         <Route path="/nets/create" element={<CreateNet />} />
-        <Route path="/net-control" element={<NetControl />} />
+        <Route path="/net-control" element={<MissionControlV2 />} />
 
         <Route path="/alerts/create" element={<CreateAlert />} />
         <Route path="/live-cams" element={<LiveCams />} />
