@@ -15,7 +15,7 @@ export default function NewMembersStrip({ threads = [] }) {
     .slice(0, 8);
 
   return (
-    <div className="px-4 pt-3">
+    <div className="px-4 lg:px-6 xl:px-8 pt-3">
       <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 mb-1.5 px-1">
         <UserPlus className="w-3.5 h-3.5" /> New Member Intros
       </div>

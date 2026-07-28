@@ -139,7 +139,7 @@ export default function Community() {
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
-        <div className="flex items-center justify-between h-14 px-4">
+        <div className="flex items-center justify-between h-14 px-4 lg:px-6 xl:px-8">
           {selectedCategory ? (
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <button onClick={() => setSelectedCategory(null)} className="text-primary p-1 -ml-1 shrink-0">
@@ -174,7 +174,7 @@ export default function Community() {
           </div>
         </div>
         {showSearch && (
-          <div className="flex items-center gap-2 px-4 pb-2">
+          <div className="flex items-center gap-2 px-4 lg:px-6 xl:px-8 pb-2">
             <Search className="w-4 h-4 text-muted-foreground" />
             <input
               value={searchQuery}
@@ -207,7 +207,7 @@ export default function Community() {
 
       {/* Pinned Announcements */}
       {!selectedCategory && !filter && pinnedAnnouncements.length > 0 && (
-        <div className="px-4 pt-2">
+        <div className="px-4 lg:px-6 xl:px-8 pt-2">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-400 mb-1.5 px-1">
             <Megaphone className="w-3.5 h-3.5" /> Announcements
           </div>
@@ -224,7 +224,7 @@ export default function Community() {
       {/* Category Grid (only on home, no filter/category selected) */}
       {!selectedCategory && !filter && (
         <div className="pt-3">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground mb-1 px-4">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground mb-1 px-4 lg:px-6 xl:px-8">
             <Pin className="w-3.5 h-3.5" /> Categories
           </div>
           {catLoading ? (
@@ -249,7 +249,7 @@ export default function Community() {
       {/* Tabs */}
       {!filter && (
         <div className="sticky top-14 z-30 bg-background/95 backdrop-blur-xl border-b border-border mt-3">
-          <div className="flex px-4 gap-1 py-2 overflow-x-auto scrollbar-hide">
+          <div className="flex px-4 lg:px-6 xl:px-8 gap-1 py-2 overflow-x-auto scrollbar-hide">
             {TABS.map(({ id, label, icon: TabIcon }) => (
               <button
                 key={id}
@@ -270,7 +270,7 @@ export default function Community() {
       )}
 
       {/* Sort controls */}
-      <div className="flex items-center gap-1.5 px-4 py-2 overflow-x-auto scrollbar-hide border-b border-border/40">
+      <div className="flex items-center gap-1.5 px-4 lg:px-6 xl:px-8 py-2 overflow-x-auto scrollbar-hide border-b border-border/40">
         <span className="text-[10px] text-muted-foreground font-medium shrink-0">Sort</span>
         {SORTS.map((s) => (
           <button

@@ -16,7 +16,7 @@ export default function QuickActions({ onSearch, isAdmin }) {
     actions.push({ label: "Mod Queue", icon: ShieldCheck, color: "text-rose-400 bg-rose-500/10 border-rose-500/20", onClick: () => navigate("/community?filter=moderation") });
   }
   return (
-    <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide px-4 py-2">
+    <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide px-4 lg:px-6 xl:px-8 py-2">
       {actions.map((a) => (
         <button
           key={a.label}

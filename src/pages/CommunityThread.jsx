@@ -265,7 +265,7 @@ export default function CommunityThread() {
         )}
       </div>
 
-      <div className="px-3 py-3 space-y-3">
+      <div className="px-3 lg:px-6 xl:px-10 py-3 space-y-3 max-w-[1280px] mx-auto w-full">
         <div ref={topRef} />
         <PostCard
           post={opPost}

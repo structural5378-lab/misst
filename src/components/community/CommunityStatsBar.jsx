@@ -22,7 +22,7 @@ export default function CommunityStatsBar({ threads = [] }) {
     { icon: Wifi, label: "Online", value: online.length },
   ];
   return (
-    <div className="grid grid-cols-4 gap-2 px-4 pt-3">
+    <div className="grid grid-cols-4 gap-2 px-4 lg:px-6 xl:px-8 pt-3">
       {items.map(({ icon: Icon, label, value }) => (
         <div key={label} className="flex flex-col items-center py-2.5 rounded-xl bg-card/60 border border-border/60">
           <Icon className="w-3.5 h-3.5 text-primary mb-1" />

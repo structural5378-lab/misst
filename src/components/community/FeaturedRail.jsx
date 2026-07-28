@@ -25,10 +25,10 @@ export default function FeaturedRail({ threads = [] }) {
 function Rail({ icon: Icon, title, items, accent, navigate }) {
   return (
     <div>
-      <div className={`flex items-center gap-1.5 text-xs font-semibold ${accent} mb-1.5 px-4`}>
+      <div className={`flex items-center gap-1.5 text-xs font-semibold ${accent} mb-1.5 px-4 lg:px-6 xl:px-8`}>
         <Icon className="w-3.5 h-3.5" /> {title}
       </div>
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 lg:px-6 xl:px-8">
         {items.map((t) => (
           <button
             key={t.id}

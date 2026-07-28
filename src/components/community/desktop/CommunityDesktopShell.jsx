@@ -21,14 +21,16 @@ export default function CommunityDesktopShell() {
   if (!isDesktop) return <Outlet />;
 
   return (
-    <div className="h-[100dvh] flex flex-col overflow-hidden bg-background">
-      <DesktopTopBar />
-      <div className="flex flex-1 min-h-0">
-        <DesktopLeftNav />
-        <main className="flex-1 min-w-0 overflow-y-auto">
-          <Outlet />
-        </main>
-        <DesktopRightRail />
+    <div className="h-[100dvh] flex flex-col items-center bg-background">
+      <div className="w-full max-w-[1800px] h-full flex flex-col overflow-hidden border-x border-border/40">
+        <DesktopTopBar />
+        <div className="flex flex-1 min-h-0">
+          <DesktopLeftNav />
+          <main className="flex-1 min-w-0 overflow-y-auto">
+            <Outlet />
+          </main>
+          <DesktopRightRail />
+        </div>
       </div>
     </div>
   );

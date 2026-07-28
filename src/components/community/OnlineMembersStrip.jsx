@@ -26,7 +26,7 @@ export default function OnlineMembersStrip({ communityId }) {
   const regularOnline = online.filter((o) => !o.is_staff);
 
   return (
-    <div className="px-4 pt-3 space-y-3">
+    <div className="px-4 lg:px-6 xl:px-8 pt-3 space-y-3">
       {staffOnline.length > 0 && (
         <Strip icon={ShieldCheck} title="Staff Online" members={staffOnline} accent="text-emerald-400" />
       )}
