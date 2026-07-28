@@ -11,6 +11,7 @@ import {
   FileText,
   Shield,
   ChevronRight,
+  Award,
 } from 'lucide-react';
 
 export default function CommunityHome() {
@@ -26,6 +27,7 @@ export default function CommunityHome() {
     { icon: MessageSquare, label: 'Forum', path: `/c/${slug}/forum`, perm: null },
     { icon: MessageCircle, label: 'Chat', path: `/c/${slug}/chat`, perm: null },
     { icon: Users, label: 'Members', path: `/c/${slug}/members`, perm: null },
+    { icon: Award, label: 'Staff', path: `/c/${slug}/staff`, perm: null },
     { icon: Calendar, label: 'Events', path: `/c/${slug}/events`, perm: null },
     { icon: Radio, label: 'Repeaters', path: `/c/${slug}/repeaters`, perm: null },
     { icon: ImageIcon, label: 'Gallery', path: `/c/${slug}/gallery`, perm: null },

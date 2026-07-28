@@ -123,6 +123,7 @@ import CommunityAdmin from '@/pages/community/CommunityAdmin';
 import CommunityMore from '@/pages/community/CommunityMore';
 import CommunityWelcome from '@/pages/community/CommunityWelcome';
 import CommunityJoinRequests from '@/pages/community/CommunityJoinRequests';
+import CommunityStaff from '@/pages/community/CommunityStaff';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -212,6 +213,7 @@ const AuthenticatedApp = () => {
           <Route path="/c/:slug/files" element={<CommunityFiles />} />
           <Route path="/c/:slug/admin" element={<CommunityAdmin />} />
           <Route path="/c/:slug/admin/requests" element={<CommunityJoinRequests />} />
+          <Route path="/c/:slug/staff" element={<CommunityStaff />} />
           <Route path="/c/:slug/welcome" element={<CommunityWelcome />} />
           <Route path="/c/:slug/more" element={<CommunityMore />} />
         </Route>

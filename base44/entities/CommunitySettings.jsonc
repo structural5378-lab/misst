@@ -91,6 +91,49 @@
     "email_enabled": {
       "type": "boolean",
       "default": true
+    },
+    "tags": {
+      "type": "string",
+      "description": "JSON array of community tags e.g. [\"gmrs\",\"radio\",\"florida\"]"
+    },
+    "welcome_message": {
+      "type": "string",
+      "description": "Message shown to new members when they join the community"
+    },
+    "community_rules": {
+      "type": "string",
+      "description": "Community rules text displayed to members"
+    },
+    "default_rooms": {
+      "type": "string",
+      "description": "JSON array of default chat room names for new members e.g. [\"general\",\"announcements\"]"
+    },
+    "default_member_role": {
+      "type": "string",
+      "enum": [
+        "member",
+        "trusted_member",
+        "net_control",
+        "moderator"
+      ],
+      "default": "member",
+      "description": "Role assigned to new members by default"
+    },
+    "net_schedule_defaults": {
+      "type": "string",
+      "description": "JSON of net schedule defaults e.g. {frequency: 462.675, time: '8:00 PM EST'}"
+    },
+    "website": {
+      "type": "string",
+      "description": "Community website URL"
+    },
+    "social_links": {
+      "type": "string",
+      "description": "JSON array of social profile URLs"
+    },
+    "contact_info": {
+      "type": "string",
+      "description": "Public contact information for the community"
     }
   },
   "required": [
