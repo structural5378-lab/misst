@@ -255,7 +255,7 @@ export default function RadioScope() {
         </div>
 
         {/* Stacked top overlay: header + stats + search */}
-        <div className="absolute top-0 left-0 right-0 z-30 flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <div className="absolute top-0 left-0 right-0 z-30 flex flex-col pt-[env(safe-area-inset-top)]">
           <header className="flex items-center gap-2 px-3 py-2.5 bg-black/70 backdrop-blur-md border-b border-cyan-500/10">
             <Link to="/" className="p-2 -m-1 text-cyan-400 shrink-0">
               <ArrowLeft className="w-6 h-6" />
