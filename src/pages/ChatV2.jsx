@@ -28,7 +28,7 @@ export default function ChatV2() {
   useEffect(() => { setActiveId(urlId || null); }, [urlId]);
 
   const presence = useChatV2Presence(mistUser);
-  const { conversations, loading } = useConversationsV2(mistUser?.id);
+  const { conversations, loading, upsertConversation } = useConversationsV2(mistUser?.id);
   const { community: activeCommunity } = useCommunity();
 
   const activeEntry = conversations.find((c) => c.conversation.id === activeId) || null;
@@ -47,8 +47,9 @@ export default function ChatV2() {
     navigate(`/chat-v2/${conv.id}`, { replace: true });
   };
 
-  const onStarted = (id) => {
-    navigate(`/chat-v2/${id}`, { replace: true });
+  const onStarted = (conversation, participant) => {
+    upsertConversation(conversation, participant);
+    navigate(`/chat-v2/${conversation.id}`, { replace: true });
   };
 
   const showWindow = !!activeId;

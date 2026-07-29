@@ -11,6 +11,7 @@ import HubContext from "@/components/messages/HubContext";
 import HubEmpty from "@/components/messages/HubEmpty";
 import MissionControlDock from "@/components/messages/MissionControlDock";
 import StartConversationDialog from "@/components/chatV2/StartConversationDialog";
+import { startDirectConversation } from "@/lib/chatV2/chatV2Api";
 
 // Messages — the unified MISST messaging hub.
 //
@@ -22,7 +23,7 @@ import StartConversationDialog from "@/components/chatV2/StartConversationDialog
 export default function Messages() {
   const { mistUser } = useMistUser();
   const presence = useChatV2Presence(mistUser);
-  const { conversations, loading: dmLoading } = useConversationsV2(mistUser?.id);
+  const { conversations, loading: dmLoading, upsertConversation } = useConversationsV2(mistUser?.id);
   const { community, communities, isLoading: commLoading } = useActiveCommunity();
 
   // sel = { type: 'dm' | 'channel', id, communityId }
@@ -59,9 +60,32 @@ export default function Messages() {
     if (sel?.type === "channel" && community && !rooms.find((r) => r.id === sel.id)) setSel(null);
   }, [rooms, community, sel]);
 
+  // Deep-link: ?new_dm=<userId> (from profile "Message" buttons) auto-starts a DM.
+  useEffect(() => {
+    if (!mistUser?.id) return;
+    const params = new URLSearchParams(window.location.search);
+    const newDm = params.get("new_dm");
+    if (!newDm) return;
+    (async () => {
+      try {
+        const { conversation, participant } = await startDirectConversation(newDm);
+        upsertConversation(conversation, participant);
+        setSel({ type: "dm", id: conversation.id, communityId: null });
+        setNavTab("dm");
+      } catch { /* silent — user lands on the hub */ }
+    })();
+    window.history.replaceState({}, "", "/messages");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mistUser?.id]);
+
   const selectDM = (conv) => setSel({ type: "dm", id: conv.id, communityId: null });
   const selectChannel = (roomId) => setSel({ type: "channel", id: roomId, communityId: community?.id });
-  const onStarted = (id) => { setShowStart(false); setSel({ type: "dm", id, communityId: null }); setNavTab("dm"); };
+  const onStarted = (conversation, participant) => {
+    setShowStart(false);
+    upsertConversation(conversation, participant);
+    setSel({ type: "dm", id: conversation.id, communityId: null });
+    setNavTab("dm");
+  };
   const onBack = () => { setSel(null); setShowContext(false); };
 
   const totalDMUnread = conversations.reduce((n, c) => n + (c.participant?.unread_count || 0), 0);

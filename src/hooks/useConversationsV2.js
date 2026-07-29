@@ -60,5 +60,19 @@ export function useConversationsV2(userId) {
     .filter((x) => x.conversation)
     .sort((a, b) => new Date(b.conversation.last_message_at || 0) - new Date(a.conversation.last_message_at || 0));
 
-  return { conversations: list, loading, reload: load };
+  // Optimistically insert a just-created conversation + the caller's participant
+  // row so the UI can open the thread immediately without waiting for the
+  // realtime subscription to deliver the new records.
+  const upsertConversation = useCallback((conv, myParticipant) => {
+    setConversations((prev) => ({ ...prev, [conv.id]: conv }));
+    if (myParticipant) {
+      setParticipants((prev) => {
+        const i = prev.findIndex((x) => x.id === myParticipant.id);
+        if (i >= 0) { const next = [...prev]; next[i] = myParticipant; return next; }
+        return [...prev, myParticipant];
+      });
+    }
+  }, []);
+
+  return { conversations: list, loading, reload: load, upsertConversation };
 }

@@ -11,6 +11,7 @@ export default function StartConversationDialog({ open, onClose, onStarted, me }
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [starting, setStarting] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!open) { setQ(""); setResults([]); }
@@ -32,14 +33,16 @@ export default function StartConversationDialog({ open, onClose, onStarted, me }
 
   const pick = async (u) => {
     setStarting(u.id);
+    setError(null);
     try {
-      const conv = await startDirectConversation(
-        { id: me.id, displayName: me.displayName, avatarUrl: me.avatarUrl },
-        { id: u.id, name: u.full_name || u.callsign || u.mybb_username || u.email, avatar: u.avatar_url }
-      );
-      onStarted?.(conv.id);
+      const { conversation, participant } = await startDirectConversation(u.id);
+      onStarted?.(conversation, participant);
       onClose?.();
-    } finally { setStarting(null); }
+    } catch (e) {
+      setError("Unable to start conversation. Please try again.");
+    } finally {
+      setStarting(null);
+    }
   };
 
   return (
@@ -67,16 +70,18 @@ export default function StartConversationDialog({ open, onClose, onStarted, me }
               key={u.id}
               onClick={() => pick(u)}
               disabled={starting === u.id}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/40 text-left transition-colors disabled:opacity-50"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/40 active:bg-primary/20 text-left transition-colors disabled:opacity-60"
             >
               {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" /> : <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-semibold">{(u.full_name || u.callsign || "?").slice(0, 1).toUpperCase()}</div>}
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium truncate">{u.full_name || u.mybb_username || "Unknown"}</p>
                 <p className="text-xs text-muted-foreground truncate">{u.callsign ? `${u.callsign} · ` : ""}{u.email}</p>
               </div>
+              {starting === u.id && <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin shrink-0" />}
             </button>
           ))}
         </div>
+        {error && <p className="text-sm text-destructive text-center px-4 py-2">{error}</p>}
       </DialogContent>
     </Dialog>
   );
