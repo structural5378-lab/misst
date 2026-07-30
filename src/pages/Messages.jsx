@@ -1,51 +1,46 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { MessageCircle } from "lucide-react";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useChatV2Presence } from "@/hooks/useChatV2Presence";
 import { useConversationsV2 } from "@/hooks/useConversationsV2";
 import { useActiveCommunity } from "@/hooks/useActiveCommunity";
 import { useCommunityRooms } from "@/hooks/useCommunityRooms";
 import { base44 } from "@/api/base44Client";
-import HubNav from "@/components/messages/HubNav";
-import HubConversation from "@/components/messages/HubConversation";
-import HubContext from "@/components/messages/HubContext";
-import HubEmpty from "@/components/messages/HubEmpty";
-import MissionControlDock from "@/components/messages/MissionControlDock";
+import CommunityList from "@/components/messages/v3/CommunityList";
+import CommunityConversation from "@/components/messages/v3/CommunityConversation";
+import CommunitySections from "@/components/messages/v3/CommunitySections";
+import ChatWindowV2 from "@/components/chatV2/ChatWindowV2";
 import StartConversationDialog from "@/components/chatV2/StartConversationDialog";
 import { startDirectConversation } from "@/lib/chatV2/chatV2Api";
 
-// Messages — the unified MISST messaging hub.
-//
-// One 3-pane shell (left nav · conversation · context) that merges direct
-// messages (ChatV2Conversation) and community channels (ChatV2Room) under a
-// single surface, reusing the existing realtime hooks + backend. On wide
-// desktop it renders full-bleed (AppLayout drops the app chrome for /messages);
-// on mobile it collapses to a single pane inside the normal app shell.
+// Messages — the community-first messaging experience. Every community is
+// ONE living chat (its primary room) with optional views (Media, Members,
+// Events, Pinned, Files) as tabs — not separate channels. Mobile is a
+// full-height 100dvh shell where only the message list scrolls; desktop is a
+// premium three-column layout (community list · conversation · info panel).
+// DMs remain accessible from the left rail.
 export default function Messages() {
+  const navigate = useNavigate();
   const { mistUser } = useMistUser();
   const presence = useChatV2Presence(mistUser);
   const { conversations, loading: dmLoading, upsertConversation } = useConversationsV2(mistUser?.id);
   const { community, communities, isLoading: commLoading } = useActiveCommunity();
+  const { rooms, loading: roomsLoading, markRead } = useCommunityRooms(community?.id, mistUser);
 
-  // sel = { type: 'dm' | 'channel', id, communityId }
-  const [sel, setSel] = useState(null);
+  const [sel, setSel] = useState({ type: "community" });
+  const [mobileList, setMobileList] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const [showStart, setShowStart] = useState(false);
-  const [showContext, setShowContext] = useState(false);
-  const [navTab, setNavTab] = useState("channels"); // channels | dm | starred
 
   const [members, setMembers] = useState([]);
   const [myMember, setMyMember] = useState(null);
 
-  const { rooms, memberships, loading: roomsLoading, reload, markRead, updateMembership } =
-    useCommunityRooms(community?.id, mistUser);
-
-  // Load active community members + my membership (drives role, mute, canPost).
   useEffect(() => {
     if (!community?.id || !mistUser?.id) { setMembers([]); setMyMember(null); return; }
     let active = true;
     (async () => {
-      const m = await base44.entities.CommunityMember
-        .filter({ community_id: community.id, status: "active" }, "-joined_date", 500)
-        .catch(() => []);
+      const m = await base44.entities.CommunityMember.filter({ community_id: community.id, status: "active" }, "-joined_date", 500).catch(() => []);
       if (!active) return;
       setMembers(m || []);
       setMyMember((m || []).find((x) => x.user_id === mistUser.id) || null);
@@ -53,123 +48,96 @@ export default function Messages() {
     return () => { active = false; };
   }, [community?.id, mistUser?.id]);
 
+  const mainRoom = rooms.find((r) => r.type === "text" && !r.is_hidden && !r.is_archived) || rooms[0] || null;
   const myRole = myMember?.role || null;
 
-  // Invalidate a channel selection if its room disappears (community switch).
-  useEffect(() => {
-    if (sel?.type === "channel" && community && !rooms.find((r) => r.id === sel.id)) setSel(null);
-  }, [rooms, community, sel]);
-
-  // Deep-link: ?new_dm=<userId> (from profile "Message" buttons) auto-starts a DM.
+  // Deep link: ?new_dm=<userId> auto-starts a DM (from profile "Message" buttons).
   useEffect(() => {
     if (!mistUser?.id) return;
     const params = new URLSearchParams(window.location.search);
     const newDm = params.get("new_dm");
     if (!newDm) return;
     (async () => {
-      try {
-        const { conversation, participant } = await startDirectConversation(newDm);
-        upsertConversation(conversation, participant);
-        setSel({ type: "dm", id: conversation.id, communityId: null });
-        setNavTab("dm");
-      } catch { /* silent — user lands on the hub */ }
+      try { const { conversation, participant } = await startDirectConversation(newDm); upsertConversation(conversation, participant); setSel({ type: "dm", id: conversation.id }); }
+      catch { /* silent */ }
     })();
     window.history.replaceState({}, "", "/messages");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mistUser?.id]);
 
-  const selectDM = (conv) => setSel({ type: "dm", id: conv.id, communityId: null });
-  const selectChannel = (roomId) => setSel({ type: "channel", id: roomId, communityId: community?.id });
-  const onStarted = (conversation, participant) => {
-    setShowStart(false);
-    upsertConversation(conversation, participant);
-    setSel({ type: "dm", id: conversation.id, communityId: null });
-    setNavTab("dm");
+  const selectCommunity = (id) => {
+    if (id && id !== community?.id) { localStorage.setItem("selected_community_id", id); window.dispatchEvent(new Event("storage")); }
+    setSel({ type: "community" });
+    setMobileList(false);
   };
-  const onBack = () => { setSel(null); setShowContext(false); };
+  const selectDM = (conv) => { setSel({ type: "dm", id: conv.id }); setMobileList(false); };
+  const onStarted = (conversation, participant) => { setShowStart(false); upsertConversation(conversation, participant); setSel({ type: "dm", id: conversation.id }); };
 
   const totalDMUnread = conversations.reduce((n, c) => n + (c.participant?.unread_count || 0), 0);
-  const totalChannelUnread = rooms.reduce((n, r) => n + (memberships[r.id]?.unread_count || 0), 0);
-  const starredRooms = rooms.filter((r) => memberships[r.id]?.favorite || memberships[r.id]?.pinned);
-
-  const ctxProps = {
-    sel, mistUser, community, members, myRole,
-    presenceByUser: presence.presenceByUser, conversations, rooms,
-  };
+  const dmEntry = sel.type === "dm" ? conversations.find((c) => c.conversation.id === sel.id) : null;
 
   return (
-    <div className="mist-hub h-full xl:h-[100dvh] w-full flex flex-col bg-background text-foreground overflow-hidden">
-      <div className="flex-1 min-h-0 flex w-full pt-[env(safe-area-inset-top)] xl:pt-0">
-      {/* Left nav */}
-      <aside className={`${sel ? "hidden" : "flex"} xl:flex flex-col w-full xl:w-72 shrink-0 border-r border-border bg-card/40 backdrop-blur-xl min-h-0`}>
-        <HubNav
-          mistUser={mistUser}
-          community={community}
-          communities={communities}
-          commLoading={commLoading}
-          rooms={rooms}
-          memberships={memberships}
-          roomsLoading={roomsLoading}
-          reloadRooms={reload}
-          conversations={conversations}
-          dmLoading={dmLoading}
-          presenceByUser={presence.presenceByUser}
-          sel={sel}
-          navTab={navTab}
-          setNavTab={setNavTab}
-          onSelectChannel={selectChannel}
-          onSelectDM={selectDM}
-          onNewMessage={() => setShowStart(true)}
-          totalDMUnread={totalDMUnread}
-          totalChannelUnread={totalChannelUnread}
-          starredRooms={starredRooms}
-          myRole={myRole}
-          updateMembership={updateMembership}
+    <div className="mist-hub h-[100dvh] w-full flex bg-background text-foreground overflow-hidden">
+      {/* LEFT — community list (mobile: full screen when mobileList; desktop: always) */}
+      <aside className={`${mobileList ? "flex" : "hidden"} xl:flex flex-col w-full xl:w-72 shrink-0 border-r border-border min-h-0`}>
+        <CommunityList
+          mistUser={mistUser} communities={communities} community={community}
+          onSelectCommunity={selectCommunity}
+          conversations={conversations} dmLoading={dmLoading} presenceByUser={presence.presenceByUser}
+          sel={sel} onSelectDM={selectDM} onNewMessage={() => setShowStart(true)}
+          totalDMUnread={totalDMUnread} onBack={() => setMobileList(false)} showBack
         />
       </aside>
 
-      {/* Center conversation */}
-      <main className={`${sel ? "flex" : "hidden"} xl:flex flex-1 min-w-0 min-h-0 flex-col`}>
-        {sel ? (
-          <HubConversation
-            sel={sel}
-            mistUser={mistUser}
-            presence={presence}
-            conversations={conversations}
-            community={community}
-            rooms={rooms}
-            memberships={memberships}
-            members={members}
-            myRole={myRole}
-            myMember={myMember}
-            markRead={markRead}
-            updateMembership={updateMembership}
-            onBack={onBack}
-            onOpenContext={() => setShowContext(true)}
+      {/* CENTER — conversation or DM */}
+      <main className={`${mobileList ? "hidden" : "flex"} xl:flex flex-1 min-w-0 min-h-0 flex-col`}>
+        {sel.type === "community" && community ? (
+          roomsLoading ? (
+            <div className="flex-1 flex items-center justify-center"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+          ) : mainRoom ? (
+            <CommunityConversation
+              community={community} room={mainRoom} mistUser={mistUser} members={members}
+              myMember={myMember} myRole={myRole} presence={presence} markRead={markRead}
+              onOpenInfo={() => setShowInfo(true)} onBack={() => setMobileList(true)}
+            />
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground text-center px-6">
+              <MessageCircle className="w-10 h-10 mb-2 opacity-30" />
+              <p className="text-sm">No conversation available in this community yet.</p>
+            </div>
+          )
+        ) : sel.type === "dm" && dmEntry ? (
+          <ChatWindowV2
+            conversationId={sel.id} conversation={dmEntry.conversation} participant={dmEntry.participant}
+            user={mistUser} presenceByUser={presence.presenceByUser} setTyping={presence.setTyping}
+            setActiveConversation={presence.setActiveConversation} online={presence.online} reconnecting={presence.reconnecting}
+            onBack={() => setMobileList(true)}
+            onToggleMute={async () => { try { await base44.entities.ChatV2Participant.update(dmEntry.participant.id, { muted: !dmEntry.participant.muted }); } catch {} }}
+            forceBack
           />
         ) : (
-          <HubEmpty onNewMessage={() => setShowStart(true)} />
+          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+            <MessageCircle className="w-10 h-10 mb-2 opacity-30" />
+            <p className="text-sm">Select a community to start chatting.</p>
+          </div>
         )}
       </main>
 
-      {/* Right context (desktop) */}
-      <aside className="hidden xl:flex w-80 shrink-0 border-l border-border bg-card/40 backdrop-blur-xl min-h-0">
-        {sel && <HubContext {...ctxProps} />}
+      {/* RIGHT — community info (desktop only) */}
+      <aside className="hidden xl:flex flex-col w-80 shrink-0 border-l border-border min-h-0">
+        {sel.type === "community" && community ? (
+          <CommunitySections community={community} members={members} myRole={myRole} room={mainRoom} presenceByUser={presence.presenceByUser} onOpenSettings={() => navigate(`/c/${community.slug}/admin`)} />
+        ) : null}
       </aside>
 
-      {/* Right context (mobile slide-over) */}
-      {showContext && sel && (
-        <div className="xl:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm fade-in" onClick={() => setShowContext(false)}>
-          <div className="absolute right-0 top-0 bottom-0 w-80 max-w-[85%] bg-card sheet-up" onClick={(e) => e.stopPropagation()}>
-            <HubContext {...ctxProps} onClose={() => setShowContext(false)} />
+      {/* Mobile info slide-out */}
+      {showInfo && sel.type === "community" && community && (
+        <div className="xl:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm fade-in" onClick={() => setShowInfo(false)}>
+          <div className="absolute right-0 top-0 bottom-0 w-80 max-w-[85%] sheet-up flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <CommunitySections community={community} members={members} myRole={myRole} room={mainRoom} presenceByUser={presence.presenceByUser} onClose={() => setShowInfo(false)} onOpenSettings={() => navigate(`/c/${community.slug}/admin`)} />
           </div>
         </div>
       )}
-      </div>
-
-      <div className="hidden xl:block shrink-0">
-        <MissionControlDock community={community} />
-      </div>
 
       <StartConversationDialog open={showStart} onClose={() => setShowStart(false)} onStarted={onStarted} me={mistUser} />
     </div>

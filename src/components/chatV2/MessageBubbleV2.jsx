@@ -39,7 +39,7 @@ function StatusIcon({ status, onRetry }) {
   return null;
 }
 
-export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onRetry, onEdit, onDelete, onReact, onReply, onReplyJump, onPin, pinned, canModerate, onAnnounce, onSticky, onMuteUser, onSuspendUser, onKickUser, onBanUser, selectMode, selected, onToggleSelect }) {
+export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onRetry, onEdit, onDelete, onReact, onReply, onReplyJump, onPin, pinned, canModerate, onAnnounce, onSticky, onMuteUser, onSuspendUser, onKickUser, onBanUser, selectMode, selected, onToggleSelect, senderBadge }) {
   const [menu, setMenu] = useState(null); // {x,y}
   const [pickerOpen, setPickerOpen] = useState(false);
   const [hover, setHover] = useState(false);
@@ -105,7 +105,10 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
       {!isMine && (showAvatar ? <Avatar name={message.sender_name} avatar={message.sender_avatar} /> : <div className="w-8" />)}
       <div className={`max-w-[78%] flex flex-col ${isMine ? "items-end" : "items-start"}`}>
         {!isMine && showAvatar && (
-          <span className="text-[11px] font-medium text-muted-foreground mb-0.5 px-1">{message.sender_name}</span>
+          <span className="text-[11px] mb-0.5 px-1 flex items-center gap-1 flex-wrap">
+            <span className="font-semibold text-foreground/90">{message.sender_name}</span>
+            {senderBadge}
+          </span>
         )}
         {message.reply_to_preview && (
           <button
