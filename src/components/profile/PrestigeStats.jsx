@@ -5,10 +5,9 @@ const STATS = [
   { key: 'net_checkins',           label: 'Check-ins' },
   { key: 'net_control_sessions',  label: 'Net Control' },
   { key: 'repeaters_visited',     label: 'Repeaters' },
-  { key: 'miles_traveled',         label: 'Miles' },
   { key: 'emergency_activations',  label: 'Emergency' },
   { key: 'years_active',           label: 'Years' },
-  { key: 'daily_login_streak',     label: 'Streak' },
+  { key: 'daily_login_streak',     label: 'Login Streak' },
 ];
 
 export default function PrestigeStats({ stats = {} }) {

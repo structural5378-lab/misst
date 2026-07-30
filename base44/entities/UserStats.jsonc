@@ -108,7 +108,13 @@
     },
     "daily_login_streak": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Current consecutive-day login streak (resets to 1 after a missed day)"
+    },
+    "longest_login_streak": {
+      "type": "number",
+      "default": 0,
+      "description": "Highest consecutive-day login streak ever reached"
     },
     "weekly_net_streak": {
       "type": "number",

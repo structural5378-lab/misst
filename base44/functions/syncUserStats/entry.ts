@@ -128,7 +128,9 @@ Deno.serve(async (req) => {
     const lastLogin = s.last_login_date;
     if (lastLogin !== today) {
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-      updated.daily_login_streak = (lastLogin === yesterday) ? (s.daily_login_streak || 0) + 1 : 1;
+      const newStreak = (lastLogin === yesterday) ? (s.daily_login_streak || 0) + 1 : 1;
+      updated.daily_login_streak = newStreak;
+      updated.longest_login_streak = Math.max(s.longest_login_streak || 0, newStreak);
       updated.last_login_date = today;
     }
 
