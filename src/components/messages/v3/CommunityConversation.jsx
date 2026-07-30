@@ -30,15 +30,15 @@ export default function CommunityConversation({ community, room, mistUser, membe
   const [highlightId, setHighlightId] = useState(null);
   const atBottomRef = useRef(true);
 
+  const memberByUser = useMemo(() => { const m = {}; (members || []).forEach((x) => { m[x.user_id] = x; }); return m; }, [members]);
+  const msgs = useRoomMessages({ roomId: room?.id, user: mistUser, community });
+
   // Auto-scroll to the latest message on room open, on new messages (when
   // already pinned to the bottom), and when the composer is focused (keyboard
   // opening) — so the user never has to manually drag the chat upward.
   useEffect(() => { if (msgs.scrollRef.current) msgs.scrollRef.current.scrollTop = msgs.scrollRef.current.scrollHeight; /* eslint-disable-next-line */ }, [room?.id]);
   useEffect(() => { if (atBottomRef.current && msgs.scrollRef.current) msgs.scrollRef.current.scrollTop = msgs.scrollRef.current.scrollHeight; }, [msgs.messages.length]);
   const scrollToEnd = () => { requestAnimationFrame(() => { if (msgs.scrollRef.current) msgs.scrollRef.current.scrollTop = msgs.scrollRef.current.scrollHeight; }); };
-
-  const memberByUser = useMemo(() => { const m = {}; (members || []).forEach((x) => { m[x.user_id] = x; }); return m; }, [members]);
-  const msgs = useRoomMessages({ roomId: room?.id, user: mistUser, community });
 
   const isAdmin = ["community_owner", "community_admin"].includes(myRole);
   const canModerate = ["community_owner", "community_admin", "moderator"].includes(myRole);
