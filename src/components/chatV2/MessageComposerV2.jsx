@@ -9,7 +9,7 @@ const MAX = 2000;
 // attachment. Center: a single-line (growing) rounded input. Right: a voice
 // button that crossfades into the send button when text exists. Sticky at the
 // bottom; only the message list scrolls. Respects iPhone safe-area insets.
-export default function MessageComposerV2({ onSend, onTyping, disabled, placeholder = "Message…", replyTo, onCancelReply }) {
+export default function MessageComposerV2({ onSend, onTyping, disabled, placeholder = "Message…", replyTo, onCancelReply, onFocus }) {
   const [value, setValue] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
   const [sending, setSending] = useState(false);
@@ -67,7 +67,7 @@ export default function MessageComposerV2({ onSend, onTyping, disabled, placehol
         {/* Center: input (single line, grows) */}
         <textarea
           ref={taRef} value={value} onChange={handleChange} onKeyDown={onKeyDown} disabled={disabled}
-          placeholder={placeholder} rows={1} aria-label="Message"
+          placeholder={placeholder} rows={1} aria-label="Message" onFocus={onFocus}
           className="flex-1 min-w-0 resize-none rounded-3xl bg-secondary/60 border border-border px-4 py-3 min-h-[48px] text-sm leading-5 max-h-36 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/70"
         />
 

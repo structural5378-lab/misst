@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, Image as ImageIcon, Users, Calendar, Pin, FileText, VolumeX } from "lucide-react";
 import { useRoomMessages } from "@/hooks/useRoomMessages";
 import { useToast } from "@/components/ui/use-toast";
@@ -28,6 +28,14 @@ export default function CommunityConversation({ community, room, mistUser, membe
   const [tab, setTab] = useState("chat");
   const [replyTo, setReplyTo] = useState(null);
   const [highlightId, setHighlightId] = useState(null);
+  const atBottomRef = useRef(true);
+
+  // Auto-scroll to the latest message on room open, on new messages (when
+  // already pinned to the bottom), and when the composer is focused (keyboard
+  // opening) — so the user never has to manually drag the chat upward.
+  useEffect(() => { if (msgs.scrollRef.current) msgs.scrollRef.current.scrollTop = msgs.scrollRef.current.scrollHeight; /* eslint-disable-next-line */ }, [room?.id]);
+  useEffect(() => { if (atBottomRef.current && msgs.scrollRef.current) msgs.scrollRef.current.scrollTop = msgs.scrollRef.current.scrollHeight; }, [msgs.messages.length]);
+  const scrollToEnd = () => { requestAnimationFrame(() => { if (msgs.scrollRef.current) msgs.scrollRef.current.scrollTop = msgs.scrollRef.current.scrollHeight; }); };
 
   const memberByUser = useMemo(() => { const m = {}; (members || []).forEach((x) => { m[x.user_id] = x; }); return m; }, [members]);
   const msgs = useRoomMessages({ roomId: room?.id, user: mistUser, community });
@@ -65,6 +73,7 @@ export default function CommunityConversation({ community, room, mistUser, membe
   const onScroll = (e) => {
     const el = e.currentTarget;
     const bottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+    atBottomRef.current = bottom;
     msgs.setAtBottom(bottom);
     if (el.scrollTop < 80 && msgs.hasMore && !msgs.loadingMore) msgs.loadMore();
     if (bottom && room?.id) { const last = msgs.messages[msgs.messages.length - 1]; if (last && last.sender_id !== mistUser?.id) markRead?.(room.id, last.id); }
@@ -124,7 +133,7 @@ export default function CommunityConversation({ community, room, mistUser, membe
           {canPost ? (
             <>
               {typingNames.length > 0 && <div className="px-4 pb-1 text-[11px] text-muted-foreground italic">{typingNames.join(", ")} typing…</div>}
-              <MessageComposerV2 onSend={handleSend} placeholder={`Message ${community?.name || "community"}…`} replyTo={replyTo} onCancelReply={() => setReplyTo(null)} onTyping={(v) => presence.setTyping(`room:${room.id}`, v)} />
+              <MessageComposerV2 onSend={handleSend} placeholder={`Message ${community?.name || "community"}…`} replyTo={replyTo} onCancelReply={() => setReplyTo(null)} onTyping={(v) => presence.setTyping(`room:${room.id}`, v)} onFocus={scrollToEnd} />
             </>
           ) : (
             <div className="border-t border-border bg-background/60 px-4 py-3 text-center text-sm text-muted-foreground flex items-center justify-center gap-2 mist-safe-bottom">
