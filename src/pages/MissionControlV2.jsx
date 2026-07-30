@@ -62,7 +62,7 @@ export default function MissionControlV2() {
   const shared = { v2, onEmergency, onSettings, onEnd, onManual: () => setShowManual(true), editing, setEditing, containerRef };
 
   return (
-    <div ref={containerRef} className="h-[100dvh] bg-[#0b0e14] text-foreground flex flex-col overflow-hidden">
+    <div ref={containerRef} className="h-full w-full min-w-0 min-h-0 bg-[#0b0e14] text-foreground flex flex-col overflow-hidden">
       {isDesktop ? <McvDesktop {...shared} /> : isTablet ? <McvTablet {...shared} /> : <McvMobile {...shared} />}
 
       {showManual && <McvManualCheckin onSubmit={onManual} onClose={() => setShowManual(false)} />}

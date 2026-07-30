@@ -81,6 +81,22 @@ export default function AppLayout() {
     );
   }
 
+  // Mission Control: a dedicated full-viewport operations console that owns
+  // the entire window on every breakpoint — no app header, bottom nav, or
+  // max-width container. Behaves like Discord/Grafana/UniFi: edge-to-edge.
+  if (p === "/net-control" || /^\/nets\/[^/]+\/(control|display|ops|wallboard)$/.test(p)) {
+    return (
+      <div className="fixed inset-0 z-0 bg-background overflow-hidden">
+        <Outlet />
+        <NotificationManager />
+        <AlertPoller />
+        <SimplexRequestPoller />
+        <NotificationPrompt />
+        <InstallBanner />
+      </div>
+    );
+  }
+
   if (isFullBleedDesktop) {
     return (
       <div className="min-h-screen bg-background w-full overflow-x-hidden">
