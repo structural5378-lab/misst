@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Radio, ChevronRight, Plus } from "lucide-react";
+import { Radio, ChevronRight, Plus, Home } from "lucide-react";
 import CreateNetDialog from "@/components/netcontrol/CreateNetDialog";
 
 // McvNetPicker — shown when Mission Control V2 is opened with no net selected
@@ -21,10 +21,13 @@ export default function McvNetPicker() {
     <div className="min-h-screen bg-background p-4 max-w-2xl mx-auto">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center"><Radio className="w-5 h-5 text-white" /></div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-lg font-bold">Mission Control</h1>
           <p className="text-xs text-muted-foreground">Select a net to open the command center</p>
         </div>
+        <button onClick={() => navigate("/")} className="p-2 rounded-lg hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-colors" aria-label="Back to dashboard" title="Back to dashboard">
+          <Home className="w-5 h-5" />
+        </button>
       </div>
       <button onClick={() => setShowCreate(true)} className="w-full mb-3 py-2.5 rounded-xl bg-primary/15 text-primary border border-primary/30 text-sm font-bold flex items-center justify-center gap-1.5"><Plus className="w-4 h-4" /> Create New Net</button>
       <div className="space-y-2">
