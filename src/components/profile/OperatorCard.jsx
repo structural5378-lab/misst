@@ -82,15 +82,15 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
 
           <div className="relative pl-4 pr-3 py-3.5 space-y-3 z-10">
             {/* Identity + actions */}
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 flex-wrap">
               <div className={`avatar-frame avatar-frame-${avatarFrame || 'common'} shrink-0`}>
                 <div className="w-20 h-20 rounded-2xl overflow-hidden bg-violet-950/50 ring-2 ring-violet-500/30">
                   <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
                 </div>
               </div>
-              <div className="flex-1 min-w-0 pt-2">
+              <div className="flex-1 min-w-[110px] pt-2">
                 <div className="flex items-start gap-2">
-                  <h2 className="text-lg font-bold text-white leading-tight truncate min-w-0 drop-shadow-md">{displayName || callsign}</h2>
+                  <h2 className="text-lg font-bold text-white leading-tight break-words drop-shadow-md">{displayName || callsign}</h2>
                   <span className="relative flex h-2 w-2 shrink-0 mt-1">
                     <span className="absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75 animate-ping" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
