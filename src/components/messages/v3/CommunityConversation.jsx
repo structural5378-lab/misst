@@ -6,7 +6,6 @@ import { formatDayLabel, isSameDay, presenceStatus, isTypingNow } from "@/lib/ch
 import MessageBubbleV2 from "@/components/chatV2/MessageBubbleV2";
 import MessageComposerV2 from "@/components/chatV2/MessageComposerV2";
 import CommunityHeader from "./CommunityHeader";
-import RepeaterBar from "./RepeaterBar";
 import { SenderBadges } from "./badges";
 import { MembersView, EventsView, MediaView, PinnedView, FilesView } from "./CommunityViews";
 
@@ -125,8 +124,7 @@ export default function CommunityConversation({ community, room, mistUser, membe
           {canPost ? (
             <>
               {typingNames.length > 0 && <div className="px-4 pb-1 text-[11px] text-muted-foreground italic">{typingNames.join(", ")} typing…</div>}
-              <RepeaterBar community={community} monitoringCount={onlineMembers.length} />
-              <MessageComposerV2 onSend={handleSend} placeholder={`Message ${community?.name || "community"}`} replyTo={replyTo} onCancelReply={() => setReplyTo(null)} onTyping={(v) => presence.setTyping(`room:${room.id}`, v)} />
+              <MessageComposerV2 onSend={handleSend} placeholder={`Message ${community?.name || "community"}…`} replyTo={replyTo} onCancelReply={() => setReplyTo(null)} onTyping={(v) => presence.setTyping(`room:${room.id}`, v)} />
             </>
           ) : (
             <div className="border-t border-border bg-background/60 px-4 py-3 text-center text-sm text-muted-foreground flex items-center justify-center gap-2 mist-safe-bottom">
