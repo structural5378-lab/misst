@@ -100,31 +100,31 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
                   <p className="text-xs text-white/90 font-semibold break-words drop-shadow-md mt-0.5">{callsign}</p>
                 )}
               </div>
-              <div className="flex flex-col items-end gap-2 shrink-0 self-start">
-                <div className="flex gap-2.5">
-                  <Link to={alertsLink} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10">
-                    <Bell className="w-4 h-4" />
-                  </Link>
-                  <button onClick={handleShare} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10" title="Share Profile">
-                    <Share2 className="w-4 h-4" />
-                  </button>
-                  {onLogout && (
-                    <button onClick={onLogout} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-rose-400 transition-colors border border-white/10" title="Sign Out">
-                      <LogOut className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-                <ProfileHeaderStats stats={stats} />
-              </div>
+              <ProfileHeaderStats stats={stats} />
             </div>
 
             {/* Administrator badge — purple glow matching the profile photo */}
-            {isAdmin && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 border border-white/25 backdrop-blur-md shadow-[0_0_18px_rgba(139,92,246,0.55)]">
-                <Shield className="w-3.5 h-3.5 text-white" />
-                <span className="text-[10px] font-bold text-white tracking-wide uppercase">Administrator</span>
-              </span>
-            )}
+            <div className="flex items-center justify-between gap-2">
+              {isAdmin && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 border border-white/25 backdrop-blur-md shadow-[0_0_18px_rgba(139,92,246,0.55)]">
+                  <Shield className="w-3.5 h-3.5 text-white" />
+                  <span className="text-[10px] font-bold text-white tracking-wide uppercase">Administrator</span>
+                </span>
+              )}
+              <div className="flex gap-2 ml-auto">
+                <Link to={alertsLink} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10">
+                  <Bell className="w-4 h-4" />
+                </Link>
+                <button onClick={handleShare} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10" title="Share Profile">
+                  <Share2 className="w-4 h-4" />
+                </button>
+                {onLogout && (
+                  <button onClick={onLogout} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-rose-400 transition-colors border border-white/10" title="Sign Out">
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
 
             {/* Group Tags */}
             {groups.filter(g => g.id !== 'administrator').length > 0 && (
