@@ -12,7 +12,6 @@ import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
 import RadioScopeTile from "@/components/radioscope/RadioScopeTile";
 import OperatorCard from "@/components/profile/OperatorCard";
 import NextNetCard from "@/components/dashboard/NextNetCard";
-import StatsGrid from "@/components/dashboard/StatsGrid";
 import XPLevelCard from "@/components/dashboard/XPLevelCard";
 import MembershipFooter from "@/components/dashboard/MembershipFooter";
 
@@ -137,7 +136,6 @@ export default function Dashboard() {
 
         {/* Statistics */}
         <div className="mist-fade-up" style={{ animationDelay: "160ms" }}>
-          <StatsGrid stats={stats} />
           <div className="mt-3">
             <MembershipFooter
               joined={memberSince ? `Joined ${memberSince}` : null}
