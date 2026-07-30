@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useMissionControl } from "./useMissionControl";
@@ -177,8 +177,20 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
     dl(lines.join("\n"), `ics-309-${safeSlug}.txt`, "text/plain");
   };
 
+  // Manual refresh — invalidate every live query (realtime subscriptions + the
+  // 5s refetch already keep data fresh; this powers the command-bar Refresh btn).
+  const refresh = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ["net-sessions-all"] });
+    qc.invalidateQueries({ queryKey: ["net-sessions", effectiveNetId] });
+    qc.invalidateQueries({ queryKey: ["net-log", sid] });
+    qc.invalidateQueries({ queryKey: ["net-queue", sid] });
+    qc.invalidateQueries({ queryKey: ["net-incidents", sid] });
+    qc.invalidateQueries({ queryKey: ["net-timeline", sid] });
+    qc.invalidateQueries({ queryKey: ["mcv-weather", effectiveNetId] });
+  }, [qc, effectiveNetId, sid]);
+
   return {
-    ...mc, effectiveNetId, now, runtimeMs, weather, allSessions,
+    ...mc, effectiveNetId, now, runtimeMs, weather, allSessions, refresh,
     callNext, callEntry, skipEntry, removeEntry, requestSpeak,
     addIncident, removeIncident, rollCall, generateSummary, exportPdf,
     exportCsv, exportIcs214, exportIcs309,
