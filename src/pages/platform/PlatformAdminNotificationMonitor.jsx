@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import { usePollingGate } from "@/hooks/usePollingGate";
 import { Activity, Zap, AlertTriangle, RotateCw, Cpu, Radio, Gauge, Loader2 } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
 import NotificationAdminTabs from "@/components/platform/NotificationAdminTabs";
@@ -13,6 +14,7 @@ function fmtClock(d) { try { return d.toLocaleTimeString([], { hour: "2-digit", 
 
 export default function PlatformAdminNotificationMonitor() {
   const tc = useThemeColors();
+  const active = usePollingGate();
   const [feed, setFeed] = useState([]);
   const [recentCount, setRecentCount] = useState(0);
   const [processing, setProcessing] = useState(0);
@@ -22,7 +24,7 @@ export default function PlatformAdminNotificationMonitor() {
   const { data: a } = useQuery({
     queryKey: ["notif-monitor-stats"],
     queryFn: async () => (await base44.functions.invoke("getNotificationAnalytics", { range: "week" }))?.data,
-    refetchInterval: 15000,
+    refetchInterval: active ? 15000 : false,
   });
 
   // Seed the live feed with the latest deliveries, then subscribe for real-time.

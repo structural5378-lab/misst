@@ -75,7 +75,9 @@ export function useRoomMessages({ roomId, user, community }) {
     };
 
     poll();
-    const interval = setInterval(poll, 4000);
+    // Pause polling when the tab is hidden — the realtime subscription (if any)
+    // and optimistic UI keep the thread live; polling resumes on focus.
+    const interval = setInterval(() => { if (document.visibilityState === "visible") poll(); }, 4000);
     return () => { active = false; clearInterval(interval); };
   }, [roomId, communityId]);
 

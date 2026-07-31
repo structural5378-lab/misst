@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Loader2, Download, FileText, Shield, Users, Ban, UserX, Trash2, AlertTriangle, Megaphone, Lock, Activity } from 'lucide-react';
 import AnalyticsCharts from './AnalyticsCharts';
 import { exportAnalyticsCSV, exportAnalyticsPDFFromDOM } from '@/lib/moderationExport';
+import { usePollingGate } from '@/hooks/usePollingGate';
 
 const RANGES = [
   { id: 'today', label: 'Today' },
@@ -35,13 +36,14 @@ export default function ModerationAnalytics({ community }) {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [exporting, setExporting] = useState(false);
+  const active = usePollingGate();
 
   const { data, isLoading } = useQuery({
     queryKey: ['moderation-analytics', community.id, range, dateFrom, dateTo],
     queryFn: async () => (await base44.functions.invoke('getModerationAnalytics', {
       community_id: community.id, range, date_from: dateFrom || undefined, date_to: dateTo || undefined,
     })).data,
-    refetchInterval: 15000, // real-time auto-refresh
+    refetchInterval: active ? 15000 : false, // paused when idle/hidden
   });
 
   const s = data?.summary || {};

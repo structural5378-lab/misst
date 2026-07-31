@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { withAiCache } from "@/lib/aiCache";
+import { useRealtimeFallback } from "./useRealtimeFallback";
 import { useMissionControl } from "./useMissionControl";
 
 // useMissionControlV2 — composes the existing useMissionControl hook (which
@@ -15,12 +16,18 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
 
+  const { healthy: sessionsHealthy, markEvent: markSession } = useRealtimeFallback(15000);
   const { data: allSessions = [] } = useQuery({
     queryKey: ["net-sessions-all"],
     queryFn: () => base44.entities.NetSession.list("-started_at", 50),
     enabled: !routeNetId,
-    refetchInterval: 5000,
+    refetchInterval: sessionsHealthy ? false : 5000,
   });
+  // Realtime subscription for session changes — polling is only a fallback.
+  useEffect(() => {
+    const u = base44.entities.NetSession.subscribe(() => { markSession(); qc.invalidateQueries({ queryKey: ["net-sessions-all"] }); });
+    return u;
+  }, [qc, markSession]);
   const autoSession = !routeNetId ? (allSessions.find((s) => s.status === "active" || s.status === "paused") || null) : null;
   const effectiveNetId = routeNetId || autoSession?.net_id || null;
 

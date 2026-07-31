@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import { usePollingGate } from "@/hooks/usePollingGate";
 import PageHeader from "@/components/layout/PageHeader";
 import PublicNetCard from "@/components/nets/PublicNetCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +12,7 @@ import { Radio } from "lucide-react";
 // Favorites. Live nets show a LIVE NOW badge and accept check-ins.
 export default function Nets() {
   const [tab, setTab] = useState("upcoming");
+  const active = usePollingGate();
 
   const { data: nets = [], isLoading } = useQuery({
     queryKey: ["nets"],
@@ -19,7 +21,7 @@ export default function Nets() {
   const { data: sessions = [] } = useQuery({
     queryKey: ["net-sessions-active"],
     queryFn: () => base44.entities.NetSession.list("-started_at", 200),
-    refetchInterval: 15000,
+    refetchInterval: active ? 15000 : false,
   });
 
   // live nets: have an active/paused session

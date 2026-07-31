@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { useRealtimeFallback } from "./useRealtimeFallback";
 
 /**
  * Shared Mission Control data + operator actions for the Mission Control
@@ -15,17 +16,20 @@ export function useMissionControl(netId, { onXp, onUnlock } = {}) {
   const { isAdmin } = useAdminAccess();
   const isOperator = isAdmin || mybbUser?.role === "moderator";
   const user = { ...mistUser, ...mybbUser };
+  // Realtime subscription health — polling runs only as a fallback when the
+  // WebSocket subscription goes silent (network drop / server issue).
+  const { healthy, markEvent } = useRealtimeFallback(15000);
 
   const { data: net } = useQuery({ queryKey: ["net", netId], queryFn: () => base44.entities.Net.filter({ id: netId }), select: (d) => d[0], enabled: !!netId });
   const { data: repeater } = useQuery({ queryKey: ["net-repeater", net?.repeater_callsign], queryFn: () => base44.entities.Repeater.filter({ callsign: net.repeater_callsign }), select: (d) => d[0], enabled: !!net?.repeater_callsign });
-  const { data: sessions = [] } = useQuery({ queryKey: ["net-sessions", netId], queryFn: () => base44.entities.NetSession.filter({ net_id: netId }, "-started_at", 20), enabled: !!netId, refetchInterval: 5000 });
+  const { data: sessions = [] } = useQuery({ queryKey: ["net-sessions", netId], queryFn: () => base44.entities.NetSession.filter({ net_id: netId }, "-started_at", 20), enabled: !!netId, refetchInterval: healthy ? false : 5000 });
   const activeSession = sessions.find((s) => s.status === "active" || s.status === "paused");
   const sid = activeSession?.id;
 
-  const { data: checkins = [] } = useQuery({ queryKey: ["net-log", sid], queryFn: () => base44.entities.NetLog.filter({ session_id: sid }, "checkin_number", 500), enabled: !!sid, refetchInterval: 5000 });
-  const { data: queue = [] } = useQuery({ queryKey: ["net-queue", sid], queryFn: () => base44.entities.NetQueueEntry.filter({ session_id: sid }, "position", 200), enabled: !!sid, refetchInterval: 5000 });
-  const { data: incidents = [] } = useQuery({ queryKey: ["net-incidents", sid], queryFn: () => base44.entities.NetIncident.filter({ session_id: sid }, "-timestamp", 100), enabled: !!sid, refetchInterval: 5000 });
-  const { data: timeline = [] } = useQuery({ queryKey: ["net-timeline", sid], queryFn: () => base44.entities.NetTimeline.filter({ session_id: sid }, "-created_date", 200), enabled: !!sid, refetchInterval: 5000 });
+  const { data: checkins = [] } = useQuery({ queryKey: ["net-log", sid], queryFn: () => base44.entities.NetLog.filter({ session_id: sid }, "checkin_number", 500), enabled: !!sid, refetchInterval: healthy ? false : 5000 });
+  const { data: queue = [] } = useQuery({ queryKey: ["net-queue", sid], queryFn: () => base44.entities.NetQueueEntry.filter({ session_id: sid }, "position", 200), enabled: !!sid, refetchInterval: healthy ? false : 5000 });
+  const { data: incidents = [] } = useQuery({ queryKey: ["net-incidents", sid], queryFn: () => base44.entities.NetIncident.filter({ session_id: sid }, "-timestamp", 100), enabled: !!sid, refetchInterval: healthy ? false : 5000 });
+  const { data: timeline = [] } = useQuery({ queryKey: ["net-timeline", sid], queryFn: () => base44.entities.NetTimeline.filter({ session_id: sid }, "-created_date", 200), enabled: !!sid, refetchInterval: healthy ? false : 5000 });
 
   const sortedCheckins = useMemo(() => {
     const pending = checkins.filter((c) => c.approved === false).sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
@@ -36,7 +40,7 @@ export function useMissionControl(netId, { onXp, onUnlock } = {}) {
   const activeQueue = queue.filter((q) => q.status === "waiting" || q.status === "called").sort((a, b) => (a.position || 0) - (b.position || 0));
 
   useEffect(() => {
-    const inv = (key) => () => qc.invalidateQueries({ queryKey: key });
+    const inv = (key) => () => { markEvent(); qc.invalidateQueries({ queryKey: key }); };
     const u1 = base44.entities.NetLog.subscribe(inv(["net-log", sid]));
     const u2 = base44.entities.NetTimeline.subscribe(inv(["net-timeline", sid]));
     const u3 = base44.entities.NetSession.subscribe(inv(["net-sessions", netId]));

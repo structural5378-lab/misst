@@ -4,6 +4,7 @@ import { useCommunity } from '@/contexts/CommunityContext';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useCommunityOnlineMembers } from '@/hooks/useCommunityOnlineMembers';
+import { usePollingGate } from '@/hooks/usePollingGate';
 import { Users, Wifi, Inbox, Radio, Calendar, TrendingUp, Activity } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -19,13 +20,14 @@ function formatAction(action) {
 
 export default function CommunityAdminOverview() {
   const { community } = useCommunity();
+  const active = usePollingGate();
   const { data: onlineData } = useCommunityOnlineMembers(community.id);
   const onlineCount = onlineData?.online?.length || 0;
 
   const { data, isLoading } = useQuery({
     queryKey: ['community-admin-stats', community.id],
     queryFn: async () => (await base44.functions.invoke('getCommunityAdminStats', { community_id: community.id })).data,
-    refetchInterval: 30000,
+    refetchInterval: active ? 30000 : false,
   });
 
   if (isLoading || !data) {

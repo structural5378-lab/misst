@@ -4,9 +4,11 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Radar, Radio, Users, MapPin } from "lucide-react";
 import { haversine, formatDistance } from "@/lib/geoUtils";
+import { usePollingGate } from "@/hooks/usePollingGate";
 
 export default function RadioScopeTile() {
   const [userPos, setUserPos] = useState(null);
+  const active = usePollingGate();
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -25,7 +27,7 @@ export default function RadioScopeTile() {
   const { data: presence = [] } = useQuery({
     queryKey: ["chat-presence"],
     queryFn: () => base44.entities.ChatPresence.list("-last_active", 100),
-    refetchInterval: 30000,
+    refetchInterval: active ? 30000 : false,
   });
 
   const nearbyRepeaters = repeaters.filter((r) => r.latitude && r.longitude);

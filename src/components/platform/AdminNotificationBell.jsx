@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Bell, AlertTriangle, Flag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import { usePollingGate } from "@/hooks/usePollingGate";
 
 export default function AdminNotificationBell() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const navigate = useNavigate();
+  const active = usePollingGate();
 
   useEffect(() => {
     const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -21,7 +23,7 @@ export default function AdminNotificationBell() {
       const res = await base44.functions.invoke("getAdminStats", {});
       return res.data?.stats || {};
     },
-    refetchInterval: 30000,
+    refetchInterval: active ? 30000 : false,
   });
 
   const pendingReports = data?.reportsPending ?? 0;

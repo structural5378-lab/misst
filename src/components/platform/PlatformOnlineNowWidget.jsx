@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { usePollingGate } from '@/hooks/usePollingGate';
 
 // PlatformOnlineNowWidget — Super Administrator live widget showing the
 // aggregate number of users online across the entire MIST platform.
@@ -9,10 +10,11 @@ import { base44 } from '@/api/base44Client';
 // Polls getPlatformStats every 15s (Super-Admin-only endpoint). Displays a live
 // indicator and a "Updated X seconds ago" label. No per-user data is loaded.
 export default function PlatformOnlineNowWidget() {
+  const active = usePollingGate();
   const { data, isLoading, isError } = useQuery({
     queryKey: ['platform-stats-online'],
     queryFn: async () => (await base44.functions.invoke('getPlatformStats', {})).data,
-    refetchInterval: 15000,
+    refetchInterval: active ? 15000 : false,
     staleTime: 10000,
     retry: false,
   });

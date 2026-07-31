@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import { startPollingLogger } from '@/lib/pollingLogger';
 
 
 export const queryClientInstance = new QueryClient({
@@ -10,3 +11,6 @@ export const queryClientInstance = new QueryClient({
 		},
 	},
 });
+
+// Dev-only polling traffic logger (enable: localStorage.setItem('mist_debug_polling','1'))
+startPollingLogger(queryClientInstance);

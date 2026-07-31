@@ -19,6 +19,7 @@ import {
   GPS_WATCH_OPTS, GPS_UPDATE_THROTTLE_MS, LOCATION_TTL_MS,
   classifySource, getLiveUsers,
 } from "@/lib/radioScopeLocation";
+import { usePollingGate } from "@/hooks/usePollingGate";
 
 const DEFAULT_CENTER = [25.77, -80.19];
 const COMMUNITY_LIGHTNING_RADIUS_MI = 50;
@@ -26,6 +27,7 @@ const COMMUNITY_LIGHTNING_RADIUS_MI = 50;
 export default function RadioScope() {
   const { mybbUser, mistUser } = useMistUser();
   const { data: communities = [] } = useUserCommunities();
+  const active = usePollingGate();
 
   // ── Active community (localStorage source of truth + in-page switcher) ──
   const [activeId, setActiveId] = useState(() =>
@@ -80,7 +82,7 @@ export default function RadioScope() {
       return res.data;
     },
     enabled: !!community?.id,
-    refetchInterval: 8000,
+    refetchInterval: active ? 8000 : false,
     staleTime: 4000,
   });
 
@@ -177,7 +179,7 @@ export default function RadioScope() {
   const { data: strikes = [] } = useQuery({
     queryKey: ["lightning-strikes"],
     queryFn: () => base44.entities.LightningStrike.list("-strike_time", 500),
-    refetchInterval: 15000,
+    refetchInterval: active ? 15000 : false,
   });
 
   const communityCenter = useMemo(() => {
