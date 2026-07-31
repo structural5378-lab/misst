@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { usePollingGate } from "./usePollingGate";
 
 /**
  * useCommunityOnlineMembers — community-scoped online presence.
@@ -9,9 +10,12 @@ import { base44 } from "@/api/base44Client";
  * validates membership and never returns users from other communities.
  *
  * Returns { online: [...], total }. `online` is empty until a communityId
- * is provided.
+ * is provided. Polling pauses when the tab is hidden or the user is idle
+ * (3 min) and resumes instantly on interaction — saves backend calls
+ * without affecting responsiveness.
  */
 export function useCommunityOnlineMembers(communityId) {
+  const active = usePollingGate();
   return useQuery({
     queryKey: ["community-online", communityId],
     queryFn: async () =>
@@ -20,7 +24,7 @@ export function useCommunityOnlineMembers(communityId) {
       })).data,
     enabled: !!communityId,
     staleTime: 15000,
-    refetchInterval: 30000,
+    refetchInterval: active ? 30000 : false,
   });
 }
 
