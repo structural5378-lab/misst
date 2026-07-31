@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { withAiCache } from "@/lib/aiCache";
 import { useMissionControl } from "./useMissionControl";
 
 // useMissionControlV2 — composes the existing useMissionControl hook (which
@@ -79,15 +80,20 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
     qc.invalidateQueries({ queryKey: ["net-timeline", sid] });
   };
 
-  // --- AI summary ---
+  // --- AI summary (explicit button only; cached 24h + 30s dedupe) ---
   const generateSummary = async () => {
     if (!activeSession) return null;
     const payload = { net_name: net?.name, net_control: activeSession.net_control, runtime: runtimeMs, checkins: approved.map((c) => ({ callsign: c.callsign, status: c.status, location: c.location, signal: c.signal_report })), incidents: incidents.map((i) => ({ category: i.category, notes: i.notes, severity: i.severity })), metrics };
-    const res = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are an assistant for a GMRS net control operator. Summarize the current net session in 4-6 concise bullet points: net name, runtime, attendance breakdown, notable traffic (priority/emergency), incidents, and suggested next actions. Data: ${JSON.stringify(payload)}`,
-      response_json_schema: { type: "object", properties: { summary: { type: "string" } }, required: ["summary"] },
+    // Cache key from stable state (not runtime) so identical net state returns
+    // the cached summary instead of re-calling the LLM.
+    const cacheKey = `mcv-summary-${sid}-${approved.length}-${incidents.length}`;
+    return withAiCache(cacheKey, async () => {
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an assistant for a GMRS net control operator. Summarize the current net session in 4-6 concise bullet points: net name, runtime, attendance breakdown, notable traffic (priority/emergency), incidents, and suggested next actions. Data: ${JSON.stringify(payload)}`,
+        response_json_schema: { type: "object", properties: { summary: { type: "string" } }, required: ["summary"] },
+      });
+      return res?.summary || (typeof res === "string" ? res : JSON.stringify(res));
     });
-    return res?.summary || (typeof res === "string" ? res : JSON.stringify(res));
   };
 
   // --- Export PDF ---

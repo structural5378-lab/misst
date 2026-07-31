@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
 const TTL = 45 * 24 * 3600 * 1000; // 45-day cache per artwork seed
@@ -24,43 +24,47 @@ export function heroPrompt(theme, community) {
   return `${theme}.${community ? ` Subtle ${community} motif.` : ""} Cinematic sci-fi environment, deep blacks, electric violet and magenta accents, subtle elegant composition, soft focus with slight blur, premium digital art, atmospheric moody lighting, no text, no people, no logos, no waveforms, no screenshots, 16:9 widescreen, high quality.`;
 }
 
-/** Generates (and caches) a unique hero background URL per seed. */
+/**
+ * Returns a cached hero background URL for the given seed. Does NOT
+ * auto-generate on mount — generation is a paid integration call and must be
+ * explicitly requested via the returned `regenerate` callback (e.g. a button
+ * press). When no cached artwork exists, `url` is null and the caller should
+ * render the animated nebula fallback.
+ */
 export function useHeroArtwork(seed, prompt) {
   const [url, setUrl] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    let cached = null;
+  const readCache = useCallback((s) => {
     try {
-      const raw = localStorage.getItem(`mist-hero-${seed}`);
+      const raw = localStorage.getItem(`mist-hero-${s}`);
       if (raw) {
         const j = JSON.parse(raw);
-        if (j.url && Date.now() - j.ts < TTL) cached = j.url;
+        if (j.url && Date.now() - j.ts < TTL) return j.url;
       }
     } catch {}
-    if (cached) {
-      setUrl(cached);
-      setLoading(false);
-      return () => { active = false; };
-    }
-    setUrl(null);
-    setLoading(true);
-    (async () => {
-      try {
-        const res = await base44.integrations.Core.GenerateImage({ prompt });
-        if (active && res?.url) {
-          setUrl(res.url);
-          try { localStorage.setItem(`mist-hero-${seed}`, JSON.stringify({ url: res.url, ts: Date.now() })); } catch {}
-        }
-      } catch {
-        /* leave fallback nebula */
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => { active = false; };
-  }, [seed, prompt]);
+    return null;
+  }, []);
 
-  return { url, loading };
+  // Cache-only on mount — never trigger GenerateImage on page load.
+  useEffect(() => {
+    setUrl(readCache(seed));
+  }, [seed, readCache]);
+
+  const regenerate = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await base44.integrations.Core.GenerateImage({ prompt });
+      if (res?.url) {
+        setUrl(res.url);
+        try { localStorage.setItem(`mist-hero-${seed}`, JSON.stringify({ url: res.url, ts: Date.now() })); } catch {}
+      }
+    } catch {
+      /* leave fallback nebula */
+    } finally {
+      setLoading(false);
+    }
+  }, [prompt, seed]);
+
+  return { url, loading, regenerate };
 }
