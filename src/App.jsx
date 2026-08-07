@@ -54,6 +54,7 @@ import CommunityOnboarding from '@/pages/CommunityOnboarding';
 import MyCommunities from '@/pages/MyCommunities';
 import OnboardingProtectedRoute from '@/components/OnboardingProtectedRoute';
 import RadioScope from '@/pages/RadioScope';
+import PremiumBadges from '@/pages/PremiumBadges';
 // Net Control merged into MissionControlV2
 import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
@@ -105,6 +106,7 @@ import PlatformAdminNetTemplates from '@/pages/platform/PlatformAdminNetTemplate
 import PlatformAdminScheduledNets from '@/pages/platform/PlatformAdminScheduledNets';
 import PlatformAdminNetLogs from '@/pages/platform/PlatformAdminNetLogs';
 import PlatformAdminLightning from '@/pages/platform/PlatformAdminLightning';
+import PlatformAdminPremiumBadges from '@/pages/platform/PlatformAdminPremiumBadges';
 
 // Community-scoped pages
 import CommunityLayout from '@/components/community/CommunityLayout';
@@ -188,6 +190,7 @@ const AuthenticatedApp = () => {
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/my-communities" element={<MyCommunities />} />
         <Route path="/radioscope" element={<RadioScope />} />
+        <Route path="/premium-badges" element={<PremiumBadges />} />
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/settings" element={<Settings />} />
@@ -256,6 +259,7 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/scheduled-nets" element={<PlatformAdminScheduledNets />} />
           <Route path="/platform/admin/net-logs" element={<PlatformAdminNetLogs />} />
           <Route path="/platform/admin/lightning" element={<PlatformAdminLightning />} />
+          <Route path="/platform/admin/premium-badges" element={<PlatformAdminPremiumBadges />} />
         </Route>
       </Route>
 

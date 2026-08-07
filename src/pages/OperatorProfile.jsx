@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { Trophy, ChevronRight, Shield, Save, X, Camera, Loader2, Plus, Trash2, BarChart3 } from "lucide-react";
+import { Trophy, ChevronRight, Shield, Save, X, Camera, Loader2, Plus, Trash2, BarChart3, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ import {
 import StatsGrid from "@/components/achievements/StatsGrid";
 import TrophyCase from "@/components/achievements/TrophyCase";
 import BadgeShowcase from "@/components/profile/BadgeShowcase";
+import PremiumBadgeCollection from "@/components/profile/PremiumBadgeCollection";
 import { deriveGroups, deriveBadges, selectBanner, getAvatarFrame } from "@/lib/profileConfig";
 import { normalizeCallsign, isValidGmrsCallsign, computeLicenseStatus } from "@/lib/gmrsCallsign";
 
@@ -253,6 +254,7 @@ export default function OperatorProfile() {
           </div>
         ) : (
           <>
+            <PremiumBadgeCollection />
             {bio && <Section title="About"><p className="text-sm text-muted-foreground">{bio}</p></Section>}
 
             <Section title="Level & Prestige"><ProfileStats stats={stats} /></Section>
@@ -288,6 +290,9 @@ export default function OperatorProfile() {
               </Link>
               <Link to="/leaderboard" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm font-medium">
                 <BarChart3 className="w-4 h-4" /> Leaderboard
+              </Link>
+              <Link to="/premium-badges" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 text-amber-300 text-sm font-medium">
+                <Crown className="w-4 h-4" /> Premium
               </Link>
             </div>
 

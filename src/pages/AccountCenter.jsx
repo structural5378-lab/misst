@@ -3,7 +3,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useMistUser } from "@/hooks/useMistUser";
 import {
   User, Settings, Shield, Bell, Eye, Palette, Radio,
-  Users as UsersIcon, Image as ImageIcon, Monitor, Database, Smartphone, CloudLightning,
+  Users as UsersIcon, Image as ImageIcon, Monitor, Database, Smartphone, CloudLightning, Crown,
 } from "lucide-react";
 
 import AccountProfile from "@/components/account/sections/AccountProfile";
@@ -19,9 +19,11 @@ import AccountMedia from "@/components/account/sections/AccountMedia";
 import AccountSessions from "@/components/account/sections/AccountSessions";
 import AccountData from "@/components/account/sections/AccountData";
 import AccountWeather from "@/components/account/sections/AccountWeather";
+import AccountPremiumBadges from "@/components/account/sections/AccountPremiumBadges";
 
 const SECTIONS = [
   { id: "profile", label: "Profile", icon: User, Component: AccountProfile },
+  { id: "premium", label: "Premium Badges", icon: Crown, Component: AccountPremiumBadges },
   { id: "account", label: "Account", icon: Settings, Component: AccountSettings },
   { id: "security", label: "Security", icon: Shield, Component: AccountSecurity },
   { id: "notifications", label: "Notifications", icon: Bell, Component: AccountNotifications },

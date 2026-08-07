@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -24,6 +24,14 @@ export default function PremiumBadges() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const { mistUser } = useMistUser();
+  const [checkingOut, setCheckingOut] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === '1') toast({ title: 'Purchase complete!', description: 'Your premium badge is now active.' });
+    if (params.get('canceled') === '1') toast({ title: 'Checkout canceled' });
+    if (params.get('success') || params.get('canceled')) window.history.replaceState({}, '', '/premium-badges');
+  }, []);
 
   const { data: badges = [], isLoading } = useQuery({
     queryKey: ['premium-badges'],
@@ -38,14 +46,20 @@ export default function PremiumBadges() {
   const ownedMap = new Map(ownership.map((o) => [o.badge_id, o]));
   const activeId = ownership.find((o) => o.is_active)?.badge_id;
 
-  const handlePurchase = (badge) => {
+  const handlePurchase = async (badge) => {
+    if (window.self !== window.top) { toast({ title: 'Checkout unavailable', description: 'Premium checkout works only from the published app.', variant: 'destructive' }); return; }
     if (!mistUser?.id) { toast({ title: 'Sign in required', variant: 'destructive' }); return; }
     if (ownedMap.has(badge.id)) { toast({ title: 'You already own this badge' }); return; }
-    // Stripe checkout is wired once the Stripe integration is installed.
-    toast({
-      title: 'Premium checkout coming soon',
-      description: `${badge.name} — $${Number(badge.price || 0).toFixed(2)}/year. Payment activation pending.`,
-    });
+    setCheckingOut(badge.id);
+    try {
+      const res = await base44.functions.invoke('createBadgeCheckout', { badge_id: badge.id, user_id: mistUser.id, user_name: mistUser.displayName || '' });
+      if (res?.data?.url) window.location.href = res.data.url;
+      else throw new Error('No checkout URL returned');
+    } catch (e) {
+      toast({ title: 'Checkout failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setCheckingOut(null);
+    }
   };
 
   const handleSetActive = async (ownershipId) => {

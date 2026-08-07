@@ -3,7 +3,7 @@ import {
   MessageSquare, MessagesSquare, Mail, RadioTower, Radio, CalendarClock,
   Building2, Image, ShoppingCart, Award, Bell, Palette, LayoutGrid, Server,
   ShieldAlert, DatabaseBackup, Terminal, LayoutTemplate, KeyRound, FlaskConical, Activity, CloudLightning,
-  Home, User, Settings, CalendarDays,
+  Home, User, Settings, CalendarDays, Crown,
 } from "lucide-react";
 
 // Role levels: platform_owner=3, platform_admin=2, platform_support=1
@@ -57,6 +57,7 @@ export const adminNavSections = [
       { label: "Gallery", path: "/platform/admin/gallery", icon: Image, minRole: 2 },
       { label: "Marketplace", path: "/platform/admin/marketplace", icon: ShoppingCart, minRole: 2 },
       { label: "Badges & Achievements", path: "/platform/admin/badges", icon: Award, minRole: 2 },
+      { label: "Premium Badges", path: "/platform/admin/premium-badges", icon: Crown, minRole: 2 },
     ],
   },
   {
