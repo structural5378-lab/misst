@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery } from '@tanstack/react-query';
-import { Bell, LogOut, Calendar, Users, X, Share2, Shield, Radio } from 'lucide-react';
+import { Bell, LogOut, Calendar, Users, X, Share2, Shield, Radio, UserCircle2 } from 'lucide-react';
 import ProfileBanner from './ProfileBanner';
 import HeroArtwork from './HeroArtwork';
 import { heroSeed, heroTheme, heroPrompt } from '@/hooks/useHeroArtwork';
@@ -138,23 +138,30 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
               <BadgeShowcase badges={badges.filter(b => b.id !== 'administrator')} onBadgeClick={setSelectedBadge} align="start" />
             )}
 
-            {/* Info Blocks — three evenly spaced, centered */}
+            {/* Info Blocks — three evenly spaced, centered (values truncate to prevent overflow) */}
             <div className="grid grid-cols-3 gap-2 pt-1">
-              <div className="flex flex-col items-center text-center gap-0.5">
+              <div className="flex flex-col items-center text-center gap-0.5 min-w-0">
                 <Calendar className="w-3.5 h-3.5 text-white/70" />
                 <span className="text-[8px] uppercase tracking-wide text-white/50">Joined</span>
-                <span className="text-[10px] font-semibold text-white/90 leading-tight">{memberSince || "—"}</span>
+                <span className="text-[10px] font-semibold text-white/90 leading-tight truncate w-full">{memberSince || "—"}</span>
               </div>
               <div className="flex flex-col items-center text-center gap-0.5 min-w-0">
                 <Users className="w-3.5 h-3.5 text-white/70" />
                 <span className="text-[8px] uppercase tracking-wide text-white/50">Community</span>
                 <span className="text-[10px] font-semibold text-white/90 leading-tight truncate w-full">{club}</span>
               </div>
-              <div className="flex flex-col items-center text-center gap-0.5">
+              <div className="flex flex-col items-center text-center gap-0.5 min-w-0">
                 <Radio className="w-3.5 h-3.5 text-emerald-400" />
                 <span className="text-[8px] uppercase tracking-wide text-white/50">License</span>
-                <span className="text-[10px] font-semibold text-emerald-400 leading-tight">GMRS Licensed</span>
+                <span className="text-[10px] font-semibold text-emerald-400 leading-tight truncate w-full">GMRS Licensed</span>
               </div>
+            </div>
+
+            {/* View Profile — placed below the license info with 16px spacing to prevent any overlap */}
+            <div className="pt-1">
+              <Link to="/profile" className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] backdrop-blur-md text-white/90 text-xs font-semibold hover:bg-white/[0.12] hover:border-primary/40 transition-colors active:scale-[0.98]">
+                <UserCircle2 className="w-4 h-4" /> View Profile
+              </Link>
             </div>
           </div>
         </div>
