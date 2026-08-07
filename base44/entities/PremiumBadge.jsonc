@@ -1,0 +1,134 @@
+{
+  "name": "PremiumBadge",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name e.g. MISST ELITE"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short marketing description shown on the card"
+    },
+    "price": {
+      "type": "number",
+      "default": 0,
+      "description": "Annual price in USD"
+    },
+    "icon": {
+      "type": "string",
+      "default": "Award",
+      "description": "lucide-react icon name used when no artwork_url"
+    },
+    "artwork_url": {
+      "type": "string",
+      "description": "Uploaded custom badge artwork image URL"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "member",
+        "supporter",
+        "community",
+        "rare",
+        "epic",
+        "elite",
+        "mythic",
+        "legendary",
+        "administration"
+      ],
+      "default": "member",
+      "description": "Tier/rarity drives default pricing tier and sort weight"
+    },
+    "effect": {
+      "type": "string",
+      "enum": [
+        "static_glow",
+        "electric_aura",
+        "purple_lightning",
+        "blue_plasma",
+        "gold_energy_pulse",
+        "green_radar_sweep",
+        "fire_ember",
+        "ice_frost",
+        "rainbow_prism",
+        "thunder_storm"
+      ],
+      "default": "static_glow",
+      "description": "Visual animation effect class applied to the badge"
+    },
+    "accent_color": {
+      "type": "string",
+      "default": "#a855f7",
+      "description": "Hex color for glow/border/text accent"
+    },
+    "display_priority": {
+      "type": "number",
+      "default": 0,
+      "description": "Higher = sorted first in storefront"
+    },
+    "is_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Visible/purchasable in storefront"
+    },
+    "is_best_value": {
+      "type": "boolean",
+      "default": false,
+      "description": "Shows the BEST VALUE overlay"
+    },
+    "is_seasonal": {
+      "type": "boolean",
+      "default": false,
+      "description": "Limited-time seasonal badge"
+    },
+    "season_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Seasonal availability start"
+    },
+    "season_end": {
+      "type": "string",
+      "format": "date",
+      "description": "Seasonal availability end"
+    },
+    "purchase_limit": {
+      "type": "number",
+      "default": 0,
+      "description": "Max purchases allowed (0 = unlimited)"
+    },
+    "purchases_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of purchases (server-managed)"
+    },
+    "is_gifted": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this badge was granted manually (not purchased)"
+    }
+  },
+  "required": [
+    "name",
+    "rarity",
+    "effect"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -681,3 +681,41 @@ body.amoled-mode { background: #000; }
 @media (prefers-reduced-motion: reduce) {
   .mist-hub *, .mist-hub *::before, .mist-hub *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* ─── Premium Badge Effects (GPU-accelerated transform/opacity, 60fps) ─── */
+.pbadge { position: relative; display: inline-flex; align-items: center; justify-content: center; isolation: isolate; }
+.pbadge-fx { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0; }
+.pbadge > .pbadge-body { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+
+@keyframes pbadge-glow-pulse { 0%,100% { opacity: 0.45; } 50% { opacity: 1; } }
+.pbadge-static-glow .pbadge-fx { box-shadow: 0 0 14px 2px var(--pbadge-accent,#a855f7); animation: pbadge-glow-pulse 2.6s ease-in-out infinite; }
+.pbadge-soft-outline .pbadge-fx { box-shadow: 0 0 0 1px var(--pbadge-accent,#a855f7), 0 0 10px var(--pbadge-accent,#a855f7); animation: pbadge-glow-pulse 2.8s ease-in-out infinite; }
+
+@keyframes pbadge-rotate { to { transform: rotate(360deg); } }
+.pbadge-electric-aura .pbadge-fx { background: conic-gradient(from 0deg, transparent 0deg, var(--pbadge-accent,#a855f7) 30deg, transparent 60deg, var(--pbadge-accent,#a855f7) 120deg, transparent 150deg, var(--pbadge-accent,#a855f7) 240deg, transparent 270deg); animation: pbadge-rotate 3s linear infinite; opacity: 0.65; border-radius: 50%; }
+.pbadge-blue-plasma .pbadge-fx { background: conic-gradient(from 0deg, transparent, #06b6d4, transparent 50%, #3b82f6, transparent); animation: pbadge-rotate 2.4s linear infinite; opacity: 0.7; border-radius: 50%; filter: blur(2px); }
+.pbadge-green-radar-sweep .pbadge-fx { background: conic-gradient(from 0deg, transparent 0deg, rgba(34,197,94,0.55) 40deg, transparent 60deg); animation: pbadge-rotate 3.2s linear infinite; border-radius: 50%; }
+.pbadge-rainbow-prism .pbadge-fx { background: conic-gradient(from 0deg, #ef4444, #f59e0b, #22c55e, #06b6d4, #a855f7, #ef4444); animation: pbadge-rotate 3s linear infinite; opacity: 0.6; border-radius: 50%; }
+
+@keyframes pbadge-lightning { 0%,90%,100% { opacity: 0; } 92%,96% { opacity: 1; } 94% { opacity: 0.3; } }
+.pbadge-purple-lightning .pbadge-fx { background: linear-gradient(180deg, transparent 40%, var(--pbadge-accent,#a855f7) 50%, transparent 60%); animation: pbadge-lightning 2.2s ease-in-out infinite; box-shadow: 0 0 16px var(--pbadge-accent,#a855f7); }
+
+@keyframes pbadge-pulse-ring { 0% { transform: scale(0.85); opacity: 0.85; } 100% { transform: scale(1.45); opacity: 0; } }
+.pbadge-gold-energy-pulse .pbadge-fx { box-shadow: 0 0 14px var(--pbadge-accent,#fbbf24); }
+.pbadge-gold-energy-pulse .pbadge-fx::before, .pbadge-gold-energy-pulse .pbadge-fx::after { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 2px solid var(--pbadge-accent,#fbbf24); animation: pbadge-pulse-ring 2s ease-out infinite; }
+.pbadge-gold-energy-pulse .pbadge-fx::after { animation-delay: 1s; }
+
+@keyframes pbadge-ember { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+.pbadge-fire-ember .pbadge-fx { background: radial-gradient(circle at 50% 70%, #ef4444, transparent 60%), radial-gradient(circle at 50% 40%, #f59e0b, transparent 60%); animation: pbadge-ember 1.6s ease-in-out infinite; border-radius: 50%; }
+
+@keyframes pbadge-frost { 0%,100% { opacity: 0.3; } 50% { opacity: 0.7; } }
+.pbadge-ice-frost .pbadge-fx { background: linear-gradient(135deg, rgba(34,211,238,0.3), transparent 50%, rgba(165,243,252,0.3)); animation: pbadge-frost 2.4s ease-in-out infinite; box-shadow: 0 0 12px #22d3ee; }
+
+@keyframes pbadge-thunder-flash { 0%,82%,100% { opacity: 0; } 84%,88% { opacity: 1; } 86% { opacity: 0.2; } }
+.pbadge-thunder-storm .pbadge-fx { background: conic-gradient(from 0deg, transparent, #a855f7, transparent 40%, #fbbf24, transparent 80%); animation: pbadge-rotate 2.6s linear infinite; opacity: 0.7; border-radius: 50%; }
+.pbadge-thunder-storm .pbadge-fx::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(circle, #fff, transparent 50%); animation: pbadge-thunder-flash 2.6s ease-in-out infinite; }
+.pbadge-thunder-storm { box-shadow: 0 0 22px rgba(168,85,247,0.6); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pbadge-fx, .pbadge-thunder-storm .pbadge-fx::after, .pbadge-gold-energy-pulse .pbadge-fx::before, .pbadge-gold-energy-pulse .pbadge-fx::after { animation: none !important; opacity: 0.5 !important; }
+}

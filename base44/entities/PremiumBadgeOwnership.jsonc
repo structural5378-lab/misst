@@ -1,0 +1,140 @@
+{
+  "name": "PremiumBadgeOwnership",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner user ID"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Denormalized owner display name"
+    },
+    "badge_id": {
+      "type": "string",
+      "description": "References PremiumBadge.id"
+    },
+    "badge_name": {
+      "type": "string",
+      "description": "Denormalized badge name"
+    },
+    "badge_icon": {
+      "type": "string",
+      "description": "Denormalized lucide icon name"
+    },
+    "badge_artwork_url": {
+      "type": "string",
+      "description": "Denormalized artwork URL"
+    },
+    "badge_effect": {
+      "type": "string",
+      "description": "Denormalized effect class"
+    },
+    "badge_accent_color": {
+      "type": "string",
+      "description": "Denormalized accent hex"
+    },
+    "badge_rarity": {
+      "type": "string",
+      "description": "Denormalized rarity"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false,
+      "description": "The single badge the user displays app-wide"
+    },
+    "is_gift": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if gifted by another member"
+    },
+    "gifted_by": {
+      "type": "string",
+      "description": "User ID of the gifter"
+    },
+    "gifted_by_name": {
+      "type": "string"
+    },
+    "is_earned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Earned (free) vs purchased"
+    },
+    "purchased_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Annual renewal expiry"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "cancelled"
+      ],
+      "default": "active"
+    },
+    "stripe_checkout_id": {
+      "type": "string",
+      "description": "Stripe checkout/session ID for the purchase"
+    }
+  },
+  "required": [
+    "user_id",
+    "badge_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
