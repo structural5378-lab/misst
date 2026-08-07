@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Crown, Trophy, Star, Radio, Headphones, MapPin, MessageSquare, ShieldAlert } from 'lucide-react';
 import PageHeader from '@/components/layout/PageHeader';
 import { calcLevel } from '@/components/achievements/LevelBar';
+import ActiveBadge from '@/components/premium/ActiveBadge';
 
 const SORT_OPTIONS = [
   { key: 'xp', label: 'XP', icon: Crown },
@@ -89,8 +90,8 @@ export default function Leaderboard() {
                   <span className="text-white text-sm font-bold">{(entry.user_name || '?')[0]?.toUpperCase()}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">
-                    {entry.user_name || 'Operator'} {isMe && <span className="text-violet-400">(You)</span>}
+                  <p className="text-sm font-semibold text-foreground truncate flex items-center gap-1">
+                    {entry.user_name || 'Operator'} {isMe && <span className="text-violet-400">(You)</span>} <ActiveBadge userId={entry.user_id} size="inline" className="shrink-0" />
                   </p>
                   <p className="text-xs text-muted-foreground">Level {level}</p>
                 </div>

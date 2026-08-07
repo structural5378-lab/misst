@@ -12,8 +12,8 @@ export const PREMIUM_ICON_MAP = {
   Bolt, SatelliteDish, SignalHigh, Cpu, Heart, Anchor, Plane, Rocket,
 };
 
-const SIZES = { xs: 'w-5 h-5', sm: 'w-8 h-8', md: 'w-12 h-12', lg: 'w-16 h-16', xl: 'w-24 h-24' };
-const ICON_SIZES = { xs: 12, sm: 16, md: 22, lg: 30, xl: 46 };
+const SIZES = { '3xs': 'w-3.5 h-3.5', '2xs': 'w-4 h-4', xs: 'w-5 h-5', sm: 'w-8 h-8', md: 'w-12 h-12', lg: 'w-16 h-16', xl: 'w-24 h-24' };
+const ICON_SIZES = { '3xs': 8, '2xs': 10, xs: 12, sm: 16, md: 22, lg: 30, xl: 46 };
 
 // PremiumBadge — reusable renderer for a premium badge with its GPU-accelerated
 // visual effect. Used in the storefront, profile collection, admin, and

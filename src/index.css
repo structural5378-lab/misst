@@ -716,6 +716,41 @@ body.amoled-mode { background: #000; }
 .pbadge-thunder-storm .pbadge-fx::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(circle, #fff, transparent 50%); animation: pbadge-thunder-flash 2.6s ease-in-out infinite; }
 .pbadge-thunder-storm { box-shadow: 0 0 22px rgba(168,85,247,0.6); }
 
+/* ─── Premium Badge Effects — Phase 2 additions (GPU transform/opacity, 60fps) ─── */
+@keyframes pbadge-neon-pulse { 0%,100% { box-shadow: 0 0 8px var(--pbadge-accent,#a855f7), 0 0 16px var(--pbadge-accent,#a855f7); opacity: 0.7; } 50% { box-shadow: 0 0 18px var(--pbadge-accent,#a855f7), 0 0 36px var(--pbadge-accent,#a855f7); opacity: 1; } }
+.pbadge-neon-pulse .pbadge-fx { animation: pbadge-neon-pulse 1.8s ease-in-out infinite; }
+
+@keyframes pbadge-spark-1 { 0%,100% { transform: translate(0,0); opacity: 0; } 50% { transform: translate(9px,-7px); opacity: 1; } }
+@keyframes pbadge-spark-2 { 0%,100% { transform: translate(0,0); opacity: 0; } 50% { transform: translate(-8px,8px); opacity: 1; } }
+.pbadge-electric-sparks .pbadge-fx { box-shadow: 0 0 10px var(--pbadge-accent,#a855f7); }
+.pbadge-electric-sparks .pbadge-fx::before, .pbadge-electric-sparks .pbadge-fx::after { content: ''; position: absolute; width: 3px; height: 3px; border-radius: 50%; background: var(--pbadge-accent,#a855f7); box-shadow: 0 0 6px var(--pbadge-accent,#a855f7); }
+.pbadge-electric-sparks .pbadge-fx::before { top: 18%; left: 18%; animation: pbadge-spark-1 0.7s ease-in-out infinite; }
+.pbadge-electric-sparks .pbadge-fx::after { bottom: 18%; right: 18%; animation: pbadge-spark-2 0.9s ease-in-out infinite 0.2s; }
+
+@keyframes pbadge-fire-aura { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.08); } }
+.pbadge-fire-aura .pbadge-fx { background: radial-gradient(circle at 50% 80%, #f59e0b, transparent 60%), radial-gradient(circle at 50% 50%, #ef4444, transparent 70%); animation: pbadge-fire-aura 1.4s ease-in-out infinite; border-radius: 50%; }
+
+@keyframes pbadge-ice-shimmer { 0%,100% { opacity: 0.3; transform: rotate(0deg); } 50% { opacity: 0.7; transform: rotate(180deg); } }
+.pbadge-ice-crystal .pbadge-fx { background: linear-gradient(135deg, rgba(165,243,252,0.4), transparent 40%, rgba(34,211,238,0.4)); animation: pbadge-ice-shimmer 3s ease-in-out infinite; box-shadow: 0 0 12px #22d3ee; }
+
+@keyframes pbadge-shadow-mist { 0%,100% { opacity: 0.3; transform: scale(0.95); } 50% { opacity: 0.6; transform: scale(1.1); } }
+.pbadge-shadow-mist .pbadge-fx { background: radial-gradient(circle, rgba(30,30,50,0.6), transparent 70%); animation: pbadge-shadow-mist 2.5s ease-in-out infinite; border-radius: 50%; }
+
+@keyframes pbadge-galaxy-swirl { to { transform: rotate(360deg); } }
+.pbadge-galaxy-swirl .pbadge-fx { background: conic-gradient(from 0deg, #4c1d95, #1e1b4b, #831843, #4c1d95); animation: pbadge-galaxy-swirl 4s linear infinite; opacity: 0.6; border-radius: 50%; }
+
+@keyframes pbadge-cosmic-dust { 0%,100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+.pbadge-cosmic-dust .pbadge-fx { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5) 0%, transparent 8%), radial-gradient(circle at 70% 60%, rgba(192,132,252,0.5) 0%, transparent 8%), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.4) 0%, transparent 6%); animation: pbadge-cosmic-dust 2s ease-in-out infinite; border-radius: 50%; }
+
+@keyframes pbadge-orbit { to { transform: rotate(360deg); } }
+.pbadge-orbit-rings .pbadge-fx::before, .pbadge-orbit-rings .pbadge-fx::after { content: ''; position: absolute; inset: 8%; border-radius: 50%; border: 2px solid transparent; }
+.pbadge-orbit-rings .pbadge-fx::before { border-top-color: var(--pbadge-accent,#a855f7); animation: pbadge-orbit 2.5s linear infinite; }
+.pbadge-orbit-rings .pbadge-fx::after { inset: 18%; border-bottom-color: var(--pbadge-accent,#a855f7); animation: pbadge-orbit 3.5s linear infinite reverse; }
+
+@keyframes pbadge-meteor { 0% { transform: translate(-30%,30%) rotate(45deg); opacity: 0; } 50% { opacity: 1; } 100% { transform: translate(30%,-30%) rotate(45deg); opacity: 0; } }
+.pbadge-meteor-trail .pbadge-fx { box-shadow: 0 0 12px var(--pbadge-accent,#a855f7); }
+.pbadge-meteor-trail .pbadge-fx::before { content: ''; position: absolute; top: 10%; left: 0; width: 60%; height: 2px; background: linear-gradient(90deg, transparent, var(--pbadge-accent,#a855f7)); border-radius: 9999px; animation: pbadge-meteor 2s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
-  .pbadge-fx, .pbadge-thunder-storm .pbadge-fx::after, .pbadge-gold-energy-pulse .pbadge-fx::before, .pbadge-gold-energy-pulse .pbadge-fx::after { animation: none !important; opacity: 0.5 !important; }
+  .pbadge-fx, .pbadge-fx::before, .pbadge-fx::after { animation: none !important; opacity: 0.5 !important; }
 }

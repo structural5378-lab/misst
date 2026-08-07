@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { ChevronDown, Crown, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import MemberRoleManager from './MemberRoleManager';
+import ActiveBadge from '@/components/premium/ActiveBadge';
 
 const ROLES = [
   { value: 'member', label: 'Member' },
@@ -76,6 +77,7 @@ export default function CommunityMemberRow({ member, communityId, onChanged, onO
           <div className="flex items-center gap-1.5">
             <p className="text-sm font-semibold text-foreground truncate">{member.user_name}</p>
             {isOwner && <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+            <ActiveBadge userId={member.user_id} size="inline" className="shrink-0" />
           </div>
           <p className="text-xs text-muted-foreground truncate">
             {member.user_callsign ? `${member.user_callsign} · ` : ''}{member.user_email}

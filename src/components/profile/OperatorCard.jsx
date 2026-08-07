@@ -12,6 +12,7 @@ import GroupTag from './GroupTag';
 import BadgeShowcase from './BadgeShowcase';
 import PrestigeStats from './PrestigeStats';
 import ProfileHeaderStats from './ProfileHeaderStats';
+import ActiveBadge from '@/components/premium/ActiveBadge';
 import { getLevelProgress } from '@/components/achievements/LevelBar';
 import { RARITIES } from '@/lib/rarityConfig';
 import { ICON_MAP } from '@/components/achievements/iconMap';
@@ -91,6 +92,7 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
               <div className="flex-1 min-w-[110px] pt-2">
                 <div className="flex items-start gap-2">
                   <h2 className="text-lg font-bold text-white leading-tight break-words drop-shadow-md">{displayName || callsign}</h2>
+                  <ActiveBadge userId={user?.id} size="sm" className="shrink-0 drop-shadow-md" />
                   <span className="relative flex h-2 w-2 shrink-0 mt-1">
                     <span className="absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75 animate-ping" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />

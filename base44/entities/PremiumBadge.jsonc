@@ -52,7 +52,16 @@
         "fire_ember",
         "ice_frost",
         "rainbow_prism",
-        "thunder_storm"
+        "thunder_storm",
+        "neon_pulse",
+        "electric_sparks",
+        "fire_aura",
+        "ice_crystal",
+        "shadow_mist",
+        "galaxy_swirl",
+        "cosmic_dust",
+        "orbit_rings",
+        "meteor_trail"
       ],
       "default": "static_glow",
       "description": "Visual animation effect class applied to the badge"
@@ -71,6 +80,11 @@
       "type": "boolean",
       "default": true,
       "description": "Visible/purchasable in storefront"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Highlighted in the Featured storefront section"
     },
     "is_best_value": {
       "type": "boolean",
@@ -91,6 +105,36 @@
       "type": "string",
       "format": "date",
       "description": "Seasonal availability end"
+    },
+    "is_founder": {
+      "type": "boolean",
+      "default": false,
+      "description": "Founder badge \u2014 limited, prestigious, numbered"
+    },
+    "is_event": {
+      "type": "boolean",
+      "default": false,
+      "description": "Event-specific badge (tied to a gathering or net event)"
+    },
+    "is_hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hidden from the public storefront (admin-grant only)"
+    },
+    "release_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Release date \u2014 badges appear in New Releases after this date"
+    },
+    "expiration_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the badge is retired from sale (optional)"
+    },
+    "edition_size": {
+      "type": "number",
+      "default": 0,
+      "description": "Limited edition quantity (0 = unlimited). Drives numbered ownership."
     },
     "purchase_limit": {
       "type": "number",

@@ -11,10 +11,11 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, Gift, Users, Sparkles, X } from 'lucide-react';
 import PremiumBadge, { PREMIUM_ICON_MAP } from '@/components/premium/PremiumBadge';
+import PremiumBadgeAnalytics from '@/components/premium/PremiumBadgeAnalytics';
 import AdminSection from '@/components/platform/AdminSection';
 
 const RARITIES = ['member', 'supporter', 'community', 'rare', 'epic', 'elite', 'mythic', 'legendary', 'administration'];
-const EFFECTS = ['static_glow', 'electric_aura', 'purple_lightning', 'blue_plasma', 'gold_energy_pulse', 'green_radar_sweep', 'fire_ember', 'ice_frost', 'rainbow_prism', 'thunder_storm'];
+const EFFECTS = ['static_glow', 'electric_aura', 'purple_lightning', 'blue_plasma', 'gold_energy_pulse', 'green_radar_sweep', 'fire_ember', 'ice_frost', 'rainbow_prism', 'thunder_storm', 'neon_pulse', 'electric_sparks', 'fire_aura', 'ice_crystal', 'shadow_mist', 'galaxy_swirl', 'cosmic_dust', 'orbit_rings', 'meteor_trail'];
 
 const DEFAULT_BADGES = [
   { name: 'MISST ELITE', description: 'The ultimate MISST status badge with thunderstorm effects.', price: 99.99, icon: 'Crown', rarity: 'legendary', effect: 'thunder_storm', accent_color: '#fbbf24', display_priority: 100, is_best_value: true },
@@ -31,7 +32,7 @@ const DEFAULT_BADGES = [
   { name: 'RISING STAR', description: 'Soft glow for up-and-coming members.', price: 9.99, icon: 'Star', rarity: 'supporter', effect: 'static_glow', accent_color: '#60a5fa', display_priority: 40 },
 ];
 
-const EMPTY = { name: '', description: '', price: 0, icon: 'Award', rarity: 'member', effect: 'static_glow', accent_color: '#a855f7', display_priority: 0, is_enabled: true, is_best_value: false, is_seasonal: false, season_start: '', season_end: '', purchase_limit: 0 };
+const EMPTY = { name: '', description: '', price: 0, icon: 'Award', rarity: 'member', effect: 'static_glow', accent_color: '#a855f7', display_priority: 0, is_enabled: true, is_featured: false, is_best_value: false, is_seasonal: false, season_start: '', season_end: '', is_founder: false, is_event: false, is_hidden: false, release_date: '', expiration_date: '', edition_size: 0, purchase_limit: 0 };
 
 export default function PlatformAdminPremiumBadges() {
   const { toast } = useToast();
@@ -117,6 +118,8 @@ export default function PlatformAdminPremiumBadges() {
         </div>
       </div>
 
+      <PremiumBadgeAnalytics badges={badges} />
+
       {isLoading ? (
         <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : (
@@ -171,6 +174,17 @@ export default function PlatformAdminPremiumBadges() {
                   </select>
                 </div>
                 <div><Label>Display Priority</Label><Input type="number" value={editing.display_priority} onChange={(e) => set('display_priority', Number(e.target.value))} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Edition Size (0 = ∞)</Label><Input type="number" value={editing.edition_size} onChange={(e) => set('edition_size', Number(e.target.value))} /></div>
+                <div><Label>Release Date</Label><Input type="date" value={editing.release_date || ''} onChange={(e) => set('release_date', e.target.value)} /></div>
+              </div>
+              <div><Label>Expiration Date (retires from sale)</Label><Input type="date" value={editing.expiration_date || ''} onChange={(e) => set('expiration_date', e.target.value)} /></div>
+              <div className="flex flex-wrap gap-4 pb-2">
+                <label className="flex items-center gap-2 text-sm"><Switch checked={!!editing.is_featured} onCheckedChange={(v) => set('is_featured', v)} /> Featured</label>
+                <label className="flex items-center gap-2 text-sm"><Switch checked={!!editing.is_founder} onCheckedChange={(v) => set('is_founder', v)} /> Founder</label>
+                <label className="flex items-center gap-2 text-sm"><Switch checked={!!editing.is_event} onCheckedChange={(v) => set('is_event', v)} /> Event</label>
+                <label className="flex items-center gap-2 text-sm"><Switch checked={!!editing.is_hidden} onCheckedChange={(v) => set('is_hidden', v)} /> Hidden</label>
               </div>
               <div><Label>Artwork URL (optional — overrides icon)</Label><Input value={editing.artwork_url || ''} onChange={(e) => set('artwork_url', e.target.value)} placeholder="https://..." /></div>
               <div className="grid grid-cols-2 gap-3">

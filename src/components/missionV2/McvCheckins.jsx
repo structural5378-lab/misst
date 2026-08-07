@@ -1,6 +1,7 @@
 import React from "react";
 import { statusConfig } from "@/components/mission/helpers";
 import McvSignalIcon from "./McvSignalIcon";
+import ActiveBadge from "@/components/premium/ActiveBadge";
 
 // McvCheckins — grid of check-in cards (left column). Each card shows avatar,
 // callsign/name, status + number + station-type tags, join time, signal meter,
@@ -16,7 +17,7 @@ export default function McvCheckins({ checkins, isOperator, onApprove, onEditSta
             <div className="flex items-center gap-2">
               {c.avatar ? <img src={c.avatar} className="w-8 h-8 rounded-full object-cover" /> : <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-[11px] font-bold text-violet-300">{(c.callsign || "?").charAt(0)}</div>}
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold truncate">{c.callsign}</p>
+                <p className="text-xs font-bold truncate flex items-center gap-1">{c.callsign}<ActiveBadge userId={c.user_id} size="inline" className="shrink-0" /></p>
                 <p className="text-[10px] text-muted-foreground truncate">{c.name || c.location || "—"}</p>
               </div>
               <McvSignalIcon report={c.signal_report} />
