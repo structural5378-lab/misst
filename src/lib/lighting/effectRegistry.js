@@ -37,6 +37,10 @@ export const SURFACES = {
   banner: 'banner',
   nav: 'nav',
   status: 'status',
+  // Geographic / weather-reaction surfaces (reserved for future event-driven
+  // integration with the existing weather/lightning pipeline — NOT used yet).
+  radioscope: 'radioscope',
+  weather: 'weather',
 };
 
 // ─── Premium tiers (metadata only — no gating in Phase 1) ───────────────────
