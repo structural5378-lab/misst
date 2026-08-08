@@ -7,7 +7,7 @@ import PremiumBadge from './PremiumBadge';
 // display the active badge. Lazy via the react-query cache in useActiveBadge.
 //
 // size: 'inline' (16px, default for name rows) | 'sm' (20px) | 'md' (32px) | 'lg' (48px)
-const PB_SIZE = { inline: '2xs', sm: 'xs', md: 'sm', lg: 'md' };
+const PB_SIZE = { inline: '2xs', sm: 'xs', md: 'sm', lg: 'md', xl: 'lg' };
 
 export default function ActiveBadge({ userId, size = 'inline', className = '', showName = false }) {
   const { badge } = useActiveBadge(userId);
