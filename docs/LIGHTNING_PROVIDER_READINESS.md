@@ -196,6 +196,34 @@ Obtain the official Vaisala NLDN feed/API specification and credentials. Then:
    `normalizeStrikeArray` (one place).
 3. Verify with the mock provider, then switch the secret to enable the live path.
 
+## NOAA GOES-19 GLM (free development provider)
+
+A free, public lightning source is wired as a development provider alongside the
+mock and pull paths:
+
+NOAA GOES-19 GLM L2 LCFA (S3 `noaa-goes19`, AWS Open Data) -> AWS Lambda relay ->
+`lightningWebhook` -> `normalizeStrikeArray` -> `LightningStrike` -> existing realtime
+event (RadioScope + Lighting Engine) + `lightningOnStrike` alerts.
+
+- Product: GLM L2 LCFA flashes (NetCDF4), one file per 20-second window, ~20 s NOAA
+  product latency. Optical total-lightning detection (IC + CC + CG) — does NOT
+  classify ground strikes, has NO polarity or peak current.
+- Provider slug: `noaa_glm`. `strike_type` = `total_lightning`. `provider_strike_id` =
+  `glm-<flash_id>` (stable per-flash ID -> webhook dedupe is idempotent).
+- Geographic filter: configurable bbox (default South Florida) applied in the relay
+  before POST; MISST never receives the full Western Hemisphere.
+- Position accuracy ~8-14 km (satellite optical); RadioScope shows flash centroids,
+  not ground-stroke points. Do not imply NLDN precision.
+- Attribution: "Lightning data: NOAA GOES-R Geostationary Lightning Mapper" shown in
+  RadioScope. NOAA data is public (NODD); attribution requested, no endorsement
+  implied.
+- The relay is an external AWS Lambda (see `aws/noaa-glm-relay/`); MISST ingestion is
+  the existing webhook — no LightningStrike / RadioScope / Lighting Engine / alert
+  changes. A native MISST poller is NOT used (Base44's 5-min automation floor cannot
+  meet the 20-second cadence).
+- NetCDF variable names follow the GOES-R L2 LCFA Product Definition; confirm against
+  a real file via `aws/noaa-glm-relay/self_test.py` before relying on them.
+
 ## What is NOT invented here
 
 No compatibility with any specific commercial provider is claimed. Provider-specific

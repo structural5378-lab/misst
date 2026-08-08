@@ -358,6 +358,11 @@ export default function RadioScope() {
             onClose={() => setSelectedUser(null)}
           />
         )}
+
+        {/* NOAA GLM attribution (data source) — non-interactive, no pipeline change */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 flex justify-center pb-1 pointer-events-none">
+          <span className="text-[8px] text-cyan-500/40 tracking-wide">Lightning data: NOAA GOES-R Geostationary Lightning Mapper</span>
+        </div>
       </div>
     </RadioScopeStartup>
   );

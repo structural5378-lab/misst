@@ -175,6 +175,14 @@ export function normalizeStrikeArray(data: any, maxStrikes = 500, provider = "li
     if (polarity) meta.polarity = polarity;
     if (durationMs != null) meta.duration_ms = durationMs;
     if (peakCurrent != null) meta.peak_current = peakCurrent;
+    // Pass through a provider-supplied metadata object (e.g. NOAA GLM flash_area /
+    // flash_duration / quality / radiant_energy) so provider-specific extras are stored
+    // cleanly on LightningStrike.metadata rather than only inside the raw payload.
+    if (raw.metadata && typeof raw.metadata === "object" && !Array.isArray(raw.metadata)) {
+      for (const k of Object.keys(raw.metadata)) {
+        if (meta[k] === undefined) meta[k] = raw.metadata[k];
+      }
+    }
     out.push({
       id,
       provider_strike_id: id,

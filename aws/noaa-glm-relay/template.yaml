@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: MISST NOAA GOES-19 GLM L2 LCFA relay -> existing lightningWebhook
+
+Parameters:
+  MisstWebhookUrl:
+    Type: String
+    Description: MISST lightningWebhook URL (https://<app>/functions/lightningWebhook)
+  WebhookSecret:
+    Type: String
+    NoEcho: true
+    Description: LIGHTNING_WEBHOOK_SECRET (sent as x-lightning-webhook-secret header)
+  LightningBbox:
+    Type: String
+    Default: "24.0,-83.0,31.0,-78.0"
+    Description: "minLat,minLon,maxLat,maxLon"
+  EcrImageUri:
+    Type: String
+    Description: "<acct>.dkr.ecr.us-east-1.amazonaws.com/misst-noaa-glm-relay:latest"
+
+Resources:
+  GlmRelayFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: misst-noaa-glm-relay
+      PackageType: Image
+      ImageUri: !Ref EcrImageUri
+      Timeout: 60
+      MemorySize: 1024
+      Environment:
+        Variables:
+          MISST_WEBHOOK_URL: !Ref MisstWebhookUrl
+          LIGHTNING_WEBHOOK_SECRET: !Ref WebhookSecret
+          LIGHTNING_BBOX: !Ref LightningBbox
+          GLM_BUCKET: noaa-goes19
+          GLM_PRODUCT: GLM-L2-LCFA
+          IDEMPOTENCY_TABLE: !Ref IdempotencyTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref IdempotencyTable
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - "logs:CreateLogGroup"
+                - "logs:CreateLogStream"
+                - "logs:PutLogEvents"
+              Resource: "*"
+
+  SnsInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GlmRelayFunction
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: arn:aws:sns:us-east-1:123901341784:NewGOES19Object
+
+  IdempotencyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: misst-noaa-glm-seen
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: object_key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: object_key
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+Outputs:
+  RelayFunctionArn:
+    Value: !GetAtt GlmRelayFunction.Arn
