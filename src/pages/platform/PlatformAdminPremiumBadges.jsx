@@ -12,6 +12,7 @@ import {
 import { Plus, Pencil, Trash2, Gift, Users, Sparkles, X } from 'lucide-react';
 import PremiumBadge, { PREMIUM_ICON_MAP } from '@/components/premium/PremiumBadge';
 import PremiumBadgeAnalytics from '@/components/premium/PremiumBadgeAnalytics';
+import UserSearchPicker from '@/components/platform/badges/UserSearchPicker';
 import AdminSection from '@/components/platform/AdminSection';
 
 const RARITIES = ['member', 'supporter', 'community', 'rare', 'epic', 'elite', 'mythic', 'legendary', 'administration'];
@@ -40,7 +41,7 @@ export default function PlatformAdminPremiumBadges() {
   const [editing, setEditing] = useState(null); // badge or EMPTY for new
   const [grant, setGrant] = useState(null); // badge to grant
   const [ownersBadge, setOwnersBadge] = useState(null);
-  const [grantForm, setGrantForm] = useState({ user_id: '', user_name: '' });
+  const [grantUser, setGrantUser] = useState(null);
 
   const { data: badges = [], isLoading } = useQuery({
     queryKey: ['admin-premium-badges'],
@@ -95,14 +96,14 @@ export default function PlatformAdminPremiumBadges() {
     try {
       const b = grant;
       await base44.entities.PremiumBadgeOwnership.create({
-        user_id: grantForm.user_id, user_name: grantForm.user_name,
+        user_id: grantUser.id, user_name: grantUser.full_name || grantUser.mybb_username || '',
         badge_id: b.id, badge_name: b.name, badge_icon: b.icon, badge_artwork_url: b.artwork_url,
         badge_effect: b.effect, badge_accent_color: b.accent_color, badge_rarity: b.rarity,
         is_active: false, is_gift: true, gifted_by: '', is_earned: true,
         purchased_at: new Date().toISOString(), status: 'active',
       });
       toast({ title: 'Badge granted' });
-      setGrant(null); setGrantForm({ user_id: '', user_name: '' });
+      setGrant(null); setGrantUser(null);
     } catch (e) { toast({ title: 'Grant failed', description: e.message, variant: 'destructive' }); }
   };
 
@@ -216,12 +217,20 @@ export default function PlatformAdminPremiumBadges() {
           <DialogContent className="max-w-sm">
             <DialogHeader><DialogTitle>Grant "{grant.name}"</DialogTitle></DialogHeader>
             <div className="space-y-3">
-              <div><Label>Recipient User ID</Label><Input value={grantForm.user_id} onChange={(e) => setGrantForm((f) => ({ ...f, user_id: e.target.value }))} placeholder="UUID" /></div>
-              <div><Label>Recipient Name</Label><Input value={grantForm.user_name} onChange={(e) => setGrantForm((f) => ({ ...f, user_name: e.target.value }))} /></div>
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30">
+                <PremiumBadge badge={grant} size="md" />
+                <div>
+                  <p className="text-sm font-semibold">{grant.name}</p>
+                  <p className="text-[11px] text-muted-foreground capitalize">{grant.rarity} badge</p>
+                </div>
+              </div>
+              <div><Label>Recipient</Label>
+                <UserSearchPicker selected={grantUser} onSelect={(u) => setGrantUser(u)} />
+              </div>
             </div>
             <DialogFooter>
               <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
-              <Button onClick={doGrant} disabled={!grantForm.user_id}>Grant</Button>
+              <Button onClick={doGrant} disabled={!grantUser}>Grant</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
