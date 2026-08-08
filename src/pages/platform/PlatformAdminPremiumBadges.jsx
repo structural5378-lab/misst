@@ -235,7 +235,7 @@ export default function PlatformAdminPremiumBadges() {
                 </div>
               </div>
               <div><Label>Recipient</Label>
-                <UserSearchPicker selected={grantUser} onSelect={(u) => setGrantUser(u)} />
+                <UserSearchPicker selected={grantUser} onSelect={(u) => setGrantUser(u)} allowSelf />
               </div>
             </div>
             <DialogFooter>

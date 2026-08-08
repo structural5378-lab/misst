@@ -1,15 +1,26 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Search, X } from "lucide-react";
+import { Search, X, UserCircle2 } from "lucide-react";
 
 // UserSearchPicker — searchable platform-wide member picker.
 // Reuses the existing searchUsers backend function (admins see email too).
 // onSelect(user) fires with { id, full_name, callsign, mybb_username, avatar_url, email }.
 // Pass `selected` to render the chosen user as a removable chip instead of the search box.
-export default function UserSearchPicker({ onSelect, selected, placeholder = "Search by name, callsign, or email…" }) {
+export default function UserSearchPicker({ onSelect, selected, allowSelf = false, placeholder = "Search by name, callsign, or email…" }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [pickingMe, setPickingMe] = useState(false);
+
+  // searchUsers excludes the logged-in user (DM directory), so for admin grant
+  // flows we offer a direct "Myself" pick from base44.auth.me().
+  const pickMe = async () => {
+    setPickingMe(true);
+    try {
+      const me = await base44.auth.me();
+      if (me) onSelect({ id: me.id, full_name: me.full_name, email: me.email, avatar_url: me.avatar_url, callsign: me.callsign });
+    } catch { /* ignore */ } finally { setPickingMe(false); }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +56,16 @@ export default function UserSearchPicker({ onSelect, selected, placeholder = "Se
 
   return (
     <div>
+      {allowSelf && (
+        <button
+          onClick={pickMe}
+          disabled={pickingMe}
+          className="w-full flex items-center gap-2 px-3 py-2 mb-2 rounded-xl bg-primary/10 border border-primary/30 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-60"
+        >
+          <UserCircle2 className="w-4 h-4" />
+          {pickingMe ? "Loading…" : "Grant to myself"}
+        </button>
+      )}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
