@@ -3,6 +3,7 @@ import { Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useUserCommunities } from '@/hooks/useUserCommunities';
+import { usePollingGate } from '@/hooks/usePollingGate';
 import { milesBetween } from '@/lib/lightning/lightningSeverity';
 
 // LightningActivityStrip — weather-UI lightning indicator for the Dashboard.
@@ -16,6 +17,7 @@ import { milesBetween } from '@/lib/lightning/lightningSeverity';
 const RADIUS_MI = 50;
 
 export default function LightningActivityStrip() {
+  const active = usePollingGate();
   const { data: communities = [] } = useUserCommunities();
   const activeId =
     typeof window !== 'undefined' ? localStorage.getItem('selected_community_id') : null;
@@ -44,7 +46,7 @@ export default function LightningActivityStrip() {
     },
     enabled: !!center,
     staleTime: 30 * 1000,
-    refetchInterval: 60 * 1000,
+    refetchInterval: active ? 60 * 1000 : false,
   });
 
   if (!center || !nearest) return null;
