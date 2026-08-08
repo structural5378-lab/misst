@@ -12,7 +12,7 @@ import GroupTag from './GroupTag';
 import BadgeShowcase from './BadgeShowcase';
 import PrestigeStats from './PrestigeStats';
 import ProfileHeaderStats from './ProfileHeaderStats';
-import ActiveBadge from '@/components/premium/ActiveBadge';
+import PremiumBadgeRow from '@/components/premium/PremiumBadgeRow';
 import { getLevelProgress } from '@/components/achievements/LevelBar';
 import { RARITIES } from '@/lib/rarityConfig';
 import { ICON_MAP } from '@/components/achievements/iconMap';
@@ -127,10 +127,8 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
               </div>
             </div>
 
-            {/* Active Premium Badge — large, below the Founder pill so effects are visible */}
-            <div className="flex items-center gap-2">
-              <ActiveBadge userId={user?.id} size="xl" showName className="shrink-0 drop-shadow-md" />
-            </div>
+            {/* Premium Badges — all awarded badges in a single row (max 6) */}
+            <PremiumBadgeRow userId={user?.id} max={6} size="md" />
 
             {/* Group Tags */}
             {groups.filter((g) => g.id !== 'administrator').length > 0 &&
