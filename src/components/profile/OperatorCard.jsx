@@ -13,6 +13,7 @@ import BadgeShowcase from './BadgeShowcase';
 import PrestigeStats from './PrestigeStats';
 import ProfileHeaderStats from './ProfileHeaderStats';
 import PremiumBadgeRow from '@/components/premium/PremiumBadgeRow';
+import PremiumAvatarFrame from '@/components/premium/PremiumAvatarFrame';
 import { getLevelProgress } from '@/components/achievements/LevelBar';
 import { RARITIES } from '@/lib/rarityConfig';
 import { ICON_MAP } from '@/components/achievements/iconMap';
@@ -84,11 +85,11 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
           <div className="relative pl-4 pr-3 py-3 space-y-2 z-10">
             {/* Identity + actions */}
             <div className="flex items-start gap-3 flex-wrap">
-              <div className={`avatar-frame avatar-frame-${avatarFrame || 'common'} shrink-0`}>
+              <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="shrink-0">
                 <div className="w-20 h-20 rounded-2xl overflow-hidden bg-violet-950/50 ring-2 ring-violet-500/30">
                   <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => {e.target.src = LOGO_URL;}} />
                 </div>
-              </div>
+              </PremiumAvatarFrame>
               <div className="flex-1 min-w-[110px] pt-2">
                 <div className="flex items-start gap-2">
                   <h2 className="text-lg font-bold text-white leading-tight break-words drop-shadow-md">{displayName || callsign}</h2>
