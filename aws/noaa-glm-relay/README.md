@@ -39,9 +39,20 @@ pip install netCDF4 boto3 botocore
 python3 self_test.py
 ```
 
-It prints the latest file's variables and the first flash. Confirm `flash_id`,
-`flash_lat`, `flash_lon`, `flash_time_offset` are PRESENT with real values. If any
-name differs, update `extract_flashes()` in `lambda_function.py` accordingly.
+It prints the latest file's variables, units, global attributes, and the first flash
+(unpacked). The VERIFIED schema (parsed from a real 2026-08-08T21:03Z file) is:
+
+- `flash_id` (int16, product-unique per 20s file)
+- `flash_lat` / `flash_lon` (float32, degrees — real, not packed)
+- `flash_area` (int16 packed → m²), `flash_energy` (int16 packed → J) — netCDF4 auto-applies scale_factor/add_offset
+- `flash_quality_flag` (int16)
+- `flash_time_offset_of_first_event` / `flash_time_offset_of_last_event` (int16 packed → seconds since `<window start>`)
+
+There is **no** `flash_time_offset` variable; flash time = `flash_time_offset_of_first_event`,
+converted to absolute UTC via `netCDF4.num2date` against the variable's own units string.
+`provider_strike_id = glm-<file_s_token>-<flash_id>` (flash_id is product-unique, so the
+file's start timestamp makes it globally unique for dedupe). If a future product version
+renames any variable, update `extract_flashes()` accordingly.
 
 ## Step 2 — Build & push the container image
 
@@ -108,9 +119,10 @@ If cross-account subscription is rejected, request access from NOAA/NODD
 
 - **File-level:** the DynamoDB table marks each NOAA object key as seen (7-day TTL);
   retried SNS notifications skip already-processed files.
-- **Record-level:** each flash uses `provider_strike_id = glm-<flash_id>`; the MISST
-  webhook dedupes by `provider_strike_id`, so even a double-processed file creates no
-  duplicate `LightningStrike` records.
+- **Record-level:** each flash uses `provider_strike_id = glm-<file_s_token>-<flash_id>`
+  (GLM `flash_id` is product-unique per 20-second file, so the file's start timestamp
+  makes it globally unique); the MISST webhook dedupes by `provider_strike_id`, so even a
+  double-processed file creates no duplicate `LightningStrike` records.
 - **Failure:** if NOAA/S3 is unavailable, the Lambda logs and exits — it never deletes
   records or fabricates strikes. If the MISST webhook is unavailable, the POST fails
   and is logged; the next notification recovers. NetCDF parse failures log the object

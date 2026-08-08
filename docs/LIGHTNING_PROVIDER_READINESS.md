@@ -209,7 +209,9 @@ event (RadioScope + Lighting Engine) + `lightningOnStrike` alerts.
   product latency. Optical total-lightning detection (IC + CC + CG) — does NOT
   classify ground strikes, has NO polarity or peak current.
 - Provider slug: `noaa_glm`. `strike_type` = `total_lightning`. `provider_strike_id` =
-  `glm-<flash_id>` (stable per-flash ID -> webhook dedupe is idempotent).
+  `glm-<file_s_token>-<flash_id>` — GLM `flash_id` is product-unique (per 20-second
+  file), so the file's start timestamp makes the id globally unique -> the webhook
+  dedupe is idempotent across files and across SNS retries.
 - Geographic filter: configurable bbox (default South Florida) applied in the relay
   before POST; MISST never receives the full Western Hemisphere.
 - Position accuracy ~8-14 km (satellite optical); RadioScope shows flash centroids,
@@ -221,8 +223,16 @@ event (RadioScope + Lighting Engine) + `lightningOnStrike` alerts.
   the existing webhook — no LightningStrike / RadioScope / Lighting Engine / alert
   changes. A native MISST poller is NOT used (Base44's 5-min automation floor cannot
   meet the 20-second cadence).
-- NetCDF variable names follow the GOES-R L2 LCFA Product Definition; confirm against
-  a real file via `aws/noaa-glm-relay/self_test.py` before relying on them.
+- NetCDF schema VERIFIED by parsing a real file (2026-08-08T21:03Z,
+  `OR_GLM-L2-LCFA_G19_s20262202103000_e20262202103200_c20262202103220.nc`, 386,925 bytes):
+  `flash_id` (int16), `flash_lat`/`flash_lon` (float32 degrees, not packed), `flash_area`
+  (int16 packed -> m2), `flash_energy` (int16 packed -> J, `standard_name=lightning_radiant_energy`),
+  `flash_quality_flag` (int16), `flash_time_offset_of_first_event` /
+  `flash_time_offset_of_last_event` (int16 packed -> seconds since `<window start>`). There is
+  NO `flash_time_offset` variable. Python `netCDF4` auto-applies scale_factor/add_offset and
+  masks _FillValue, so reads return real m2 / J / seconds. Flash time = absolute UTC via
+  `netCDF4.num2date` against the variable's own units string (authoritative, not assumed from
+  the filename). Re-verify with `aws/noaa-glm-relay/self_test.py` if the product version changes.
 
 ## What is NOT invented here
 

@@ -10,6 +10,24 @@ GLM is optical total-lightning detection. It does NOT classify cloud-to-ground v
 in-cloud, and has NO polarity or peak current. Records are labeled "total_lightning"
 and never "cloud-to-ground" / "ground strike".
 
+VERIFIED SCHEMA (parsed from a real file 2026-08-08T21:03Z, OR_GLM-L2-LCFA_G19_...):
+  flash_id                              int16  units "1"  (product-unique, NOT global)
+  flash_lat                             float32 degrees_north  (real, not packed)
+  flash_lon                             float32 degrees_east   (real, not packed)
+  flash_area                            int16 packed -> m2  (scale_factor + add_offset)
+  flash_energy                          int16 packed -> J   (scale_factor + add_offset)
+  flash_quality_flag                    int16  units "1"
+  flash_time_offset_of_first_event      int16 packed -> seconds since <window start>
+  flash_time_offset_of_last_event       int16 packed -> seconds since <window start>
+  (there is NO `flash_time_offset` variable)
+Python netCDF4 auto-applies scale_factor/add_offset and masks _FillValue, so reads
+return real m2 / J / seconds directly. Time is computed via netCDF4.num2date against
+the variable's own units string (authoritative, not assumed from the filename).
+
+provider_strike_id = "glm-<file_s_token>-<flash_id>"  (flash_id is product-unique per
+20-second file, so the file's start timestamp makes the id globally unique -> the
+MISST webhook dedupe is correct across files and across SNS retries).
+
 Env vars:
   MISST_WEBHOOK_URL        required  https://<app>/functions/lightningWebhook
   LIGHTNING_WEBHOOK_SECRET required  shared secret (sent as x-lightning-webhook-secret)
@@ -24,16 +42,18 @@ import time
 import urllib.request
 import urllib.error
 import urllib.parse
-from datetime import datetime, timezone, timedelta
+from datetime import timezone
 
+import numpy as np
 import boto3
 from botocore import UNSIGNED
 from botocore.config import Config
 
 try:
-    from netCDF4 import Dataset
+    from netCDF4 import Dataset, num2date
 except Exception as e:  # netCDF4/HDF5 not available in this image
     Dataset = None
+    num2date = None
     _NETCDF_IMPORT_ERROR = e
 
 WEBHOOK_URL = os.environ.get("MISST_WEBHOOK_URL", "")
@@ -79,15 +99,10 @@ def mark_seen(object_key):
         pass
 
 
-def window_start_from_key(key):
-    """OR_GLM-L2-LCFA_G19_sYYYYJJJHHMMSSss_... -> UTC datetime (20s window start)."""
+def s_token_from_key(key):
+    """Filename s-token (YYYYJJJHHMMSSss) — unique per 20-second product file."""
     try:
-        s = key.split("/")[-1].split("_s")[1].split("_e")[0]
-        year, doy = int(s[0:4]), int(s[4:7])
-        hh, mm, ss, cs = int(s[7:9]), int(s[9:11]), int(s[11:13]), int(s[13:15])
-        return datetime(year, 1, 1, tzinfo=timezone.utc) + timedelta(
-            days=doy - 1, hours=hh, minutes=mm, seconds=ss, milliseconds=cs * 10
-        )
+        return key.split("/")[-1].split("_s")[1].split("_e")[0]
     except Exception:
         return None
 
@@ -99,24 +114,45 @@ def download_netcdf(bucket, key):
     return tmp
 
 
-def extract_flashes(nc_path, bbox, window_start):
-    """Extract in-bbox flash records. Variable names follow the GOES-R GLM L2 LCFA
-    Product Definition; run self_test.py against a real file to confirm before relying
-    on them."""
+def _unmask(x):
+    """netCDF4 returns masked values for _FillValue; return None for those, else float."""
+    try:
+        if np.ma.is_masked(x):
+            return None
+    except Exception:
+        pass
+    try:
+        return float(x)
+    except Exception:
+        return None
+
+
+def _to_utc_iso(dt):
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)  # GLM times are UTC
+    return dt.isoformat().replace("+00:00", "Z")
+
+
+def extract_flashes(nc_path, bbox, s_token):
+    """Extract in-bbox flash records using the VERIFIED variable names. netCDF4
+    auto-applies scale_factor/add_offset and masks _FillValue, so area/energy/time
+    read as real m2 / J / seconds. Flash time = flash_time_offset_of_first_event,
+    converted to absolute UTC via num2date against the variable's own units string."""
     ds = Dataset(nc_path, "r")
     try:
         v = ds.variables
-        flash_id = v.get("flash_id")
-        flash_lat = v.get("flash_lat")
-        flash_lon = v.get("flash_lon")
-        flash_time = v.get("flash_time_offset") or v.get("flash_time")
-        flash_area = v.get("flash_area")
-        flash_energy = v.get("flash_energy")
-        flash_quality = v.get("flash_quality_flag")
-        t_first = v.get("flash_time_offset_of_first_event")
-        t_last = v.get("flash_time_offset_of_last_event")
-        if flash_id is None or flash_lat is None or flash_lon is None:
-            return [], {"error": "missing core flash variables", "variables": list(v.keys())}
+        flash_id = v["flash_id"][:]
+        flash_lat = v["flash_lat"][:]
+        flash_lon = v["flash_lon"][:]
+        flash_area = v["flash_area"][:]
+        flash_energy = v["flash_energy"][:]
+        flash_quality = v["flash_quality_flag"][:]
+        t_first_var = v["flash_time_offset_of_first_event"]
+        t_last_var = v["flash_time_offset_of_last_event"]
+        t_first = num2date(t_first_var[:], t_first_var.units, calendar="standard")
+        t_last = num2date(t_last_var[:], t_last_var.units, calendar="standard")
         n = len(flash_id)
         out = []
         for i in range(n):
@@ -124,27 +160,29 @@ def extract_flashes(nc_path, bbox, window_start):
             lon = float(flash_lon[i])
             if not in_bbox(lat, lon, bbox):
                 continue
+            # skip if the flash time itself is a fill value
+            if np.ma.is_masked(t_first_var[i]):
+                continue
             fid = int(flash_id[i])
-            t_off = float(flash_time[i]) if flash_time is not None else 0.0
-            if window_start:
-                iso = (window_start + timedelta(seconds=t_off)).isoformat().replace("+00:00", "Z")
-            else:
-                iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            t0 = _to_utc_iso(t_first[i])
             dur = None
-            if t_first is not None and t_last is not None:
-                try:
-                    dur = float(t_last[i]) - float(t_first[i])
-                except Exception:
-                    dur = None
-            area = float(flash_area[i]) if flash_area is not None else None
-            energy = float(flash_energy[i]) if flash_energy is not None else None
-            quality = int(flash_quality[i]) if flash_quality is not None else None
+            try:
+                if not np.ma.is_masked(t_last_var[i]):
+                    a = t_first[i].replace(tzinfo=timezone.utc) if t_first[i].tzinfo is None else t_first[i]
+                    b = t_last[i].replace(tzinfo=timezone.utc) if t_last[i].tzinfo is None else t_last[i]
+                    dur = (b - a).total_seconds()
+            except Exception:
+                dur = None
+            area = _unmask(flash_area[i])
+            energy = _unmask(flash_energy[i])
+            quality = None if np.ma.is_masked(flash_quality[i]) else int(flash_quality[i])
+            sid = f"glm-{s_token}-{fid}" if s_token else f"glm-{fid}"
             out.append({
                 "provider": "noaa_glm",
-                "id": f"glm-{fid}",
+                "id": sid,
                 "latitude": lat,
                 "longitude": lon,
-                "time": iso,
+                "time": t0,
                 "intensity": energy,
                 "type": "total_lightning",
                 "metadata": {
@@ -158,7 +196,12 @@ def extract_flashes(nc_path, bbox, window_start):
             })
             if len(out) >= MAX_FLASHES_PER_POST:
                 break
-        return out, {"count": len(out), "total": n, "variables": list(v.keys())[:50]}
+        return out, {
+            "count": len(out),
+            "total": n,
+            "time_units": t_first_var.units,
+            "s_token": s_token,
+        }
     finally:
         ds.close()
 
@@ -204,8 +247,8 @@ def handler(event, context):
                 if Dataset is None:
                     raise _NETCDF_IMPORT_ERROR
                 nc_path = download_netcdf(bucket, key)
-                window_start = window_start_from_key(key)
-                flashes, info = extract_flashes(nc_path, bbox, window_start)
+                s_token = s_token_from_key(key)
+                flashes, info = extract_flashes(nc_path, bbox, s_token)
                 if not flashes:
                     results.append({"key": key, "flashes": 0, "info": info})
                     continue
