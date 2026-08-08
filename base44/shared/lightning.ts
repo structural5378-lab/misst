@@ -145,7 +145,10 @@ function buildUrl(cfg: { apiUrl: string }, sinceMs: number): string {
   return `${base}${sep}since=${encodeURIComponent(sinceIso)}&limit=${cfg.maxStrikes || 500}`;
 }
 
-function normalizeStrikes(data: any, sinceMs: number, maxStrikes: number): Strike[] {
+// Normalize a provider payload into Strike[] WITHOUT a since-filter. Shared by
+// the live polled provider (normalizeStrikes adds the since-filter below) and the
+// push webhook (lightningWebhook), so ingestion normalization is defined once.
+export function normalizeStrikeArray(data: any, maxStrikes = 500): Strike[] {
   let arr: any[] = [];
   if (Array.isArray(data)) arr = data;
   else if (data && Array.isArray(data.strikes)) arr = data.strikes;
@@ -158,7 +161,7 @@ function normalizeStrikes(data: any, sinceMs: number, maxStrikes: number): Strik
     if (!isFinite(lat) || !isFinite(lon)) continue;
     const tRaw = raw.time || raw.timestamp || raw.utc_time || raw.dateTime || raw.detected_at || raw.strike_time;
     const t = tRaw ? new Date(tRaw).getTime() : Date.now();
-    if (!isFinite(t) || t < sinceMs) continue;
+    if (!isFinite(t)) continue;
     const id = String(raw.id || raw.strikeId || raw.uuid || `${lat.toFixed(4)},${lon.toFixed(4)},${t}`);
     out.push({
       id,
@@ -175,6 +178,13 @@ function normalizeStrikes(data: any, sinceMs: number, maxStrikes: number): Strik
     if (out.length >= maxStrikes) break;
   }
   return out;
+}
+
+function normalizeStrikes(data: any, sinceMs: number, maxStrikes: number): Strike[] {
+  return normalizeStrikeArray(data, maxStrikes).filter((s) => {
+    const t = new Date(s.strike_time || 0).getTime();
+    return t >= sinceMs;
+  });
 }
 
 function sleep(ms: number) {
