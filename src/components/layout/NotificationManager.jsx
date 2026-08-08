@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { ensureSubscribed } from "@/lib/fcmPush";
 import InAppNotificationCenter from "@/components/notifications/InAppNotificationCenter";
+import ChatNotificationListener from "@/components/notifications/ChatNotificationListener";
 
 // Mounted once in AppLayout. Ensures the FCM service worker is registered and, if
 // the user is already subscribed, keeps the backend token fresh. Also keeps the
@@ -55,5 +56,10 @@ export default function NotificationManager() {
     };
   }, []);
 
-  return <InAppNotificationCenter />;
+  return (
+    <>
+      <ChatNotificationListener />
+      <InAppNotificationCenter />
+    </>
+  );
 }

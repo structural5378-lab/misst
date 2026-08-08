@@ -8,6 +8,7 @@ import MessageComposerV2 from "@/components/chatV2/MessageComposerV2";
 import CommunityHeader from "./CommunityHeader";
 import { SenderBadges } from "./badges";
 import { MembersView, EventsView, MediaView, PinnedView, FilesView } from "./CommunityViews";
+import { setActiveChatView, clearActiveChatView } from "@/lib/activeChatView";
 
 // CommunityConversation — the single living chat for a community. Reuses the
 // realtime useRoomMessages engine + MessageBubbleV2/Composer. A compact
@@ -32,6 +33,14 @@ export default function CommunityConversation({ community, room, mistUser, membe
 
   const memberByUser = useMemo(() => { const m = {}; (members || []).forEach((x) => { m[x.user_id] = x; }); return m; }, [members]);
   const msgs = useRoomMessages({ roomId: room?.id, user: mistUser, community });
+
+  // Track that the user is actively viewing this community's chat so the
+  // app-wide ChatNotificationListener can suppress in-app banners for messages
+  // the user is already reading live (and auto-mark them read).
+  useEffect(() => {
+    setActiveChatView({ type: "community", communityId: community?.id, roomId: room?.id });
+    return () => clearActiveChatView();
+  }, [community?.id, room?.id]);
 
   // Auto-scroll to the latest message on room open, on new messages (when
   // already pinned to the bottom), and when the composer is focused (keyboard

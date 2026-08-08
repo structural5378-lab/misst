@@ -33,6 +33,8 @@ export default function InAppNotificationCenter() {
   const [queue, setQueue] = useState([]);
   const navigate = useNavigate();
   const timers = useRef(new Map());
+  const shownIds = useRef(new Set());      // dedup by notification ID (realtime path)
+  const shownContent = useRef(new Map());  // dedup by content key (FCM push, 3s window)
 
   const dismiss = useCallback((id) => {
     setQueue((prev) => prev.filter((n) => n.id !== id));
@@ -46,7 +48,24 @@ export default function InAppNotificationCenter() {
   const enqueue = useCallback(
     (notif) => {
       const meta = getNotifMeta(notif.type);
-      const id = (notif.id || Date.now()) + "-" + Math.random().toString(36).slice(2, 6);
+      // Dedup: never show the same notification twice. FCM push (SW 'fcm-push')
+      // and the realtime ChatNotificationListener can both fire for the same
+      // record — dedup by notification ID when available, otherwise by content
+      // within a 3-second window.
+      const notifId = notif.id || "";
+      const contentKey = `${notif.type || ""}|${notif.title || ""}|${notif.body || ""}`;
+      if (notifId && shownIds.current.has(notifId)) return;
+      if (notifId) {
+        shownIds.current.add(notifId);
+        setTimeout(() => shownIds.current.delete(notifId), 10000);
+      } else {
+        const now = Date.now();
+        const last = shownContent.current.get(contentKey) || 0;
+        if (now - last < 3000) return;
+        shownContent.current.set(contentKey, now);
+        setTimeout(() => shownContent.current.delete(contentKey), 3000);
+      }
+      const id = (notifId || Date.now()) + "-" + Math.random().toString(36).slice(2, 6);
       const item = {
         id,
         type: notif.type || "system",

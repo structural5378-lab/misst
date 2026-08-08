@@ -51,17 +51,31 @@ export default function Messages() {
   const mainRoom = rooms.find((r) => r.type === "text" && !r.is_hidden && !r.is_archived) || rooms[0] || null;
   const myRole = myMember?.role || null;
 
-  // Deep link: ?new_dm=<userId> auto-starts a DM (from profile "Message" buttons).
+  // Deep links:
+  //   ?c=<communityId>  — select a community chat (from a community_chat
+  //                      notification tap).
+  //   ?dm=<convId>      — open a specific DM (from a direct_message tap).
+  //   ?new_dm=<userId>  — auto-start a DM (from a profile "Message" button).
   useEffect(() => {
     if (!mistUser?.id) return;
     const params = new URLSearchParams(window.location.search);
+    const cId = params.get("c");
+    const dmId = params.get("dm");
     const newDm = params.get("new_dm");
-    if (!newDm) return;
-    (async () => {
-      try { const { conversation, participant } = await startDirectConversation(newDm); upsertConversation(conversation, participant); setSel({ type: "dm", id: conversation.id }); }
-      catch { /* silent */ }
-    })();
-    window.history.replaceState({}, "", "/messages");
+    if (cId) {
+      localStorage.setItem("selected_community_id", cId);
+      window.dispatchEvent(new Event("storage"));
+      window.history.replaceState({}, "", "/messages");
+    } else if (dmId) {
+      setSel({ type: "dm", id: dmId });
+      window.history.replaceState({}, "", "/messages");
+    } else if (newDm) {
+      (async () => {
+        try { const { conversation, participant } = await startDirectConversation(newDm); upsertConversation(conversation, participant); setSel({ type: "dm", id: conversation.id }); }
+        catch { /* silent */ }
+      })();
+      window.history.replaceState({}, "", "/messages");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mistUser?.id]);
 

@@ -86,6 +86,7 @@ Deno.serve(async (req) => {
       related_object_id: conversationId,
       related_object_type: "chat_v2_conversation",
       image: senderAvatar,
+      link: `/messages?dm=${conversationId}`,
       metadata: JSON.stringify({ conversation_id: conversationId, chat_v2: true }),
       skip_sender: true,
     });

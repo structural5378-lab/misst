@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     const roomType = room?.type || "text";
     const roomName = room?.name || "Room";
     const slug = room?.community_slug || msg.community_slug || "";
-    const link = slug ? `/chat-v2/c/${slug}` : "/chat-v2";
+    const link = communityId ? `/messages?c=${communityId}` : "/messages";
     const meta = { community_id: communityId, community_slug: slug, room_id: msg.room_id, room_name: roomName };
 
     const members = await base44.asServiceRole.entities.CommunityMember
@@ -86,6 +86,7 @@ Deno.serve(async (req) => {
       related_object_type: "room",
       community_id: communityId,
       link,
+      image: msg.sender_avatar || "",
       skip_sender: true,
     };
 
@@ -138,6 +139,30 @@ Deno.serve(async (req) => {
         recipient_ids: memberIds.filter((id) => id !== senderId),
         metadata: JSON.stringify(meta),
       });
+    }
+
+    // General community chat: EVERY regular text-room message notifies all
+    // members (excluding the sender, @mentioned users, and the replied-to
+    // sender, who each receive their own dedicated notification above). This
+    // closes the gap where ordinary community messages produced no notification
+    // at all — now every message drives an in-app record + FCM push + global
+    // badge increment for non-active viewers, per the "every message notifies"
+    // rule. Emergency/admin/event rooms already broadcast above.
+    if (roomType === "text") {
+      const replyToId = msg.reply_to_message_id && msg.reply_to_sender_id ? String(msg.reply_to_sender_id) : "";
+      const generalRecipients = memberIds.filter(
+        (id) => id !== senderId && !mentioned.has(id) && id !== replyToId
+      );
+      if (generalRecipients.length) {
+        await dispatchNotifications(base44, {
+          ...baseEvt,
+          type: "community_chat",
+          title: `${msg.sender_name || "Someone"} in ${roomName}`,
+          message: (msg.body || "").slice(0, 160),
+          recipient_ids: generalRecipients,
+          metadata: JSON.stringify(meta),
+        });
+      }
     }
 
     return Response.json({ ok: true, mentioned: mentioned.size });
