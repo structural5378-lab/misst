@@ -95,14 +95,24 @@ export default function PlatformAdminPremiumBadges() {
   const doGrant = async () => {
     try {
       const b = grant;
+      // Clear any currently-active badge for this recipient so the granted one
+      // becomes their active (displayed) badge immediately.
+      const prior = await base44.entities.PremiumBadgeOwnership.filter({ user_id: grantUser.id, is_active: true });
+      if (prior?.length) {
+        await base44.entities.PremiumBadgeOwnership.bulkUpdate(prior.map((o) => ({ id: o.id, is_active: false })));
+      }
       await base44.entities.PremiumBadgeOwnership.create({
         user_id: grantUser.id, user_name: grantUser.full_name || grantUser.mybb_username || '',
         badge_id: b.id, badge_name: b.name, badge_icon: b.icon, badge_artwork_url: b.artwork_url,
         badge_effect: b.effect, badge_accent_color: b.accent_color, badge_rarity: b.rarity,
-        is_active: false, is_gift: true, gifted_by: '', is_earned: true,
+        is_active: true, is_gift: true, gifted_by: '', is_earned: true,
         purchased_at: new Date().toISOString(), status: 'active',
       });
-      toast({ title: 'Badge granted' });
+      qc.invalidateQueries({ queryKey: ['active-badge'] });
+      qc.invalidateQueries({ queryKey: ['active-badges'] });
+      qc.invalidateQueries({ queryKey: ['premium-badge-ownership'] });
+      qc.invalidateQueries({ queryKey: ['premium-badge-owners'] });
+      toast({ title: 'Badge granted', description: `${grantUser.full_name || grantUser.email} now displays ${b.name}.` });
       setGrant(null); setGrantUser(null);
     } catch (e) { toast({ title: 'Grant failed', description: e.message, variant: 'destructive' }); }
   };
