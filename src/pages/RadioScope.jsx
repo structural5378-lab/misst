@@ -15,8 +15,10 @@ import RadioScopeDebugPanel from "@/components/radioscope/RadioScopeDebugPanel";
 import RadioScopeCommunitySelector from "@/components/radioscope/RadioScopeCommunitySelector";
 import RadioScopeStatsBar from "@/components/radioscope/RadioScopeStatsBar";
 import { useLightningProximity } from "@/hooks/useLightningProximity";
-import { buildLightingEvent, milesBetween } from "@/lib/lightning/lightningSeverity";
+import { buildLightingEvent } from "@/lib/lightning/lightningSeverity";
 import { dispatchLightingEvent } from "@/lib/lighting/lightingEvents";
+import { useRealtimeLightningStrikes } from "@/hooks/useRealtimeLightningStrikes";
+import { SCOPE_RADIUS_MI } from "@/lib/lightning/proximityConfig";
 import {
   GPS_WATCH_OPTS, GPS_UPDATE_THROTTLE_MS, LOCATION_TTL_MS,
   classifySource, getLiveUsers,
@@ -176,9 +178,8 @@ export default function RadioScope() {
     };
   }, [clearLocation]);
 
-  // ── Lightning strikes (community-scoped, from the single RadioScope data
-  // call — eliminates the duplicate frontend lightning query). ──
-  const communityStrikes = useMemo(() => scope?.strikes || [], [scope]);
+  // ── Lightning proximity (user alert radius → severity threshold anchor) ──
+  const { radiusMiles } = useLightningProximity();
 
   const communityCenter = useMemo(() => {
     if (communityRecord?.location_lat != null && communityRecord?.location_lon != null) {
@@ -187,31 +188,26 @@ export default function RadioScope() {
     return null;
   }, [communityRecord]);
 
-  // ── Lightning proximity (user alert radius → severity threshold anchor) ──
-  const { radiusMiles } = useLightningProximity();
-
-  // ── Event-driven lighting: realtime LightningStrike creates dispatch a
-  // transient LightingEvent (weather → radioscope) through the engine seam.
-  // The weather system never imports UI; this producer only computes event
-  // data from the strike + the user's position/radius. ──
-  useEffect(() => {
-    const unsub = base44.entities.LightningStrike.subscribe((evt) => {
-      if (evt.type !== "create" || !evt.data) return;
-      const s = evt.data;
-      if (s.latitude == null || s.longitude == null) return;
-      // Only react to strikes within the community's rendered range (50mi of
-      // the community center — matches the persisted markers from the
-      // backend). Distant global strikes never flash the map.
-      const scopeOrigin = communityCenter || userPosition;
-      if (!scopeOrigin) return;
-      const scopeDist = milesBetween(scopeOrigin[0], scopeOrigin[1], s.latitude, s.longitude);
-      if (scopeDist > 50) return;
-      // Severity/distance use the user's own position when available.
-      const event = buildLightingEvent({ strike: s, userPos: userPosition || communityCenter, radiusMiles, now: Date.now() });
+  // ── REALTIME-FIRST lightning: new strikes merge into local state immediately
+  // via the LightningStrike realtime subscription, so markers render without
+  // waiting for the next getCommunityRadioScopeData refetch. The scope query
+  // (scope.strikes) remains the source of truth for the historical set; realtime
+  // is the PRIMARY path for NEW strikes. onNewStrike dispatches the transient
+  // LightingEvent (weather → radioscope) for the flash overlay — one
+  // subscription, two behaviors (marker + flash). Scope filter uses the
+  // configurable radius (SCOPE_RADIUS_MI). The 8s scope refetch is reconciliation
+  // for members/repeaters/nets, NOT a lightning bottleneck. ──
+  const communityStrikes = useRealtimeLightningStrikes({
+    baseStrikes: scope?.strikes || [],
+    center: communityCenter,
+    scopeRadiusMiles: SCOPE_RADIUS_MI,
+    onNewStrike: (s) => {
+      const userPos = userPosition || communityCenter;
+      if (!userPos) return;
+      const event = buildLightingEvent({ strike: s, userPos, radiusMiles, now: Date.now() });
       if (event) dispatchLightingEvent(event);
-    });
-    return unsub;
-  }, [userPosition, communityCenter, radiusMiles]);
+    },
+  });
 
   const [focusStrikeId, setFocusStrikeId] = useState(
     () => new URLSearchParams(window.location.search).get("strike")

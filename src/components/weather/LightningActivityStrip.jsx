@@ -4,17 +4,24 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useUserCommunities } from '@/hooks/useUserCommunities';
 import { usePollingGate } from '@/hooks/usePollingGate';
-import { milesBetween } from '@/lib/lightning/lightningSeverity';
+import { useRealtimeLightningStrikes } from '@/hooks/useRealtimeLightningStrikes';
+import { computeLightningActivity } from '@/lib/lightning/activityIntelligence';
+import { SCOPE_RADIUS_MI } from '@/lib/lightning/proximityConfig';
 
 // LightningActivityStrip — weather-UI lightning indicator for the Dashboard.
-// Uses the EXISTING LightningStrike pipeline (no new weather API) and the
-// active community's geographic center to report nearby lightning activity.
-// Renders nothing when there is no community location or no recent activity,
-// so it never duplicates a weather data source or clutters the UI when idle.
 //
-// This is a read of the existing LightningStrike entity (the same pipeline
-// RadioScope uses), not a second weather API call.
-const RADIUS_MI = 50;
+// REALTIME-FIRST: new strikes arrive through the LightningStrike realtime
+// subscription (useRealtimeLightningStrikes) and update the nearest-strike
+// metric immediately — no waiting for a poll. The initial/historical set comes
+// from a single entity read with a SLOW reconciliation refetch (fallback only);
+// realtime is the primary live path. Uses the centralized activity intelligence
+// module + configurable proximity tiers (no hard-coded thresholds).
+//
+// This reads the EXISTING LightningStrike pipeline (the same one RadioScope
+// uses) — not a second weather API. Renders nothing when idle (no community
+// location or no recent activity) so it never clutters the dashboard.
+
+const RECONCILE_MS = 2 * 60 * 1000; // slow reconciliation fallback (realtime is primary)
 
 export default function LightningActivityStrip() {
   const active = usePollingGate();
@@ -31,27 +38,36 @@ export default function LightningActivityStrip() {
     ? [community.location_lat, community.location_lon]
     : null;
 
-  const { data: nearest } = useQuery({
-    queryKey: ['lightning-activity', community?.id],
+  // Historical/initial strike set — reconciliation fallback ONLY. Realtime
+  // (useRealtimeLightningStrikes) is the primary path for new strikes.
+  const { data: baseStrikes = [] } = useQuery({
+    queryKey: ['lightning-activity-base', community?.id],
     queryFn: async () => {
-      if (!center) return null;
+      if (!center) return [];
       const rows = await base44.entities.LightningStrike.list('-strike_time', 100);
-      let best = null;
-      for (const s of rows || []) {
-        if (s.latitude == null || s.longitude == null) continue;
-        const d = milesBetween(center[0], center[1], s.latitude, s.longitude);
-        if (d <= RADIUS_MI && (!best || d < best.dist)) best = { dist: d, strike: s };
-      }
-      return best;
+      return (rows || []).filter((s) => s.latitude != null && s.longitude != null);
     },
     enabled: !!center,
-    staleTime: 30 * 1000,
-    refetchInterval: active ? 60 * 1000 : false,
+    staleTime: RECONCILE_MS,
+    refetchInterval: active ? RECONCILE_MS : false, // reconciliation only
   });
 
-  if (!center || !nearest) return null;
+  // Realtime-first: new strikes merge in immediately via the subscription.
+  const strikes = useRealtimeLightningStrikes({
+    baseStrikes,
+    center,
+    scopeRadiusMiles: SCOPE_RADIUS_MI,
+  });
 
-  const dist = nearest.dist;
+  const activity = useMemo(
+    () => computeLightningActivity(strikes, { now: Date.now(), center }),
+    [strikes, center]
+  );
+
+  if (!center || !activity.hasActivity || !activity.closest) return null;
+
+  const dist = activity.closest.dist;
+  const tier = activity.closest.tier;
   const label =
     dist <= 10
       ? 'Lightning detected very nearby'
@@ -67,7 +83,7 @@ export default function LightningActivityStrip() {
           <Zap className="w-3.5 h-3.5 text-amber-400" /> {label}
         </h4>
         <p className="text-[10px] text-muted-foreground mt-0.5">
-          Live lightning feed · within {RADIUS_MI} mi of {community?.name || 'your community'}
+          Live lightning feed · {tier.label.toLowerCase()} · within {SCOPE_RADIUS_MI} mi of {community?.name || 'your community'}
         </p>
       </div>
     </div>
