@@ -26,23 +26,23 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
   const [user, setUser] = useState(null);
   const [selectedBadge, setSelectedBadge] = useState(null);
 
-  useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
+  useEffect(() => {base44.auth.me().then(setUser).catch(() => {});}, []);
 
   const { data: syncData } = useQuery({
     queryKey: ['operator-card-stats'],
     queryFn: async () => {
-      const u = user || await base44.auth.me();
+      const u = user || (await base44.auth.me());
       const res = await base44.functions.invoke('syncUserStats', { uid: mybbUser?.uid || u?.id });
       return res.data;
     },
     enabled: !!mybbUser?.uid || !!user,
-    staleTime: 30000,
+    staleTime: 30000
   });
 
   const { data: achievements = [] } = useQuery({
     queryKey: ['operator-card-achievements'],
     queryFn: async () => await base44.entities.UserAchievement.list(),
-    staleTime: 15000,
+    staleTime: 15000
   });
 
   const stats = syncData?.stats || {};
@@ -55,9 +55,9 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
   const callsign = user?.callsign || mybbUser?.username || 'MIST Member';
   const displayName = user?.full_name || '';
   const avatarUrl = mybbUser?.avatar || LOGO_URL;
-  const memberSince = user?.created_date
-    ? new Date(user.created_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    : null;
+  const memberSince = user?.created_date ?
+  new Date(user.created_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) :
+  null;
   const club = stats?.club_membership || 'Insomniacs GMRS';
   const streak = stats?.daily_login_streak || 0;
 
@@ -68,8 +68,8 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
   const handleShare = async () => {
     const url = window.location.origin + '/profile';
     try {
-      if (navigator.share) await navigator.share({ title: callsign, url });
-      else await navigator.clipboard?.writeText(url);
+      if (navigator.share) await navigator.share({ title: callsign, url });else
+      await navigator.clipboard?.writeText(url);
     } catch {}
   };
 
@@ -86,7 +86,7 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
             <div className="flex items-start gap-3 flex-wrap">
               <div className={`avatar-frame avatar-frame-${avatarFrame || 'common'} shrink-0`}>
                 <div className="w-20 h-20 rounded-2xl overflow-hidden bg-violet-950/50 ring-2 ring-violet-500/30">
-                  <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
+                  <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => {e.target.src = LOGO_URL;}} />
                 </div>
               </div>
               <div className="flex-1 min-w-[110px] pt-2">
@@ -98,21 +98,21 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                   </span>
                 </div>
-                {callsign && callsign !== displayName && (
-                  <p className="text-xs text-white/90 font-semibold break-words drop-shadow-md mt-0.5">{callsign}</p>
-                )}
+                {callsign && callsign !== displayName &&
+                <p className="text-xs text-white/90 font-semibold break-words drop-shadow-md mt-0.5">{callsign}</p>
+                }
               </div>
               <ProfileHeaderStats stats={stats} />
             </div>
 
             {/* Administrator badge — purple glow matching the profile photo */}
             <div className="flex items-center justify-between gap-2">
-              {isAdmin && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 border border-white/25 backdrop-blur-md shadow-[0_0_18px_rgba(139,92,246,0.55)]">
+              {isAdmin &&
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 border border-white/25 backdrop-blur-md shadow-[0_0_18px_rgba(139,92,246,0.55)]">
                   <Shield className="w-3.5 h-3.5 text-white" />
-                  <span className="text-[10px] font-bold text-white tracking-wide uppercase">Administrator</span>
+                  <span className="text-[10px] font-bold text-white tracking-wide uppercase">Founder</span>
                 </span>
-              )}
+              }
               <div className="flex gap-2 ml-auto">
                 <Link to={alertsLink} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10">
                   <Bell className="w-4 h-4" />
@@ -120,25 +120,25 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
                 <button onClick={handleShare} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10" title="Share Profile">
                   <Share2 className="w-4 h-4" />
                 </button>
-                {onLogout && (
-                  <button onClick={onLogout} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-rose-400 transition-colors border border-white/10" title="Sign Out">
+                {onLogout &&
+                <button onClick={onLogout} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-rose-400 transition-colors border border-white/10" title="Sign Out">
                     <LogOut className="w-4 h-4" />
                   </button>
-                )}
+                }
               </div>
             </div>
 
             {/* Group Tags */}
-            {groups.filter(g => g.id !== 'administrator').length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {groups.filter(g => g.id !== 'administrator').slice(0, 4).map(g => <GroupTag key={g.id} group={g} />)}
+            {groups.filter((g) => g.id !== 'administrator').length > 0 &&
+            <div className="flex flex-wrap gap-1.5">
+                {groups.filter((g) => g.id !== 'administrator').slice(0, 4).map((g) => <GroupTag key={g.id} group={g} />)}
               </div>
-            )}
+            }
 
             {/* Badge Showcase */}
-            {badges.length > 0 && (
-              <BadgeShowcase badges={badges.filter(b => b.id !== 'administrator')} onBadgeClick={setSelectedBadge} align="start" />
-            )}
+            {badges.length > 0 &&
+            <BadgeShowcase badges={badges.filter((b) => b.id !== 'administrator')} onBadgeClick={setSelectedBadge} align="start" />
+            }
 
             {/* Info Blocks — three evenly spaced, centered (values truncate to prevent overflow) */}
             <div className="grid grid-cols-3 gap-2 pt-1">
@@ -169,8 +169,8 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
         </div>
 
         {/* XP Bar + Prestige (below banner) */}
-        {!hideXpBar && (
-          <div className="px-4 pb-4 pt-3 flex items-center gap-2">
+        {!hideXpBar &&
+        <div className="px-4 pb-4 pt-3 flex items-center gap-2">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shrink-0">
               <span className="text-white font-bold text-xs">{level}</span>
             </div>
@@ -184,27 +184,27 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
               </div>
             </div>
           </div>
-        )}
-        {!hidePrestige && (
-          <div className="px-4 pb-4 pt-1">
+        }
+        {!hidePrestige &&
+        <div className="px-4 pb-4 pt-1">
             <PrestigeStats stats={stats} />
           </div>
-        )}
+        }
       </div>
 
       {/* Badge Detail Popup */}
-      {selectedBadge && (
-        <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSelectedBadge(null)}>
-          <div className="w-full max-w-lg bg-card border border-border rounded-t-2xl p-6 ach-sheet-up relative" onClick={e => e.stopPropagation()} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      {selectedBadge &&
+      <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSelectedBadge(null)}>
+          <div className="w-full max-w-lg bg-card border border-border rounded-t-2xl p-6 ach-sheet-up relative" onClick={(e) => e.stopPropagation()} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
             <div className="flex justify-center mb-3"><div className="w-10 h-1 rounded-full bg-border" /></div>
             <button onClick={() => setSelectedBadge(null)} className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-secondary text-muted-foreground">
               <X className="w-5 h-5" />
             </button>
             {(() => {
-              const rarity = RARITIES[selectedBadge.rarity] || RARITIES.common;
-              const Icon = ICON_MAP[selectedBadge.icon] || ICON_MAP.Award;
-              return (
-                <div className="flex flex-col items-center text-center">
+            const rarity = RARITIES[selectedBadge.rarity] || RARITIES.common;
+            const Icon = ICON_MAP[selectedBadge.icon] || ICON_MAP.Award;
+            return (
+              <div className="flex flex-col items-center text-center">
                   <div className={`w-16 h-16 rounded-2xl flex items-center justify-center prestige-badge-glow-${selectedBadge.rarity}`} style={{ background: rarity.gradient, color: rarity.iconColor }}>
                     <Icon className="w-8 h-8" />
                   </div>
@@ -213,12 +213,12 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
                   </span>
                   <h3 className="text-lg font-bold text-foreground mt-2">{selectedBadge.name}</h3>
                   <p className="text-sm text-muted-foreground mt-1 max-w-xs">{selectedBadge.description}</p>
-                </div>
-              );
-            })()}
+                </div>);
+
+          })()}
           </div>
         </div>
-      )}
-    </>
-  );
+      }
+    </>);
+
 }
