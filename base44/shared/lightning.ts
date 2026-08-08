@@ -148,7 +148,7 @@ function buildUrl(cfg: { apiUrl: string }, sinceMs: number): string {
 // Normalize a provider payload into Strike[] WITHOUT a since-filter. Shared by
 // the live polled provider (normalizeStrikes adds the since-filter below) and the
 // push webhook (lightningWebhook), so ingestion normalization is defined once.
-export function normalizeStrikeArray(data: any, maxStrikes = 500): Strike[] {
+export function normalizeStrikeArray(data: any, maxStrikes = 500, provider = "live"): Strike[] {
   let arr: any[] = [];
   if (Array.isArray(data)) arr = data;
   else if (data && Array.isArray(data.strikes)) arr = data.strikes;
@@ -162,17 +162,29 @@ export function normalizeStrikeArray(data: any, maxStrikes = 500): Strike[] {
     const tRaw = raw.time || raw.timestamp || raw.utc_time || raw.dateTime || raw.detected_at || raw.strike_time;
     const t = tRaw ? new Date(tRaw).getTime() : Date.now();
     if (!isFinite(t)) continue;
-    const id = String(raw.id || raw.strikeId || raw.uuid || `${lat.toFixed(4)},${lon.toFixed(4)},${t}`);
+    const id = String(raw.id || raw.strikeId || raw.uuid || raw.provider_strike_id || `${lat.toFixed(4)},${lon.toFixed(4)},${t}`);
+    // Lightning TYPE (cloud-to-ground, intracloud, ...) is distinct from POLARITY
+    // (positive/negative). Polarity + duration are provider-specific extras carried
+    // in metadata; they are NOT invented when absent — optional fields stay optional.
+    const strikeType = String(raw.type || raw.stroke_type || raw.lightning_type || raw.flash_type || "");
+    const polarity = raw.polarity != null ? String(raw.polarity) : (raw.polarity_sign != null ? String(raw.polarity_sign) : "");
+    const durationMs = raw.duration != null ? +raw.duration : (raw.duration_ms != null ? +raw.duration_ms : null);
+    const peakCurrent = raw.peak_current != null ? +raw.peak_current : (raw.peakCurrent != null ? +raw.peakCurrent : null);
+    const intensity = raw.intensity != null ? +raw.intensity : peakCurrent;
+    const meta: any = { raw: JSON.stringify(raw).slice(0, 2000) };
+    if (polarity) meta.polarity = polarity;
+    if (durationMs != null) meta.duration_ms = durationMs;
+    if (peakCurrent != null) meta.peak_current = peakCurrent;
     out.push({
       id,
       provider_strike_id: id,
       latitude: lat,
       longitude: lon,
       strike_time: new Date(t).toISOString(),
-      provider: "live",
-      strike_type: String(raw.type || raw.polarity || raw.stroke_type || ""),
-      intensity: raw.intensity != null ? +raw.intensity : raw.peak_current != null ? +raw.peak_current : null,
-      metadata: JSON.stringify({ raw: JSON.stringify(raw).slice(0, 2000) }),
+      provider,
+      strike_type: strikeType,
+      intensity,
+      metadata: JSON.stringify(meta),
       processed: false,
     });
     if (out.length >= maxStrikes) break;

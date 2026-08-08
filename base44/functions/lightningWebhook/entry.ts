@@ -64,7 +64,10 @@ export default async function(req: Request): Promise<Response> {
     // 2) Parse + normalize (shared with the live polled provider).
     const body = await req.json().catch(() => null);
     if (!body) return Response.json({ error: "Invalid JSON" }, { status: 400 });
-    const strikes = normalizeStrikeArray(body, MAX_BATCH);
+    // Provider name passes through if the payload declares one (e.g. { provider: "vaisala" });
+    // defaults to "live" for any real-provider push. Pass-through only — not invented.
+    const providerName = (body && typeof body === "object" && !Array.isArray(body) && body.provider) ? String(body.provider) : "live";
+    const strikes = normalizeStrikeArray(body, MAX_BATCH, providerName);
     if (strikes.length === 0) {
       return Response.json({ ok: true, received: 0, created: 0, duplicates: 0 });
     }
@@ -96,7 +99,7 @@ export default async function(req: Request): Promise<Response> {
       latitude: s.latitude,
       longitude: s.longitude,
       strike_time: s.strike_time,
-      provider: "live",
+      provider: s.provider,
       provider_strike_id: s.provider_strike_id,
       strike_type: s.strike_type || "",
       intensity: s.intensity ?? null,

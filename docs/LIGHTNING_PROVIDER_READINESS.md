@@ -1,128 +1,204 @@
-# MISST Lightning — Live Provider Readiness
+# MISST Lightning — Provider Readiness (Vaisala NLDN Target)
 
-This documents what the current lightning provider abstraction supports and what
-is required to connect a **real** (production) lightning data source. It does NOT
-invent provider capabilities — only describes the existing interface and the
-ingestion methods the architecture already supports.
+This documents MISST's lightning provider architecture, the three ingestion modes,
+and what remains to connect a real-time feed. It does **not** assume any undocumented
+provider behavior. The intended production candidate is **Vaisala NLDN** (U.S.
+real-time lightning, ~12-second published provider latency, per-strike location /
+type / duration / polarity / peak current). No live Vaisala credentials are
+configured and no Vaisala-specific API behavior has been assumed.
 
-## Current state
+## 1. Current provider = MOCK
 
-- Active provider: **MOCK** (selected via the `LIGHTNING_PROVIDER` secret;
-  defaults to `mock` when unset or not `live`).
-- Mock strikes are generated on demand by admins via the `lightningDevAction`
-  endpoint (`generate_random` / `generate_storm` / `replay_last_hour`). They
-  exercise the **real** architecture end-to-end: entity create → realtime event →
-  RadioScope marker + flash → alert evaluation. There is no fake frontend-only
-  path.
-- The live provider code path exists (`createLiveProvider`) but is not
-  configured (no `LIGHTNING_API_URL` / `LIGHTNING_API_KEY`), so it degrades
+- Active provider: **MOCK**, selected via the `LIGHTNING_PROVIDER` secret (defaults
+  to `mock` when unset or any value other than `live`).
+- Mock strikes are generated on demand by admins via `lightningDevAction`
+  (`generate_random` / `generate_storm` / `replay_last_hour`). They exercise the
+  **real** architecture end-to-end: entity create → realtime event → RadioScope
+  marker + flash → alert evaluation. There is no fake frontend-only path.
+- The pull-based live provider code path exists (`createLiveProvider`) but is **not
+  configured** (no `LIGHTNING_API_URL` / `LIGHTNING_API_KEY`); it degrades
   gracefully (returns `[]`, health = `not_configured`).
+
+## 2. Pull provider remains available
+
+`lightningPoll` (scheduled automation, every 5 min) calls
+`provider.getLatestStrikes(sinceMs)` for the `live` provider. New strikes are
+deduped by `provider_strike_id` (DB + in-memory cache), bulk-created, and processed
+for alerts. This path is unchanged and serves any pull-only HTTP provider. Its
+latency is bounded by the 5-minute poll interval — not WeatherBug-style.
+
+## 3. Realtime webhook is ready
+
+`lightningWebhook` is the push ingestion endpoint. A push-capable provider POSTs
+strikes the instant it detects them; the function authenticates (shared secret,
+fail-closed), normalizes via the shared `normalizeStrikeArray`, dedupes by
+`provider_strike_id`, and `bulkCreate`s with `processed: false`. The existing
+architecture then delivers with no polling:
+
+- `LightningStrike` create → platform realtime "create" event → RadioScope + Lighting Engine
+- `LightningStrike` create → `lightningOnStrike` entity automation → alert evaluation + push
+
+`LIGHTNING_WEBHOOK_SECRET` authenticates the endpoint (header
+`x-lightning-webhook-secret` or `Authorization: Bearer <secret>`). Fail-closed:
+unset secret → 503; mismatched/missing → 401. Authentication is not weakened.
 
 ## Provider interface (contract)
 
-Every provider must implement `LightningProvider` (see `base44/shared/lightning.ts`):
+Every pull provider implements `LightningProvider` (`base44/shared/lightning.ts`):
 
 ```ts
 interface LightningProvider {
   name: string;
-  getLatestStrikes(sinceMs: number): Promise<Strike[]>;   // incremental fetch
+  getLatestStrikes(sinceMs: number): Promise<Strike[]>;          // incremental fetch
   getStrikeHistory(fromMs: number, toMs: number): Promise<Strike[]>;
   healthCheck(): Promise<{ ok: boolean; latencyMs?: number; detail?: string; rateLimit?: string }>;
 }
 ```
 
-A `Strike` is the normalized internal model: `{ id, provider_strike_id, latitude,
+Push providers do **not** implement this interface — MISST does not call them;
+they call MISST via `lightningWebhook`. The interface supports pull/history/health;
+the webhook supports realtime push. Both write to the same `LightningStrike` entity
+and share one normalizer, so downstream behavior (realtime event, alert
+automation, RadioScope, Lighting Engine) is identical regardless of ingress.
+
+`Strike` (normalized internal model): `{ id, provider_strike_id, latitude,
 longitude, strike_time, provider, strike_type, intensity, metadata, processed }`.
-Providers normalize their raw format into this shape (see `normalizeStrikes` for
-the flexible field-name mapping already supported: `lat`/`latitude`,
-`time`/`timestamp`/`detected_at`, `type`/`polarity`, `intensity`/`peak_current`,
-array shapes `{strikes|data|features}`).
+Provider-specific extras (polarity, duration, peak current) are carried in the
+`metadata` JSON — they are not invented when absent.
+
+## Shared normalizer — fields accommodated
+
+`normalizeStrikeArray(data, maxStrikes, provider)` maps flexible provider field
+names into the `Strike` model. All fields except lat/lon are optional (missing
+values are not invented):
+
+| MISST field | Provider field aliases accepted |
+|---|---|
+| provider_strike_id | `id` / `strikeId` / `uuid` / `provider_strike_id` (composite lat,lon,time if absent) |
+| latitude | `latitude` / `lat` / `Latitude` |
+| longitude | `longitude` / `lon` / `lng` / `Longitude` |
+| strike_time | `time` / `timestamp` / `utc_time` / `dateTime` / `detected_at` / `strike_time` |
+| strike_type (lightning type) | `type` / `stroke_type` / `lightning_type` / `flash_type` |
+| intensity / peak current | `intensity` / `peak_current` / `peakCurrent` |
+| polarity (→ metadata) | `polarity` / `polarity_sign` |
+| duration (→ metadata) | `duration` / `duration_ms` |
+| provider | pass-through parameter (default `live`) |
+| metadata | structured JSON: `{ raw, polarity?, duration_ms?, peak_current? }` |
+
+Polarity is deliberately separate from `strike_type` (lightning type) — they are
+distinct concepts (type = CG/IC/etc.; polarity = positive/negative). Array payload
+shapes accepted: bare array, `{ strikes: [...] }`, `{ data: [...] }`,
+`{ features: [...] }`.
 
 ## Required credentials / configuration (secrets)
 
-| Secret | Purpose | Required for live |
+Only variables required by the existing architecture are listed. No fake values.
+
+| Secret | Purpose | Required for |
 |---|---|---|
-| `LIGHTNING_PROVIDER` | `mock` or `live` | yes (set to `live`) |
-| `LIGHTNING_API_URL` | Provider REST endpoint (supports `{since}` placeholder) | yes |
-| `LIGHTNING_API_KEY` | Bearer + `x-api-key` header auth | yes (if provider requires) |
-| `LIGHTNING_MAX_STRIKES` | Max strikes per fetch (default 500) | optional |
-| `LIGHTNING_REQUEST_TIMEOUT_MS` | Per-request timeout (default 8000) | optional |
-| `LIGHTNING_RETRY_ATTEMPTS` | Exponential-backoff retries (default 3) | optional |
-| `LIGHTNING_RATE_LIMIT_PER_MIN` | Client-side rate cap (default 600) | optional |
+| `LIGHTNING_PROVIDER` | `mock` (default) or `live` (pull) | selecting mock vs pull |
+| `LIGHTNING_API_URL` | Pull provider REST endpoint (supports `{since}` placeholder) | pull provider |
+| `LIGHTNING_API_KEY` | Pull provider auth (Bearer + `x-api-key`) | pull provider (if it requires auth) |
+| `LIGHTNING_WEBHOOK_SECRET` | Authenticates the push webhook (fail-closed) | push provider |
+| `LIGHTNING_MAX_STRIKES` | Max strikes per fetch/batch (default 500) | optional |
+| `LIGHTNING_REQUEST_TIMEOUT_MS` | Per-request timeout (default 8000) | optional (pull) |
+| `LIGHTNING_RETRY_ATTEMPTS` | Exponential-backoff retries (default 3) | optional (pull) |
+| `LIGHTNING_RATE_LIMIT_PER_MIN` | Client-side rate cap (default 600) | optional (pull) |
 
-All secrets are server-side only (never exposed to the client) and are read via
-the `secrets` runtime. Set them in **Dashboard → Secrets**.
+All secrets are server-side only, read via the `secrets` runtime. Set them in
+**Dashboard → Secrets**. A push provider (e.g. Vaisala realtime) needs only
+`LIGHTNING_WEBHOOK_SECRET` (plus pointing the provider at the webhook URL); it does
+not need `LIGHTNING_API_URL`/`KEY` unless it also offers a pull API.
 
-## Ingestion methods
+## Failure handling (already covered by the architecture)
 
-### 1. Polling (currently implemented for `live`)
-`lightningPoll` (scheduled automation, every 5 min) calls
-`provider.getLatestStrikes(sinceMs)` where `sinceMs` = the provider state's
-`last_poll_at`. New strikes are deduped by `provider_strike_id` (DB + in-memory
-cache), bulk-created with `processed: true`, and processed for alerts.
+| Failure | Handling |
+|---|---|
+| Duplicate strikes | Dedupe by `provider_strike_id` (DB filter) in webhook + poller; `LightningAlertDelivery` dedupe for alerts |
+| Malformed payloads | `req.json().catch(() => null)` → 400; invalid rows skipped by normalizer |
+| Invalid coordinates | `isFinite(lat/lon)` check → row skipped |
+| Invalid timestamps | `isFinite(t)` check → row skipped |
+| Provider outages | Pull: retry w/ exponential backoff + `LightningProviderState` health tracking. Push: provider stops sending; no stale data served (realtime is event-driven) |
+| Authentication failures | Webhook fail-closed: unset secret → 503, mismatched → 401 |
+| Temporary network failures | Pull: retry with backoff (3 attempts) |
+| Provider rate limits | Pull: client-side `LIGHTNING_RATE_LIMIT_PER_MIN` + provider `x-ratelimit-remaining` surfaced in state |
+| Replayed webhook events | Dedupe by `provider_strike_id` (provider must send stable ids) |
 
-**Latency**: up to the poll interval (5 min) between provider detection and the
-entity write. This is the main barrier to WeatherBug-style speed for a polled
-live provider.
+No undocumented provider-specific behavior is implemented.
 
-### 2. Webhook / push (architecture-ready, not wired)
-For true realtime, a production provider that offers push delivery (webhook /
-WebSocket / SSE) should write strikes directly to the `LightningStrike` entity
-from a backend function exposed as an HTTP endpoint. The existing
-`lightningOnStrike` **entity automation** (fires on every `LightningStrike`
-create) already handles alert processing — so a webhook that simply creates the
-strike record gets full realtime delivery for free (alert evaluation + the
-frontend realtime subscription). No poller needed for push providers.
+## Expected latency (architecture, not a current MISST measurement)
 
-To add a push provider:
-1. Create a backend function (e.g. `lightningWebhook`) that validates the
-   provider's signature/auth, normalizes the payload into the `Strike` model, and
-   calls `base44.entities.LightningStrike.create(...)`.
-2. The entity create fires `lightningOnStrike` (alerts) and the platform realtime
-   event (RadioScope marker + flash).
-3. Set `LIGHTNING_PROVIDER` to the new provider name and register it in
-   `PROVIDER_REGISTRY` (or skip the registry if it only pushes).
+Vaisala publishes ~12-second NLDN provider latency. That is a **provider
+characteristic**, not a current MISST measurement. MISST's end-to-end path once a
+strike is ingested:
 
-No other architecture changes are required — the realtime path is already
-provider-agnostic.
+```
+Provider detection
+  → provider delivery method (pull: ≤5 min poll; push: provider-dependent)
+  → MISST ingestion (lightningPoll | lightningWebhook)
+  → shared normalizer + duplicate protection
+  → LightningStrike entity create
+  → realtime "create" event
+  ├── RadioScope (marker, realtime-first)
+  ├── Lighting Engine (flash overlay)
+  └── Alert system (lightningOnStrike entity automation → push)
+```
 
-## Expected update frequency
+- **Mock**: instant (admin action → entity create → realtime + automation same tick).
+- **Pull provider**: up to 5 min (poll interval) + HTTP + processing.
+- **Push provider via webhook**: ~1 second (one HTTP POST → entity create → realtime
+  event + automation), **plus the provider's own detection-to-delivery latency**
+  (e.g. NLDN's published ~12 s). The MISST-internal portion is sub-second.
 
-- Mock: on demand (admin dev panel).
-- Live (polled): every 5 min (the `lightningPoll` schedule). Can be lowered, but
-  polling is inherently latent.
-- Live (push): provider-dependent (sub-second to seconds). This is the
-  WeatherBug-style target. The architecture supports it; only the provider
-  endpoint + credentials are missing.
+Database persistence is the **record** (history, replay, analytics), not the
+**discovery** mechanism — downstream consumers subscribe to the realtime event
+fired by the create, not to a DB poll.
 
-## Rate limits
+## 4. Vaisala NLDN readiness
 
-Enforced client-side via `LIGHTNING_RATE_LIMIT_PER_MIN` (default 600/min). The
-provider's own rate-limit headers (`x-ratelimit-remaining`) are surfaced in
-`LightningProviderState.rate_limit_status` for the admin status page. A push
-provider sidesteps outbound rate limits entirely (it receives, not polls).
+MISST is architecturally ready for a Vaisala NLDN real-time feed:
 
-## Geographic coverage
+- The push path (`lightningWebhook`) accepts per-strike JSON with flexible field
+  names covering NLDN's published fields (location, type, duration, polarity, peak
+  current).
+- The shared normalizer carries polarity + duration in metadata without inventing
+  them when absent.
+- Duplicate protection, fail-closed auth, and the full realtime downstream
+  (RadioScope, Lighting Engine, alerts) are already wired.
+- No `LightningStrike` entity change is required — polarity/duration ride in
+  `metadata`.
 
-Not constrained by the abstraction. The scope filter (50 mi around the active
-community center) is applied at render/delivery time, not ingestion. A provider
-may supply global strikes; only community-relevant ones are shown/alerted.
+What is **not** done (intentionally): no Vaisala-specific adapter is registered, no
+Vaisala endpoint/credential/protocol is assumed, and no live connection is made.
 
-## Latency characteristics (event path)
+## 5. No live Vaisala credentials are configured
 
-- **Realtime event → RadioScope marker**: sub-second (platform realtime push;
-  now merged into local state immediately via `useRealtimeLightningStrikes`).
-- **Realtime event → flash overlay**: sub-second (Lighting Engine seam).
-- **Provider detection → entity write**:
-  - Mock: instant (admin action).
-  - Live (polled): up to 5 min (poll interval).
-  - Live (push): provider-dependent (target: <2 s).
-- **Alert evaluation**: synchronous in `lightningOnStrike` (entity automation),
-  fires on create — not gated by any poll.
+`LIGHTNING_PROVIDER` is unset (→ mock). No `LIGHTNING_API_URL`/`KEY` and no
+Vaisala-specific secret exist. The webhook secret is set but no provider is pointed
+at it.
+
+## 6. No undocumented Vaisala API behavior assumed
+
+Vaisala's public description (U.S. real-time, ~12 s latency, per-strike
+location/type/duration/polarity/peak current) is noted as a target only. The actual
+delivery method (webhook vs SSE vs WebSocket vs polled REST), auth scheme, payload
+schema, and rate limits are **not assumed** — they must come from the official
+Vaisala feed/API specification.
+
+## 7. Remaining step
+
+Obtain the official Vaisala NLDN feed/API specification and credentials. Then:
+1. Confirm the delivery method. If push → point Vaisala at the `lightningWebhook`
+   URL with the shared-secret header (no code change expected; field aliases already
+   cover the published fields). If pull → set `LIGHTNING_PROVIDER=live`,
+   `LIGHTNING_API_URL`, `LIGHTNING_API_KEY` and adjust the poll interval if needed.
+2. If Vaisala's payload uses field names not already aliased, add the aliases to
+   `normalizeStrikeArray` (one place).
+3. Verify with the mock provider, then switch the secret to enable the live path.
 
 ## What is NOT invented here
 
-This document does not claim compatibility with any specific commercial provider
-(Vaisala, Earth Networks, Blitzortung, etc.). Provider-specific field mapping,
-auth scheme, and push mechanism must be implemented against the real provider's
-documented API when one is chosen. The abstraction is ready; the provider is not.
+No compatibility with any specific commercial provider is claimed. Provider-specific
+field mapping, auth scheme, and push mechanism must be implemented against the real
+provider's documented API when one is chosen. The abstraction is ready; the provider
+is not connected.
