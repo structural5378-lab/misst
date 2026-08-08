@@ -81,7 +81,7 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
           <HeroArtwork seed={heroSeedVal} prompt={heroPromptVal} />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-card" />
 
-          <div className="relative pl-4 pr-3 py-3.5 space-y-3 z-10">
+          <div className="relative pl-4 pr-3 py-3 space-y-2 z-10">
             {/* Identity + actions */}
             <div className="flex items-start gap-3 flex-wrap">
               <div className={`avatar-frame avatar-frame-${avatarFrame || 'common'} shrink-0`}>
