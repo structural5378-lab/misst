@@ -176,17 +176,21 @@ export default async function(req) {
       .then((r) => r || []);
     const emergencyAlerts = alerts.filter((a) => a.type === 'emergency');
 
-    // Weather alerts: lightning strikes within 50mi of the community center.
+    // Lightning: strikes within 50mi of the community center. Returned to
+    // RadioScope for rendering so the map does NOT issue a separate lightning
+    // query (single source of truth — eliminates the duplicate weather request).
     let weatherAlertCount = 0;
+    const communityStrikes = [];
     if (community?.location_lat != null && community?.location_lon != null) {
       try {
-        const recent = await base44.asServiceRole.entities.LightningStrike.list('-strike_time', 200);
-        (recent || []).forEach((s) => {
-          if (s.latitude == null || s.longitude == null) return;
+        const recent = await base44.asServiceRole.entities.LightningStrike.list('-strike_time', 500);
+        for (const s of (recent || [])) {
+          if (s.latitude == null || s.longitude == null) continue;
           if (haversineMiles(community.location_lat, community.location_lon, s.latitude, s.longitude) <= 50) {
             weatherAlertCount++;
+            if (communityStrikes.length < 150) communityStrikes.push(s);
           }
-        });
+        }
       } catch (e) {
         console.error('[getCommunityRadioScopeData] lightning fetch failed:', e.message);
       }
@@ -198,6 +202,7 @@ export default async function(req) {
       repeaters,
       nets: liveNets,
       alerts,
+      strikes: communityStrikes,
       stats: {
         total_members: memberRows.length,
         online,

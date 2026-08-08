@@ -4,6 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import AnimatedMarker from "./AnimatedMarker";
 import LightningLayer from "./LightningLayer";
+import LightningFlashOverlay from "./LightningFlashOverlay";
 import { haversine } from "@/lib/geoUtils";
 import { useThemeColors } from "@/hooks/useThemeColors";
 
@@ -124,7 +125,7 @@ export default function RadioScopeMap({
   searchQuery, tileMode, recenterTrigger, selectedRepeater, selectedUser,
   onRepeaterClick, onUserClick,
   strikes, focusStrike, focusStrikeId, now, onStrikeClick,
-  defaultCenter, communityKey,
+  radiusMiles, defaultCenter, communityKey,
 }) {
   const tc = useThemeColors();
   const center = userPosition || defaultCenter || DEFAULT_CENTER;
@@ -376,8 +377,9 @@ export default function RadioScopeMap({
 
       {/* Lightning strikes */}
       {activeLayers.lightning && (
-        <LightningLayer strikes={strikes} now={now} focusStrikeId={focusStrikeId} onStrikeClick={onStrikeClick} />
+        <LightningLayer strikes={strikes} now={now} focusStrikeId={focusStrikeId} onStrikeClick={onStrikeClick} userPosition={userPosition} radiusMiles={radiusMiles} repeaters={repeaters} />
       )}
+      <LightningFlashOverlay />
     </MapContainer>
   );
 }

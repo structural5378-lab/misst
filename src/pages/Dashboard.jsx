@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Bell, Radio, Users, Info, AlertTriangle, Settings, MessageSquare, ChevronRight, MapPin, Sun, Wrench, Globe, Camera, UserCircle2, ShoppingBag, SignalHigh, Trophy, Shield, Mic } from "lucide-react";
 import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
+import LightningActivityStrip from "@/components/weather/LightningActivityStrip";
 import PropagationGauge from "@/components/dashboard/PropagationGauge";
 import { useNetControlAccess } from "@/hooks/useNetControlAccess";
 import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
@@ -154,6 +155,7 @@ export default function Dashboard() {
         <PropagationGauge />
 
         {/* Storm Tracker */}
+        <LightningActivityStrip />
         <StormTracker />
 
         {/* Alerts */}

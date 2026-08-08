@@ -754,3 +754,28 @@ body.amoled-mode { background: #000; }
 @media (prefers-reduced-motion: reduce) {
   .pbadge-fx, .pbadge-fx::before, .pbadge-fx::after { animation: none !important; opacity: 0.5 !important; }
 }
+
+/* ─── RadioScope Lightning Visuals (event-driven, GPU transform/opacity) ─── */
+/* Transient strike flash rendered by LightningFlashOverlay. pointer-events   */
+/* none so it never blocks map controls / pinch-zoom / menus. Severity sets    */
+/* the ring color (critical=purple, near=blue, distant=slate).                  */
+.rs-lightning-flash { position: relative; width: 60px; height: 60px; pointer-events: none; }
+.rs-lightning-flash-core {
+  position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px;
+  border-radius: 50%; background: #fff;
+  box-shadow: 0 0 12px 4px rgba(255,255,255,0.9);
+  animation: rs-lightning-flash-core 0.5s ease-out forwards;
+}
+.rs-lightning-flash-ring {
+  position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px;
+  border-radius: 50%; border: 2px solid var(--rs-lightning-color, #a855f7);
+  animation: rs-lightning-flash-ring 1.2s ease-out forwards;
+}
+.rs-lightning-flash-critical { --rs-lightning-color: #a855f7; }
+.rs-lightning-flash-near { --rs-lightning-color: #3b82f6; }
+.rs-lightning-flash-distant { --rs-lightning-color: #64748b; }
+@keyframes rs-lightning-flash-core { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.2); opacity: 0; } }
+@keyframes rs-lightning-flash-ring { 0% { transform: scale(1); opacity: 0.9; } 100% { transform: scale(6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .rs-lightning-flash-core, .rs-lightning-flash-ring { animation: none !important; opacity: 0 !important; }
+}

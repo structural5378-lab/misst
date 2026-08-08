@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, Circle, MapPin, Radio, Wifi, AlertTriangle, Cloud } from "lucide-react";
+import { Users, Circle, MapPin, Radio, Wifi, AlertTriangle, Zap } from "lucide-react";
 
 // RadioScopeStatsBar — live community-scoped statistics strip at the top of
 // RadioScope. All counts reflect the active community only.
@@ -10,7 +10,7 @@ const CHIPS = [
   { key: "active_repeaters", label: "Repeaters", icon: Radio, color: "text-violet-400" },
   { key: "live_nets", label: "Live Nets", icon: Wifi, color: "text-amber-400" },
   { key: "emergency_alerts", label: "Emergency", icon: AlertTriangle, color: "text-rose-400" },
-  { key: "weather_alerts", label: "Weather", icon: Cloud, color: "text-sky-400" },
+  { key: "weather_alerts", label: "Lightning", icon: Zap, color: "text-amber-400" },
 ];
 
 export default function RadioScopeStatsBar({ stats, loading }) {

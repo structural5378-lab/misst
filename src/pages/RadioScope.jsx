@@ -14,7 +14,9 @@ import UserSheet from "@/components/radioscope/UserSheet";
 import RadioScopeDebugPanel from "@/components/radioscope/RadioScopeDebugPanel";
 import RadioScopeCommunitySelector from "@/components/radioscope/RadioScopeCommunitySelector";
 import RadioScopeStatsBar from "@/components/radioscope/RadioScopeStatsBar";
-import { haversine } from "@/lib/geoUtils";
+import { useLightningProximity } from "@/hooks/useLightningProximity";
+import { buildLightingEvent, milesBetween } from "@/lib/lightning/lightningSeverity";
+import { dispatchLightingEvent } from "@/lib/lighting/lightingEvents";
 import {
   GPS_WATCH_OPTS, GPS_UPDATE_THROTTLE_MS, LOCATION_TTL_MS,
   classifySource, getLiveUsers,
@@ -22,7 +24,6 @@ import {
 import { usePollingGate } from "@/hooks/usePollingGate";
 
 const DEFAULT_CENTER = [25.77, -80.19];
-const COMMUNITY_LIGHTNING_RADIUS_MI = 50;
 
 export default function RadioScope() {
   const { mybbUser, mistUser } = useMistUser();
@@ -175,12 +176,9 @@ export default function RadioScope() {
     };
   }, [clearLocation]);
 
-  // ── Lightning strikes (global feed, filtered to community radius) ──
-  const { data: strikes = [] } = useQuery({
-    queryKey: ["lightning-strikes"],
-    queryFn: () => base44.entities.LightningStrike.list("-strike_time", 500),
-    refetchInterval: active ? 15000 : false,
-  });
+  // ── Lightning strikes (community-scoped, from the single RadioScope data
+  // call — eliminates the duplicate frontend lightning query). ──
+  const communityStrikes = useMemo(() => scope?.strikes || [], [scope]);
 
   const communityCenter = useMemo(() => {
     if (communityRecord?.location_lat != null && communityRecord?.location_lon != null) {
@@ -189,13 +187,31 @@ export default function RadioScope() {
     return null;
   }, [communityRecord]);
 
-  const communityStrikes = useMemo(() => {
-    if (!communityCenter) return strikes;
-    return strikes.filter((s) => {
-      if (s.latitude == null || s.longitude == null) return false;
-      return haversine(communityCenter[0], communityCenter[1], s.latitude, s.longitude) <= COMMUNITY_LIGHTNING_RADIUS_MI;
+  // ── Lightning proximity (user alert radius → severity threshold anchor) ──
+  const { radiusMiles } = useLightningProximity();
+
+  // ── Event-driven lighting: realtime LightningStrike creates dispatch a
+  // transient LightingEvent (weather → radioscope) through the engine seam.
+  // The weather system never imports UI; this producer only computes event
+  // data from the strike + the user's position/radius. ──
+  useEffect(() => {
+    const unsub = base44.entities.LightningStrike.subscribe((evt) => {
+      if (evt.type !== "create" || !evt.data) return;
+      const s = evt.data;
+      if (s.latitude == null || s.longitude == null) return;
+      // Only react to strikes within the community's rendered range (50mi of
+      // the community center — matches the persisted markers from the
+      // backend). Distant global strikes never flash the map.
+      const scopeOrigin = communityCenter || userPosition;
+      if (!scopeOrigin) return;
+      const scopeDist = milesBetween(scopeOrigin[0], scopeOrigin[1], s.latitude, s.longitude);
+      if (scopeDist > 50) return;
+      // Severity/distance use the user's own position when available.
+      const event = buildLightingEvent({ strike: s, userPos: userPosition || communityCenter, radiusMiles, now: Date.now() });
+      if (event) dispatchLightingEvent(event);
     });
-  }, [strikes, communityCenter]);
+    return unsub;
+  }, [userPosition, communityCenter, radiusMiles]);
 
   const [focusStrikeId, setFocusStrikeId] = useState(
     () => new URLSearchParams(window.location.search).get("strike")
@@ -253,6 +269,7 @@ export default function RadioScope() {
             onStrikeClick={(s) => setFocusStrikeId(s.id)}
             defaultCenter={communityCenter}
             communityKey={community?.id}
+            radiusMiles={radiusMiles}
           />
         </div>
 
