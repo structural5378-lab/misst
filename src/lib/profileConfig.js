@@ -38,7 +38,6 @@ export const PRESTIGE_BADGES = [
   { id: 'founder',            name: 'Founder',            icon: 'Crown',       rarity: 'founder',   description: 'Founded a MIST community' },
   { id: 'administrator',     name: 'Administrator',      icon: 'Shield',      rarity: 'legendary', description: 'Platform administrator' },
   { id: 'repeater_owner',    name: 'Repeater Owner',     icon: 'RadioTower',  rarity: 'epic',      description: 'Manages a repeater' },
-  { id: 'net_control',       name: 'Net Control',        icon: 'Mic',         rarity: 'rare',      description: 'Hosted a net session' },
   { id: 'emergency_volunteer',name: 'Emergency Volunteer',icon: 'ShieldAlert',rarity: 'epic',      description: 'Participated in emergency operations' },
   { id: 'road_warrior',      name: 'Road Warrior',       icon: 'Car',         rarity: 'legendary', description: 'Traveled 10,000+ miles for radio' },
   { id: 'rf_explorer',       name: 'RF Explorer',        icon: 'Radio',       rarity: 'epic',      description: 'Visited 25+ repeaters' },
@@ -75,7 +74,6 @@ export function deriveBadges(stats, user, mybbUser) {
       case 'founder':             return s.is_founder >= 1;
       case 'administrator':       return mybbUser?.role === 'admin';
       case 'repeater_owner':      return (s.repeaters_managed || 0) >= 1;
-      case 'net_control':         return (s.net_control_sessions || 0) >= 1;
       case 'emergency_volunteer': return (s.emergency_activations || 0) >= 1;
       case 'road_warrior':        return (s.miles_traveled || 0) >= 10000;
       case 'rf_explorer':         return (s.repeaters_visited || 0) >= 25;
