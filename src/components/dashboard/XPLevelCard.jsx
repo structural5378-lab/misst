@@ -11,33 +11,34 @@ const LEVEL_TITLES = [
 ];
 const titleFor = (lvl) => LEVEL_TITLES.find((t) => lvl >= t.min)?.title || "Operator";
 
-// XPLevelCard — level progression with a large level emblem, a derived rank
-// title, current/required XP, a glowing violet gradient bar, and XP remaining.
-// Uses the existing XP system (getLevelProgress).
+// XPLevelCard — a substantial level progression card: large shield emblem,
+// derived rank title, current/required XP, a glowing violet gradient bar, and
+// XP remaining. Uses the existing XP system (getLevelProgress).
 export default function XPLevelCard({ xp = 0, level: levelProp }) {
   const { level: calcLevel, progress, remaining, nextStart } = getLevelProgress(xp);
   const level = levelProp || calcLevel;
   return (
-    <div className="relative mist-module rounded-2xl p-4 overflow-hidden" style={{ '--mod-glow': 'rgba(139,92,246,0.30)' }}>
-      <div className="absolute -top-12 -right-12 w-32 h-32 bg-violet-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="relative flex items-center gap-3.5">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-lg shadow-violet-500/50 shrink-0 border border-white/15">
-          <span className="text-white font-black text-2xl leading-none">{level}</span>
+    <div className="relative mist-module rounded-2xl p-4 sm:p-5 overflow-hidden" style={{ '--mod-glow': 'rgba(139,92,246,0.32)' }}>
+      <div className="absolute -top-14 -right-14 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative flex items-center gap-4">
+        <div className="mist-level-shield w-16 h-16 flex flex-col items-center justify-center leading-none shrink-0">
+          <span className="relative z-10 text-[9px] font-bold text-violet-100 tracking-widest">LVL</span>
+          <span className="relative z-10 text-2xl font-black text-white">{level}</span>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-baseline justify-between mb-1">
-            <span className="text-sm font-bold text-foreground">Level {level} <span className="text-muted-foreground font-medium">· {titleFor(level)}</span></span>
-            <span className="text-[11px] text-muted-foreground tabular-nums">
+          <div className="flex items-baseline justify-between mb-1.5">
+            <span className="text-base font-bold text-foreground">Level {level} <span className="text-muted-foreground font-medium">· {titleFor(level)}</span></span>
+            <span className="text-xs text-muted-foreground tabular-nums">
               {(xp || 0).toLocaleString()} / {nextStart.toLocaleString()} XP
             </span>
           </div>
-          <div className="h-2.5 rounded-full bg-secondary overflow-hidden border border-white/[0.04]">
+          <div className="h-3 rounded-full bg-secondary overflow-hidden border border-white/[0.04]">
             <div
               className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400 ach-bar-fill transition-all duration-700"
-              style={{ width: `${progress}%`, boxShadow: "0 0 14px rgba(139,92,246,0.75)" }}
+              style={{ width: `${progress}%`, boxShadow: "0 0 16px rgba(139,92,246,0.8)" }}
             />
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1.5">
+          <p className="text-xs text-muted-foreground mt-2">
             {remaining > 0 ? `${remaining.toLocaleString()} XP to Level ${level + 1}` : "Max level reached"}
           </p>
         </div>

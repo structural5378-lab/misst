@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery } from '@tanstack/react-query';
-import { Bell, LogOut, Share2, Shield, X } from 'lucide-react';
+import { Bell, LogOut, Share2, Shield, Award, Radio, Flame, X } from 'lucide-react';
 import GroupTag from './GroupTag';
 import BadgeShowcase from './BadgeShowcase';
 import PremiumBadgeRow from '@/components/premium/PremiumBadgeRow';
@@ -16,20 +16,19 @@ import { deriveGroups, deriveBadges, getAvatarFrame } from '@/lib/profileConfig'
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png';
 
-// Operator stats integrated into the hero as translucent glass strips. Numbers
-// are the focus; labels are small/understated. Subtle per-stat accent only.
+// Compact premium stat cards — icon + number + label, localized accent glow.
 const STATS = [
-  { label: 'Score', key: 'achievement_score', accent: '#a78bfa' },
-  { label: 'Check-ins', key: 'net_checkins', accent: '#22d3ee' },
-  { label: 'Streak', key: 'daily_login_streak', accent: '#fb923c' },
+  { icon: Award, label: 'Score', key: 'achievement_score', color: 'text-violet-300', accent: '#a78bfa' },
+  { icon: Radio, label: 'Check-ins', key: 'net_checkins', color: 'text-cyan-300', accent: '#22d3ee' },
+  { icon: Flame, label: 'Streak', key: 'daily_login_streak', color: 'text-orange-300', accent: '#fb923c' },
 ];
 
-// OperatorCard — the cinematic operator identity hero. An original atmospheric
-// background (layered radio/tech gradients + masked grid + fog overlay) sits
-// behind a floating framed avatar, prominent identity, the Founder badge, and
-// integrated stat strips. Secondary actions are consolidated into one minimal
-// top-right cluster (no scattered glowing buttons). Premium avatar framing
-// reuses the centralized Lighting Engine via PremiumAvatarFrame — unchanged.
+// OperatorCard — the cinematic operator identity hero, restructured to the
+// reference composition. Desktop: AVATAR | IDENTITY | STATS as one row. Mobile:
+// avatar+identity row, stats row beneath. The avatar is a large layered
+// identity emblem (rotating energy ring + inner ring + avatar + level shield).
+// Premium avatar framing still reuses the centralized Lighting Engine via
+// PremiumAvatarFrame — no duplicate effect system.
 export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
   const { mybbUser } = useMistUser();
   const { isAdmin } = useAdminAccess();
@@ -77,7 +76,7 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
     <>
       <div className="relative rounded-3xl mist-hero-cinematic overflow-hidden border border-violet-500/20 shadow-[0_0_50px_-14px_rgba(139,92,246,0.45)]">
         <div className="relative z-10 p-5 sm:p-6">
-          {/* Minimal action cluster — consolidated, subtle, top-right */}
+          {/* Minimal action cluster — consolidated, top-right */}
           <div className="flex justify-end gap-1.5 mb-4">
             <Link to={alertsLink} className="p-2 rounded-xl bg-white/[0.05] border border-white/10 text-white/70 hover:text-white hover:border-violet-400/30 transition-colors" aria-label="Notifications">
               <Bell className="w-4 h-4" />
@@ -92,22 +91,29 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
             )}
           </div>
 
-          {/* Floating avatar + identity */}
-          <div className="flex items-start gap-4 sm:gap-5">
-            <div className="relative shrink-0">
-              <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="rounded-full">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/25">
-                  <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
-                </div>
-              </PremiumAvatarFrame>
-              <div className="absolute -bottom-1 -right-1 mist-level-emblem rounded-xl w-11 h-11 flex flex-col items-center justify-center leading-none">
-                <span className="text-[7px] font-bold text-violet-100 tracking-widest">LVL</span>
-                <span className="text-base font-black text-white">{level}</span>
+          {/* Hero row: AVATAR | IDENTITY | STATS (desktop 3-col, mobile stacks) */}
+          <div className="flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-6">
+            {/* Layered avatar emblem */}
+            <div className="relative shrink-0 mx-auto lg:mx-0">
+              <div className="mist-avatar-ring-outer" />
+              <div className="mist-avatar-ring-inner" />
+              <div className="relative z-10">
+                <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="rounded-full">
+                  <div className="w-32 h-32 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-full overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/25">
+                    <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
+                  </div>
+                </PremiumAvatarFrame>
+              </div>
+              {/* Level shield — physically attached to the frame */}
+              <div className="absolute -bottom-1.5 -right-1.5 mist-level-shield w-12 h-12 flex flex-col items-center justify-center leading-none">
+                <span className="relative z-10 text-[7px] font-bold text-violet-100 tracking-widest">LVL</span>
+                <span className="relative z-10 text-base font-black text-white">{level}</span>
               </div>
             </div>
 
-            <div className="flex-1 min-w-0 pt-1.5">
-              <div className="flex items-center gap-2">
+            {/* Identity */}
+            <div className="flex-1 min-w-0 text-center lg:text-left">
+              <div className="flex items-center gap-2 justify-center lg:justify-start">
                 <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight break-words">{displayName}</h2>
                 <span className="relative flex h-2.5 w-2.5 shrink-0">
                   <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-75 animate-ping" />
@@ -125,23 +131,27 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Integrated stat strips — numbers focus, labels understated */}
-          <div className="mt-5 grid grid-cols-3 gap-2.5">
-            {STATS.map((s) => (
-              <div key={s.key} className="rounded-2xl bg-white/[0.04] border border-white/[0.07] px-3 py-2.5 flex flex-col items-center gap-0.5">
-                <span className="text-2xl font-black text-white leading-none tabular-nums" style={{ textShadow: `0 0 18px ${s.accent}55` }}>{stats[s.key] ?? 0}</span>
-                <span className="text-[9px] font-semibold text-white/40 tracking-wide">{s.label}</span>
-              </div>
-            ))}
+            {/* Stats — compact cards, row on mobile / stacked column on desktop */}
+            <div className="grid grid-cols-3 lg:grid-cols-1 lg:w-48 gap-2.5">
+              {STATS.map((s) => {
+                const Icon = s.icon;
+                return (
+                  <div key={s.key} className="mist-stat-card rounded-2xl px-2.5 py-2 flex flex-row lg:flex-col items-center justify-center gap-2 lg:gap-1" style={{ boxShadow: `0 0 18px -6px ${s.accent}66` }}>
+                    <Icon className={`w-5 h-5 ${s.color} shrink-0`} />
+                    <span className="text-xl lg:text-2xl font-black text-white leading-none tabular-nums" style={{ textShadow: `0 0 16px ${s.accent}55` }}>{stats[s.key] ?? 0}</span>
+                    <span className="text-[9px] font-semibold text-white/40 tracking-wide leading-none">{s.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Premium badges + group tags + achievement showcase (existing systems) */}
-          <div className="mt-4 space-y-3">
+          <div className="mt-5 space-y-3">
             <PremiumBadgeRow userId={user?.id} max={6} size="md" />
             {groups.filter((g) => g.id !== 'administrator').length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 justify-center lg:justify-start">
                 {groups.filter((g) => g.id !== 'administrator').slice(0, 4).map((g) => <GroupTag key={g.id} group={g} />)}
               </div>
             )}
