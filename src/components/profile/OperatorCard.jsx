@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery } from '@tanstack/react-query';
-import { LogOut, Share2, Shield, Award, Radio, Flame, X } from 'lucide-react';
+import { LogOut, Share2, Shield, Award, Radio, Flame, X, Zap } from 'lucide-react';
 import GroupTag from './GroupTag';
 import BadgeShowcase from './BadgeShowcase';
 import PremiumBadgeRow from '@/components/premium/PremiumBadgeRow';
@@ -24,14 +23,11 @@ const STATS = [
   { icon: Flame, label: 'Streak', key: 'daily_login_streak', color: 'text-orange-300', accent: '#fb923c' },
 ];
 
-// OperatorCard — the operator identity hero. No card container: it sits
-// directly on the shared dashboard environment so the identity reads as part
-// of one composed scene, not another floating panel.
+// OperatorCard — the operator identity hero. Sits directly on the shared
+// dashboard environment so the identity reads as part of one composed scene.
 //
-// Layered emblem (back→front), allowed to breathe:
-//   MISST_IDENTITY_ENERGY (soft ambient, offset behind) →
-//   MISST_AVATAR_ENERGY (halo) → PremiumAvatarFrame (Lighting Engine) →
-//   avatar → MISST_AVATAR_FRAME (tactical ring) → MISST_LEVEL_SHIELD (level).
+// Three-column cinematic layout (desktop): avatar emblem | identity | MISST
+// hexagonal emblem. Mobile stacks avatar+identity, emblem hidden.
 // All hooks/data/badge systems are preserved unchanged.
 export default function OperatorCard({ onLogout }) {
   const { mybbUser } = useMistUser();
@@ -79,11 +75,6 @@ export default function OperatorCard({ onLogout }) {
   return (
     <>
       <section className="relative">
-        {/* Ambient identity energy — soft, offset behind the emblem, breathing */}
-        <div className="absolute -top-10 -left-10 w-72 h-72 pointer-events-none opacity-40 hidden sm:block" aria-hidden>
-          <img src={MISST_ASSETS.MISST_IDENTITY_ENERGY.url} alt="" className="w-full h-full object-contain" style={{ mixBlendMode: 'screen' }} />
-        </div>
-
         {/* Minimal action cluster — top-right, subtle */}
         <div className="relative flex justify-end gap-1 mb-3">
           <button onClick={handleShare} className="p-1.5 rounded-lg text-white/45 hover:text-white transition-colors" title="Share profile">
@@ -96,14 +87,14 @@ export default function OperatorCard({ onLogout }) {
           )}
         </div>
 
-        {/* Hero grid — avatar emblem | identity */}
-        <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 lg:gap-10 items-center">
+        {/* Hero grid — avatar emblem | identity | MISST hex emblem */}
+        <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-4 lg:gap-8 items-center">
           {/* Avatar emblem */}
           <div className="flex justify-center lg:justify-start">
-            <div className="relative w-32 h-32 sm:w-48 sm:h-48 lg:w-52 lg:h-52">
+            <div className="relative w-32 h-32 sm:w-44 sm:h-44 lg:w-48 lg:h-48">
               <img src={MISST_ASSETS.MISST_AVATAR_ENERGY.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain opacity-80" style={{ mixBlendMode: 'screen' }} />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-28 h-28 sm:w-40 sm:h-40 lg:w-44 lg:h-44">
+                <div className="relative w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40">
                   <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="rounded-2xl">
                     <div className="w-full h-full rounded-2xl overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/25">
                       <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
@@ -131,15 +122,21 @@ export default function OperatorCard({ onLogout }) {
               </span>
             </div>
             {callsign && callsign !== displayName && (
-              <p className="text-base sm:text-lg font-semibold text-cyan-300/90 tracking-wider mt-1 break-words">{callsign}</p>
+              <p className="text-base sm:text-lg font-semibold text-violet-300/90 tracking-wider mt-1 break-words">{callsign}</p>
             )}
             <p className="text-[11px] font-medium text-white/40 mt-1.5 tracking-[0.15em] uppercase">GMRS Operator</p>
-            {isAdmin && (
-              <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-md bg-violet-500/10 border border-violet-400/20">
-                <Shield className="w-3.5 h-3.5 text-violet-300" />
-                <span className="text-[11px] font-bold text-violet-200 tracking-wide">Founder</span>
+            <div className="mt-2.5 flex items-center justify-center lg:justify-start gap-2 flex-wrap">
+              {isAdmin && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-violet-500/10 border border-violet-400/20">
+                  <Shield className="w-3.5 h-3.5 text-violet-300" />
+                  <span className="text-[11px] font-bold text-violet-200 tracking-wide">Founder</span>
+                </div>
+              )}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-500/10 border border-amber-400/20">
+                <Zap className="w-3.5 h-3.5 text-amber-300" />
+                <span className="text-[11px] font-bold text-amber-200 tracking-wide">Premium Operator</span>
               </div>
-            )}
+            </div>
             <div className="mt-3 flex justify-center lg:justify-start">
               <PremiumBadgeRow userId={user?.id} max={6} size="md" />
             </div>
@@ -158,6 +155,13 @@ export default function OperatorCard({ onLogout }) {
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* MISST hexagonal emblem — prominent on desktop, hidden on mobile */}
+          <div className="hidden lg:flex items-center justify-center">
+            <div className="relative w-40 h-40 xl:w-48 xl:h-48">
+              <img src={MISST_ASSETS.MISST_IDENTITY_ENERGY.url} alt="" className="w-full h-full object-contain" style={{ mixBlendMode: 'screen' }} />
             </div>
           </div>
         </div>

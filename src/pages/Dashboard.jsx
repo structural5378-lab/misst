@@ -15,6 +15,7 @@ import OperatorCard from "@/components/profile/OperatorCard";
 import XPLevelCard from "@/components/dashboard/XPLevelCard";
 import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
 import DashboardCommandCenter from "@/components/dashboard/DashboardCommandCenter";
+import NextNetCard from "@/components/dashboard/NextNetCard";
 import RadioFilesDashboardCard from "@/components/radiofiles/RadioFilesDashboardCard";
 import DashboardMetadata from "@/components/dashboard/DashboardMetadata";
 import { MISST_ASSETS } from "@/lib/misstAssets";
@@ -124,6 +125,11 @@ export default function Dashboard() {
           <OperatorCard onLogout={signOut} />
         </div>
 
+        {/* NEXT NET — compact operational strip */}
+        <div className="mt-5 sm:mt-6">
+          <NextNetCard net={nets[0]} />
+        </div>
+
         {/* FOUR FEATURE MODULES */}
         <div className="mt-6 sm:mt-8">
           <DashboardQuickActions />
@@ -134,17 +140,17 @@ export default function Dashboard() {
           <DashboardCommandCenter />
         </div>
 
-        {/* RADIO FILES — library + compatible files */}
+        {/* OPERATOR DATA — subtle metadata */}
         <div className="mt-6 sm:mt-8">
-          <RadioFilesDashboardCard />
+          <DashboardMetadata />
         </div>
 
         {/* XP / LEVEL — identity progression */}
         <XPLevelCard xp={stats.xp || 0} level={stats.level} />
 
-        {/* OPERATOR DATA — subtle metadata */}
+        {/* RADIO FILES — library + compatible files */}
         <div className="mt-6 sm:mt-8">
-          <DashboardMetadata />
+          <RadioFilesDashboardCard />
         </div>
 
         {/* ── Secondary content (functional, preserved) ── */}

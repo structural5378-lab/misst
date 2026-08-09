@@ -42,8 +42,14 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const room_id = String(body.room_id || "");
     const text = String(body.body || body.text || "").trim();
+    // Attachments: accept either a pre-parsed array or a JSON string.
+    let attachments = [];
+    if (Array.isArray(body.attachments)) attachments = body.attachments;
+    else if (typeof body.attachments === "string" && body.attachments) {
+      try { attachments = JSON.parse(body.attachments); } catch { attachments = []; }
+    }
     if (!room_id) return Response.json({ error: "room_id required" }, { status: 400 });
-    if (!text) return Response.json({ error: "Message is empty" }, { status: 400 });
+    if (!text && !attachments.length) return Response.json({ error: "Message is empty" }, { status: 400 });
 
     const room = await base44.asServiceRole.entities.ChatV2Room.get(room_id).catch(() => null);
     if (!room) return Response.json({ error: "Room not found" }, { status: 404 });
@@ -86,6 +92,11 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Derive message_type from attachment if not explicitly provided.
+    const messageType = body.message_type || (attachments.length
+      ? ((attachments[0]?.type || "").startsWith("image/") ? "image" : "file")
+      : "text");
+
     const created = await base44.asServiceRole.entities.ChatV2RoomMessage.create({
       room_id,
       community_id: communityId,
@@ -96,7 +107,8 @@ Deno.serve(async (req) => {
       sender_avatar: user.avatar_url || "",
       sender_role: member.role,
       body: text.slice(0, 4000),
-      message_type: "text",
+      message_type: messageType,
+      attachments: JSON.stringify(attachments),
       reactions: "",
       mentions: typeof body.mentions === "string" ? body.mentions : JSON.stringify(body.mentions || []),
       reply_to_message_id: body.reply_to_message_id || "",

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, Image as ImageIcon, Users, Calendar, Pin, FileText, VolumeX } from "lucide-react";
 import { useRoomMessages } from "@/hooks/useRoomMessages";
 import { useToast } from "@/components/ui/use-toast";
+import { base44 } from "@/api/base44Client";
 import { formatDayLabel, isSameDay, presenceStatus, isTypingNow } from "@/lib/chatV2/chatV2Utils";
 import MessageBubbleV2 from "@/components/chatV2/MessageBubbleV2";
 import MessageComposerV2 from "@/components/chatV2/MessageComposerV2";
@@ -87,11 +88,22 @@ export default function CommunityConversation({ community, room, mistUser, membe
     if (el.scrollTop < 80 && msgs.hasMore && !msgs.loadingMore) msgs.loadMore();
     if (bottom && room?.id) { const last = msgs.messages[msgs.messages.length - 1]; if (last && last.sender_id !== mistUser?.id) markRead?.(room.id, last.id); }
   };
-  const handleSend = async (body) => {
-    try { await msgs.send(body, { replyTo, roomName: room?.name }); setReplyTo(null); }
+  const handleSend = async (body, attachment) => {
+    let attachmentMeta = null;
+    if (attachment?.file) {
+      try {
+        const res = await base44.integrations.Core.UploadFile({ file: attachment.file });
+        attachmentMeta = { url: res.file_url, name: attachment.name, type: attachment.type, size: attachment.size };
+      } catch (e) {
+        toast({ title: "Attachment upload failed", description: e?.message || "Please try again", variant: "destructive" });
+        throw e; // composer keeps the text + attachment so the user can retry
+      }
+    }
+    try { await msgs.send(body, { replyTo, roomName: room?.name, attachment: attachmentMeta }); setReplyTo(null); }
     catch (e) {
       const d = e?.response?.data || e?.data || {};
       toast({ title: d.muted ? "You are muted" : d.slow_mode ? "Slow mode active" : "Message not sent", description: d.error || e?.message, variant: d.muted || !d.slow_mode ? "destructive" : "default" });
+      throw e; // composer keeps the text + attachment so the user can retry
     }
   };
 

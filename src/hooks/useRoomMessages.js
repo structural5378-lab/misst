@@ -99,14 +99,17 @@ export function useRoomMessages({ roomId, user, community }) {
   }, [roomId, communityId, hasMore, loadingMore]);
 
   const send = useCallback(async (body, opts = {}) => {
-    if (!roomId || !user?.id || !body.trim()) return;
+    if (!roomId || !user?.id || (!body.trim() && !opts.attachment)) return;
     const tempId = "tmp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
     const replyId = opts.replyTo?.id && !String(opts.replyTo.id).startsWith("tmp_") ? opts.replyTo.id : "";
+    const attachment = opts.attachment || null;
+    const attachments = attachment ? [attachment] : [];
+    const messageType = attachment ? ((attachment.type || "").startsWith("image/") ? "image" : "file") : "text";
     const temp = {
       id: tempId, client_temp_id: tempId, room_id: roomId,
       community_id: communityId || "", community_slug: community?.slug || "", room_name: opts.roomName || "",
       sender_id: user.id, sender_name: user.full_name || user.email || "", sender_avatar: user.avatar_url || "",
-      body: body.trim(), created_date: new Date().toISOString(), status: "sending", reactions: {},
+      body: body.trim(), message_type: messageType, attachments, created_date: new Date().toISOString(), status: "sending", reactions: {},
       reply_to_message_id: replyId, reply_to_preview: (opts.replyTo?.body || "").slice(0, 120),
       reply_to_sender_id: opts.replyTo?.sender_id || "", reply_to_sender_name: opts.replyTo?.sender_name || "",
       mentions: JSON.stringify(parseMentionsArr(body)),
@@ -116,13 +119,14 @@ export function useRoomMessages({ roomId, user, community }) {
       // Send through the server gate (enforces membership, mute, lock, slow mode).
       const res = await base44.functions.invoke("sendRoomMessage", {
         room_id: roomId, body: body.trim(),
+        message_type: messageType, attachments: JSON.stringify(attachments),
         reply_to_message_id: replyId, reply_to_preview: temp.reply_to_preview,
         reply_to_sender_id: temp.reply_to_sender_id, reply_to_sender_name: temp.reply_to_sender_name,
         mentions: temp.mentions,
       });
       const created = res?.data?.message;
       if (!created) throw new Error(res?.data?.error || "Send failed");
-      setMessages((prev) => prev.map((m) => (m.client_temp_id === tempId ? { ...m, id: created.id, status: "sent", created_date: created.created_date, body: created.body } : m)));
+      setMessages((prev) => prev.map((m) => (m.client_temp_id === tempId ? { ...m, id: created.id, status: "sent", created_date: created.created_date, body: created.body, message_type: created.message_type, attachments } : m)));
       return created;
     } catch (e) {
       setMessages((prev) => prev.map((m) => (m.client_temp_id === tempId ? { ...m, status: "failed" } : m)));

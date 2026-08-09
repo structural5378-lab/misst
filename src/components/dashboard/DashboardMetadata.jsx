@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Users, Radio, UserCircle2, ChevronRight } from 'lucide-react';
+import { Calendar, Users, Radio, UserCircle2, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useMistUser } from '@/hooks/useMistUser';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-// DashboardMetadata — subtle operator metadata row (Joined / Community /
-// License) separated by hairlines — not three cards — plus the "View Full
-// Profile" CTA. Reuses the shared stats query.
+// DashboardMetadata — compact operator information strip (Member Since /
+// Community / License) with sub-labels, separated by hairlines — not three
+// cards — plus the "View Full Profile" CTA. Reuses the shared stats query.
 export default function DashboardMetadata() {
   const { mybbUser, mistUser } = useMistUser();
   const { data: syncData } = useQuery({
@@ -21,14 +21,14 @@ export default function DashboardMetadata() {
   });
   const stats = syncData?.stats || {};
   const memberSince = mistUser?.memberSince
-    ? new Date(mistUser.memberSince).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    : (mistUser?.created_date ? new Date(mistUser.created_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—');
+    ? new Date(mistUser.memberSince).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : (mistUser?.created_date ? new Date(mistUser.created_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—');
   const club = stats?.club_membership || 'Insomniacs GMRS';
 
   const cols = [
-    { icon: Calendar, label: 'Member Since', value: memberSince, color: 'text-violet-300' },
-    { icon: Users, label: 'Community', value: club, color: 'text-cyan-300' },
-    { icon: Radio, label: 'License', value: 'GMRS Licensed', color: 'text-emerald-300' },
+    { icon: Calendar, label: 'Member Since', value: memberSince, sub: 'Active member', color: 'text-violet-300' },
+    { icon: Users, label: 'Community', value: club, sub: 'Member', color: 'text-cyan-300' },
+    { icon: Radio, label: 'License', value: 'GMRS Licensed', sub: 'Callsign Verified', color: 'text-emerald-300', verified: true },
   ];
 
   return (
@@ -38,13 +38,17 @@ export default function DashboardMetadata() {
           const Icon = c.icon;
           return (
             <React.Fragment key={c.label}>
-              {i > 0 && <div className="h-8 w-px bg-white/[0.08] hidden sm:block" />}
+              {i > 0 && <div className="h-10 w-px bg-white/[0.08] hidden sm:block" />}
               <div className="flex flex-col items-center sm:items-start gap-1 text-center sm:text-left">
                 <div className="flex items-center gap-1.5">
                   <Icon className={`w-3.5 h-3.5 ${c.color}`} />
                   <span className="text-[9px] font-semibold text-white/40 tracking-widest uppercase">{c.label}</span>
                 </div>
                 <span className="text-sm font-bold text-white/90 leading-tight truncate max-w-[140px]">{c.value}</span>
+                <div className="flex items-center gap-1">
+                  {c.verified && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+                  <span className="text-[10px] text-white/40">{c.sub}</span>
+                </div>
               </div>
             </React.Fragment>
           );
