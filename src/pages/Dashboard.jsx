@@ -14,7 +14,9 @@ import RadioScopeTile from "@/components/radioscope/RadioScopeTile";
 import OperatorCard from "@/components/profile/OperatorCard";
 import NextNetCard from "@/components/dashboard/NextNetCard";
 import XPLevelCard from "@/components/dashboard/XPLevelCard";
-import MembershipFooter from "@/components/dashboard/MembershipFooter";
+import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
+import DashboardCommandCenter from "@/components/dashboard/DashboardCommandCenter";
+import DashboardMetadata from "@/components/dashboard/DashboardMetadata";
 
 const quickItems = [
   { icon: Radio, label: "Repeaters", path: "/repeaters", color: "text-violet-400", bg: "bg-violet-500/10" },
@@ -102,9 +104,6 @@ export default function Dashboard() {
     staleTime: 30000,
   });
   const stats = syncData?.stats || {};
-  const memberSince = mistUser.memberSince
-    ? new Date(mistUser.memberSince).toLocaleDateString("en-US", { month: "short", year: "numeric" })
-    : null;
 
   const typeIcons = { info: Info, warning: AlertTriangle, emergency: Radio, system: Settings };
   const typeColors = {
@@ -115,39 +114,40 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Ambient glow */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[28rem] h-80 bg-primary/15 rounded-full blur-3xl pointer-events-none -z-10" />
-
-      <div className="px-4 pt-4 space-y-4 pb-6 max-w-2xl mx-auto">
-        {/* Next Net */}
+    <div className="mist-storm-bg min-h-screen">
+      <div className="relative z-10 px-4 pt-4 space-y-4 pb-6 max-w-2xl mx-auto">
+        {/* Profile Hero */}
         <div className="mist-fade-up">
+          <OperatorCard onLogout={signOut} />
+        </div>
+
+        {/* Next Net */}
+        <div className="mist-fade-up" style={{ animationDelay: "60ms" }}>
           <NextNetCard net={nextNet} />
         </div>
 
-        {/* Hero Profile Card */}
-        <div className="mist-fade-up" style={{ animationDelay: "60ms" }}>
-          <OperatorCard onLogout={signOut} hideXpBar hidePrestige />
+        {/* Quick Actions (4 tiles) */}
+        <div className="mist-fade-up" style={{ animationDelay: "100ms" }}>
+          <DashboardQuickActions />
         </div>
 
-        {/* XP & Level */}
-        <div className="mist-fade-up" style={{ animationDelay: "120ms" }}>
+        {/* Command Center */}
+        <div className="mist-fade-up" style={{ animationDelay: "140ms" }}>
+          <DashboardCommandCenter />
+        </div>
+
+        {/* Metadata + View Full Profile */}
+        <div className="mist-fade-up" style={{ animationDelay: "180ms" }}>
+          <DashboardMetadata />
+        </div>
+
+        {/* XP / Level Progress */}
+        <div className="mist-fade-up" style={{ animationDelay: "220ms" }}>
           <XPLevelCard xp={stats.xp || 0} level={stats.level} />
         </div>
 
-        {/* Statistics */}
-        <div className="mist-fade-up" style={{ animationDelay: "160ms" }}>
-          <div className="mt-3">
-            <MembershipFooter
-              joined={memberSince ? `Joined ${memberSince}` : null}
-              club={stats.club_membership}
-              streak={stats.daily_login_streak}
-            />
-          </div>
-        </div>
-
         {/* RadioScope */}
-        <div className="mist-fade-up" style={{ animationDelay: "200ms" }}>
+        <div className="mist-fade-up">
           <RadioScopeTile />
         </div>
 

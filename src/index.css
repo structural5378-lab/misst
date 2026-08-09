@@ -779,3 +779,82 @@ body.amoled-mode { background: #000; }
 @media (prefers-reduced-motion: reduce) {
   .rs-lightning-flash-core, .rs-lightning-flash-ring { animation: none !important; opacity: 0 !important; }
 }
+
+/* ─── MISST Command Dashboard — Premium Hero ─── */
+.mist-storm-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(139,92,246,0.12), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 92% 8%, rgba(6,182,212,0.07), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 8% 92%, rgba(168,85,247,0.09), transparent 60%),
+    #050208;
+  position: relative;
+}
+.mist-storm-bg::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 18% 28%, rgba(255,255,255,0.28), transparent),
+    radial-gradient(1px 1px at 72% 62%, rgba(255,255,255,0.18), transparent),
+    radial-gradient(1px 1px at 42% 82%, rgba(192,132,252,0.22), transparent),
+    radial-gradient(1px 1px at 86% 22%, rgba(255,255,255,0.15), transparent),
+    radial-gradient(1px 1px at 30% 60%, rgba(94,234,212,0.16), transparent);
+  background-size: 220% 220%;
+  opacity: 0.55;
+}
+
+.mist-hero-panel {
+  background: linear-gradient(160deg, rgba(22,14,36,0.94), rgba(10,6,18,0.90));
+  border: 1px solid rgba(139,92,246,0.30);
+  box-shadow: 0 0 34px rgba(139,92,246,0.14), inset 0 1px 0 rgba(255,255,255,0.06);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.mist-level-emblem {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border: 2px solid rgba(255,255,255,0.28);
+  box-shadow: 0 0 16px rgba(139,92,246,0.75), inset 0 1px 2px rgba(255,255,255,0.35);
+}
+
+.mist-stat-card {
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(255,255,255,0.09);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.mist-quick-tile {
+  background: linear-gradient(160deg, rgba(22,14,36,0.88), rgba(10,6,18,0.82));
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.mist-quick-tile::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, var(--tile-glow, rgba(139,92,246,0.6)), transparent 62%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;
+}
+
+.mist-command-btn {
+  background: radial-gradient(circle at 50% 38%, rgba(139,92,246,0.40), rgba(12,8,22,0.92) 72%);
+  border: 2px solid rgba(139,92,246,0.55);
+  box-shadow: 0 0 32px rgba(139,92,246,0.45), inset 0 0 22px rgba(139,92,246,0.22);
+}
+
+.mist-tower-visual {
+  background:
+    radial-gradient(ellipse 64% 84% at 50% 100%, rgba(139,92,246,0.28), transparent 70%),
+    linear-gradient(180deg, rgba(22,14,36,0.6), rgba(10,6,18,0.92));
+}
+
+@keyframes mist-pulse-soft { 0%,100% { opacity: 0.62; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
+.mist-pulse-soft { animation: mist-pulse-soft 2.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mist-pulse-soft { animation: none !important; }
+}

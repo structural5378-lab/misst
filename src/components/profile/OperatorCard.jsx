@@ -4,30 +4,40 @@ import { base44 } from '@/api/base44Client';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery } from '@tanstack/react-query';
-import { Bell, LogOut, Calendar, Users, X, Share2, Shield, Radio, UserCircle2 } from 'lucide-react';
-import ProfileBanner from './ProfileBanner';
+import { Bell, LogOut, Share2, Shield, Award, Radio, Flame, X } from 'lucide-react';
 import HeroArtwork from './HeroArtwork';
 import { heroSeed, heroTheme, heroPrompt } from '@/hooks/useHeroArtwork';
 import GroupTag from './GroupTag';
 import BadgeShowcase from './BadgeShowcase';
-import PrestigeStats from './PrestigeStats';
-import ProfileHeaderStats from './ProfileHeaderStats';
 import PremiumBadgeRow from '@/components/premium/PremiumBadgeRow';
 import PremiumAvatarFrame from '@/components/premium/PremiumAvatarFrame';
 import { getLevelProgress } from '@/components/achievements/LevelBar';
 import { RARITIES } from '@/lib/rarityConfig';
 import { ICON_MAP } from '@/components/achievements/iconMap';
-import { deriveGroups, deriveBadges, selectBanner, getAvatarFrame } from '@/lib/profileConfig';
+import { deriveGroups, deriveBadges, getAvatarFrame } from '@/lib/profileConfig';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png';
 
-export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpBar = false, hidePrestige = false }) {
+// Futuristic stat cards (Score / Check-ins / Streak) — accent-colored glow per card.
+const STATS = [
+  { icon: Award, label: 'Score', key: 'achievement_score', color: 'text-violet-300', glow: 'rgba(139,92,246,0.42)' },
+  { icon: Radio, label: 'Check-ins', key: 'net_checkins', color: 'text-emerald-300', glow: 'rgba(34,197,94,0.42)' },
+  { icon: Flame, label: 'Streak', key: 'daily_login_streak', color: 'text-orange-300', glow: 'rgba(249,115,22,0.42)' },
+];
+
+// OperatorCard — the MISST command-center profile hero. A dark glass panel with a
+// dimmed AI hero backdrop (subtle storm atmosphere), large framed avatar with a
+// level emblem, prominent identity, three futuristic stat cards, the Founder
+// badge, profile actions, and the existing premium-badge row + group tags +
+// achievement showcase. Premium avatar framing reuses the centralized Lighting
+// Engine via PremiumAvatarFrame (no duplicate effect system).
+export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
   const { mybbUser } = useMistUser();
   const { isAdmin } = useAdminAccess();
   const [user, setUser] = useState(null);
   const [selectedBadge, setSelectedBadge] = useState(null);
 
-  useEffect(() => {base44.auth.me().then(setUser).catch(() => {});}, []);
+  useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
 
   const { data: syncData } = useQuery({
     queryKey: ['operator-card-stats'],
@@ -37,31 +47,25 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
       return res.data;
     },
     enabled: !!mybbUser?.uid || !!user,
-    staleTime: 30000
+    staleTime: 30000,
   });
 
   const { data: achievements = [] } = useQuery({
     queryKey: ['operator-card-achievements'],
     queryFn: async () => await base44.entities.UserAchievement.list(),
-    staleTime: 15000
+    staleTime: 15000,
   });
 
   const stats = syncData?.stats || {};
   const groups = deriveGroups(user, mybbUser, stats);
   const badges = deriveBadges(stats, user, mybbUser);
-  const banner = selectBanner(stats, mybbUser, user?.profile_banner);
   const avatarFrame = getAvatarFrame(achievements, mybbUser);
-  const { level, progress } = getLevelProgress(stats.xp || 0);
+  const { level } = getLevelProgress(stats.xp || 0);
 
   const callsign = user?.callsign || mybbUser?.username || 'MIST Member';
-  const displayName = user?.full_name || '';
+  const displayName = user?.full_name || callsign;
   const avatarUrl = mybbUser?.avatar || LOGO_URL;
-  const memberSince = user?.created_date ?
-  new Date(user.created_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) :
-  null;
   const club = stats?.club_membership || 'Insomniacs GMRS';
-  const streak = stats?.daily_login_streak || 0;
-
   const heroRoleKey = isAdmin ? 'admin' : mybbUser?.role;
   const heroSeedVal = heroSeed({ uid: mybbUser?.uid || user?.id, role: heroRoleKey, level: stats.level, community: club });
   const heroPromptVal = heroPrompt(heroTheme({ role: heroRoleKey, level: stats.level, community: club }), club);
@@ -69,145 +73,118 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
   const handleShare = async () => {
     const url = window.location.origin + '/profile';
     try {
-      if (navigator.share) await navigator.share({ title: callsign, url });else
-      await navigator.clipboard?.writeText(url);
+      if (navigator.share) await navigator.share({ title: callsign, url });
+      else await navigator.clipboard?.writeText(url);
     } catch {}
   };
 
   return (
     <>
-      <div className="operator-card" style={{ boxShadow: '0 0 40px rgba(139,92,246,0.16), 0 0 14px rgba(139,92,246,0.10)' }}>
-        {/* Hero banner with identity, badges, and stats overlaid on the image */}
-        <div className="relative">
+      <div className="relative rounded-3xl mist-hero-panel overflow-hidden">
+        {/* Subtle atmospheric backdrop — AI hero artwork, heavily dimmed to read as storm texture */}
+        <div className="absolute inset-0 opacity-[0.14] pointer-events-none">
           <HeroArtwork seed={heroSeedVal} prompt={heroPromptVal} />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-card" />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/25 to-black/55 pointer-events-none" />
 
-          <div className="relative pl-4 pr-3 py-3 space-y-2 z-10">
-            {/* Identity + actions */}
-            <div className="flex items-start gap-3 flex-wrap">
-              <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="shrink-0">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-violet-950/50 ring-2 ring-violet-500/30">
-                  <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => {e.target.src = LOGO_URL;}} />
+        <div className="relative p-4 space-y-3.5 z-10">
+          {/* Identity row: framed avatar + level emblem, name/callsign/status, actions */}
+          <div className="flex items-start gap-3.5">
+            <div className="relative shrink-0">
+              <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="rounded-full">
+                <div className="w-[86px] h-[86px] rounded-full overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/30">
+                  <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
                 </div>
               </PremiumAvatarFrame>
-              <div className="flex-1 min-w-[110px] pt-2">
-                <div className="flex items-start gap-2">
-                  <h2 className="text-lg font-bold text-white leading-tight break-words drop-shadow-md">{displayName || callsign}</h2>
-                  <span className="relative flex h-2 w-2 shrink-0 mt-1">
-                    <span className="absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                  </span>
-                </div>
-                {callsign && callsign !== displayName &&
-                <p className="text-xs text-white/90 font-semibold break-words drop-shadow-md mt-0.5">{callsign}</p>
-                }
+              <div className="absolute -bottom-1 -right-1 mist-level-emblem rounded-xl w-9 h-9 flex flex-col items-center justify-center leading-none">
+                <span className="text-[6px] font-bold text-violet-100 tracking-widest">LVL</span>
+                <span className="text-sm font-black text-white">{level}</span>
               </div>
-              <ProfileHeaderStats stats={stats} />
             </div>
 
-            {/* Administrator badge — purple glow matching the profile photo */}
-            <div className="flex items-center justify-between gap-2">
-              {isAdmin &&
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 border border-white/25 backdrop-blur-md shadow-[0_0_18px_rgba(139,92,246,0.55)]">
-                  <Shield className="w-3.5 h-3.5 text-white" />
-                  <span className="text-[10px] font-bold text-white tracking-wide uppercase">Founder</span>
+            <div className="flex-1 min-w-0 pt-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-black text-white leading-tight tracking-tight break-words drop-shadow-[0_2px_8px_rgba(139,92,246,0.45)]">{displayName}</h2>
+                <span className="relative flex h-2.5 w-2.5 shrink-0 mt-1">
+                  <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
                 </span>
-              }
-              <div className="flex gap-2 ml-auto">
-                <Link to={alertsLink} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10">
-                  <Bell className="w-4 h-4" />
-                </Link>
-                <button onClick={handleShare} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-white transition-colors border border-white/10" title="Share Profile">
-                  <Share2 className="w-4 h-4" />
-                </button>
-                {onLogout &&
-                <button onClick={onLogout} className="p-2 rounded-full bg-black/40 backdrop-blur-md text-white/85 hover:text-rose-400 transition-colors border border-white/10" title="Sign Out">
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                }
               </div>
+              {callsign && callsign !== displayName && (
+                <p className="text-sm font-bold text-violet-300 tracking-wider mt-0.5 break-words">{callsign}</p>
+              )}
+              <p className="text-[11px] font-semibold text-white/45 uppercase tracking-[0.18em] mt-0.5">GMRS Operator</p>
             </div>
 
-            {/* Premium Badges — all awarded badges in a single row (max 6) */}
-            <PremiumBadgeRow userId={user?.id} max={6} size="md" />
-
-            {/* Group Tags */}
-            {groups.filter((g) => g.id !== 'administrator').length > 0 &&
-            <div className="flex flex-wrap gap-1.5">
-                {groups.filter((g) => g.id !== 'administrator').slice(0, 4).map((g) => <GroupTag key={g.id} group={g} />)}
-              </div>
-            }
-
-            {/* Badge Showcase */}
-            {badges.length > 0 &&
-            <BadgeShowcase badges={badges.filter((b) => b.id !== 'administrator')} onBadgeClick={setSelectedBadge} align="start" />
-            }
-
-            {/* Info Blocks — three evenly spaced, centered (values truncate to prevent overflow) */}
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              <div className="flex flex-col items-center text-center gap-0.5 min-w-0">
-                <Calendar className="w-3.5 h-3.5 text-white/70" />
-                <span className="text-[8px] uppercase tracking-wide text-white/50">Joined</span>
-                <span className="text-[10px] font-semibold text-white/90 leading-tight truncate w-full">{memberSince || "—"}</span>
-              </div>
-              <div className="flex flex-col items-center text-center gap-0.5 min-w-0">
-                <Users className="w-3.5 h-3.5 text-white/70" />
-                <span className="text-[8px] uppercase tracking-wide text-white/50">Community</span>
-                <span className="text-[10px] font-semibold text-white/90 leading-tight truncate w-full">{club}</span>
-              </div>
-              <div className="flex flex-col items-center text-center gap-0.5 min-w-0">
-                <Radio className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-[8px] uppercase tracking-wide text-white/50">License</span>
-                <span className="text-[10px] font-semibold text-emerald-400 leading-tight truncate w-full">GMRS Licensed</span>
-              </div>
-            </div>
-
-            {/* View Profile — placed below the license info with 16px spacing to prevent any overlap */}
-            <div className="pt-1">
-              <Link to="/profile" className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] backdrop-blur-md text-white/90 text-xs font-semibold hover:bg-white/[0.12] hover:border-primary/40 transition-colors active:scale-[0.98]">
-                <UserCircle2 className="w-4 h-4" /> View Profile
+            <div className="flex flex-col gap-2 shrink-0">
+              <Link to={alertsLink} className="p-2 rounded-full bg-white/[0.06] border border-white/10 text-white/80 hover:text-white hover:border-violet-400/40 transition-colors" aria-label="Notifications">
+                <Bell className="w-4 h-4" />
               </Link>
+              <button onClick={handleShare} className="p-2 rounded-full bg-white/[0.06] border border-white/10 text-white/80 hover:text-white hover:border-violet-400/40 transition-colors" title="Share Profile">
+                <Share2 className="w-4 h-4" />
+              </button>
+              {onLogout && (
+                <button onClick={onLogout} className="p-2 rounded-full bg-white/[0.06] border border-white/10 text-white/80 hover:text-rose-400 hover:border-rose-400/40 transition-colors" title="Sign Out">
+                  <LogOut className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* XP Bar + Prestige (below banner) */}
-        {!hideXpBar &&
-        <div className="px-4 pb-4 pt-3 flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-xs">{level}</span>
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between text-[10px] text-muted-foreground mb-0.5">
-                <span className="font-semibold text-foreground">Level {level}</span>
-                <span>{(stats.xp || 0).toLocaleString()} XP</span>
-              </div>
-              <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400 transition-all duration-500" style={{ width: `${progress}%` }} />
-              </div>
-            </div>
+          {/* Stat cards */}
+          <div className="grid grid-cols-3 gap-2.5">
+            {STATS.map((s) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.key} className="mist-stat-card rounded-2xl px-2.5 py-2.5 flex flex-col items-center gap-1" style={{ boxShadow: `0 0 18px -5px ${s.glow}` }}>
+                  <div className="w-7 h-7 rounded-lg bg-white/[0.05] flex items-center justify-center">
+                    <Icon className={`w-4 h-4 ${s.color}`} />
+                  </div>
+                  <span className="text-xl font-black text-white leading-none tabular-nums">{stats[s.key] ?? 0}</span>
+                  <span className="text-[8px] font-semibold text-white/45 uppercase tracking-widest">{s.label}</span>
+                </div>
+              );
+            })}
           </div>
-        }
-        {!hidePrestige &&
-        <div className="px-4 pb-4 pt-1">
-            <PrestigeStats stats={stats} />
-          </div>
-        }
+
+          {/* Founder / Admin holographic badge */}
+          {isAdmin && (
+            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-violet-500/30 to-fuchsia-500/20 border border-violet-400/40 shadow-[0_0_22px_rgba(139,92,246,0.4)]">
+              <Shield className="w-4 h-4 text-violet-200" />
+              <span className="text-[11px] font-black text-white tracking-[0.2em] uppercase">Founder</span>
+            </div>
+          )}
+
+          {/* Premium badges — existing system, single row */}
+          <PremiumBadgeRow userId={user?.id} max={6} size="md" />
+
+          {/* Group tags */}
+          {groups.filter((g) => g.id !== 'administrator').length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {groups.filter((g) => g.id !== 'administrator').slice(0, 4).map((g) => <GroupTag key={g.id} group={g} />)}
+            </div>
+          )}
+
+          {/* Achievement showcase */}
+          {badges.length > 0 && (
+            <BadgeShowcase badges={badges.filter((b) => b.id !== 'administrator')} onBadgeClick={setSelectedBadge} align="start" />
+          )}
+        </div>
       </div>
 
-      {/* Badge Detail Popup */}
-      {selectedBadge &&
-      <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSelectedBadge(null)}>
+      {/* Badge detail popup */}
+      {selectedBadge && (
+        <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSelectedBadge(null)}>
           <div className="w-full max-w-lg bg-card border border-border rounded-t-2xl p-6 ach-sheet-up relative" onClick={(e) => e.stopPropagation()} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
             <div className="flex justify-center mb-3"><div className="w-10 h-1 rounded-full bg-border" /></div>
             <button onClick={() => setSelectedBadge(null)} className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-secondary text-muted-foreground">
               <X className="w-5 h-5" />
             </button>
             {(() => {
-            const rarity = RARITIES[selectedBadge.rarity] || RARITIES.common;
-            const Icon = ICON_MAP[selectedBadge.icon] || ICON_MAP.Award;
-            return (
-              <div className="flex flex-col items-center text-center">
+              const rarity = RARITIES[selectedBadge.rarity] || RARITIES.common;
+              const Icon = ICON_MAP[selectedBadge.icon] || ICON_MAP.Award;
+              return (
+                <div className="flex flex-col items-center text-center">
                   <div className={`w-16 h-16 rounded-2xl flex items-center justify-center prestige-badge-glow-${selectedBadge.rarity}`} style={{ background: rarity.gradient, color: rarity.iconColor }}>
                     <Icon className="w-8 h-8" />
                   </div>
@@ -216,12 +193,12 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts', hideXpB
                   </span>
                   <h3 className="text-lg font-bold text-foreground mt-2">{selectedBadge.name}</h3>
                   <p className="text-sm text-muted-foreground mt-1 max-w-xs">{selectedBadge.description}</p>
-                </div>);
-
-          })()}
+                </div>
+              );
+            })()}
           </div>
         </div>
-      }
-    </>);
-
+      )}
+    </>
+  );
 }
