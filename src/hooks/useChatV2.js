@@ -100,13 +100,16 @@ export function useChatV2({ conversationId, user }) {
 
   // Send (optimistic) + offline queue.
   const send = useCallback(async (body, opts = {}) => {
-    if (!conversationId || !user?.id || !body?.trim()) return null;
+    if (!conversationId || !user?.id || (!body?.trim() && !opts.attachment)) return null;
     const tempId = genTempId();
     const now = new Date().toISOString();
+    const attachment = opts.attachment || null;
+    const attachments = attachment ? [attachment] : [];
+    const messageType = attachment ? ((attachment.type || "").startsWith("image/") ? "image" : "file") : "text";
     const optimistic = {
       id: tempId, client_temp_id: tempId, conversation_id: conversationId,
       sender_id: user.id, sender_name: user.displayName || "", sender_avatar: user.avatarUrl || "",
-      body: body.trim(), message_type: "text", attachments: [], reactions: {},
+      body: body.trim(), message_type: messageType, attachments, reactions: {},
       reply_to_message_id: opts.replyTo || "", reply_to_preview: opts.replyToPreview || "",
       deleted: false, status: "sending", read_by: [], delivered_to: [], created_date: now,
     };
@@ -115,8 +118,8 @@ export function useChatV2({ conversationId, user }) {
     const payload = {
       conversation_id: conversationId,
       sender_id: user.id, sender_name: user.displayName || "", sender_avatar: user.avatarUrl || "",
-      body: body.trim(), message_type: "text",
-      attachments: JSON.stringify([]), reactions: JSON.stringify({}),
+      body: body.trim(), message_type: messageType,
+      attachments: JSON.stringify(attachments), reactions: JSON.stringify({}),
       reply_to_message_id: opts.replyTo || "", reply_to_preview: opts.replyToPreview || "",
       status: "sent", read_by: JSON.stringify([]), delivered_to: JSON.stringify([]),
       client_temp_id: tempId,

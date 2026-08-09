@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, CheckCheck, Flag, PanelRight } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import { useChatV2 } from "@/hooks/useChatV2";
 import { otherParticipant } from "@/lib/chatV2/chatV2Api";
 import { formatDayLabel, isSameDay, isTypingNow } from "@/lib/chatV2/chatV2Utils";
@@ -93,10 +94,21 @@ export default function ChatWindowV2({
     if (found) scrollToMessage(found.id);
   };
 
-  const handleSend = (body) => {
+  const handleSend = async (body, attachment) => {
+    let attachmentMeta = null;
+    if (attachment?.file) {
+      try {
+        const res = await base44.integrations.Core.UploadFile({ file: attachment.file });
+        attachmentMeta = { url: res.file_url, name: attachment.name, type: attachment.type, size: attachment.size };
+      } catch (e) {
+        console.error("[chat] attachment upload failed", e);
+        throw e; // composer keeps the text + attachment so the user can retry
+      }
+    }
     send(body, {
       replyTo: replyTo?.id && !replyTo.id.startsWith("tmp_") ? replyTo.id : "",
       replyToPreview: (replyTo?.body || "").slice(0, 120),
+      attachment: attachmentMeta,
     });
     setReplyTo(null);
   };
