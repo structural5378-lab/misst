@@ -55,6 +55,9 @@ import MyCommunities from '@/pages/MyCommunities';
 import OnboardingProtectedRoute from '@/components/OnboardingProtectedRoute';
 import RadioScope from '@/pages/RadioScope';
 import PremiumBadges from '@/pages/PremiumBadges';
+import RadioFiles from '@/pages/RadioFiles';
+import RadioFileDetail from '@/pages/RadioFileDetail';
+import RadioFileUpload from '@/pages/RadioFileUpload';
 // Net Control merged into MissionControlV2
 import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
@@ -107,6 +110,8 @@ import PlatformAdminScheduledNets from '@/pages/platform/PlatformAdminScheduledN
 import PlatformAdminNetLogs from '@/pages/platform/PlatformAdminNetLogs';
 import PlatformAdminLightning from '@/pages/platform/PlatformAdminLightning';
 import PlatformAdminPremiumBadges from '@/pages/platform/PlatformAdminPremiumBadges';
+import PlatformAdminRadioFiles from '@/pages/platform/PlatformAdminRadioFiles';
+import PlatformAdminRadioCatalog from '@/pages/platform/PlatformAdminRadioCatalog';
 
 // Community-scoped pages
 import CommunityLayout from '@/components/community/CommunityLayout';
@@ -190,6 +195,9 @@ const AuthenticatedApp = () => {
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/my-communities" element={<MyCommunities />} />
         <Route path="/radioscope" element={<RadioScope />} />
+        <Route path="/radio-files" element={<RadioFiles />} />
+        <Route path="/radio-files/upload" element={<RadioFileUpload />} />
+        <Route path="/radio-files/:id" element={<RadioFileDetail />} />
         <Route path="/premium-badges" element={<PremiumBadges />} />
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
@@ -260,6 +268,8 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/net-logs" element={<PlatformAdminNetLogs />} />
           <Route path="/platform/admin/lightning" element={<PlatformAdminLightning />} />
           <Route path="/platform/admin/premium-badges" element={<PlatformAdminPremiumBadges />} />
+          <Route path="/platform/admin/radio-catalog" element={<PlatformAdminRadioCatalog />} />
+          <Route path="/platform/admin/radio-files" element={<PlatformAdminRadioFiles />} />
         </Route>
       </Route>
 

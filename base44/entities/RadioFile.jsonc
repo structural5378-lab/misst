@@ -1,0 +1,158 @@
+{
+  "name": "RadioFile",
+  "type": "object",
+  "properties": {
+    "uploader_id": {
+      "type": "string",
+      "description": "Denormalized uploader user ID (for filtering; ownership enforced via created_by_id)"
+    },
+    "uploader_name": {
+      "type": "string",
+      "description": "Denormalized uploader display name"
+    },
+    "radio_model_id": {
+      "type": "string",
+      "description": "References RadioModel.id"
+    },
+    "manufacturer_name": {
+      "type": "string",
+      "description": "Denormalized manufacturer name"
+    },
+    "model_name": {
+      "type": "string",
+      "description": "Denormalized model name"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "Display file name"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "Latest version file URL (cleared on soft-delete)"
+    },
+    "file_type": {
+      "type": "string",
+      "description": "File extension/format e.g. csv, rdt"
+    },
+    "file_size": {
+      "type": "number",
+      "description": "Latest version file size in bytes"
+    },
+    "description": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes"
+    },
+    "version": {
+      "type": "string",
+      "description": "Latest version label e.g. 1.0",
+      "default": "1.0"
+    },
+    "versions": {
+      "type": "string",
+      "description": "JSON array of version objects [{version,file_url,file_size,uploaded_by,uploaded_by_name,uploaded_at,notes}]"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "default": "public"
+    },
+    "hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin moderation: hidden from public listings/downloads"
+    },
+    "deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft delete: downloads blocked, record preserved for auditing"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin-assigned Verified badge"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin-featured file"
+    },
+    "community": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin-marked Community file"
+    },
+    "download_count": {
+      "type": "number",
+      "default": 0
+    },
+    "tags": {
+      "type": "string",
+      "description": "JSON array of tag strings"
+    }
+  },
+  "required": [
+    "radio_model_id",
+    "file_name",
+    "file_url"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "$and": [
+            {
+              "data.visibility": "public"
+            },
+            {
+              "data.hidden": false
+            },
+            {
+              "data.deleted": false
+            }
+          ]
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

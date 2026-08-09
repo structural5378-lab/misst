@@ -20,6 +20,8 @@ import TrophyCase from "@/components/achievements/TrophyCase";
 import BadgeShowcase from "@/components/profile/BadgeShowcase";
 import PremiumBadgeCollection from "@/components/profile/PremiumBadgeCollection";
 import { deriveGroups, deriveBadges, selectBanner, getAvatarFrame } from "@/lib/profileConfig";
+import MyRadiosSection from "@/components/radiofiles/MyRadiosSection";
+import SharedRadioFilesSection from "@/components/radiofiles/SharedRadioFilesSection";
 import { normalizeCallsign, isValidGmrsCallsign, computeLicenseStatus } from "@/lib/gmrsCallsign";
 
 const LOGO_URL = "https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png";
@@ -262,6 +264,10 @@ export default function OperatorProfile() {
             <Section title="Lifetime Statistics"><StatsGrid stats={stats} /></Section>
 
             <Section title="Radio Equipment"><ProfileEquipment radios={radios} /></Section>
+
+            <MyRadiosSection userId={tid} isSelf={isSelf} />
+
+            <SharedRadioFilesSection userId={tid} />
 
             <Section title="Clubs & Repeaters"><ProfileClubs clubs={clubs} favoriteRepeater={stats.favorite_repeater} /></Section>
 

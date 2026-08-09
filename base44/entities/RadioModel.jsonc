@@ -1,0 +1,40 @@
+{
+  "name": "RadioModel",
+  "type": "object",
+  "properties": {
+    "manufacturer_id": {
+      "type": "string",
+      "description": "References RadioManufacturer.id"
+    },
+    "manufacturer_name": {
+      "type": "string",
+      "description": "Denormalized manufacturer name for display"
+    },
+    "model_name": {
+      "type": "string",
+      "description": "Model name e.g. UV-5R, AR-5RM, XPR 6550"
+    }
+  },
+  "required": [
+    "manufacturer_id",
+    "model_name"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

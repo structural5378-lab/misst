@@ -1,0 +1,67 @@
+{
+  "name": "UserRadio",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner user ID"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Denormalized owner display name"
+    },
+    "radio_model_id": {
+      "type": "string",
+      "description": "References RadioModel.id"
+    },
+    "manufacturer_name": {
+      "type": "string",
+      "description": "Denormalized manufacturer name"
+    },
+    "model_name": {
+      "type": "string",
+      "description": "Denormalized model name"
+    },
+    "nickname": {
+      "type": "string",
+      "description": "User's nickname for this radio e.g. Truck Radio"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "radio_model_id"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

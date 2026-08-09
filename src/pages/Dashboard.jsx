@@ -15,6 +15,7 @@ import OperatorCard from "@/components/profile/OperatorCard";
 import XPLevelCard from "@/components/dashboard/XPLevelCard";
 import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
 import DashboardCommandCenter from "@/components/dashboard/DashboardCommandCenter";
+import RadioFilesDashboardCard from "@/components/radiofiles/RadioFilesDashboardCard";
 import DashboardMetadata from "@/components/dashboard/DashboardMetadata";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import NextNetCard from "@/components/dashboard/NextNetCard";
@@ -34,6 +35,7 @@ const quickItems = [
   { icon: ShoppingBag, label: "Shopping", path: "/shopping", color: "text-orange-400", bg: "bg-orange-500/10" },
   { icon: SignalHigh, label: "Simplex", path: "/cineplex", color: "text-success", bg: "bg-success/10" },
   { icon: MessageSquare, label: "Chat", path: "/messages", color: "text-fuchsia-400", bg: "bg-fuchsia-500/10" },
+  { icon: Radio, label: "Radio Files", path: "/radio-files", color: "text-violet-400", bg: "bg-violet-500/10" },
   { icon: Trophy, label: "Trophies", path: "/achievements", color: "text-yellow-400", bg: "bg-yellow-500/10" },
   { icon: Settings, label: "Settings", path: "/account", color: "text-muted-foreground", bg: "bg-muted/40" },
   { icon: Shield, label: "Admin", path: "/platform/admin", color: "text-rose-400", bg: "bg-rose-500/10", adminOnly: true },
@@ -140,6 +142,11 @@ export default function Dashboard() {
         {/* COMMAND CENTER — cinematic */}
         <div className="mt-6 sm:mt-8">
           <DashboardCommandCenter />
+        </div>
+
+        {/* RADIO FILES — library + compatible files */}
+        <div className="mt-6 sm:mt-8">
+          <RadioFilesDashboardCard />
         </div>
 
         {/* OPERATOR DATA — subtle metadata */}

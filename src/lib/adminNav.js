@@ -45,6 +45,8 @@ export const adminNavSections = [
     items: [
       { label: "Repeaters", path: "/platform/admin/repeaters", icon: RadioTower, minRole: 2 },
       { label: "RadioScope", path: "/platform/admin/radioscope", icon: Radio, minRole: 2 },
+      { label: "Radio Catalog", path: "/platform/admin/radio-catalog", icon: Radio, minRole: 2 },
+      { label: "Radio Files", path: "/platform/admin/radio-files", icon: ClipboardList, minRole: 1 },
       { label: "Nets & Events", path: "/platform/admin/nets", icon: CalendarClock, minRole: 2 },
       { label: "Net Templates", path: "/platform/admin/net-templates", icon: LayoutTemplate, minRole: 2 },
       { label: "Scheduled Nets", path: "/platform/admin/scheduled-nets", icon: CalendarClock, minRole: 2 },
