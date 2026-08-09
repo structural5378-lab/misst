@@ -26,11 +26,11 @@ function dayBadge(dayOfWeek) {
   return "Scheduled";
 }
 
-// NextNetCard — premium next-net banner. Two presentation variants:
-//   - standalone (default): the original emerald-accent card
-//   - embedded: a flush strip designed to sit as a connected footer inside
-//     the Operator Hero, reading as "here is what your community is doing next."
-// All data/countdown logic is identical between variants.
+// NextNetCard — live operational status panel for the next scheduled net.
+// Reads as a connected section of the command environment (hairline separator,
+// no card). Two presentation variants share identical data/countdown logic:
+//   - standalone (default): the operational status row used on the dashboard
+//   - embedded: a flush strip for inline use inside other components
 export default function NextNetCard({ net, embedded = false }) {
   const [countdown, setCountdown] = useState("");
   const badge = net ? dayBadge(net.day_of_week) : "Upcoming";
@@ -73,26 +73,34 @@ export default function NextNetCard({ net, embedded = false }) {
     );
   }
 
+  // Standalone — operational status panel (hairline separator, no card).
   return (
-    <Link to="/nets" className="block">
-      <div className="relative rounded-2xl bg-card/50 border border-emerald-500/20 backdrop-blur-md overflow-hidden">
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400/60 to-emerald-500/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/[0.06] via-transparent to-transparent pointer-events-none" />
-        <div className="relative flex items-center gap-3.5 px-5 py-4">
-          <div className="w-11 h-11 rounded-xl bg-emerald-500/12 flex items-center justify-center shrink-0" style={{ boxShadow: "0 0 22px -6px rgba(34,197,94,0.5)" }}>
-            <Radio className="w-5 h-5 text-emerald-300" />
+    <Link to="/nets" className="block group">
+      <div className="border-t border-white/[0.08] pt-4 mt-5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-60 animate-ping" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+            </span>
+            <span className="text-[10px] font-bold tracking-[0.25em] text-emerald-300/80 uppercase">Next Net</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-semibold text-emerald-300/70 tracking-widest uppercase">Next Net</p>
-            <p className="text-base font-bold text-white leading-tight line-clamp-1 break-words mt-0.5">{net ? net.name : "No nets scheduled"}</p>
+            <p className="text-base font-bold text-white truncate">{net ? net.name : "No nets scheduled"}</p>
+            <p className="text-xs text-white/45 mt-0.5">
+              {net ? [net.time, badge, countdown].filter(Boolean).join(" · ") : "Check back soon"}
+            </p>
           </div>
-          {net && (
-            <div className="text-right shrink-0">
-              <p className="text-lg font-black text-white leading-none tabular-nums">{net.time}</p>
-              {countdown && <p className="text-[10px] text-white/40 tabular-nums mt-1">{countdown}</p>}
+          {net && (net.repeater_callsign || net.frequency || net.tone) && (
+            <div className="flex items-center gap-4 text-[11px] text-white/50">
+              {net.repeater_callsign && <span className="truncate max-w-[120px]"><span className="text-white/30 tracking-wider">RPT </span>{net.repeater_callsign}</span>}
+              {net.frequency && <span><span className="text-white/30 tracking-wider">FREQ </span>{net.frequency} MHz</span>}
+              {net.tone && <span><span className="text-white/30 tracking-wider">TONE </span>{net.tone}</span>}
             </div>
           )}
-          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/25 shrink-0">{badge}</span>
+          <span className="text-xs font-bold text-emerald-300 px-3.5 py-2 rounded-lg bg-emerald-500/10 border border-emerald-400/20 shrink-0 group-hover:bg-emerald-500/20 transition-colors self-start sm:self-auto">
+            {net ? "Details" : "View"} →
+          </span>
         </div>
       </div>
     </Link>

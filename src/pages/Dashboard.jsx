@@ -17,6 +17,7 @@ import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions"
 import DashboardCommandCenter from "@/components/dashboard/DashboardCommandCenter";
 import DashboardMetadata from "@/components/dashboard/DashboardMetadata";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import NextNetCard from "@/components/dashboard/NextNetCard";
 import { MISST_ASSETS } from "@/lib/misstAssets";
 
 const quickItems = [
@@ -114,28 +115,39 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="relative min-h-screen">
-      {/* Atmospheric dashboard background artwork (decorative only, behind UI) */}
-      <img src={MISST_ASSETS.MISST_DASHBOARD_BACKGROUND.url} alt="" aria-hidden className="fixed inset-0 w-full h-full object-cover opacity-35 pointer-events-none" />
-      <div className="fixed inset-0 bg-black/45 pointer-events-none" />
+    <div className="relative min-h-screen bg-[#050208]">
+      {/* Shared atmospheric environment — one layer, not repeated per card */}
+      <img src={MISST_ASSETS.MISST_DASHBOARD_BACKGROUND.url} alt="" aria-hidden className="fixed inset-0 w-full h-full object-cover opacity-[0.22] pointer-events-none" />
+      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(139,92,246,0.10), transparent 60%), radial-gradient(ellipse 60% 40% at 100% 100%, rgba(6,182,212,0.06), transparent 60%), linear-gradient(to bottom, rgba(5,2,8,0.35), rgba(5,2,8,0.55))' }} />
 
-      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-4 pb-6 space-y-3 sm:space-y-4 max-w-6xl mx-auto">
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-3 pb-6 max-w-6xl mx-auto">
         {/* HEADER */}
         <DashboardHeader />
 
-        {/* PROFILE HERO + NEXT NET (connected) */}
-        <OperatorCard onLogout={signOut} nextNet={nextNet} />
+        {/* OPERATOR HERO — identity composition on the shared environment */}
+        <div className="mt-6 sm:mt-8">
+          <OperatorCard onLogout={signOut} />
+        </div>
 
-        {/* FOUR FEATURE TILES */}
-        <DashboardQuickActions />
+        {/* NEXT NET — operational status panel */}
+        <NextNetCard net={nextNet} />
 
-        {/* COMMAND CENTER */}
-        <DashboardCommandCenter />
+        {/* FOUR FEATURE MODULES */}
+        <div className="mt-6 sm:mt-8">
+          <DashboardQuickActions />
+        </div>
 
-        {/* PROFILE INFORMATION + VIEW FULL PROFILE */}
-        <DashboardMetadata />
+        {/* COMMAND CENTER — cinematic */}
+        <div className="mt-6 sm:mt-8">
+          <DashboardCommandCenter />
+        </div>
 
-        {/* XP / LEVEL */}
+        {/* OPERATOR DATA — subtle metadata */}
+        <div className="mt-6 sm:mt-8">
+          <DashboardMetadata />
+        </div>
+
+        {/* XP / LEVEL — identity progression */}
         <XPLevelCard xp={stats.xp || 0} level={stats.level} />
 
         {/* ── Secondary content (functional, preserved) ── */}
