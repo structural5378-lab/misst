@@ -103,7 +103,6 @@ export default function CommunityConversation({ community, room, mistUser, membe
     catch (e) {
       const d = e?.response?.data || e?.data || {};
       toast({ title: d.muted ? "You are muted" : d.slow_mode ? "Slow mode active" : "Message not sent", description: d.error || e?.message, variant: d.muted || !d.slow_mode ? "destructive" : "default" });
-      throw e; // composer keeps the text + attachment so the user can retry
     }
   };
 
