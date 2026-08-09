@@ -25,7 +25,7 @@ export default function XPLevelCard({ xp = 0, level: levelProp }) {
       <div className="relative flex items-center gap-4">
         {/* level shield artwork with HTML number */}
         <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0">
-          <img src={MISST_ASSETS.MISST_LEVEL_SHIELD.url} alt="" className="w-full h-full object-contain" />
+          <img src={MISST_ASSETS.MISST_LEVEL_SHIELD.url} alt="" className="w-full h-full object-contain" style={{ mixBlendMode: 'screen' }} />
           <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
             <span className="text-[8px] font-bold text-violet-100 tracking-widest">LVL</span>
             <span className="text-xl sm:text-2xl font-black text-white">{level}</span>

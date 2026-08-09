@@ -19,7 +19,7 @@ export default function DashboardCommandCenter() {
       <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 h-full">
         {/* operator art + label */}
         <div className="relative flex flex-col items-center justify-center gap-3 p-6 min-h-[220px]">
-          <img src={MISST_ASSETS.MISST_COMMAND_OPERATOR.url} alt="" className="w-40 h-40 sm:w-48 sm:h-48 object-contain" style={{ filter: 'drop-shadow(0 0 24px rgba(139,92,246,0.45))' }} />
+          <img src={MISST_ASSETS.MISST_COMMAND_OPERATOR.url} alt="" className="w-40 h-40 sm:w-48 sm:h-48 object-contain" style={{ mixBlendMode: 'screen', filter: 'drop-shadow(0 0 24px rgba(139,92,246,0.45))' }} />
           <div className="text-center">
             <p className="text-[10px] font-bold text-cyan-300/80 tracking-[0.25em] uppercase">MISST</p>
             <p className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight" style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9)' }}>Command Center</p>

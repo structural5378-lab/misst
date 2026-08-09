@@ -24,12 +24,14 @@ const STATS = [
   { icon: Flame, label: 'Streak', key: 'daily_login_streak', color: 'text-orange-300', accent: '#fb923c' },
 ];
 
-// OperatorCard — the cinematic operator identity hero, rebuilt around the
-// MISST asset pack. Layered identity emblem (back→front):
+// OperatorCard — cinematic operator identity hero, rebuilt around the MISST
+// asset pack (v2: solid-black-bg assets composited via mix-blend-mode: screen).
+// Layered identity emblem (back→front):
 //   MISST_IDENTITY_ENERGY (ambient) → MISST_AVATAR_ENERGY (halo) →
 //   PremiumAvatarFrame (Lighting Engine active-badge effect) → avatar →
 //   MISST_AVATAR_FRAME (tactical ring) → MISST_LEVEL_SHIELD (level, HTML number).
-// All existing hooks/data/badge systems are preserved unchanged.
+// Mobile: avatar centered above identity text; Desktop: side-by-side.
+// All existing hooks/data/badge systems preserved unchanged.
 export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
   const { mybbUser } = useMistUser();
   const { isAdmin } = useAdminAccess();
@@ -76,9 +78,10 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
   return (
     <>
       <section className="relative rounded-3xl overflow-hidden border border-violet-500/20 shadow-[0_0_50px_-14px_rgba(139,92,246,0.45)]">
-        {/* Atmospheric hero background artwork (decorative only) */}
-        <img src={MISST_ASSETS.MISST_DASHBOARD_BACKGROUND.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-50" />
-        <img src={MISST_ASSETS.MISST_IDENTITY_ENERGY.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-screen" />
+        {/* Atmospheric hero background artwork (opaque, decorative only) */}
+        <img src={MISST_ASSETS.MISST_DASHBOARD_BACKGROUND.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-60" />
+        {/* Ambient identity energy (screen blend drops black) */}
+        <img src={MISST_ASSETS.MISST_IDENTITY_ENERGY.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-50" style={{ mixBlendMode: 'screen' }} />
         {/* readability overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/35 to-black/70" />
 
@@ -98,25 +101,25 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
             )}
           </div>
 
-          {/* Identity area: layered avatar emblem (left) + identity text (right) */}
-          <div className="flex items-center gap-5 sm:gap-6">
+          {/* Identity area: avatar emblem centered on mobile, side-by-side on desktop */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             {/* Avatar emblem stack */}
-            <div className="relative shrink-0 w-48 h-48 sm:w-52 sm:h-52 lg:w-56 lg:h-56">
-              {/* energy halo behind */}
-              <img src={MISST_ASSETS.MISST_AVATAR_ENERGY.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain opacity-80" />
+            <div className="relative shrink-0 w-44 h-44 sm:w-48 sm:h-48 lg:w-52 lg:h-52">
+              {/* energy halo behind (screen blend) */}
+              <img src={MISST_ASSETS.MISST_AVATAR_ENERGY.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain opacity-80" style={{ mixBlendMode: 'screen' }} />
               {/* centered avatar + frame + shield */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-40 h-40 sm:w-44 sm:h-44 lg:w-48 lg:h-48">
+                <div className="relative w-36 h-36 sm:w-40 sm:h-40 lg:w-44 lg:h-44">
                   <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="rounded-full">
                     <div className="w-full h-full rounded-full overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/25">
                       <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
                     </div>
                   </PremiumAvatarFrame>
-                  {/* tactical frame on top (decorative ring) */}
-                  <img src={MISST_ASSETS.MISST_AVATAR_FRAME.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain pointer-events-none" />
+                  {/* tactical frame on top (screen blend drops black center) */}
+                  <img src={MISST_ASSETS.MISST_AVATAR_FRAME.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ mixBlendMode: 'screen' }} />
                   {/* level shield attached bottom-right — number rendered in HTML */}
                   <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-14 h-14 sm:w-16 sm:h-16">
-                    <img src={MISST_ASSETS.MISST_LEVEL_SHIELD.url} alt="" className="w-full h-full object-contain" />
+                    <img src={MISST_ASSETS.MISST_LEVEL_SHIELD.url} alt="" className="w-full h-full object-contain" style={{ mixBlendMode: 'screen' }} />
                     <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
                       <span className="text-[7px] sm:text-[8px] font-bold text-violet-100 tracking-widest">LVL</span>
                       <span className="text-base sm:text-lg font-black text-white">{level}</span>
@@ -126,9 +129,9 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
               </div>
             </div>
 
-            {/* identity text */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+            {/* identity text — centered on mobile, left on desktop */}
+            <div className="flex-1 min-w-0 w-full text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2">
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight break-words" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.7)' }}>{displayName}</h2>
                 <span className="relative flex h-2.5 w-2.5 shrink-0">
                   <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-75 animate-ping" />
@@ -146,7 +149,7 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
                 </div>
               )}
               {/* active premium badge row (existing system) */}
-              <div className="mt-3">
+              <div className="mt-3 flex justify-center sm:justify-start">
                 <PremiumBadgeRow userId={user?.id} max={6} size="md" />
               </div>
             </div>
@@ -169,7 +172,7 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
           {/* groups + achievement showcase (existing systems) */}
           <div className="mt-4 space-y-3">
             {groups.filter((g) => g.id !== 'administrator').length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap justify-center sm:justify-start gap-1.5">
                 {groups.filter((g) => g.id !== 'administrator').slice(0, 4).map((g) => <GroupTag key={g.id} group={g} />)}
               </div>
             )}

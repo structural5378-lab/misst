@@ -23,7 +23,7 @@ export default function DashboardQuickActions() {
           className="group relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.05] to-transparent min-h-[176px] flex items-end p-4 active:scale-[0.97] transition-transform"
         >
           {/* artwork — significant visual element */}
-          <img src={m.art.url} alt="" className="absolute inset-0 w-full h-full object-contain p-3 opacity-95 transition-transform duration-300 group-hover:scale-105" />
+          <img src={m.art.url} alt="" className="absolute inset-0 w-full h-full object-contain p-3 opacity-95 transition-transform duration-300 group-hover:scale-105" style={{ mixBlendMode: 'screen' }} />
           {/* readability gradient at bottom */}
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
           {/* live pulse */}
