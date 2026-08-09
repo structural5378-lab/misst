@@ -13,6 +13,7 @@ import { getLevelProgress } from '@/components/achievements/LevelBar';
 import { RARITIES } from '@/lib/rarityConfig';
 import { ICON_MAP } from '@/components/achievements/iconMap';
 import { deriveGroups, deriveBadges, getAvatarFrame } from '@/lib/profileConfig';
+import { MISST_ASSETS } from '@/lib/misstAssets';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a24d788be1af31b2258fab2/5e4366214_insomniacsgmrslogo.png';
 
@@ -23,12 +24,12 @@ const STATS = [
   { icon: Flame, label: 'Streak', key: 'daily_login_streak', color: 'text-orange-300', accent: '#fb923c' },
 ];
 
-// OperatorCard — the cinematic operator identity hero, restructured to the
-// reference composition: a TIGHT avatar+identity row (no empty right column),
-// with the three stat cards as a horizontal row beneath. The avatar is a large
-// layered identity emblem (rotating energy ring + inner ring + avatar + level
-// shield attached at the bottom). Premium avatar framing reuses the centralized
-// Lighting Engine via PremiumAvatarFrame — no duplicate effect system.
+// OperatorCard — the cinematic operator identity hero, rebuilt around the
+// MISST asset pack. Layered identity emblem (back→front):
+//   MISST_IDENTITY_ENERGY (ambient) → MISST_AVATAR_ENERGY (halo) →
+//   PremiumAvatarFrame (Lighting Engine active-badge effect) → avatar →
+//   MISST_AVATAR_FRAME (tactical ring) → MISST_LEVEL_SHIELD (level, HTML number).
+// All existing hooks/data/badge systems are preserved unchanged.
 export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
   const { mybbUser } = useMistUser();
   const { isAdmin } = useAdminAccess();
@@ -74,9 +75,15 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
 
   return (
     <>
-      <div className="relative rounded-3xl mist-hero-cinematic overflow-hidden border border-violet-500/20 shadow-[0_0_50px_-14px_rgba(139,92,246,0.45)]">
+      <section className="relative rounded-3xl overflow-hidden border border-violet-500/20 shadow-[0_0_50px_-14px_rgba(139,92,246,0.45)]">
+        {/* Atmospheric hero background artwork (decorative only) */}
+        <img src={MISST_ASSETS.MISST_DASHBOARD_BACKGROUND.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-50" />
+        <img src={MISST_ASSETS.MISST_IDENTITY_ENERGY.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-screen" />
+        {/* readability overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/35 to-black/70" />
+
         <div className="relative z-10 p-5 sm:p-6">
-          {/* Minimal action cluster — consolidated, top-right */}
+          {/* Minimal action cluster — top-right */}
           <div className="flex justify-end gap-1.5 mb-4">
             <Link to={alertsLink} className="p-2 rounded-xl bg-white/[0.05] border border-white/10 text-white/70 hover:text-white hover:border-violet-400/30 transition-colors" aria-label="Notifications">
               <Bell className="w-4 h-4" />
@@ -91,28 +98,38 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
             )}
           </div>
 
-          {/* Avatar + identity — tight row, vertically centered, no empty area */}
-          <div className="flex items-center gap-4 sm:gap-5">
-            <div className="relative shrink-0">
-              <div className="mist-avatar-ring-outer" />
-              <div className="mist-avatar-ring-inner" />
-              <div className="relative z-10">
-                <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="rounded-full">
-                  <div className="w-32 h-32 sm:w-36 sm:h-36 lg:w-44 lg:h-44 rounded-full overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/25">
-                    <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
+          {/* Identity area: layered avatar emblem (left) + identity text (right) */}
+          <div className="flex items-center gap-5 sm:gap-6">
+            {/* Avatar emblem stack */}
+            <div className="relative shrink-0 w-48 h-48 sm:w-52 sm:h-52 lg:w-56 lg:h-56">
+              {/* energy halo behind */}
+              <img src={MISST_ASSETS.MISST_AVATAR_ENERGY.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain opacity-80" />
+              {/* centered avatar + frame + shield */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-40 h-40 sm:w-44 sm:h-44 lg:w-48 lg:h-48">
+                  <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="rounded-full">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/25">
+                      <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
+                    </div>
+                  </PremiumAvatarFrame>
+                  {/* tactical frame on top (decorative ring) */}
+                  <img src={MISST_ASSETS.MISST_AVATAR_FRAME.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain pointer-events-none" />
+                  {/* level shield attached bottom-right — number rendered in HTML */}
+                  <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-14 h-14 sm:w-16 sm:h-16">
+                    <img src={MISST_ASSETS.MISST_LEVEL_SHIELD.url} alt="" className="w-full h-full object-contain" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
+                      <span className="text-[7px] sm:text-[8px] font-bold text-violet-100 tracking-widest">LVL</span>
+                      <span className="text-base sm:text-lg font-black text-white">{level}</span>
+                    </div>
                   </div>
-                </PremiumAvatarFrame>
-              </div>
-              {/* Level shield — physically attached to the lower frame */}
-              <div className="absolute -bottom-1.5 -right-1.5 mist-level-shield w-12 h-12 sm:w-14 sm:h-14 flex flex-col items-center justify-center leading-none">
-                <span className="relative z-10 text-[7px] sm:text-[8px] font-bold text-violet-100 tracking-widest">LVL</span>
-                <span className="relative z-10 text-base sm:text-lg font-black text-white">{level}</span>
+                </div>
               </div>
             </div>
 
+            {/* identity text */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight break-words">{displayName}</h2>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight break-words" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.7)' }}>{displayName}</h2>
                 <span className="relative flex h-2.5 w-2.5 shrink-0">
                   <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-75 animate-ping" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
@@ -121,33 +138,36 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
               {callsign && callsign !== displayName && (
                 <p className="text-base sm:text-lg font-bold text-violet-300 tracking-wide mt-1 break-words">{callsign}</p>
               )}
-              <p className="text-xs font-medium text-white/45 mt-1">GMRS Operator</p>
+              <p className="text-xs font-medium text-white/55 mt-1">GMRS Operator</p>
               {isAdmin && (
                 <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-violet-500/15 border border-violet-400/30">
                   <Shield className="w-3.5 h-3.5 text-violet-300" />
                   <span className="text-[11px] font-bold text-violet-200 tracking-wide">Founder</span>
                 </div>
               )}
+              {/* active premium badge row (existing system) */}
+              <div className="mt-3">
+                <PremiumBadgeRow userId={user?.id} max={6} size="md" />
+              </div>
             </div>
           </div>
 
-          {/* Stats — horizontal row of 3 compact cards, integrated into the hero */}
+          {/* Stats — compact horizontal row of 3 cards */}
           <div className="grid grid-cols-3 gap-3 mt-5">
             {STATS.map((s) => {
               const Icon = s.icon;
               return (
-                <div key={s.key} className="mist-stat-card rounded-2xl py-3 flex flex-col items-center gap-1" style={{ boxShadow: `0 0 20px -6px ${s.accent}66` }}>
+                <div key={s.key} className="rounded-2xl py-3 flex flex-col items-center gap-1 bg-white/[0.05] border border-white/10 backdrop-blur-md" style={{ boxShadow: `0 0 20px -6px ${s.accent}66` }}>
                   <Icon className={`w-5 h-5 ${s.color}`} />
                   <span className="text-2xl font-black text-white leading-none tabular-nums" style={{ textShadow: `0 0 16px ${s.accent}55` }}>{stats[s.key] ?? 0}</span>
-                  <span className="text-[9px] font-semibold text-white/40 tracking-wide leading-none">{s.label}</span>
+                  <span className="text-[9px] font-semibold text-white/45 tracking-wide leading-none">{s.label}</span>
                 </div>
               );
             })}
           </div>
 
-          {/* Premium badges + group tags + achievement showcase (existing systems) */}
+          {/* groups + achievement showcase (existing systems) */}
           <div className="mt-4 space-y-3">
-            <PremiumBadgeRow userId={user?.id} max={6} size="md" />
             {groups.filter((g) => g.id !== 'administrator').length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {groups.filter((g) => g.id !== 'administrator').slice(0, 4).map((g) => <GroupTag key={g.id} group={g} />)}
@@ -158,9 +178,9 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
             )}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Badge detail popup */}
+      {/* Badge detail popup — unchanged */}
       {selectedBadge && (
         <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSelectedBadge(null)}>
           <div className="w-full max-w-lg bg-card border border-border rounded-t-2xl p-6 ach-sheet-up relative" onClick={(e) => e.stopPropagation()} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>

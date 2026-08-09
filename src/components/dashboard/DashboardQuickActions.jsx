@@ -1,41 +1,40 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, Wrench, Activity, Crown } from 'lucide-react';
+import { MISST_ASSETS } from '@/lib/misstAssets';
 
-// DashboardQuickActions — four large, equal command-module tiles (not a tiny
-// toolbar). Each tile is a substantial square with a colored glowing border,
-// a big icon, a bold title, and a small status subtitle. Chat & Activity carry
-// a LIVE pulse. Desktop: 4-up; mobile: 2x2.
+// DashboardQuickActions — four substantial feature tiles using the MISST
+// artwork pack. The artwork is the dominant visual element (not a tiny icon);
+// title + short description overlay at the bottom. Mobile: 2x2, desktop: 4-up.
+// Navigation routes are unchanged from the previous implementation.
 const MODULES = [
-  { icon: MessageSquare, title: 'Chat', subtitle: 'Conversations', path: '/messages', glow: 'rgba(34,211,238,0.5)', border: 'rgba(34,211,238,0.40)', color: 'text-cyan-300', tint: 'rgba(34,211,238,0.12)', live: true },
-  { icon: Wrench, title: 'Tools', subtitle: 'Utilities & gear', path: '/tools', glow: 'rgba(251,146,60,0.5)', border: 'rgba(251,146,60,0.40)', color: 'text-amber-300', tint: 'rgba(251,146,60,0.12)' },
-  { icon: Activity, title: 'Activity', subtitle: 'Live operator ops', path: '/alerts', glow: 'rgba(139,92,246,0.5)', border: 'rgba(139,92,246,0.40)', color: 'text-violet-300', tint: 'rgba(139,92,246,0.12)', live: true },
-  { icon: Crown, title: 'Rankings', subtitle: 'Leaderboard', path: '/leaderboard', glow: 'rgba(250,204,21,0.5)', border: 'rgba(250,204,21,0.40)', color: 'text-yellow-300', tint: 'rgba(250,204,21,0.12)' },
+  { art: MISST_ASSETS.MISST_TILE_CHAT, title: 'Chat', subtitle: 'Conversations', path: '/messages', live: true },
+  { art: MISST_ASSETS.MISST_TILE_TOOLS, title: 'Tools', subtitle: 'Utilities & gear', path: '/tools' },
+  { art: MISST_ASSETS.MISST_TILE_ACTIVITY, title: 'Activity', subtitle: 'Live operator ops', path: '/alerts', live: true },
+  { art: MISST_ASSETS.MISST_TILE_RANKINGS, title: 'Rankings', subtitle: 'Leaderboard', path: '/leaderboard' },
 ];
 
 export default function DashboardQuickActions() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {MODULES.map((m) => {
-        const Icon = m.icon;
-        return (
-          <Link
-            key={m.title}
-            to={m.path}
-            className="mist-module p-5 flex flex-col items-center justify-center gap-3 min-h-[176px] active:scale-[0.97] transition-transform"
-            style={{ '--mod-glow': m.glow, borderColor: m.border, boxShadow: `0 0 28px -10px ${m.glow}` }}
-          >
-            <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl" style={{ background: m.tint, boxShadow: `0 0 28px -6px ${m.glow}` }}>
-              <Icon className={`w-8 h-8 ${m.color}`} />
-              {m.live && <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 animate-pulse ring-2 ring-[#0c0716]" />}
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-bold text-white leading-tight">{m.title}</p>
-              <p className="text-xs text-white/45 mt-0.5">{m.subtitle}</p>
-            </div>
-          </Link>
-        );
-      })}
+      {MODULES.map((m) => (
+        <Link
+          key={m.title}
+          to={m.path}
+          className="group relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.05] to-transparent min-h-[176px] flex items-end p-4 active:scale-[0.97] transition-transform"
+        >
+          {/* artwork — significant visual element */}
+          <img src={m.art.url} alt="" className="absolute inset-0 w-full h-full object-contain p-3 opacity-95 transition-transform duration-300 group-hover:scale-105" />
+          {/* readability gradient at bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+          {/* live pulse */}
+          {m.live && <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse ring-2 ring-black/50" />}
+          {/* title + subtitle */}
+          <div className="relative z-10 text-center w-full">
+            <p className="text-lg font-bold text-white leading-tight" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>{m.title}</p>
+            <p className="text-[11px] text-white/65 mt-0.5">{m.subtitle}</p>
+          </div>
+        </Link>
+      ))}
     </div>
   );
 }

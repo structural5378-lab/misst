@@ -1,31 +1,44 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mic, RadioTower } from 'lucide-react';
+import { Mic } from 'lucide-react';
+import { MISST_ASSETS } from '@/lib/misstAssets';
 
-// DashboardCommandCenter — the large dramatic command panel. Left: a big
-// circular Net Control "Push to Talk" button (cyan glow) linking to the
-// existing /net-control route. Right: a cinematic radio-tower / storm banner
-// ("You don't just monitor. You control.") — decorative atmosphere only, NOT
-// wired to the weather/lightning engine.
+// DashboardCommandCenter — large cinematic command panel. The environment
+// artwork is the scene background; the operator artwork is a prominent visual
+// on the left; the existing Net Control CTA lives on the right. Decorative only
+// — NOT wired to the weather/lightning engine. Net Control route unchanged.
 export default function DashboardCommandCenter() {
   return (
-    <div className="mist-module rounded-3xl overflow-hidden grid grid-cols-1 sm:grid-cols-2" style={{ '--mod-glow': 'rgba(139,92,246,0.30)' }}>
-      <Link to="/net-control" className="relative z-10 flex flex-col items-center justify-center gap-4 p-8 min-h-[280px] active:scale-95 transition-transform">
-        <div className="mist-command-btn mist-pulse-soft w-28 h-28 rounded-full flex items-center justify-center">
-          <Mic className="w-12 h-12 text-cyan-100" />
+    <section className="relative rounded-3xl overflow-hidden border border-violet-500/20 min-h-[300px] sm:min-h-[340px]">
+      {/* environment scene background */}
+      <img src={MISST_ASSETS.MISST_COMMAND_ENVIRONMENT.url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+      {/* readability overlays */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/40" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30" />
+
+      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 h-full">
+        {/* operator art + label */}
+        <div className="relative flex flex-col items-center justify-center gap-3 p-6 min-h-[220px]">
+          <img src={MISST_ASSETS.MISST_COMMAND_OPERATOR.url} alt="" className="w-40 h-40 sm:w-48 sm:h-48 object-contain" style={{ filter: 'drop-shadow(0 0 24px rgba(139,92,246,0.45))' }} />
+          <div className="text-center">
+            <p className="text-[10px] font-bold text-cyan-300/80 tracking-[0.25em] uppercase">MISST</p>
+            <p className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight" style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9)' }}>Command Center</p>
+          </div>
         </div>
-        <div className="text-center">
-          <p className="text-xl font-bold text-white tracking-wide">Net Control</p>
-          <p className="text-sm text-cyan-300/80 font-medium mt-1">Push to Talk</p>
+
+        {/* net control CTA */}
+        <div className="relative flex flex-col items-center justify-center gap-4 p-6 min-h-[220px] sm:border-l border-violet-500/15">
+          <Link to="/net-control" className="relative flex flex-col items-center gap-3 active:scale-95 transition-transform">
+            <div className="relative w-24 h-24 rounded-full flex items-center justify-center bg-gradient-to-br from-cyan-500/30 to-violet-700/30 border-2 border-cyan-400/50" style={{ boxShadow: '0 0 36px rgba(6,182,212,0.45), inset 0 0 24px rgba(6,182,212,0.2)' }}>
+              <Mic className="w-10 h-10 text-cyan-100" />
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-white tracking-wide">Net Control</p>
+              <p className="text-sm text-cyan-300/80 font-medium mt-0.5">Push to Talk</p>
+            </div>
+          </Link>
         </div>
-      </Link>
-      <div className="mist-tower-visual relative z-10 flex flex-col items-center justify-center p-8 min-h-[280px] border-t sm:border-t-0 sm:border-l border-violet-500/15 text-center">
-        <RadioTower className="relative z-10 w-20 h-20 text-violet-200/85 mb-4" style={{ filter: 'drop-shadow(0 0 18px rgba(139,92,246,0.85))' }} />
-        <p className="relative z-10 text-base font-bold text-white/85 leading-snug">
-          You don&apos;t just monitor.<br />
-          <span className="text-violet-300">You control.</span>
-        </p>
       </div>
-    </div>
+    </section>
   );
 }

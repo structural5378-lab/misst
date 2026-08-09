@@ -17,6 +17,8 @@ import XPLevelCard from "@/components/dashboard/XPLevelCard";
 import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
 import DashboardCommandCenter from "@/components/dashboard/DashboardCommandCenter";
 import DashboardMetadata from "@/components/dashboard/DashboardMetadata";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import { MISST_ASSETS } from "@/lib/misstAssets";
 
 const quickItems = [
   { icon: Radio, label: "Repeaters", path: "/repeaters", color: "text-violet-400", bg: "bg-violet-500/10" },
@@ -113,39 +115,34 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="mist-storm-bg min-h-screen">
+    <div className="relative min-h-screen">
+      {/* Atmospheric dashboard background artwork (decorative only, behind UI) */}
+      <img src={MISST_ASSETS.MISST_DASHBOARD_BACKGROUND.url} alt="" aria-hidden className="fixed inset-0 w-full h-full object-cover opacity-30 pointer-events-none" />
+      <div className="fixed inset-0 bg-black/50 pointer-events-none" />
+
       <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-4 pb-6 space-y-4 max-w-6xl mx-auto">
-        {/* Cinematic operator hero */}
-        <div className="mist-fade-up">
-          <OperatorCard onLogout={signOut} />
-        </div>
+        {/* HEADER */}
+        <DashboardHeader />
 
-        {/* Next Net — live status banner */}
-        <div className="mist-fade-up" style={{ animationDelay: "60ms" }}>
-          <NextNetCard net={nextNet} />
-        </div>
+        {/* PROFILE HERO */}
+        <OperatorCard onLogout={signOut} />
 
-        {/* Primary command modules */}
-        <div className="mist-fade-up" style={{ animationDelay: "100ms" }}>
-          <DashboardQuickActions />
-        </div>
+        {/* NEXT NET */}
+        <NextNetCard net={nextNet} />
 
-        {/* Net Control command area */}
-        <div className="mist-fade-up" style={{ animationDelay: "140ms" }}>
-          <DashboardCommandCenter />
-        </div>
+        {/* FOUR FEATURE TILES */}
+        <DashboardQuickActions />
 
-        {/* Metadata + View Full Profile */}
-        <div className="mist-fade-up" style={{ animationDelay: "180ms" }}>
-          <DashboardMetadata />
-        </div>
+        {/* COMMAND CENTER */}
+        <DashboardCommandCenter />
 
-        {/* XP / Level progression */}
-        <div className="mist-fade-up" style={{ animationDelay: "220ms" }}>
-          <XPLevelCard xp={stats.xp || 0} level={stats.level} />
-        </div>
+        {/* PROFILE INFORMATION + VIEW FULL PROFILE */}
+        <DashboardMetadata />
 
-        {/* ── Secondary content ── */}
+        {/* XP / LEVEL */}
+        <XPLevelCard xp={stats.xp || 0} level={stats.level} />
+
+        {/* ── Secondary content (functional, preserved) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
           <RadioScopeTile />
           <PropagationGauge />

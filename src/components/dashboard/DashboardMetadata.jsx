@@ -5,8 +5,8 @@ import { useMistUser } from '@/hooks/useMistUser';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-// DashboardMetadata — three info columns (Joined / Community / License)
-// separated by vertical dividers, plus the full-width "View Full Profile" CTA.
+// DashboardMetadata — three info columns (Joined / Community / License) plus
+// the full-width "View Full Profile" CTA. Restyled to the new visual language.
 // Reuses the shared 'operator-card-stats' query (deduped with OperatorCard).
 export default function DashboardMetadata() {
   const { mybbUser, mistUser } = useMistUser();
@@ -33,13 +33,13 @@ export default function DashboardMetadata() {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-3 divide-x divide-white/[0.06] rounded-2xl bg-white/[0.03] border border-white/[0.07] overflow-hidden">
+      <div className="grid grid-cols-3 gap-3">
         {cols.map((c) => {
           const Icon = c.icon;
           return (
-            <div key={c.label} className="px-3 py-3.5 flex flex-col items-center gap-1 text-center">
+            <div key={c.label} className="flex flex-col items-center gap-1.5 text-center rounded-2xl bg-white/[0.04] border border-white/[0.08] px-2 py-3.5">
               <Icon className={`w-4 h-4 ${c.color}`} />
-              <span className="text-[9px] font-semibold text-white/40 tracking-widest uppercase">{c.label}</span>
+              <span className="text-[9px] font-semibold text-white/45 tracking-widest uppercase">{c.label}</span>
               <span className="text-xs font-bold text-white/90 leading-tight truncate w-full">{c.value}</span>
             </div>
           );
@@ -47,8 +47,7 @@ export default function DashboardMetadata() {
       </div>
       <Link
         to="/profile"
-        className="mist-module rounded-2xl flex items-center justify-between px-5 py-3.5 active:scale-[0.99] transition-transform"
-        style={{ '--mod-glow': 'rgba(139,92,246,0.22)' }}
+        className="relative rounded-2xl flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-violet-600/20 to-cyan-500/10 border border-violet-400/25 active:scale-[0.99] transition-transform overflow-hidden"
       >
         <span className="flex items-center gap-2.5 text-sm font-bold text-white/90">
           <UserCircle2 className="w-5 h-5 text-violet-300" /> View Full Profile
