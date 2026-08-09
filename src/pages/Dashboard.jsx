@@ -139,13 +139,13 @@ export default function Dashboard() {
           <RadioFilesDashboardCard />
         </div>
 
+        {/* XP / LEVEL — identity progression */}
+        <XPLevelCard xp={stats.xp || 0} level={stats.level} />
+
         {/* OPERATOR DATA — subtle metadata */}
         <div className="mt-6 sm:mt-8">
           <DashboardMetadata />
         </div>
-
-        {/* XP / LEVEL — identity progression */}
-        <XPLevelCard xp={stats.xp || 0} level={stats.level} />
 
         {/* ── Secondary content (functional, preserved) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
