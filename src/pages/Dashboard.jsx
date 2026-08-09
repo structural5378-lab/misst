@@ -125,7 +125,7 @@ export default function Dashboard() {
         <DashboardHeader />
 
         {/* OPERATOR HERO — identity composition on the shared environment */}
-        <div className="mt-6 sm:mt-8">
+        <div className="mt-4 sm:mt-6">
           <OperatorCard onLogout={signOut} />
         </div>
 

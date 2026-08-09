@@ -85,7 +85,7 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
         </div>
 
         {/* Minimal action cluster — top-right, subtle */}
-        <div className="relative flex justify-end gap-1 mb-5">
+        <div className="relative flex justify-end gap-1 mb-3">
           <Link to={alertsLink} className="p-1.5 rounded-lg text-white/45 hover:text-white transition-colors" aria-label="Notifications">
             <Bell className="w-4 h-4" />
           </Link>
@@ -100,19 +100,18 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
         </div>
 
         {/* Hero grid — avatar emblem | identity */}
-        <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6 lg:gap-10 items-center">
+        <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 lg:gap-10 items-center">
           {/* Avatar emblem */}
           <div className="flex justify-center lg:justify-start">
-            <div className="relative w-40 h-40 sm:w-48 sm:h-48 lg:w-52 lg:h-52">
+            <div className="relative w-32 h-32 sm:w-48 sm:h-48 lg:w-52 lg:h-52">
               <img src={MISST_ASSETS.MISST_AVATAR_ENERGY.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain opacity-80" style={{ mixBlendMode: 'screen' }} />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-32 h-32 sm:w-40 sm:h-40 lg:w-44 lg:h-44">
-                  <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="rounded-full">
-                    <div className="w-full h-full rounded-full overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/20">
+                <div className="relative w-28 h-28 sm:w-40 sm:h-40 lg:w-44 lg:h-44">
+                  <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="rounded-2xl">
+                    <div className="w-full h-full rounded-2xl overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/25">
                       <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
                     </div>
                   </PremiumAvatarFrame>
-                  <img src={MISST_ASSETS.MISST_AVATAR_FRAME.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ mixBlendMode: 'screen' }} />
                   <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-14 h-14 sm:w-16 sm:h-16">
                     <img src={MISST_ASSETS.MISST_LEVEL_SHIELD.url} alt="" className="w-full h-full object-contain" style={{ mixBlendMode: 'screen' }} />
                     <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
@@ -149,7 +148,7 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
             </div>
 
             {/* Stats — clean inline row, no box */}
-            <div className="mt-5 flex items-center justify-center lg:justify-start gap-6 sm:gap-8">
+            <div className="mt-4 flex items-center justify-center lg:justify-start gap-6 sm:gap-8">
               {STATS.map((s) => {
                 const Icon = s.icon;
                 return (
