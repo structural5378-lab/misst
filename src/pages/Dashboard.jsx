@@ -125,6 +125,9 @@ export default function Dashboard() {
           <OperatorCard onLogout={signOut} />
         </div>
 
+        {/* XP / LEVEL — identity progression, directly under avatar block */}
+        <XPLevelCard xp={stats.xp || 0} level={stats.level} />
+
         {/* NEXT NET — compact operational strip */}
         <div className="mt-5 sm:mt-6">
           <NextNetCard net={nets[0]} />
@@ -144,9 +147,6 @@ export default function Dashboard() {
         <div className="mt-6 sm:mt-8">
           <DashboardMetadata />
         </div>
-
-        {/* XP / LEVEL — identity progression */}
-        <XPLevelCard xp={stats.xp || 0} level={stats.level} />
 
         {/* RADIO FILES — library + compatible files */}
         <div className="mt-6 sm:mt-8">
