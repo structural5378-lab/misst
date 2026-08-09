@@ -5,9 +5,8 @@ import { useMistUser } from '@/hooks/useMistUser';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-// DashboardMetadata — three info columns (Joined / Community / License) plus
-// the full-width "View Full Profile" CTA. Restyled to the new visual language.
-// Reuses the shared 'operator-card-stats' query (deduped with OperatorCard).
+// DashboardMetadata — compact operator metadata panel (Joined / Community /
+// License) plus the "View Full Profile" CTA. Reuses the shared stats query.
 export default function DashboardMetadata() {
   const { mybbUser, mistUser } = useMistUser();
   const { data: syncData } = useQuery({
@@ -32,12 +31,13 @@ export default function DashboardMetadata() {
   ];
 
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-3">
+    <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+      {/* compact metadata panel */}
+      <div className="flex-1 rounded-2xl bg-card/40 backdrop-blur-md border border-white/[0.06] px-4 py-3 grid grid-cols-3 divide-x divide-white/[0.06]">
         {cols.map((c) => {
           const Icon = c.icon;
           return (
-            <div key={c.label} className="flex flex-col items-center gap-1.5 text-center rounded-2xl bg-white/[0.04] border border-white/[0.08] px-2 py-3.5">
+            <div key={c.label} className="flex flex-col items-center gap-1 text-center px-2">
               <Icon className={`w-4 h-4 ${c.color}`} />
               <span className="text-[9px] font-semibold text-white/45 tracking-widest uppercase">{c.label}</span>
               <span className="text-xs font-bold text-white/90 leading-tight truncate w-full">{c.value}</span>
@@ -45,14 +45,14 @@ export default function DashboardMetadata() {
           );
         })}
       </div>
+      {/* CTA */}
       <Link
         to="/profile"
-        className="relative rounded-2xl flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-violet-600/20 to-cyan-500/10 border border-violet-400/25 active:scale-[0.99] transition-transform overflow-hidden"
+        className="rounded-2xl flex items-center justify-center gap-2.5 px-5 py-3.5 bg-gradient-to-r from-violet-600/25 to-cyan-500/15 border border-violet-400/30 active:scale-[0.99] transition-transform shrink-0 sm:w-auto w-full"
       >
-        <span className="flex items-center gap-2.5 text-sm font-bold text-white/90">
-          <UserCircle2 className="w-5 h-5 text-violet-300" /> View Full Profile
-        </span>
-        <ChevronRight className="w-5 h-5 text-violet-300" />
+        <UserCircle2 className="w-5 h-5 text-violet-200" />
+        <span className="text-sm font-bold text-white/90">View Full Profile</span>
+        <ChevronRight className="w-4 h-4 text-violet-300" />
       </Link>
     </div>
   );

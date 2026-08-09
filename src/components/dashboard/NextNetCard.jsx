@@ -26,9 +26,12 @@ function dayBadge(dayOfWeek) {
   return "Scheduled";
 }
 
-// NextNetCard — a premium active-status banner. Green/emerald is used sparingly
-// (left accent rail + status pill). Event name and time are the readable focus.
-export default function NextNetCard({ net }) {
+// NextNetCard — premium next-net banner. Two presentation variants:
+//   - standalone (default): the original emerald-accent card
+//   - embedded: a flush strip designed to sit as a connected footer inside
+//     the Operator Hero, reading as "here is what your community is doing next."
+// All data/countdown logic is identical between variants.
+export default function NextNetCard({ net, embedded = false }) {
   const [countdown, setCountdown] = useState("");
   const badge = net ? dayBadge(net.day_of_week) : "Upcoming";
 
@@ -50,6 +53,25 @@ export default function NextNetCard({ net }) {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [net]);
+
+  if (embedded) {
+    return (
+      <Link to="/nets" className="block relative border-t border-white/10 bg-black/30 backdrop-blur-sm hover:bg-black/40 transition-colors">
+        <div className="relative flex items-center gap-3 px-5 sm:px-6 py-3.5">
+          <div className="w-9 h-9 rounded-lg bg-emerald-500/15 flex items-center justify-center shrink-0" style={{ boxShadow: "0 0 18px -6px rgba(34,197,94,0.5)" }}>
+            <Radio className="w-5 h-5 text-emerald-300" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-emerald-300/80 tracking-widest uppercase">Next Net</p>
+            <p className="text-sm font-bold text-white leading-tight truncate">{net ? net.name : "No nets scheduled"}</p>
+          </div>
+          {net && countdown && <p className="text-xs text-white/45 tabular-nums shrink-0 hidden sm:block">{countdown}</p>}
+          {net && <p className="text-sm font-bold text-white tabular-nums shrink-0">{net.time}</p>}
+          <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/25 shrink-0">{badge}</span>
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link to="/nets" className="block">

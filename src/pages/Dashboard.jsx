@@ -12,7 +12,6 @@ import { useNetControlAccess } from "@/hooks/useNetControlAccess";
 import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
 import RadioScopeTile from "@/components/radioscope/RadioScopeTile";
 import OperatorCard from "@/components/profile/OperatorCard";
-import NextNetCard from "@/components/dashboard/NextNetCard";
 import XPLevelCard from "@/components/dashboard/XPLevelCard";
 import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
 import DashboardCommandCenter from "@/components/dashboard/DashboardCommandCenter";
@@ -117,18 +116,15 @@ export default function Dashboard() {
   return (
     <div className="relative min-h-screen">
       {/* Atmospheric dashboard background artwork (decorative only, behind UI) */}
-      <img src={MISST_ASSETS.MISST_DASHBOARD_BACKGROUND.url} alt="" aria-hidden className="fixed inset-0 w-full h-full object-cover opacity-30 pointer-events-none" />
-      <div className="fixed inset-0 bg-black/50 pointer-events-none" />
+      <img src={MISST_ASSETS.MISST_DASHBOARD_BACKGROUND.url} alt="" aria-hidden className="fixed inset-0 w-full h-full object-cover opacity-35 pointer-events-none" />
+      <div className="fixed inset-0 bg-black/45 pointer-events-none" />
 
-      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-4 pb-6 space-y-4 max-w-6xl mx-auto">
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-4 pb-6 space-y-3 sm:space-y-4 max-w-6xl mx-auto">
         {/* HEADER */}
         <DashboardHeader />
 
-        {/* PROFILE HERO */}
-        <OperatorCard onLogout={signOut} />
-
-        {/* NEXT NET */}
-        <NextNetCard net={nextNet} />
+        {/* PROFILE HERO + NEXT NET (connected) */}
+        <OperatorCard onLogout={signOut} nextNet={nextNet} />
 
         {/* FOUR FEATURE TILES */}
         <DashboardQuickActions />

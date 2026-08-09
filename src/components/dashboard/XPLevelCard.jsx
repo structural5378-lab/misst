@@ -12,23 +12,23 @@ const LEVEL_TITLES = [
 ];
 const titleFor = (lvl) => LEVEL_TITLES.find((t) => lvl >= t.min)?.title || "Operator";
 
-// XPLevelCard — level progression card using the MISST level shield artwork as
-// the visual emblem. The level number is rendered dynamically in HTML on top of
-// the (empty-center) shield image — never embedded in the artwork. Uses the
+// XPLevelCard — level progression using the MISST level shield as a visual
+// identity emblem (not a small icon). The level number is rendered dynamically
+// in HTML on top of the (black-center) shield via screen blend. Uses the
 // existing XP system (getLevelProgress) unchanged.
 export default function XPLevelCard({ xp = 0, level: levelProp }) {
   const { level: calcLevel, progress, remaining, nextStart } = getLevelProgress(xp);
   const level = levelProp || calcLevel;
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-violet-500/20 bg-white/[0.03] p-4 sm:p-5">
-      <div className="absolute -top-14 -right-14 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="relative flex items-center gap-4">
-        {/* level shield artwork with HTML number */}
-        <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0">
+    <div className="relative rounded-2xl overflow-hidden border border-violet-500/20 bg-card/40 backdrop-blur-md p-4 sm:p-5">
+      <div className="absolute -top-16 -right-16 w-44 h-44 bg-violet-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative flex items-center gap-5">
+        {/* level shield emblem */}
+        <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0">
           <img src={MISST_ASSETS.MISST_LEVEL_SHIELD.url} alt="" className="w-full h-full object-contain" style={{ mixBlendMode: 'screen' }} />
           <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
             <span className="text-[8px] font-bold text-violet-100 tracking-widest">LVL</span>
-            <span className="text-xl sm:text-2xl font-black text-white">{level}</span>
+            <span className="text-2xl sm:text-3xl font-black text-white">{level}</span>
           </div>
         </div>
         <div className="flex-1 min-w-0">

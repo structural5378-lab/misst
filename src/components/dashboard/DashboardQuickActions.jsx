@@ -2,10 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MISST_ASSETS } from '@/lib/misstAssets';
 
-// DashboardQuickActions — four substantial feature tiles using the MISST
-// artwork pack. The artwork is the dominant visual element (not a tiny icon);
-// title + short description overlay at the bottom. Mobile: 2x2, desktop: 4-up.
-// Navigation routes are unchanged from the previous implementation.
+// DashboardQuickActions — four substantial MISST modules. The approved artwork
+// is the dominant upper visual of each tile; title + descriptor sit beneath.
+// Mobile: 2×2 grid. Desktop: strong 4-column row. Routes unchanged.
 const MODULES = [
   { art: MISST_ASSETS.MISST_TILE_CHAT, title: 'Chat', subtitle: 'Conversations', path: '/messages', live: true },
   { art: MISST_ASSETS.MISST_TILE_TOOLS, title: 'Tools', subtitle: 'Utilities & gear', path: '/tools' },
@@ -20,18 +19,17 @@ export default function DashboardQuickActions() {
         <Link
           key={m.title}
           to={m.path}
-          className="group relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.05] to-transparent min-h-[176px] flex items-end p-4 active:scale-[0.97] transition-transform"
+          className="group relative rounded-2xl overflow-hidden border border-white/[0.08] bg-card/40 backdrop-blur-md min-h-[196px] flex flex-col active:scale-[0.97] transition-transform"
         >
-          {/* artwork — significant visual element */}
-          <img src={m.art.url} alt="" className="absolute inset-0 w-full h-full object-contain p-3 opacity-95 transition-transform duration-300 group-hover:scale-105" style={{ mixBlendMode: 'screen' }} />
-          {/* readability gradient at bottom */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
-          {/* live pulse */}
-          {m.live && <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse ring-2 ring-black/50" />}
-          {/* title + subtitle */}
-          <div className="relative z-10 text-center w-full">
-            <p className="text-lg font-bold text-white leading-tight" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>{m.title}</p>
-            <p className="text-[11px] text-white/65 mt-0.5">{m.subtitle}</p>
+          {/* artwork — dominant upper visual (screen blend over the glass tile) */}
+          <div className="relative flex-1 flex items-center justify-center p-4">
+            <img src={m.art.url} alt="" className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" style={{ mixBlendMode: 'screen' }} />
+            {m.live && <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse ring-2 ring-black/50" />}
+          </div>
+          {/* title + descriptor */}
+          <div className="relative px-4 pb-4 pt-1 text-center">
+            <p className="text-base font-bold text-white leading-tight">{m.title}</p>
+            <p className="text-[11px] text-white/55 mt-0.5">{m.subtitle}</p>
           </div>
         </Link>
       ))}
