@@ -17,7 +17,6 @@ import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions"
 import DashboardCommandCenter from "@/components/dashboard/DashboardCommandCenter";
 import RadioFilesDashboardCard from "@/components/radiofiles/RadioFilesDashboardCard";
 import DashboardMetadata from "@/components/dashboard/DashboardMetadata";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { MISST_ASSETS } from "@/lib/misstAssets";
 
 const quickItems = [
@@ -120,9 +119,6 @@ export default function Dashboard() {
       <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(139,92,246,0.10), transparent 60%), radial-gradient(ellipse 60% 40% at 100% 100%, rgba(6,182,212,0.06), transparent 60%), linear-gradient(to bottom, rgba(5,2,8,0.35), rgba(5,2,8,0.55))' }} />
 
       <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-3 pb-6 max-w-6xl mx-auto">
-        {/* HEADER */}
-        <DashboardHeader />
-
         {/* OPERATOR HERO — identity composition on the shared environment */}
         <div className="mt-4 sm:mt-6">
           <OperatorCard onLogout={signOut} />

@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery } from '@tanstack/react-query';
-import { Bell, LogOut, Share2, Shield, Award, Radio, Flame, X } from 'lucide-react';
+import { LogOut, Share2, Shield, Award, Radio, Flame, X } from 'lucide-react';
 import GroupTag from './GroupTag';
 import BadgeShowcase from './BadgeShowcase';
 import PremiumBadgeRow from '@/components/premium/PremiumBadgeRow';
@@ -33,7 +33,7 @@ const STATS = [
 //   MISST_AVATAR_ENERGY (halo) → PremiumAvatarFrame (Lighting Engine) →
 //   avatar → MISST_AVATAR_FRAME (tactical ring) → MISST_LEVEL_SHIELD (level).
 // All hooks/data/badge systems are preserved unchanged.
-export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
+export default function OperatorCard({ onLogout }) {
   const { mybbUser } = useMistUser();
   const { isAdmin } = useAdminAccess();
   const [user, setUser] = useState(null);
@@ -86,9 +86,6 @@ export default function OperatorCard({ onLogout, alertsLink = '/alerts' }) {
 
         {/* Minimal action cluster — top-right, subtle */}
         <div className="relative flex justify-end gap-1 mb-3">
-          <Link to={alertsLink} className="p-1.5 rounded-lg text-white/45 hover:text-white transition-colors" aria-label="Notifications">
-            <Bell className="w-4 h-4" />
-          </Link>
           <button onClick={handleShare} className="p-1.5 rounded-lg text-white/45 hover:text-white transition-colors" title="Share profile">
             <Share2 className="w-4 h-4" />
           </button>
