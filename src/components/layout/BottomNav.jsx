@@ -114,13 +114,13 @@ export default function BottomNav() {
               }`}
             >
               {isAdd ? (
-                <div className="relative -mt-8">
+                <div className="relative -mt-9">
                   {/* Layered glowing halo — multiple rings */}
                   <div className="absolute inset-0 rounded-full bg-primary/50 blur-lg mist-fab-halo" />
-                  <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-violet-500/40 to-cyan-400/40 blur-md opacity-80" />
-                  <div className="absolute -inset-0.5 rounded-full border border-violet-300/40" />
-                  <div className="relative rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-xl shadow-violet-500/60 border-2 border-white/30" style={{ width: 64, height: 64 }}>
-                    <Plus className="w-7 h-7 text-white" />
+                  <div className="absolute -inset-2.5 rounded-full bg-gradient-to-br from-violet-500/40 to-cyan-400/40 blur-md opacity-80" />
+                  <div className="absolute -inset-1 rounded-full border border-violet-300/40" />
+                  <div className="relative rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-xl shadow-violet-500/60 border-2 border-white/30" style={{ width: 70, height: 70 }}>
+                    <Plus className="w-8 h-8 text-white" />
                   </div>
                 </div>
               ) : (

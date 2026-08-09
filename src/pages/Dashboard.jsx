@@ -114,6 +114,19 @@ export default function Dashboard() {
 
   return (
     <div className="mist-storm-bg min-h-screen">
+      {/* Subtle radio-tower silhouette — atmospheric decoration only (not weather) */}
+      <svg className="fixed bottom-0 right-0 z-0 pointer-events-none opacity-[0.06]" width="380" height="520" viewBox="0 0 100 200" fill="none" aria-hidden="true">
+        <g stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round">
+          <line x1="50" y1="18" x2="50" y2="190" />
+          <line x1="22" y1="190" x2="50" y2="110" />
+          <line x1="78" y1="190" x2="50" y2="110" />
+          <line x1="38" y1="55" x2="62" y2="55" />
+          <line x1="33" y1="85" x2="67" y2="85" />
+          <line x1="28" y1="115" x2="72" y2="115" />
+          <line x1="23" y1="145" x2="77" y2="145" />
+        </g>
+        <circle cx="50" cy="16" r="3" fill="#a78bfa" />
+      </svg>
       <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-4 pb-6 space-y-4 max-w-6xl mx-auto">
         {/* Cinematic operator hero */}
         <div className="mist-fade-up">
