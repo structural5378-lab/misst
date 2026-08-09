@@ -18,7 +18,6 @@ import DashboardCommandCenter from "@/components/dashboard/DashboardCommandCente
 import RadioFilesDashboardCard from "@/components/radiofiles/RadioFilesDashboardCard";
 import DashboardMetadata from "@/components/dashboard/DashboardMetadata";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import NextNetCard from "@/components/dashboard/NextNetCard";
 import { MISST_ASSETS } from "@/lib/misstAssets";
 
 const quickItems = [
@@ -51,12 +50,11 @@ export default function Dashboard() {
     }
   }, [mistUser.id]);
 
-  const { data: nets } = useQuery({
+  const { data: nets = [] } = useQuery({
     queryKey: ["nets"],
-    queryFn: () => base44.entities.Net.list("-created_date", 3),
+    queryFn: () => base44.entities.Net.list("-created_date", 10),
     initialData: [],
   });
-  const nextNet = nets.length > 0 ? nets[0] : null;
 
   const { data: alerts } = useQuery({
     queryKey: ["alerts"],
@@ -129,9 +127,6 @@ export default function Dashboard() {
         <div className="mt-4 sm:mt-6">
           <OperatorCard onLogout={signOut} />
         </div>
-
-        {/* NEXT NET — operational status panel */}
-        <NextNetCard net={nextNet} />
 
         {/* FOUR FEATURE MODULES */}
         <div className="mt-6 sm:mt-8">
