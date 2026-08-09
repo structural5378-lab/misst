@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, Users, Info, AlertTriangle, Settings, MessageSquare, ChevronRight, MapPin, Sun, Wrench, Globe, Camera, UserCircle2, ShoppingBag, SignalHigh, Trophy, Shield, Mic } from "lucide-react";
+import { Bell, Radio, Users, Info, AlertTriangle, Settings, MessageSquare, ChevronRight, MapPin, Sun, Wrench, Globe, Camera, UserCircle2, ShoppingBag, SignalHigh, Trophy, Shield } from "lucide-react";
 import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
 import LightningActivityStrip from "@/components/weather/LightningActivityStrip";
@@ -25,7 +25,6 @@ const quickItems = [
   { icon: Radio, label: "Repeaters", path: "/repeaters", color: "text-violet-400", bg: "bg-violet-500/10" },
   { icon: MapPin, label: "Map", path: "/map", color: "text-cyan-400", bg: "bg-cyan-500/10" },
   { icon: Users, label: "Nets", path: "/nets", color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { icon: Mic, label: "Net Control", path: "/net-control", color: "text-violet-400", bg: "bg-violet-500/10", netControlOnly: true },
   { icon: Sun, label: "Weather", path: "/weather", color: "text-amber-400", bg: "bg-amber-500/10" },
   { icon: Wrench, label: "Tools", path: "/tools", color: "text-sky-400", bg: "bg-sky-500/10" },
   { icon: Globe, label: "Forum", path: "/community-forum", color: "text-info", bg: "bg-info/10" },
