@@ -88,7 +88,7 @@ export default function BottomNav() {
   }, [isOnChat]);
 
   return (
-    <nav data-bottom-nav aria-label="Primary navigation" className="fixed bottom-0 left-0 right-0 z-[70] bg-background/80 backdrop-blur-2xl border-t border-white/[0.06] transition-transform duration-300 ease-out will-change-transform">
+    <nav data-bottom-nav aria-label="Primary navigation" className="fixed bottom-0 left-0 right-0 z-[70] mist-nav-bar transition-transform duration-300 ease-out will-change-transform">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
         {items.map(({ icon: Icon, label, path }) => {
           const isActive = path === "/"
@@ -114,12 +114,12 @@ export default function BottomNav() {
               }`}
             >
               {isAdd ? (
-                <div className="relative -mt-6">
-                  {/* Animated glowing halo */}
-                  <div className="absolute inset-0 rounded-full bg-primary/60 blur-lg mist-fab-halo" />
-                  <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 blur-md opacity-70" />
-                  <div className="relative rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-xl shadow-primary/40 border border-white/20" style={{ width: 52, height: 52 }}>
-                    <Plus className="w-6 h-6 text-primary-foreground" />
+                <div className="relative -mt-7">
+                  {/* Layered glowing halo */}
+                  <div className="absolute inset-0 rounded-full bg-primary/50 blur-lg mist-fab-halo" />
+                  <div className="absolute -inset-1.5 rounded-full bg-gradient-to-br from-violet-500/40 to-cyan-400/40 blur-md opacity-80" />
+                  <div className="relative rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-xl shadow-violet-500/50 border-2 border-white/25" style={{ width: 58, height: 58 }}>
+                    <Plus className="w-6 h-6 text-white" />
                   </div>
                 </div>
               ) : (

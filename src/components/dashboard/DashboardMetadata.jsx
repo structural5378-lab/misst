@@ -5,9 +5,9 @@ import { useMistUser } from '@/hooks/useMistUser';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-// DashboardMetadata — the three info columns (Joined / Community / License) plus
-// the full-width "View Full Profile" button from the reference. Reuses the shared
-// 'operator-card-stats' query (deduped with OperatorCard) so no extra fetch.
+// DashboardMetadata — three info columns (Joined / Community / License)
+// separated by vertical dividers, plus the full-width "View Full Profile" CTA.
+// Reuses the shared 'operator-card-stats' query (deduped with OperatorCard).
 export default function DashboardMetadata() {
   const { mybbUser, mistUser } = useMistUser();
   const { data: syncData } = useQuery({
@@ -33,24 +33,24 @@ export default function DashboardMetadata() {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-3 divide-x divide-white/[0.06] rounded-2xl bg-white/[0.03] border border-white/[0.07] overflow-hidden">
         {cols.map((c) => {
           const Icon = c.icon;
           return (
-            <div key={c.label} className="mist-stat-card rounded-2xl px-2 py-3 flex flex-col items-center gap-1.5 text-center">
+            <div key={c.label} className="px-3 py-3.5 flex flex-col items-center gap-1 text-center">
               <Icon className={`w-4 h-4 ${c.color}`} />
-              <span className="text-[8px] font-semibold text-white/45 uppercase tracking-widest">{c.label}</span>
-              <span className="text-[11px] font-bold text-white/90 leading-tight truncate w-full">{c.value}</span>
+              <span className="text-[9px] font-semibold text-white/40 tracking-widest uppercase">{c.label}</span>
+              <span className="text-xs font-bold text-white/90 leading-tight truncate w-full">{c.value}</span>
             </div>
           );
         })}
       </div>
       <Link
         to="/profile"
-        className="mist-quick-tile rounded-2xl flex items-center justify-between px-4 py-3.5 active:scale-[0.98] transition-transform"
-        style={{ '--tile-glow': 'rgba(139,92,246,0.42)' }}
+        className="mist-module rounded-2xl flex items-center justify-between px-5 py-3.5 active:scale-[0.99] transition-transform"
+        style={{ '--mod-glow': 'rgba(139,92,246,0.22)' }}
       >
-        <span className="flex items-center gap-2.5 text-sm font-bold text-white/90 tracking-wide">
+        <span className="flex items-center gap-2.5 text-sm font-bold text-white/90">
           <UserCircle2 className="w-5 h-5 text-violet-300" /> View Full Profile
         </span>
         <ChevronRight className="w-5 h-5 text-violet-300" />

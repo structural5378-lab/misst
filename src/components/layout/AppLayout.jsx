@@ -118,7 +118,7 @@ export default function AppLayout() {
             <img
               src="https://media.base44.com/images/public/6a24d788be1af31b2258fab2/ef2f5095f_EA7D7629-51E2-49DA-AE8B-4017441D651F.png"
               alt="MISST"
-              className="w-6 h-6 object-contain drop-shadow-[0_0_6px_rgba(139,92,246,0.5)]"
+              className="w-6 h-6 object-contain drop-shadow-[0_0_8px_rgba(139,92,246,0.65)]"
             />
             <span className="text-xs font-bold tracking-[0.25em] text-violet-300 uppercase">MISST</span>
           </div>
@@ -157,7 +157,7 @@ export default function AppLayout() {
           You're in limited access mode — join or create a community to unlock everything.
         </Link>
       )}
-      <main className="pb-20 flex-1 w-full max-w-2xl mx-auto overflow-x-hidden">
+      <main className="pb-20 flex-1 w-full max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto overflow-x-hidden">
         <Outlet />
       </main>
       <NotificationManager />

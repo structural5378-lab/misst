@@ -20,22 +20,17 @@ function dayBadge(dayOfWeek) {
   const td = days[now.getDay()];
   const tm = days[(now.getDay() + 1) % 7];
   const d = String(dayOfWeek || "").toLowerCase();
-  if (!d) return "UPCOMING";
-  if (d.includes(td)) return "TODAY";
-  if (d.includes(tm)) return "TOMORROW";
-  return "SCHEDULED";
+  if (!d) return "Upcoming";
+  if (d.includes(td)) return "Today";
+  if (d.includes(tm)) return "Tomorrow";
+  return "Scheduled";
 }
 
-const BADGE_STYLES = {
-  TODAY: "bg-emerald-500/20 text-emerald-300 border-emerald-400/40",
-  TOMORROW: "bg-cyan-500/20 text-cyan-300 border-cyan-400/40",
-  SCHEDULED: "bg-violet-500/20 text-violet-300 border-violet-400/40",
-  UPCOMING: "bg-violet-500/20 text-violet-300 border-violet-400/40",
-};
-
+// NextNetCard — a premium active-status banner. Green/emerald is used sparingly
+// (left accent rail + status pill). Event name and time are the readable focus.
 export default function NextNetCard({ net }) {
   const [countdown, setCountdown] = useState("");
-  const badge = net ? dayBadge(net.day_of_week) : "UPCOMING";
+  const badge = net ? dayBadge(net.day_of_week) : "Upcoming";
 
   useEffect(() => {
     if (!net) return;
@@ -58,23 +53,24 @@ export default function NextNetCard({ net }) {
 
   return (
     <Link to="/nets" className="block">
-      <div className="relative px-5 py-3.5 rounded-2xl bg-card/60 border border-success/30 backdrop-blur-md overflow-hidden mist-nextnet-glow">
-        <div className="absolute inset-0 bg-gradient-to-r from-success/10 via-success/5 to-transparent pointer-events-none" />
-        <div className="relative flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-success/15 flex items-center justify-center shrink-0">
-            <Radio className="w-5 h-5 text-success" />
+      <div className="relative rounded-2xl bg-card/50 border border-emerald-500/20 backdrop-blur-md overflow-hidden">
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400/60 to-emerald-500/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/[0.06] via-transparent to-transparent pointer-events-none" />
+        <div className="relative flex items-center gap-3.5 px-5 py-4">
+          <div className="w-11 h-11 rounded-xl bg-emerald-500/12 flex items-center justify-center shrink-0" style={{ boxShadow: "0 0 22px -6px rgba(34,197,94,0.5)" }}>
+            <Radio className="w-5 h-5 text-emerald-300" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold tracking-widest text-success/80 uppercase">Next Net</p>
-            <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2 break-words">{net ? net.name : "No nets scheduled"}</p>
+            <p className="text-[10px] font-semibold text-emerald-300/70 tracking-widest uppercase">Next Net</p>
+            <p className="text-base font-bold text-white leading-tight line-clamp-1 break-words mt-0.5">{net ? net.name : "No nets scheduled"}</p>
           </div>
           {net && (
-            <div className="text-right shrink-0 ml-1">
-              <p className="text-sm font-bold text-foreground leading-tight">{net.time}</p>
-              {countdown && <p className="text-[10px] text-muted-foreground tabular-nums">{countdown}</p>}
+            <div className="text-right shrink-0">
+              <p className="text-lg font-black text-white leading-none tabular-nums">{net.time}</p>
+              {countdown && <p className="text-[10px] text-white/40 tabular-nums mt-1">{countdown}</p>}
             </div>
           )}
-          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ml-1 self-center ${BADGE_STYLES[badge]}`}>{badge}</span>
+          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/25 shrink-0">{badge}</span>
         </div>
       </div>
     </Link>

@@ -93,7 +93,6 @@ export default function Dashboard() {
   });
   const isAdmin = (platformData?.platform_roles || []).length > 0;
 
-  // Shared stats (deduped with OperatorCard via the same query key)
   const { data: syncData } = useQuery({
     queryKey: ["operator-card-stats"],
     queryFn: async () => {
@@ -115,23 +114,23 @@ export default function Dashboard() {
 
   return (
     <div className="mist-storm-bg min-h-screen">
-      <div className="relative z-10 px-4 pt-4 space-y-4 pb-6 max-w-2xl mx-auto">
-        {/* Profile Hero */}
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-4 pb-6 space-y-4 max-w-6xl mx-auto">
+        {/* Cinematic operator hero */}
         <div className="mist-fade-up">
           <OperatorCard onLogout={signOut} />
         </div>
 
-        {/* Next Net */}
+        {/* Next Net — live status banner */}
         <div className="mist-fade-up" style={{ animationDelay: "60ms" }}>
           <NextNetCard net={nextNet} />
         </div>
 
-        {/* Quick Actions (4 tiles) */}
+        {/* Primary command modules */}
         <div className="mist-fade-up" style={{ animationDelay: "100ms" }}>
           <DashboardQuickActions />
         </div>
 
-        {/* Command Center */}
+        {/* Net Control command area */}
         <div className="mist-fade-up" style={{ animationDelay: "140ms" }}>
           <DashboardCommandCenter />
         </div>
@@ -141,94 +140,92 @@ export default function Dashboard() {
           <DashboardMetadata />
         </div>
 
-        {/* XP / Level Progress */}
+        {/* XP / Level progression */}
         <div className="mist-fade-up" style={{ animationDelay: "220ms" }}>
           <XPLevelCard xp={stats.xp || 0} level={stats.level} />
         </div>
 
-        {/* RadioScope */}
-        <div className="mist-fade-up">
+        {/* ── Secondary content ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
           <RadioScopeTile />
+          <PropagationGauge />
         </div>
 
-        {/* Propagation Gauge */}
-        <PropagationGauge />
-
-        {/* Storm Tracker */}
         <LightningActivityStrip />
         <StormTracker />
 
-        {/* Alerts */}
-        {alerts.length > 0 && (
+        {/* Alerts + Online (side by side on desktop) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {alerts.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-primary" /> Updates
+                </h3>
+                <Link to="/alerts" className="text-xs text-primary font-medium hover:text-primary/80">View all</Link>
+              </div>
+              <div className="space-y-2">
+                {alerts.map((alert) => {
+                  const Icon = typeIcons[alert.type] || Info;
+                  const colorClass = typeColors[alert.type] || typeColors.info;
+                  return (
+                    <div key={alert.id} className={`flex items-start gap-3 p-3 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md ${!alert.is_read ? "border-l-2 border-l-primary" : ""}`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-medium text-foreground">{alert.title}</h4>
+                        {alert.message && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{alert.message}</p>}
+                        <p className="text-[10px] text-muted-foreground mt-1">{alert.created_date && format(new Date(alert.created_date), "MMM d 'at' h:mm a")}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           <section>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Bell className="w-4 h-4 text-primary" /> Important Updates
+                <Users className="w-4 h-4 text-success" /> Online now
               </h3>
-              <Link to="/alerts" className="text-xs text-primary font-medium hover:text-primary/80">View All</Link>
-            </div>
-            <div className="space-y-2">
-              {alerts.map((alert) => {
-                const Icon = typeIcons[alert.type] || Info;
-                const colorClass = typeColors[alert.type] || typeColors.info;
-                return (
-                  <div key={alert.id} className={`flex items-start gap-3 p-3 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md ${!alert.is_read ? "border-l-2 border-l-primary" : ""}`}>
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-foreground">{alert.title}</h4>
-                      {alert.message && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{alert.message}</p>}
-                      <p className="text-[10px] text-muted-foreground mt-1">{alert.created_date && format(new Date(alert.created_date), "MMM d 'at' h:mm a")}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* Online Members */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Users className="w-4 h-4 text-success" /> Online Now
-            </h3>
-            {totalMembers != null && (
-              <span className="text-xs text-warning font-medium flex items-center gap-1"><Users className="w-3 h-3" />{totalMembers} total</span>
-            )}
-          </div>
-          <button onClick={() => setShowOnlineSheet(true)} className="w-full flex items-center gap-3 p-3 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md hover:border-success/30 transition-all active:scale-[0.99] text-left">
-            <div className="flex -space-x-2">
-              {onlineMembers.slice(0, 5).map((member) => (
-                <div key={member.uid} className="w-8 h-8 rounded-full border-2 border-background bg-card/50 overflow-hidden" title={member.username}>
-                  {member.avatar ? (
-                    <img src={member.avatar} alt={member.username} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = "none"; }} />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-primary">{(member.username || "?").charAt(0).toUpperCase()}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="flex-1">
-              {onlineMembers.length === 0 ? (
-                <span className="text-xs text-muted-foreground">No members online</span>
-              ) : (
-                <span className="text-xs text-muted-foreground">
-                  {onlineMembers.length > 5 ? `+${onlineMembers.length - 5} more · ` : ""}
-                  <span className="text-success font-medium">{onlineMembers.length} online</span>
-                </span>
+              {totalMembers != null && (
+                <span className="text-xs text-warning font-medium flex items-center gap-1"><Users className="w-3 h-3" />{totalMembers} total</span>
               )}
             </div>
-            <span className="text-xs font-semibold text-success border border-success/30 bg-success/10 px-2.5 py-1 rounded-lg">View All</span>
-          </button>
-        </section>
+            <button onClick={() => setShowOnlineSheet(true)} className="w-full flex items-center gap-3 p-3 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md hover:border-success/30 transition-all active:scale-[0.99] text-left">
+              <div className="flex -space-x-2">
+                {onlineMembers.slice(0, 5).map((member) => (
+                  <div key={member.uid} className="w-8 h-8 rounded-full border-2 border-background bg-card/50 overflow-hidden" title={member.username}>
+                    {member.avatar ? (
+                      <img src={member.avatar} alt={member.username} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = "none"; }} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-xs font-bold text-primary">{(member.username || "?").charAt(0).toUpperCase()}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex-1">
+                {onlineMembers.length === 0 ? (
+                  <span className="text-xs text-muted-foreground">No members online</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    {onlineMembers.length > 5 ? `+${onlineMembers.length - 5} more · ` : ""}
+                    <span className="text-success font-medium">{onlineMembers.length} online</span>
+                  </span>
+                )}
+              </div>
+              <span className="text-xs font-semibold text-success border border-success/30 bg-success/10 px-2.5 py-1 rounded-lg">View all</span>
+            </button>
+          </section>
+        </div>
         {showOnlineSheet && <OnlineMembersSheet members={onlineMembers} onClose={() => setShowOnlineSheet(false)} />}
 
-        {/* Explore (full nav grid — preserves all routes) */}
+        {/* Explore — full nav grid, responsive columns */}
         <section>
           <h3 className="text-sm font-semibold text-foreground mb-3">Explore</h3>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
             {quickItems.filter(i => (i.adminOnly ? isAdmin : true) && (i.netControlOnly ? canControl : true)).map(({ icon: Icon, label, path, bg, color }) => (
               <Link key={label + path} to={path} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95">
                 <div className={`w-11 h-11 rounded-xl ${bg} flex items-center justify-center`}>
@@ -243,27 +240,27 @@ export default function Dashboard() {
         {/* Upcoming Nets */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-foreground">Upcoming Nets</h3>
-            <Link to="/nets" className="text-xs text-primary font-medium hover:text-primary/80">View All</Link>
+            <h3 className="text-sm font-semibold text-foreground">Upcoming nets</h3>
+            <Link to="/nets" className="text-xs text-primary font-medium hover:text-primary/80">View all</Link>
           </div>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {nets.slice(0, 3).map((net) => (
               <div key={net.id} className="flex items-center justify-between p-3 rounded-2xl bg-card/60 border border-white/[0.06] backdrop-blur-md hover:border-primary/20 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
                     <Radio className="w-4 h-4 text-primary" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{net.name}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{net.name}</p>
                     <p className="text-xs text-muted-foreground">{net.time} · {net.frequency} MHz</p>
                   </div>
                 </div>
-                <Link to="/nets" className="h-7 text-xs bg-primary/30 hover:bg-primary/50 text-primary border-0 px-3 rounded-md flex items-center gap-1 font-medium">
+                <Link to="/nets" className="h-7 text-xs bg-primary/30 hover:bg-primary/50 text-primary border-0 px-3 rounded-md flex items-center gap-1 font-medium shrink-0">
                   Join <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
             ))}
-            {nets.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No upcoming nets scheduled</p>}
+            {nets.length === 0 && <p className="text-sm text-muted-foreground text-center py-6 col-span-full">No upcoming nets scheduled</p>}
           </div>
         </section>
       </div>
