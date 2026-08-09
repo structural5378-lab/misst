@@ -31,7 +31,7 @@ export default function XPLevelCard({ xp = 0, level: levelProp }) {
 
   return (
     <div className="relative">
-      <div className="border-t border-white/[0.08] pt-5 mt-5 flex flex-col sm:flex-row sm:items-center gap-5">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-5">
         {/* level shield emblem */}
         <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 mx-auto sm:mx-0">
           <img src={MISST_ASSETS.MISST_LEVEL_SHIELD.url} alt="" className="w-full h-full object-contain" style={{ mixBlendMode: 'screen' }} />
