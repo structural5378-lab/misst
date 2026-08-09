@@ -1,10 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Shield, Mic, Mail, MessageSquare } from "lucide-react";
+import { Shield, Mail, MessageSquare } from "lucide-react";
 
 const CARDS = [
   { icon: Shield, label: "Administrator", path: "/platform/admin", gradient: "from-amber-500 to-orange-600", glow: "shadow-amber-500/40", adminOnly: true },
-  { icon: Mic, label: "Net Control", path: "/nets", gradient: "from-blue-500 to-cyan-500", glow: "shadow-cyan-500/40" },
   { icon: Mail, label: "Messages", path: "/messages", gradient: "from-violet-500 to-purple-600", glow: "shadow-violet-500/40" },
   { icon: MessageSquare, label: "Community", path: "/community-forum", gradient: "from-fuchsia-500 to-pink-600", glow: "shadow-fuchsia-500/40" },
 ];
