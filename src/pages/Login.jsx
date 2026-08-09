@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { mist } from "@/api/mist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
+      await mist.auth.loginViaEmailPassword(email, password);
       window.location.href = "/";
     } catch (err) {
       setError(err?.response?.data?.detail || err?.response?.data?.message || err.message || "Invalid email or password");
@@ -29,7 +29,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
+    mist.auth.loginWithProvider("google", "/");
   };
 
   return (

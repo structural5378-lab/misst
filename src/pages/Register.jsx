@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { mist } from "@/api/mist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +35,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await base44.auth.register({ email, password });
+      await mist.auth.register({ email, password });
       setShowOtp(true);
     } catch (err) {
       setError(err.message || "Registration failed");
@@ -48,16 +48,16 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      const result = await base44.auth.verifyOtp({ email, otpCode });
+      const result = await mist.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
+        mist.auth.setToken(result.access_token);
       }
       // Persist optional GMRS call sign (and derived license status) on the
       // freshly-verified account. Best-effort: never block onboarding on failure.
       const cs = normalizeCallsign(callsign);
       if (cs) {
         try {
-          await base44.auth.updateMe({ callsign: cs, license_status: "LICENSED" });
+          await mist.auth.updateMe({ callsign: cs, license_status: "LICENSED" });
         } catch {
           /* user can add it later from the Account Center */
         }
@@ -74,7 +74,7 @@ export default function Register() {
   const handleResend = async () => {
     setError("");
     try {
-      await base44.auth.resendOtp(email);
+      await mist.auth.resendOtp(email);
       toast({
         title: "Code sent",
         description: "Check your email for the new code.",
@@ -85,7 +85,7 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/onboarding");
+    mist.auth.loginWithProvider("google", "/onboarding");
   };
 
   if (showOtp) {

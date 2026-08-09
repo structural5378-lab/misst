@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
+import { mist } from '@/api/mist';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
@@ -17,7 +18,7 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = useCallback(async () => {
     try {
       setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
+      const currentUser = await mist.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
@@ -93,14 +94,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     if (shouldRedirect) {
-      base44.auth.logout(window.location.href);
+      mist.auth.logout(window.location.href);
     } else {
-      base44.auth.logout();
+      mist.auth.logout();
     }
   }, []);
 
   const navigateToLogin = useCallback(() => {
-    base44.auth.redirectToLogin(window.location.href);
+    mist.auth.redirectToLogin(window.location.href);
   }, []);
 
   useEffect(() => {
