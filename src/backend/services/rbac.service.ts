@@ -13,7 +13,7 @@
  * trusted; the backend resolves everything from the database.
  */
 import { getPool } from '../db';
-import { logger } from '../logging';
+import { logger } from '../logging/logger';
 import type { AuthUser } from '../entities/authorization';
 
 // ─── Permission catalog (mirrors base44/shared/rbac.ts) ─────────────────────

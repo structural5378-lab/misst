@@ -25,7 +25,8 @@
  *   await repo.update(memberId, { status: 'active' });
  *   await serviceContext.transaction(async (client) => { ... });
  */
-import { getPool, withTransaction, PoolClient } from '../db';
+import { getPool, withTransaction } from '../db';
+import type { PoolClient } from 'pg';
 import { getRepository, EntityRepository } from '../repositories/entity.repository';
 
 const serviceContext = {

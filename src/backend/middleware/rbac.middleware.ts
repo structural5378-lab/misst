@@ -20,8 +20,13 @@ import { Request, Response, NextFunction } from 'express';
 import { requirePermission as resolvePermission } from '../services/rbac.service';
 import { sendError } from '../utils/response';
 
+/** Express Request augmented with the authenticated user set by authMiddleware. */
+interface AuthedRequest extends Request {
+  user?: { id: string; email: string; role: string };
+}
+
 export function requirePermission(permission: string) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: AuthedRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return sendError(res, {
         code: 'UNAUTHORIZED',

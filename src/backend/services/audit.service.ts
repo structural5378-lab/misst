@@ -10,7 +10,7 @@
  * Tables: platform_audit_log, community_audit_log (both in 002_entities.sql).
  */
 import { getPool } from '../db';
-import { logger } from '../logging';
+import { logger } from '../logging/logger';
 import type { AuthUser } from '../entities/authorization';
 
 // ─── Platform audit ─────────────────────────────────────────────────────────
