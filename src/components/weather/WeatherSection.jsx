@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { Cloud, Sun, CloudRain, Wind, Droplets, Thermometer, Sunrise, Sunset, Eye, Gauge } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -18,7 +18,7 @@ const weatherIcons = {
 export default function WeatherSection() {
   const { data: weather, isLoading, error, refetch } = useQuery({
     queryKey: ["weather"],
-    queryFn: () => base44.functions.invoke("getWeatherData", {}),
+    queryFn: () => mist.functions.invoke("getWeatherData", {}),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
     retry: 3,

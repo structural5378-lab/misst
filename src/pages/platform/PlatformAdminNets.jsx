@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
@@ -33,20 +33,20 @@ export default function PlatformAdminNets() {
 
   const { data: nets = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-nets", communityFilter],
-    queryFn: async () => (await base44.functions.invoke("adminManageNet", { action: "list", community_id: communityFilter || undefined }))?.data?.nets || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageNet", { action: "list", community_id: communityFilter || undefined }))?.data?.nets || [],
   });
   const { data: communities = [] } = useQuery({
     queryKey: ["admin-communities-mini"],
-    queryFn: async () => (await base44.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
   });
 
   const save = async (data) => {
     if (editing) {
-      const res = await base44.functions.invoke("adminManageNet", { action: "update", net_id: editing.id, fields: data });
+      const res = await mist.functions.invoke("adminManageNet", { action: "update", net_id: editing.id, fields: data });
       if (!res.data?.success) throw new Error(res.data?.error || "Update failed");
       toast({ title: "Net updated", description: data.name });
     } else {
-      const res = await base44.functions.invoke("adminManageNet", { action: "create", fields: data });
+      const res = await mist.functions.invoke("adminManageNet", { action: "create", fields: data });
       if (!res.data?.success) throw new Error(res.data?.error || "Create failed");
       toast({ title: "Net created", description: data.name });
     }
@@ -57,12 +57,12 @@ export default function PlatformAdminNets() {
   const doDelete = async () => {
     try {
       if (confirm?.type === "bulk") {
-        const res = await base44.functions.invoke("adminManageNet", { action: "bulk_delete", net_ids: Array.from(selected) });
+        const res = await mist.functions.invoke("adminManageNet", { action: "bulk_delete", net_ids: Array.from(selected) });
         if (!res.data?.success) throw new Error(res.data?.error);
         toast({ title: `${selected.size} nets deleted` });
         setSelected(new Set());
       } else if (confirm?.net) {
-        const res = await base44.functions.invoke("adminManageNet", { action: "delete", net_id: confirm.net.id });
+        const res = await mist.functions.invoke("adminManageNet", { action: "delete", net_id: confirm.net.id });
         if (!res.data?.success) throw new Error(res.data?.error);
         toast({ title: "Net deleted", description: confirm.net.name });
       }

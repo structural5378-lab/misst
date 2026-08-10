@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
@@ -19,16 +19,16 @@ export default function PlatformAdminForum() {
 
   const { data: threads = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-threads", communityFilter],
-    queryFn: async () => (await base44.functions.invoke("adminModerateContent", { action: "list", community_id: communityFilter || undefined }))?.data?.threads || [],
+    queryFn: async () => (await mist.functions.invoke("adminModerateContent", { action: "list", community_id: communityFilter || undefined }))?.data?.threads || [],
   });
   const { data: communities = [] } = useQuery({
     queryKey: ["admin-communities-mini"],
-    queryFn: async () => (await base44.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
   });
 
   const act = async (action, payload, okMsg) => {
     try {
-      const res = await base44.functions.invoke("adminModerateContent", { action, ...payload });
+      const res = await mist.functions.invoke("adminModerateContent", { action, ...payload });
       if (!res.data?.success) throw new Error(res.data?.error || "Action failed");
       toast({ title: okMsg });
       qc.invalidateQueries({ queryKey: ["admin-threads"] });

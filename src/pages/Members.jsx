@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useActiveCommunity } from "@/hooks/useActiveCommunity";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import {
   MessageSquare, Search, Users, Shield, ChevronRight, X, BadgeCheck,
 } from "lucide-react";
@@ -131,7 +131,7 @@ export default function Members() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["active-community-members", community?.id, debounced],
     queryFn: async () =>
-      (await base44.functions.invoke("listCommunityMembers", {
+      (await mist.functions.invoke("listCommunityMembers", {
         community_id: community.id,
         query: debounced,
       })).data,

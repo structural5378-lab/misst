@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 /**
  * useCommunityContent — the membership-validated read path for ALL
  * community-scoped content. Delegates to the listCommunityContent backend
@@ -25,7 +24,7 @@ export function useCommunityContent(communityId, entity, opts = {}) {
       JSON.stringify(opts.extra || {}),
     ],
     queryFn: async () =>
-      (await base44.functions.invoke("listCommunityContent", {
+      (await mist.functions.invoke("listCommunityContent", {
         community_id: communityId,
         entity,
         sort: opts.sort || "-created_date",

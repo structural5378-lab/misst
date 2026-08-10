@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Layers, Crosshair, Bug } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useUserCommunities } from "@/hooks/useUserCommunities";
@@ -82,7 +82,7 @@ export default function RadioScope() {
   const { data: scope, isLoading: scopeLoading } = useQuery({
     queryKey: ["radioscope", community?.id],
     queryFn: async () => {
-      const res = await base44.functions.invoke("getCommunityRadioScopeData", { community_id: community.id });
+      const res = await mist.functions.invoke("getCommunityRadioScopeData", { community_id: community.id });
       return res.data;
     },
     enabled: !!community?.id,
@@ -119,7 +119,7 @@ export default function RadioScope() {
     if (t - lastUpdateRef.current < GPS_UPDATE_THROTTLE_MS) return;
     lastUpdateRef.current = t;
     const source = classifySource(pos.coords.accuracy);
-    base44.functions.invoke("updateUserLocation", {
+    mist.functions.invoke("updateUserLocation", {
       latitude: pos.coords.latitude,
       longitude: pos.coords.longitude,
       accuracy: pos.coords.accuracy,
@@ -133,7 +133,7 @@ export default function RadioScope() {
   const clearLocation = useCallback(() => {
     if (clearingRef.current) return;
     clearingRef.current = true;
-    base44.functions.invoke("clearUserLocation").catch(() => {}).finally(() => {
+    mist.functions.invoke("clearUserLocation").catch(() => {}).finally(() => {
       clearingRef.current = false;
     });
   }, []);

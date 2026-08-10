@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +17,7 @@ export default function AnnouncementDialog({ open, onOpenChange, community }) {
     if (!title.trim() || !message.trim()) return;
     setBusy(true);
     try {
-      const res = await base44.functions.invoke("adminManageCommunity", { action: "send_announcement", community_id: community.id, title, message });
+      const res = await mist.functions.invoke("adminManageCommunity", { action: "send_announcement", community_id: community.id, title, message });
       setSent(res.data?.recipients ?? 0);
       setTitle("");
       setMessage("");

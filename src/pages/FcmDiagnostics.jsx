@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { initializeApp, getApps } from "firebase/app";
 import { getMessaging, getToken, deleteToken } from "firebase/messaging";
 import { ScrollText, CheckCircle2, XCircle, AlertTriangle, Loader2 } from "lucide-react";
@@ -92,7 +92,7 @@ export default function FcmDiagnostics() {
       // ── 3. Firebase Initialization config ──
       let cfg = null;
       try {
-        const res = await base44.functions.invoke("getFcmPublicConfig", {});
+        const res = await mist.functions.invoke("getFcmPublicConfig", {});
         cfg = res?.data || null;
         push("Config", "getFcmPublicConfig response", JSON.stringify(cfg));
       } catch (e) {
@@ -188,7 +188,7 @@ export default function FcmDiagnostics() {
       if (clientToken) {
         try {
           push("E2E", "sending exact token to debugFcmSend", `${clientToken.slice(0,8)}…${clientToken.slice(-8)} (len ${clientToken.length})`);
-          const e2e = await base44.functions.invoke("debugFcmSend", { token: clientToken });
+          const e2e = await mist.functions.invoke("debugFcmSend", { token: clientToken });
           const d = e2e?.data || null;
           if (!d) {
             push("E2E", "debugFcmSend response", JSON.stringify(e2e), false);

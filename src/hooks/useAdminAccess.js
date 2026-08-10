@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 const ROLE_LEVELS = {
   platform_owner: 3,
   platform_admin: 2,
@@ -18,7 +17,7 @@ export function useAdminAccess() {
   const { data } = useQuery({
     queryKey: ['rbac-access'],
     queryFn: async () => {
-      const res = await base44.functions.invoke('resolveRbac', {});
+      const res = await mist.functions.invoke('resolveRbac', {});
       return res.data;
     },
     staleTime: 30000,

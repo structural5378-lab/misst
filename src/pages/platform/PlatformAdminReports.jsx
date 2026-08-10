@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
@@ -39,7 +39,7 @@ export default function PlatformAdminReports() {
 
   const { data: reports = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-reports", statusFilter],
-    queryFn: async () => (await base44.functions.invoke("adminManageReport", { action: "list", status: statusFilter || undefined }))?.data?.reports || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageReport", { action: "list", status: statusFilter || undefined }))?.data?.reports || [],
   });
 
   const columns = [
@@ -55,7 +55,7 @@ export default function PlatformAdminReports() {
   const call = async (action, payload, okMsg) => {
     setBusy(true);
     try {
-      const res = await base44.functions.invoke("adminManageReport", { action, ...payload });
+      const res = await mist.functions.invoke("adminManageReport", { action, ...payload });
       if (!res.data?.success) throw new Error(res.data?.error || "Action failed");
       toast({ title: okMsg });
       setDetail(null);

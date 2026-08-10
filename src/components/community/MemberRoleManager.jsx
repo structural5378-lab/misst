@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X, Search, Star, Loader2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import { RoleIcon } from "@/components/community/rbac/roleIcons";
 
@@ -19,7 +19,7 @@ export default function MemberRoleManager({ member, onClose, onSaved }) {
 
   const { data, isLoading } = useQuery({
     queryKey: ["community-roles-member", member.community_id, member.user_id],
-    queryFn: async () => (await base44.functions.invoke("listCommunityRoles", { community_id: member.community_id, target_user_id: member.user_id })).data,
+    queryFn: async () => (await mist.functions.invoke("listCommunityRoles", { community_id: member.community_id, target_user_id: member.user_id })).data,
   });
 
   const roles = (data?.roles || []).filter((r) =>
@@ -40,7 +40,7 @@ export default function MemberRoleManager({ member, onClose, onSaved }) {
     setBusy(true);
     try {
       const action = assignedIds.has(role.id) ? "remove" : "assign";
-      await base44.functions.invoke("manageCommunityRoleAssignment", { action, community_id: member.community_id, target_user_id: member.user_id, role_id: role.id });
+      await mist.functions.invoke("manageCommunityRoleAssignment", { action, community_id: member.community_id, target_user_id: member.user_id, role_id: role.id });
       toast({ title: action === "assign" ? "Role assigned" : "Role removed" });
       invalidate();
       onSaved?.();
@@ -53,7 +53,7 @@ export default function MemberRoleManager({ member, onClose, onSaved }) {
     if (busy || primaryId === role.id) return;
     setBusy(true);
     try {
-      await base44.functions.invoke("manageCommunityRoleAssignment", { action: "set_primary", community_id: member.community_id, target_user_id: member.user_id, role_id: role.id });
+      await mist.functions.invoke("manageCommunityRoleAssignment", { action: "set_primary", community_id: member.community_id, target_user_id: member.user_id, role_id: role.id });
       toast({ title: `${role.name} set as primary` });
       invalidate();
       onSaved?.();

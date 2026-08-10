@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -30,7 +30,7 @@ export default function MapView() {
   const { data: liveData, isLoading: liveLoading, refetch: refetchLive } = useQuery({
     queryKey: ["repeaterbook"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("fetchRepeaterBook", {
+      const res = await mist.functions.invoke("fetchRepeaterBook", {
         lat: 25.77,
         lng: -80.19,
         distance: 150,

@@ -13,7 +13,7 @@ import Clock from "./Clock";
 import { Bell, User as UserIcon } from "lucide-react";
 import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 import { useUserCommunities } from "@/hooks/useUserCommunities";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 
 export default function AppLayout() {
@@ -37,7 +37,7 @@ export default function AppLayout() {
   const { data: weather } = useQuery({
     queryKey: ["weather-data"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("getWeatherData", {});
+      const res = await mist.functions.invoke("getWeatherData", {});
       return res.data;
     },
     staleTime: 15 * 60 * 1000,

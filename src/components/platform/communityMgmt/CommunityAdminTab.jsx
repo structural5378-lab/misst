@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -30,7 +30,7 @@ export default function CommunityAdminTab({ community, audit, onChanged }) {
   const run = async (action) => {
     setBusy(true);
     try {
-      await base44.functions.invoke("adminManageCommunity", { action, community_id: community.id });
+      await mist.functions.invoke("adminManageCommunity", { action, community_id: community.id });
       onChanged();
     } catch (e) {
       window.alert(e?.response?.data?.error || e?.message || "Failed");
@@ -41,7 +41,7 @@ export default function CommunityAdminTab({ community, audit, onChanged }) {
   const backup = async () => {
     setBusy(true);
     try {
-      const res = await base44.functions.invoke("adminManageCommunity", { action: "backup", community_id: community.id });
+      const res = await mist.functions.invoke("adminManageCommunity", { action: "backup", community_id: community.id });
       const blob = new Blob([JSON.stringify(res.data?.snapshot || {}, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -58,7 +58,7 @@ export default function CommunityAdminTab({ community, audit, onChanged }) {
   const doDelete = async () => {
     setBusy(true);
     try {
-      await base44.functions.invoke("adminManageCommunity", { action: "delete", community_id: community.id });
+      await mist.functions.invoke("adminManageCommunity", { action: "delete", community_id: community.id });
       navigate("/platform/admin/communities");
     } catch (e) {
       window.alert(e?.response?.data?.error || e?.message || "Delete failed");

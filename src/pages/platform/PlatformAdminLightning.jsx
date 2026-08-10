@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import {
   Zap, CloudLightning, Trash2, RefreshCw, Activity, CheckCircle2, XCircle,
@@ -32,7 +32,7 @@ export default function PlatformAdminLightning() {
 
   const checkHealth = async () => {
     try {
-      const res = await base44.functions.invoke("lightningDevAction", { action: "health" });
+      const res = await mist.functions.invoke("lightningDevAction", { action: "health" });
       setHealth(res.data?.health);
     } catch (e) {
       setHealth({ ok: false, detail: String(e?.message || e) });
@@ -47,7 +47,7 @@ export default function PlatformAdminLightning() {
   const run = async (action) => {
     setBusy(action);
     try {
-      await base44.functions.invoke("lightningDevAction", { action });
+      await mist.functions.invoke("lightningDevAction", { action });
       await load();
     } catch (e) {
       console.error(e);

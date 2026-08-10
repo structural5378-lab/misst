@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { usePollingGate } from '@/hooks/usePollingGate';
 
 // PlatformOnlineNowWidget — Super Administrator live widget showing the
@@ -13,7 +13,7 @@ export default function PlatformOnlineNowWidget() {
   const active = usePollingGate();
   const { data, isLoading, isError } = useQuery({
     queryKey: ['platform-stats-online'],
-    queryFn: async () => (await base44.functions.invoke('getPlatformStats', {})).data,
+    queryFn: async () => (await mist.functions.invoke('getPlatformStats', {})).data,
     refetchInterval: active ? 15000 : false,
     staleTime: 10000,
     retry: false,

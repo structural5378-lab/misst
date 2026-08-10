@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import RoomIcon, { ICON_CHOICES } from "./RoomIcon";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 const TYPES = [
   { value: "text", label: "Text" },
   { value: "admin", label: "Admin Only" },
@@ -29,7 +28,7 @@ export default function ManageRoomDialog({ community, room, user, onClose }) {
     if (!name.trim()) return;
     setSaving(true);
     try {
-      await base44.functions.invoke("manageCommunityRoom", {
+      await mist.functions.invoke("manageCommunityRoom", {
         action: isEdit ? "update" : "create",
         community_id: community.id,
         room_id: room?.id,
@@ -48,7 +47,7 @@ export default function ManageRoomDialog({ community, room, user, onClose }) {
     if (!window.confirm(`Delete "${room.name}"? All messages in this room will be permanently removed.`)) return;
     setSaving(true);
     try {
-      await base44.functions.invoke("manageCommunityRoom", { action: "delete", community_id: community.id, room_id: room.id, user_id: user.id });
+      await mist.functions.invoke("manageCommunityRoom", { action: "delete", community_id: community.id, room_id: room.id, user_id: user.id });
       onClose();
     } catch (e) {
       alert(e?.message || "Failed to delete room");
@@ -59,7 +58,7 @@ export default function ManageRoomDialog({ community, room, user, onClose }) {
     if (!window.confirm(`Clear ALL messages in "${room.name}"? Every message will be hidden and the action is logged.`)) return;
     setSaving(true);
     try {
-      await base44.functions.invoke("roomMessageAction", {
+      await mist.functions.invoke("roomMessageAction", {
         action: "clear_history", room_id: room.id, user_id: user.id, user_name: user.full_name || user.email,
       });
       onClose();

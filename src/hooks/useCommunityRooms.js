@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
 
 import { mist } from '@/api/mist';
 // useCommunityRooms — loads a community's Chat V2 rooms (seeding defaults the
@@ -14,7 +13,7 @@ export function useCommunityRooms(communityId, user) {
   const ensureRooms = useCallback(async () => {
     if (!communityId) return [];
     try {
-      const res = await base44.functions.invoke("ensureCommunityRooms", {
+      const res = await mist.functions.invoke("ensureCommunityRooms", {
         community_id: communityId,
         user_id: user?.id,
         user_name: user?.full_name || user?.email || "",

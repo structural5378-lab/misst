@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
@@ -64,7 +64,7 @@ export function useMissionControl(netId, { onXp, onUnlock } = {}) {
   const awardXp = async (userId, userName, action) => {
     if (!userId) return;
     try {
-      const res = await base44.functions.invoke("awardNetXp", { user_id: userId, user_name: userName, action });
+      const res = await mist.functions.invoke("awardNetXp", { user_id: userId, user_name: userName, action });
       if (res?.data?.xpAwarded > 0) onXp?.(res.data.xpAwarded);
       if (res?.data?.newlyUnlocked?.length) onUnlock?.(res.data.newlyUnlocked[0].id);
     } catch {}

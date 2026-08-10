@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { subscribeFcm, isSubscribed } from "@/lib/fcmPush";
 import { useToast } from "@/components/ui/use-toast";
 import { Bell, Loader2, X } from "lucide-react";
@@ -32,7 +32,7 @@ export default function NotificationPrompt() {
       if (r?.ok) {
         setShow(false);
         // Confirm successful setup with a real test push to this device.
-        try { await base44.functions.invoke("sendTestNotification", {}); } catch { /* ignore */ }
+        try { await mist.functions.invoke("sendTestNotification", {}); } catch { /* ignore */ }
         toast({ title: "Push notifications enabled", description: "A test notification is on its way." });
       } else if (r?.reason === "no-vapid-key") {
         toast({ title: "Not configured", description: "The FCM Web Push VAPID key isn't set.", variant: "destructive" });

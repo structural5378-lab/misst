@@ -4,7 +4,7 @@ import {
   CheckCircle2, XCircle, Loader2, AlertTriangle, RefreshCw,
   ShieldAlert, Radio, ChevronDown, ChevronUp, Home,
 } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
@@ -45,7 +45,7 @@ async function runStep(step, ctx, log) {
     case "perms": {
       try {
         const res = await withTimeout(
-          base44.functions.invoke("resolvePermissions", {}),
+          mist.functions.invoke("resolvePermissions", {}),
           4000,
           "permissions"
         );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Radio, Calendar, Pin, Image as ImageIcon, FileText, Users, Wifi } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { presenceStatus } from "@/lib/chatV2/chatV2Utils";
 import { Badge, roleBadge } from "./badges";
@@ -14,7 +14,7 @@ function Empty({ icon: Icon, text }) { return <div className="flex flex-col item
 function Row({ label, value }) { return <div className="flex items-center justify-between py-1 text-xs"><span className="text-muted-foreground">{label}</span><span className="text-foreground font-medium truncate ml-2">{value}</span></div>; }
 
 async function fetchRoomContent(communityId, roomId, extra = {}, limit = 50) {
-  const res = await base44.functions.invoke("listCommunityContent", {
+  const res = await mist.functions.invoke("listCommunityContent", {
     community_id: communityId, entity: "ChatV2RoomMessage", sort: "-created_date", limit,
     extra: { room_id: roomId, deleted: false, ...extra },
   });

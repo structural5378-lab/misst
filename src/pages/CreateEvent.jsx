@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useToast } from "@/components/ui/use-toast";
@@ -46,7 +46,7 @@ export default function CreateEvent() {
       });
 
       // Send immediate push notification
-      await base44.functions.invoke("sendEventNotification", {
+      await mist.functions.invoke("sendEventNotification", {
         eventId: event.id,
         title: event.title,
         description: event.description,

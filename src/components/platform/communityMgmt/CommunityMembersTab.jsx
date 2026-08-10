@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Search, Trash2, Ban, Crown, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ export default function CommunityMembersTab({ community, members, onChanged, mod
   const act = async (action, m) => {
     setBusy(true);
     try {
-      await base44.functions.invoke("adminManageCommunity", { action, community_id: community.id, target_user_id: m.user_id });
+      await mist.functions.invoke("adminManageCommunity", { action, community_id: community.id, target_user_id: m.user_id });
       onChanged();
     } catch (e) {
       window.alert(e?.response?.data?.error || e?.message || "Failed");
@@ -59,7 +59,7 @@ export default function CommunityMembersTab({ community, members, onChanged, mod
     if (!transferPick) return;
     setBusy(true);
     try {
-      await base44.functions.invoke("adminManageCommunity", { action: "transfer_ownership", community_id: community.id, target_user_id: transferPick });
+      await mist.functions.invoke("adminManageCommunity", { action: "transfer_ownership", community_id: community.id, target_user_id: transferPick });
       onChanged();
       setTransfer(null);
       setTransferPick("");

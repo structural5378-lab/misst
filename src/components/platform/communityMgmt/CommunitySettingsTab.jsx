@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,7 +72,7 @@ export default function CommunitySettingsTab({ community, onChanged }) {
     if (Object.keys(payload).length === 0) return; // nothing changed — no-op, no error
     setSaving(true);
     try {
-      await base44.functions.invoke("adminManageCommunity", { action: "update", community_id: community.id, fields: payload });
+      await mist.functions.invoke("adminManageCommunity", { action: "update", community_id: community.id, fields: payload });
       onChanged();
     } catch (e) {
       const msg = e?.response?.data?.error || e?.message || "";

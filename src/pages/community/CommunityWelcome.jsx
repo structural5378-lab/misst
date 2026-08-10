@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import {
   LayoutDashboard, MessageSquarePlus, Hash, UserPlus, Users, Calendar, Radio, UserCircle2, Sparkles, ArrowRight, Share2, Loader2,
 } from "lucide-react";
@@ -12,7 +12,7 @@ export default function CommunityWelcome() {
   const { data: community, isLoading } = useQuery({
     queryKey: ["welcome-community", slug],
     queryFn: async () => {
-      const res = await base44.functions.invoke("getCommunityBySlug", { slug });
+      const res = await mist.functions.invoke("getCommunityBySlug", { slug });
       return res.data?.community;
     },
     enabled: !!slug,

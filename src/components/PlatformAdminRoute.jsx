@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import { Shield, ChevronLeft } from "lucide-react";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 /**
  * PlatformAdminRoute — guards the hidden /platform/admin/* namespace.
  * Only users with a platform-level RBAC role (owner, administrator, etc.) in
@@ -20,7 +19,7 @@ export default function PlatformAdminRoute() {
 
   const checkAccess = async () => {
     try {
-      const res = await base44.functions.invoke("getPlatformRoles", {});
+      const res = await mist.functions.invoke("getPlatformRoles", {});
       const data = res.data;
       if (data?.error === "Unauthorized" || !data?.user) {
         setAuthChecked(false);

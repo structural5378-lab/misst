@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useCommunity } from "@/contexts/CommunityContext";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
@@ -37,7 +37,7 @@ export default function CommunityJoinRequests() {
   const { data: reqData, isLoading } = useQuery({
     queryKey: ["join-requests", community?.id],
     queryFn: async () =>
-      (await base44.functions.invoke("listCommunityMembers", { community_id: community.id, admin_view: true })).data,
+      (await mist.functions.invoke("listCommunityMembers", { community_id: community.id, admin_view: true })).data,
     enabled: !!community?.id && canManage,
   });
   const members = reqData?.members || [];
@@ -89,7 +89,7 @@ export default function CommunityJoinRequests() {
   const act = async (action, userId) => {
     setBusyId(userId);
     try {
-      const res = await base44.functions.invoke("manageCommunityMembership", {
+      const res = await mist.functions.invoke("manageCommunityMembership", {
         action, community_id: community.id, target_user_id: userId,
       });
       if (res.data?.success) {
@@ -113,7 +113,7 @@ export default function CommunityJoinRequests() {
     for (const id of ids) {
       try {
         const m = members.find((x) => x.id === id);
-        const res = await base44.functions.invoke("manageCommunityMembership", {
+        const res = await mist.functions.invoke("manageCommunityMembership", {
           action, community_id: community.id, target_user_id: m.user_id,
         });
         if (res.data?.success) ok++;

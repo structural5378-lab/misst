@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Shield, Plus, Search, Copy, Trash2, UserPlus, X, Crown, Terminal, ShieldCheck,
@@ -29,7 +29,7 @@ export default function PlatformAdminRoles() {
 
   const { data } = useQuery({
     queryKey: ["rbac-manage"],
-    queryFn: async () => (await base44.functions.invoke("rbacManage", { action: "list" })).data,
+    queryFn: async () => (await mist.functions.invoke("rbacManage", { action: "list" })).data,
   });
   const roles = data?.roles || [];
   const assignments = data?.assignments || [];
@@ -52,14 +52,14 @@ export default function PlatformAdminRoles() {
     const body = editor.mode === "edit"
       ? { action, role_id: editor.role.id, patch: payload }
       : { action, ...payload };
-    await base44.functions.invoke("rbacManage", body);
+    await mist.functions.invoke("rbacManage", body);
     reload();
   };
 
   const deleteRole = async (role) => {
     if (role.is_system) return;
     if (!confirm(`Delete role "${role.name}"? This removes all assignments.`)) return;
-    await base44.functions.invoke("rbacManage", { action: "delete_role", role_id: role.id });
+    await mist.functions.invoke("rbacManage", { action: "delete_role", role_id: role.id });
     setSelectedId(null);
     reload();
   };
@@ -70,9 +70,9 @@ export default function PlatformAdminRoles() {
     setBusy(true);
     try {
       if (ids.length > 1) {
-        await base44.functions.invoke("rbacManage", { action: "bulk_assign", target_user_ids: ids, role_id: selected.id });
+        await mist.functions.invoke("rbacManage", { action: "bulk_assign", target_user_ids: ids, role_id: selected.id });
       } else {
-        await base44.functions.invoke("rbacManage", { action: "assign_user", target_user_id: ids[0], target_user_email: assign.email, role_id: selected.id });
+        await mist.functions.invoke("rbacManage", { action: "assign_user", target_user_id: ids[0], target_user_email: assign.email, role_id: selected.id });
       }
       setAssign({ open: false, ids: "", email: "" });
       reload();
@@ -82,7 +82,7 @@ export default function PlatformAdminRoles() {
   };
 
   const unassign = async (assignment) => {
-    await base44.functions.invoke("rbacManage", { action: "unassign_user", target_user_id: assignment.user_id, role_id: assignment.role_id });
+    await mist.functions.invoke("rbacManage", { action: "unassign_user", target_user_id: assignment.user_id, role_id: assignment.role_id });
     reload();
   };
 

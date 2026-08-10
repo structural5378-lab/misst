@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import PageHeader from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ export default function CreateAlert() {
       is_read: false,
     });
     // Fire push notification
-    await base44.functions.invoke("sendAlertNotification", { data: alert });
+    await mist.functions.invoke("sendAlertNotification", { data: alert });
     navigate("/alerts");
   };
 

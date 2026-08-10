@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, AlertTriangle, Flag } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { usePollingGate } from "@/hooks/usePollingGate";
 
@@ -20,7 +20,7 @@ export default function AdminNotificationBell() {
   const { data } = useQuery({
     queryKey: ["admin-bell-stats"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("getAdminStats", {});
+      const res = await mist.functions.invoke("getAdminStats", {});
       return res.data?.stats || {};
     },
     refetchInterval: active ? 30000 : false,

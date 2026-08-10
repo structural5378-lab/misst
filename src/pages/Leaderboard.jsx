@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+
 import { mist } from '@/api/mist';
 import { useQuery } from '@tanstack/react-query';
 import { Crown, Trophy, Star, Radio, Headphones, MapPin, MessageSquare, ShieldAlert } from 'lucide-react';
@@ -27,7 +27,7 @@ export default function Leaderboard() {
   const { data: leaderboard = [], isLoading } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
-      const res = await base44.functions.invoke('syncUserStats', { action: 'leaderboard' });
+      const res = await mist.functions.invoke('syncUserStats', { action: 'leaderboard' });
       return res.data?.leaderboard || [];
     },
     staleTime: 60000,

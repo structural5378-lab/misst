@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { usePollingGate } from "@/hooks/usePollingGate";
@@ -24,7 +24,7 @@ export default function PlatformAdminNotificationMonitor() {
   // Aggregates from analytics (polled every 15s).
   const { data: a } = useQuery({
     queryKey: ["notif-monitor-stats"],
-    queryFn: async () => (await base44.functions.invoke("getNotificationAnalytics", { range: "week" }))?.data,
+    queryFn: async () => (await mist.functions.invoke("getNotificationAnalytics", { range: "week" }))?.data,
     refetchInterval: active ? 15000 : false,
   });
 

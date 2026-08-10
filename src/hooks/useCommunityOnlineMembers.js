@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { usePollingGate } from "./usePollingGate";
 
 /**
@@ -19,7 +19,7 @@ export function useCommunityOnlineMembers(communityId) {
   return useQuery({
     queryKey: ["community-online", communityId],
     queryFn: async () =>
-      (await base44.functions.invoke("getCommunityOnlineMembers", {
+      (await mist.functions.invoke("getCommunityOnlineMembers", {
         community_id: communityId,
       })).data,
     enabled: !!communityId,

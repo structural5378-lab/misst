@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search } from "lucide-react";
 import { startDirectConversation } from "@/lib/chatV2/chatV2Api";
@@ -23,7 +23,7 @@ export default function StartConversationDialog({ open, onClose, onStarted, me }
     setLoading(true);
     const t = setTimeout(async () => {
       try {
-        const res = await base44.functions.invoke("searchUsers", { query: q.trim() });
+        const res = await mist.functions.invoke("searchUsers", { query: q.trim() });
         if (!cancelled) setResults(res?.data?.users || []);
       } catch { if (!cancelled) setResults([]); }
       finally { if (!cancelled) setLoading(false); }

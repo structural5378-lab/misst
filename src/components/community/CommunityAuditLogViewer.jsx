@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Download, History } from 'lucide-react';
 import { format } from 'date-fns';
@@ -45,7 +45,7 @@ export default function CommunityAuditLogViewer() {
   const { data, isLoading } = useQuery({
     queryKey: ['community-audit-log', community.id, category, search, dateFrom, dateTo, skip],
     queryFn: async () =>
-      (await base44.functions.invoke('listCommunityAuditLog', {
+      (await mist.functions.invoke('listCommunityAuditLog', {
         community_id: community.id,
         category,
         search,

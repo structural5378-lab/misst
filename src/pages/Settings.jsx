@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useTheme } from '@/contexts/ThemeContext';
 import { THEMES, ACCENT_COLORS } from '@/lib/themes';
 import PageHeader from '@/components/layout/PageHeader';
@@ -41,7 +41,7 @@ export default function Settings() {
   const { data: platformData } = useQuery({
     queryKey: ['platform-roles-settings'],
     queryFn: async () => {
-      const res = await base44.functions.invoke('getPlatformRoles', {});
+      const res = await mist.functions.invoke('getPlatformRoles', {});
       return res.data;
     },
   });

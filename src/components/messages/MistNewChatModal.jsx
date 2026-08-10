@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Search, Loader2, UserPlus, Check, X, Users } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useAuth } from "@/lib/AuthContext";
 
 export default function MistNewChatModal({ onClose, onConversationCreated, onGroupCreated }) {
@@ -18,7 +18,7 @@ export default function MistNewChatModal({ onClose, onConversationCreated, onGro
     if (q.trim().length < 1) { setResults([]); return; }
     setLoading(true);
     try {
-      const res = await base44.functions.invoke("searchUsers", { query: q });
+      const res = await mist.functions.invoke("searchUsers", { query: q });
       setResults(res.data?.users || []);
     } catch {
       setResults([]);

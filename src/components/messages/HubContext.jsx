@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Hash, Radio, Image as ImageIcon, Info, Shield, Wifi, Calendar, Activity, CloudLightning, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { otherParticipant } from "@/lib/chatV2/chatV2Api";
 import { presenceStatus, lastSeenLabel } from "@/lib/chatV2/chatV2Utils";
@@ -236,7 +236,7 @@ function WeatherTab({ community }) {
     if (!community?.id) return;
     let alive = true;
     setLoading(true);
-    base44.functions.invoke("getWeatherData", { community_id: community.id, lat: community.location_lat, lon: community.location_lon })
+    mist.functions.invoke("getWeatherData", { community_id: community.id, lat: community.location_lat, lon: community.location_lon })
       .then((r) => { if (alive) setWx(r); })
       .catch(() => {})
       .finally(() => { if (alive) setLoading(false); });

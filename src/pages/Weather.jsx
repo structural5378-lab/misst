@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import {
   CloudSun, Wind, Droplets, Eye, Gauge, Sunrise, Sunset,
   RefreshCw, Thermometer, CloudRain, Cloud, Sun, Zap, Snowflake,
@@ -208,7 +208,7 @@ export default function Weather() {
     setError(null);
     try {
       const payload = coords ? { lat: coords.latitude, lon: coords.longitude } : {};
-      const res = await base44.functions.invoke("getWeatherData", payload);
+      const res = await mist.functions.invoke("getWeatherData", payload);
       if (res.data?.current) {
         setWeather(res.data);
         setLastUpdated(new Date());

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useQuery } from '@tanstack/react-query';
 import { Users, Shield } from 'lucide-react';
 import LicenseBadge from '@/components/profile/LicenseBadge';
@@ -28,7 +28,7 @@ export default function CommunityMembers() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['community-members', community.id],
     queryFn: async () =>
-      (await base44.functions.invoke('listCommunityMembers', { community_id: community.id })).data,
+      (await mist.functions.invoke('listCommunityMembers', { community_id: community.id })).data,
     enabled: !!community?.id,
   });
   const members = data?.members || [];
@@ -38,7 +38,7 @@ export default function CommunityMembers() {
   // per-member role manager (server still enforces the actual write).
   const { data: myPerms } = useQuery({
     queryKey: ['community-perms-me', community.id],
-    queryFn: async () => (await base44.functions.invoke('resolvePermissions', { community_id: community.id })).data,
+    queryFn: async () => (await mist.functions.invoke('resolvePermissions', { community_id: community.id })).data,
   });
   const canManage = !!myPerms?.is_community_owner || !!myPerms?.is_community_admin;
 

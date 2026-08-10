@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ export default function PlatformAdminAuditLog() {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-audit-logs", source],
     queryFn: async () => {
-      const res = await base44.functions.invoke("adminListAuditLogs", { source });
+      const res = await mist.functions.invoke("adminListAuditLogs", { source });
       console.log("[AuditLog] loaded", res.data);
       return res.data || { platform: [], rbac: [] };
     },

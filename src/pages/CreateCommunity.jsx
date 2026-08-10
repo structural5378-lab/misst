@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Loader2, Rocket } from 'lucide-react';
@@ -79,7 +79,7 @@ export default function CreateCommunity() {
       const payload = { ...data };
       delete payload._slugManuallyEdited;
 
-      const res = await base44.functions.invoke('createCommunityV2', payload);
+      const res = await mist.functions.invoke('createCommunityV2', payload);
       const community = res.data?.community;
 
       if (community?.slug) {

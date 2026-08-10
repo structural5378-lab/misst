@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
@@ -29,20 +29,20 @@ export default function PlatformAdminClubs() {
 
   const { data: clubs = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-clubs"],
-    queryFn: async () => (await base44.functions.invoke("adminManageClub", { action: "list" }))?.data?.clubs || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageClub", { action: "list" }))?.data?.clubs || [],
   });
   const { data: communities = [] } = useQuery({
     queryKey: ["admin-communities-mini"],
-    queryFn: async () => (await base44.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
   });
 
   const save = async (data) => {
     if (editing) {
-      const res = await base44.functions.invoke("adminManageClub", { action: "update", club_id: editing.id, fields: data });
+      const res = await mist.functions.invoke("adminManageClub", { action: "update", club_id: editing.id, fields: data });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: "Club updated", description: data.name });
     } else {
-      const res = await base44.functions.invoke("adminManageClub", { action: "create", fields: data });
+      const res = await mist.functions.invoke("adminManageClub", { action: "create", fields: data });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: "Club created", description: data.name });
     }
@@ -51,7 +51,7 @@ export default function PlatformAdminClubs() {
   };
   const setStatus = async (club, status) => {
     try {
-      const res = await base44.functions.invoke("adminManageClub", { action: "set_status", club_id: club.id, status });
+      const res = await mist.functions.invoke("adminManageClub", { action: "set_status", club_id: club.id, status });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: status === "active" ? "Club activated" : "Club suspended", description: club.name });
       qc.invalidateQueries({ queryKey: ["admin-clubs"] });
@@ -60,7 +60,7 @@ export default function PlatformAdminClubs() {
   const doDelete = async () => {
     try {
       const ids = confirm?.type === "bulk" ? Array.from(selected) : [confirm?.club?.id];
-      const res = await base44.functions.invoke("adminManageClub", { action: confirm?.type === "bulk" ? "bulk_delete" : "delete", club_id: ids[0], club_ids: ids });
+      const res = await mist.functions.invoke("adminManageClub", { action: confirm?.type === "bulk" ? "bulk_delete" : "delete", club_id: ids[0], club_ids: ids });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: `${ids.length} club(s) deleted` });
       setSelected(new Set());

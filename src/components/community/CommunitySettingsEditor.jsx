@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/use-toast';
 import { Save, Loader2 } from 'lucide-react';
@@ -111,7 +111,7 @@ export default function CommunitySettingsEditor() {
   const save = async () => {
     setSaving(true);
     try {
-      await base44.functions.invoke('updateCommunitySettings', {
+      await mist.functions.invoke('updateCommunitySettings', {
         community_id: community.id,
         updates: buildUpdates(),
       });

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
@@ -26,17 +26,17 @@ export default function PlatformAdminNews() {
 
   const { data: alerts = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-news", communityFilter],
-    queryFn: async () => (await base44.functions.invoke("adminEntityAdmin", { action: "list", entity: "Alert", community_id: communityFilter || undefined }))?.data?.rows || [],
+    queryFn: async () => (await mist.functions.invoke("adminEntityAdmin", { action: "list", entity: "Alert", community_id: communityFilter || undefined }))?.data?.rows || [],
   });
   const { data: communities = [] } = useQuery({
     queryKey: ["admin-communities-mini"],
-    queryFn: async () => (await base44.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
   });
 
   const rows = typeFilter ? alerts.filter((a) => a.type === typeFilter) : alerts;
 
   const publish = async (data) => {
-    const res = await base44.functions.invoke("adminEntityAdmin", { action: "create", entity: "Alert", fields: data });
+    const res = await mist.functions.invoke("adminEntityAdmin", { action: "create", entity: "Alert", fields: data });
     if (!res.data?.success) throw new Error(res.data?.error || "Publish failed");
     toast({ title: "Announcement published", description: data.title });
     setDialogOpen(false);
@@ -44,7 +44,7 @@ export default function PlatformAdminNews() {
   };
   const del = async (id) => {
     try {
-      const res = await base44.functions.invoke("adminEntityAdmin", { action: "delete", entity: "Alert", id });
+      const res = await mist.functions.invoke("adminEntityAdmin", { action: "delete", entity: "Alert", id });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: "Announcement deleted" });
       qc.invalidateQueries({ queryKey: ["admin-news"] });
@@ -52,7 +52,7 @@ export default function PlatformAdminNews() {
   };
   const bulkDel = async (rs) => {
     try {
-      const res = await base44.functions.invoke("adminEntityAdmin", { action: "bulk_delete", entity: "Alert", ids: rs.map((r) => r.id) });
+      const res = await mist.functions.invoke("adminEntityAdmin", { action: "bulk_delete", entity: "Alert", ids: rs.map((r) => r.id) });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: `${rs.length} announcements deleted` });
       qc.invalidateQueries({ queryKey: ["admin-news"] });

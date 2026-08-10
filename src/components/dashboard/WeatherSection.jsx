@@ -1,13 +1,13 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Cloud, Wind, Droplets, Gauge, Navigation, AlertTriangle, Radio } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function WeatherSection() {
   const { data: weatherData, isLoading } = useQuery({
     queryKey: ["weather"],
-    queryFn: () => base44.functions.invoke("getWeatherData", {}),
+    queryFn: () => mist.functions.invoke("getWeatherData", {}),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 10 * 60 * 1000, // 10 minutes
   });

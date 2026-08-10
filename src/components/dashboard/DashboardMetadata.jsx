@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Users, Radio, UserCircle2, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useMistUser } from '@/hooks/useMistUser';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-
+import { mist } from '@/api/mist';
 // DashboardMetadata — compact operator information strip (Member Since /
 // Community / License) with sub-labels, separated by hairlines — not three
 // cards — plus the "View Full Profile" CTA. Reuses the shared stats query.
@@ -13,7 +12,7 @@ export default function DashboardMetadata() {
   const { data: syncData } = useQuery({
     queryKey: ['operator-card-stats'],
     queryFn: async () => {
-      const res = await base44.functions.invoke('syncUserStats', { uid: mybbUser?.uid || mistUser?.id });
+      const res = await mist.functions.invoke('syncUserStats', { uid: mybbUser?.uid || mistUser?.id });
       return res.data;
     },
     enabled: !!mybbUser?.uid || !!mistUser?.id,

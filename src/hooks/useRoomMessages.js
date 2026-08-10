@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 // useRoomMessages — realtime-style message stream for one Chat V2 room.
 //
 // SECURITY: all reads go through the membership-validated listCommunityContent
@@ -26,7 +25,7 @@ function parseMentionsArr(body) {
 async function fetchRoomMessages(communityId, roomId, cursorIso) {
   const extra = { room_id: roomId, deleted: false };
   if (cursorIso) extra.created_date = { $lt: cursorIso };
-  const res = await base44.functions.invoke("listCommunityContent", {
+  const res = await mist.functions.invoke("listCommunityContent", {
     community_id: communityId,
     entity: "ChatV2RoomMessage",
     sort: "-created_date",
@@ -117,7 +116,7 @@ export function useRoomMessages({ roomId, user, community }) {
     setMessages((prev) => [...prev, temp]);
     try {
       // Send through the server gate (enforces membership, mute, lock, slow mode).
-      const res = await base44.functions.invoke("sendRoomMessage", {
+      const res = await mist.functions.invoke("sendRoomMessage", {
         room_id: roomId, body: body.trim(),
         message_type: messageType, attachments: JSON.stringify(attachments),
         reply_to_message_id: replyId, reply_to_preview: temp.reply_to_preview,
@@ -145,27 +144,27 @@ export function useRoomMessages({ roomId, user, community }) {
       if (list.length) reactions[emoji] = list; else delete reactions[emoji];
       return { ...m, reactions };
     }));
-    try { await base44.functions.invoke("roomMessageAction", { action: "react", message_id: messageId, user_id: user.id, emoji }); } catch {}
+    try { await mist.functions.invoke("roomMessageAction", { action: "react", message_id: messageId, user_id: user.id, emoji }); } catch {}
   }, [user?.id]);
 
   const pin = useCallback(async (message) => {
     if (!user?.id) return;
-    try { await base44.functions.invoke("roomMessageAction", { action: "pin", message_id: message.id, user_id: user.id, user_name: user.full_name || user.email, pinned: !message.pinned }); } catch {}
+    try { await mist.functions.invoke("roomMessageAction", { action: "pin", message_id: message.id, user_id: user.id, user_name: user.full_name || user.email, pinned: !message.pinned }); } catch {}
   }, [user?.id]);
 
   const editMessage = useCallback(async (messageId, body) => {
-    try { await base44.functions.invoke("roomMessageAction", { action: "edit", message_id: messageId, user_id: user.id, body }); } catch {}
+    try { await mist.functions.invoke("roomMessageAction", { action: "edit", message_id: messageId, user_id: user.id, body }); } catch {}
   }, [user?.id]);
 
   const deleteMessage = useCallback(async (messageId) => {
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, deleted: true } : m)));
-    try { await base44.functions.invoke("roomMessageAction", { action: "delete", message_id: messageId, user_id: user.id }); } catch {}
+    try { await mist.functions.invoke("roomMessageAction", { action: "delete", message_id: messageId, user_id: user.id }); } catch {}
   }, [user?.id]);
 
   // Server-gated moderation toggles (poll reconciles optimistic state).
   const moderate = useCallback(async (messageId, action, opts = {}) => {
     try {
-      await base44.functions.invoke("roomMessageAction", { action, message_id: messageId, user_id: user.id, user_name: user.full_name || user.email, ...opts });
+      await mist.functions.invoke("roomMessageAction", { action, message_id: messageId, user_id: user.id, user_name: user.full_name || user.email, ...opts });
     } catch { /* poll reconciles */ }
   }, [user?.id]);
 
@@ -173,11 +172,11 @@ export function useRoomMessages({ roomId, user, community }) {
   const sticky = useCallback((message) => moderate(message.id, "sticky", { pinned: !message.is_sticky }), [moderate]);
   const official = useCallback((message) => moderate(message.id, "official", { pinned: !message.is_official }), [moderate]);
   const bulkDelete = useCallback((messageIds, reason) =>
-    base44.functions.invoke("roomMessageAction", { action: "bulk_delete", message_ids: messageIds, user_id: user.id, user_name: user.full_name || user.email, reason }), [user?.id]);
+    mist.functions.invoke("roomMessageAction", { action: "bulk_delete", message_ids: messageIds, user_id: user.id, user_name: user.full_name || user.email, reason }), [user?.id]);
   const bulkSet = useCallback((messageIds, field, value) =>
-    base44.functions.invoke("roomMessageAction", { action: "bulk_set", message_ids: messageIds, field, value, user_id: user.id, user_name: user.full_name || user.email }), [user?.id]);
+    mist.functions.invoke("roomMessageAction", { action: "bulk_set", message_ids: messageIds, field, value, user_id: user.id, user_name: user.full_name || user.email }), [user?.id]);
   const clearHistory = useCallback((roomIdArg, reason) =>
-    base44.functions.invoke("roomMessageAction", { action: "clear_history", room_id: roomIdArg, user_id: user.id, user_name: user.full_name || user.email, reason }), [user?.id]);
+    mist.functions.invoke("roomMessageAction", { action: "clear_history", room_id: roomIdArg, user_id: user.id, user_name: user.full_name || user.email, reason }), [user?.id]);
 
   return { messages, loading, loadingMore, hasMore, atBottom, setAtBottom, loadMore, send, react, pin, editMessage, deleteMessage, announce, sticky, official, bulkDelete, bulkSet, clearHistory, scrollRef };
 }

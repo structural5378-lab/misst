@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { Search, X, UserCircle2 } from "lucide-react";
 
@@ -29,7 +29,7 @@ export default function UserSearchPicker({ onSelect, selected, allowSelf = false
     setLoading(true);
     const t = setTimeout(async () => {
       try {
-        const res = await base44.functions.invoke("searchUsers", { query: q.trim() });
+        const res = await mist.functions.invoke("searchUsers", { query: q.trim() });
         if (!cancelled) setResults(res?.data?.users || []);
       } catch { if (!cancelled) setResults([]); }
       finally { if (!cancelled) setLoading(false); }

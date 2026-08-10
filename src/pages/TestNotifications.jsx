@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Loader2, Bell, BellOff } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
@@ -60,7 +60,7 @@ export default function TestNotifications() {
     setTesting(true);
     setTestResult(null);
     try {
-      const res = await base44.functions.invoke("sendTestNotification", {});
+      const res = await mist.functions.invoke("sendTestNotification", {});
       setTestResult({ success: res.data?.ok, detail: res.data });
     } catch (error) {
       setTestResult({ success: false, error: error.message });

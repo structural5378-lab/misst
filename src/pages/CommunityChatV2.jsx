@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, VolumeX } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import { useMistUser } from "@/hooks/useMistUser";
@@ -153,7 +153,7 @@ export default function CommunityChatV2() {
 
   const moderateUser = async (action, message, extra = {}) => {
     try {
-      await base44.functions.invoke("manageCommunityMembership", {
+      await mist.functions.invoke("manageCommunityMembership", {
         action, community_id: community.id, target_user_id: message.sender_id, ...extra,
       });
       toast({ title: "Action complete", description: `${action} applied to ${message.sender_name}.` });

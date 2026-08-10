@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 
 /**
@@ -37,7 +37,7 @@ export function useMembersSearch({ pageSize = 20, debounceMs = 250 } = {}) {
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: ["mist-members", debounced, page, pageSize, mistUser?.role],
     queryFn: async () => {
-      const res = await base44.functions.invoke("listMembers", {
+      const res = await mist.functions.invoke("listMembers", {
         query: debounced,
         page,
         pageSize,

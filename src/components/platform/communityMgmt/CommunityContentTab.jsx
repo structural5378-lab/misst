@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import { Pin, PinOff, Lock, Unlock, Star, Trash2, MessageSquare, Radio, CalendarClock, RadioTower } from "lucide-react";
@@ -10,7 +10,7 @@ function Row({ item, type, communityId, onChanged }) {
   const run = async (action) => {
     setBusy(true);
     try {
-      await base44.functions.invoke("adminManageCommunity", { action, community_id: communityId, entity_type: type, entity_id: item.id });
+      await mist.functions.invoke("adminManageCommunity", { action, community_id: communityId, entity_type: type, entity_id: item.id });
       onChanged();
     } catch (e) {
       window.alert(e?.response?.data?.error || e?.message || "Failed");

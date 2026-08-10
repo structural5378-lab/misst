@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+
 import { mist } from '@/api/mist';
 import { useMistUser } from '@/hooks/useMistUser';
 import { useToast } from '@/components/ui/use-toast';
@@ -118,7 +118,7 @@ export default function PremiumBadges() {
     if (!mistUser?.id) { toast({ title: 'Sign in required', variant: 'destructive' }); return null; }
     setCheckingOut(payload.badge_id);
     try {
-      const res = await base44.functions.invoke('createBadgeCheckout', { user_id: mistUser.id, user_name: mistUser.displayName || '', ...payload });
+      const res = await mist.functions.invoke('createBadgeCheckout', { user_id: mistUser.id, user_name: mistUser.displayName || '', ...payload });
       if (res?.data?.url) { window.location.href = res.data.url; return true; }
       throw new Error(res?.data?.error || 'No checkout URL returned');
     } catch (e) {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -44,7 +44,7 @@ export default function PlatformAdminNotifications() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["notif-analytics", communityId, category, range, platform],
-    queryFn: async () => (await base44.functions.invoke("getNotificationAnalytics", { community_id: communityId, category, range, platform }))?.data,
+    queryFn: async () => (await mist.functions.invoke("getNotificationAnalytics", { community_id: communityId, category, range, platform }))?.data,
     refetchInterval: 30000,
   });
 

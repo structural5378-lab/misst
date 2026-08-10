@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useToast } from '@/components/ui/use-toast';
 import { format } from 'date-fns';
 import { StickyNote, Loader2, Search, Trash2, Edit3 } from 'lucide-react';
@@ -15,7 +15,7 @@ export default function MemberNotesTab({ community, targetUser }) {
 
   const { data, isLoading } = useQuery({
     queryKey: ['member-notes', community.id, targetUser.user_id],
-    queryFn: async () => (await base44.functions.invoke('manageModeratorNote', {
+    queryFn: async () => (await mist.functions.invoke('manageModeratorNote', {
       action: 'list', community_id: community.id, target_user_id: targetUser.user_id,
     })).data,
     refetchInterval: 30000,
@@ -33,10 +33,10 @@ export default function MemberNotesTab({ community, targetUser }) {
     setBusy(true);
     try {
       if (editingId) {
-        await base44.functions.invoke('manageModeratorNote', { action: 'update', community_id: community.id, note_id: editingId, content });
+        await mist.functions.invoke('manageModeratorNote', { action: 'update', community_id: community.id, note_id: editingId, content });
         setEditingId(null);
       } else {
-        await base44.functions.invoke('manageModeratorNote', { action: 'create', community_id: community.id, target_user_id: targetUser.user_id, content });
+        await mist.functions.invoke('manageModeratorNote', { action: 'create', community_id: community.id, target_user_id: targetUser.user_id, content });
       }
       setDraft('');
       invalidate();
@@ -50,7 +50,7 @@ export default function MemberNotesTab({ community, targetUser }) {
     if (!window.confirm('Delete this note? This is logged.')) return;
     setBusy(true);
     try {
-      await base44.functions.invoke('manageModeratorNote', { action: 'delete', community_id: community.id, note_id: id });
+      await mist.functions.invoke('manageModeratorNote', { action: 'delete', community_id: community.id, note_id: id });
       invalidate();
       toast({ title: 'Note deleted' });
     } catch (e) {

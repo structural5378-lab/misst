@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -49,7 +49,7 @@ export default function CommunityOnboarding() {
   const { data: communities = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["public-communities"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("listCommunities", {});
+      const res = await mist.functions.invoke("listCommunities", {});
       const list = res.data?.communities || [];
       console.log("[CommunityDirectory] listCommunities returned", list.length, "communities (env:", env?.environment ?? "unknown", ")");
       return list;
@@ -112,7 +112,7 @@ export default function CommunityOnboarding() {
     setBusyId(community.id);
     const tag = `[JoinCommunity][${community.slug}]`;
     const invokeJoin = () =>
-      base44.functions.invoke("manageCommunityMembership", { action: "join", community_id: community.id });
+      mist.functions.invoke("manageCommunityMembership", { action: "join", community_id: community.id });
 
     const finish = (data) => {
       toast({

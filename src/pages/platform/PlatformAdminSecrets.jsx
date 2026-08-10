@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import AdminSection from "@/components/platform/AdminSection";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,7 +78,7 @@ export default function PlatformAdminSecrets() {
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["admin-secret-status"],
-    queryFn: async () => (await base44.functions.invoke("adminSecretStatus", { action: "status" }))?.data,
+    queryFn: async () => (await mist.functions.invoke("adminSecretStatus", { action: "status" }))?.data,
     staleTime: 0,
   });
 
@@ -106,7 +106,7 @@ export default function PlatformAdminSecrets() {
     setTesting(true);
     setTestResults(null);
     try {
-      const res = await base44.functions.invoke("adminSecretStatus", { action: "test" });
+      const res = await mist.functions.invoke("adminSecretStatus", { action: "test" });
       setTestResults(res?.data?.services || null);
     } catch (e) {
       setTestResults({ error: e.message });

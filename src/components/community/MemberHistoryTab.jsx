@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { format } from 'date-fns';
 import { Search, Download, FileText, Loader2 } from 'lucide-react';
 import { exportHistoryCSV, exportHistoryPDF } from '@/lib/moderationExport';
@@ -32,7 +32,7 @@ export default function MemberHistoryTab({ community, targetUser, memberName }) 
 
   const { data, isLoading } = useQuery({
     queryKey: ['member-mod-history', community.id, targetUser.user_id, search, category, dateFrom, dateTo, skip],
-    queryFn: async () => (await base44.functions.invoke('listMemberModerationHistory', {
+    queryFn: async () => (await mist.functions.invoke('listMemberModerationHistory', {
       community_id: community.id, target_user_id: targetUser.user_id,
       category, search, date_from: dateFrom || undefined, date_to: dateTo || undefined, skip, limit,
     })).data,

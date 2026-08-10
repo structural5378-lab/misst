@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useToast } from '@/components/ui/use-toast';
 import { X, Save, Copy, Trash2 } from 'lucide-react';
 import PermissionMatrix from './PermissionMatrix';
@@ -38,9 +38,9 @@ export default function RoleEditor({ community, role, catalog, onClose, onSaved 
     try {
       const payload = { community_id: community.id, name, description, color, icon, mentionable, hoisted, permissions: isOwner ? ['*'] : permissions };
       if (isNew) {
-        await base44.functions.invoke('manageCommunityRole', { action: 'create', ...payload });
+        await mist.functions.invoke('manageCommunityRole', { action: 'create', ...payload });
       } else {
-        await base44.functions.invoke('manageCommunityRole', { action: 'update', community_id: community.id, role_id: role.id, ...payload });
+        await mist.functions.invoke('manageCommunityRole', { action: 'update', community_id: community.id, role_id: role.id, ...payload });
       }
       toast({ title: isNew ? 'Role created' : 'Role saved' });
       onSaved?.();
@@ -52,7 +52,7 @@ export default function RoleEditor({ community, role, catalog, onClose, onSaved 
   const duplicate = async () => {
     setBusy(true);
     try {
-      await base44.functions.invoke('manageCommunityRole', { action: 'duplicate', community_id: community.id, role_id: role.id });
+      await mist.functions.invoke('manageCommunityRole', { action: 'duplicate', community_id: community.id, role_id: role.id });
       toast({ title: 'Role duplicated' });
       onSaved?.();
     } catch (e) {
@@ -64,7 +64,7 @@ export default function RoleEditor({ community, role, catalog, onClose, onSaved 
     if (!window.confirm(`Delete the "${role.name}" role? Members holding it will lose the role.`)) return;
     setBusy(true);
     try {
-      await base44.functions.invoke('manageCommunityRole', { action: 'delete', community_id: community.id, role_id: role.id });
+      await mist.functions.invoke('manageCommunityRole', { action: 'delete', community_id: community.id, role_id: role.id });
       toast({ title: 'Role deleted' });
       onSaved?.();
     } catch (e) {

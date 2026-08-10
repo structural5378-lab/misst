@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { initializeApp, getApps } from "firebase/app";
 import { getMessaging, getToken, deleteToken, onMessage } from "firebase/messaging";
@@ -26,7 +26,7 @@ export async function getVapidKey() {
 async function getFcmConfig() {
   if (_config) return _config;
   try {
-    const res = await base44.functions.invoke("getFcmPublicConfig", {});
+    const res = await mist.functions.invoke("getFcmPublicConfig", {});
     _config = res?.data || null;
   } catch {
     _config = null;

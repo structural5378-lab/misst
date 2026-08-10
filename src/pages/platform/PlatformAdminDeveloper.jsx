@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import AdminSection from "@/components/platform/AdminSection";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import { Terminal, Play, Key, Cpu, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export default function PlatformAdminDeveloper() {
     let parsed;
     try { parsed = JSON.parse(payload); } catch (e) { setResponse({ error: "Invalid JSON: " + e.message }); setRunning(false); return; }
     try {
-      const res = await base44.functions.invoke(fn, parsed);
+      const res = await mist.functions.invoke(fn, parsed);
       setResponse(res.data ?? res);
       toast({ title: `${fn} executed` });
     } catch (e) {

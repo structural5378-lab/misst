@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
@@ -43,7 +43,7 @@ export default function OperatorCard({ onLogout }) {
     queryKey: ['operator-card-stats'],
     queryFn: async () => {
       const u = user || (await mist.auth.me());
-      const res = await base44.functions.invoke('syncUserStats', { uid: mybbUser?.uid || u?.id });
+      const res = await mist.functions.invoke('syncUserStats', { uid: mybbUser?.uid || u?.id });
       return res.data;
     },
     enabled: !!mybbUser?.uid || !!user,

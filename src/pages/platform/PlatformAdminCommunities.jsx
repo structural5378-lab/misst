@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Building, Users, ShieldCheck, Eye, EyeOff, Archive, PauseCircle, PlayCircle, Trash2, ExternalLink } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminStatCard from "@/components/platform/AdminStatCard";
@@ -30,7 +30,7 @@ export default function PlatformAdminCommunities() {
   const { data: communities = [], isLoading } = useQuery({
     queryKey: ["admin-community-list"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("adminManageCommunity", { action: "list" });
+      const res = await mist.functions.invoke("adminManageCommunity", { action: "list" });
       return res.data?.communities || [];
     },
   });
@@ -62,7 +62,7 @@ export default function PlatformAdminCommunities() {
     if (!ids.length) return;
     if (action === "bulk_delete" && !window.confirm(`Permanently delete ${ids.length} communities and all their data? This cannot be undone.`)) return;
     try {
-      await base44.functions.invoke("adminManageCommunity", { action, community_ids: ids });
+      await mist.functions.invoke("adminManageCommunity", { action, community_ids: ids });
       qc.invalidateQueries(["admin-community-list"]);
     } catch (e) {
       window.alert(e?.response?.data?.error || e?.message || "Action failed");
@@ -72,7 +72,7 @@ export default function PlatformAdminCommunities() {
   const rowAction = async (action, c) => {
     if (action === "delete" && !window.confirm(`Permanently delete "${c.name}" and all its data?`)) return;
     try {
-      await base44.functions.invoke("adminManageCommunity", { action, community_id: c.id });
+      await mist.functions.invoke("adminManageCommunity", { action, community_id: c.id });
       qc.invalidateQueries(["admin-community-list"]);
     } catch (e) {
       window.alert(e?.response?.data?.error || e?.message || "Action failed");

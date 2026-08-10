@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useQuery } from '@tanstack/react-query';
 import { useCommunityOnlineMembers } from '@/hooks/useCommunityOnlineMembers';
 import { usePollingGate } from '@/hooks/usePollingGate';
@@ -26,7 +26,7 @@ export default function CommunityAdminOverview() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['community-admin-stats', community.id],
-    queryFn: async () => (await base44.functions.invoke('getCommunityAdminStats', { community_id: community.id })).data,
+    queryFn: async () => (await mist.functions.invoke('getCommunityAdminStats', { community_id: community.id })).data,
     refetchInterval: active ? 30000 : false,
   });
 

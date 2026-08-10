@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import PermissionMatrix from "./PermissionMatrix";
 import { parseJsonArray } from "@/lib/rbacClient";
 
@@ -17,7 +17,7 @@ export default function RolePermissionChecklist({ role, allRoles, onSaved }) {
   const persist = async (nextPerms, nextDenied) => {
     setSaving(true);
     try {
-      await base44.functions.invoke("rbacManage", {
+      await mist.functions.invoke("rbacManage", {
         action: "update_role",
         role_id: role.id,
         patch: { permissions: nextPerms, denied_permissions: nextDenied },

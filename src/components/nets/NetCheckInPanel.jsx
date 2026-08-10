@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Radio, CheckCircle, Plus } from "lucide-react";
@@ -42,7 +42,7 @@ export default function NetCheckInPanel({ net }) {
         notes,
       });
       // Post to forum
-      await base44.functions.invoke("fetchMyBBForums", {
+      await mist.functions.invoke("fetchMyBBForums", {
         action: "post_checkin",
         net_name: net.name,
         callsign,

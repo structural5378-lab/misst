@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import PageHeader from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ export default function CreateNet() {
     const net = await mist.entities.Net.create(form);
     // Post to forum if possible
     try {
-      await base44.functions.invoke("fetchMyBBForums", {
+      await mist.functions.invoke("fetchMyBBForums", {
         action: "post_net_schedule",
         net_name: net.name,
         frequency: net.frequency,

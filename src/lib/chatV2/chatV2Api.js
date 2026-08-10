@@ -1,5 +1,4 @@
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 // chatV2Api — conversation lifecycle helpers used by the Chat V2 UI.
 //
 // startDirectConversation(otherUserId): reuses an existing 1:1 conversation if
@@ -8,7 +7,7 @@ import { base44 } from "@/api/base44Client";
 // (ChatV2Participant RLS blocks the client from creating the OTHER user's row,
 // which is why this must not run client-side). Returns { conversation, participant }.
 export async function startDirectConversation(otherUserId) {
-  const res = await base44.functions.invoke("startDirectConversation", { other_user_id: otherUserId });
+  const res = await mist.functions.invoke("startDirectConversation", { other_user_id: otherUserId });
   return res.data;
 }
 

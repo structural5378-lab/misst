@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 // useAuthorProfile — community-scoped, membership-validated profile preview.
 //
 // Routes through the getCommunityProfilePreview backend function, which:
@@ -16,7 +15,7 @@ export function useAuthorProfile(communityId, authorId) {
     queryKey: ["community-profile-preview", communityId, authorId],
     queryFn: async () => {
       if (!communityId || !authorId) return null;
-      return (await base44.functions.invoke("getCommunityProfilePreview", {
+      return (await mist.functions.invoke("getCommunityProfilePreview", {
         community_id: communityId,
         user_id: authorId,
       })).data;

@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 /**
  * Detects the active database environment (Test vs Production) via the
  * getAppEnvironment backend function, which reads the platform's x-data-env
@@ -10,7 +9,7 @@ export function useAppEnvironment() {
   return useQuery({
     queryKey: ["app-environment"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("getAppEnvironment", {});
+      const res = await mist.functions.invoke("getAppEnvironment", {});
       return res.data;
     },
     staleTime: 5 * 60 * 1000,

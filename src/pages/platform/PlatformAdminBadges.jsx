@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import AdminSection from "@/components/platform/AdminSection";
@@ -32,7 +32,7 @@ export default function PlatformAdminBadges() {
 
   const { data: awards = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-achievements"],
-    queryFn: async () => (await base44.functions.invoke("adminEntityAdmin", { action: "list", entity: "UserAchievement", limit: 1000 }))?.data?.rows || [],
+    queryFn: async () => (await mist.functions.invoke("adminEntityAdmin", { action: "list", entity: "UserAchievement", limit: 1000 }))?.data?.rows || [],
   });
   const { data: users = [] } = useQuery({
     queryKey: ["admin-users-mini"],
@@ -42,7 +42,7 @@ export default function PlatformAdminBadges() {
   const rows = rarityFilter ? awards.filter((a) => a.rarity === rarityFilter) : awards;
 
   const award = async (data) => {
-    const res = await base44.functions.invoke("adminEntityAdmin", { action: "create", entity: "UserAchievement", fields: data });
+    const res = await mist.functions.invoke("adminEntityAdmin", { action: "create", entity: "UserAchievement", fields: data });
     if (!res.data?.success) throw new Error(res.data?.error || "Award failed");
     toast({ title: "Badge awarded", description: `${data.achievement_name || data.achievement_id} → ${data.user_name || data.user_id}` });
     setDialogOpen(false);
@@ -50,7 +50,7 @@ export default function PlatformAdminBadges() {
   };
   const revoke = async (id) => {
     try {
-      const res = await base44.functions.invoke("adminEntityAdmin", { action: "delete", entity: "UserAchievement", id });
+      const res = await mist.functions.invoke("adminEntityAdmin", { action: "delete", entity: "UserAchievement", id });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: "Badge revoked" });
       qc.invalidateQueries({ queryKey: ["admin-achievements"] });
@@ -58,7 +58,7 @@ export default function PlatformAdminBadges() {
   };
   const bulkRevoke = async (rs) => {
     try {
-      const res = await base44.functions.invoke("adminEntityAdmin", { action: "bulk_delete", entity: "UserAchievement", ids: rs.map((r) => r.id) });
+      const res = await mist.functions.invoke("adminEntityAdmin", { action: "bulk_delete", entity: "UserAchievement", ids: rs.map((r) => r.id) });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: `${rs.length} badges revoked` });
       qc.invalidateQueries({ queryKey: ["admin-achievements"] });

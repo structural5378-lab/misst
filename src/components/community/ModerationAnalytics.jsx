@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { Loader2, Download, FileText, Shield, Users, Ban, UserX, Trash2, AlertTriangle, Megaphone, Lock, Activity } from 'lucide-react';
 import AnalyticsCharts from './AnalyticsCharts';
 import { exportAnalyticsCSV, exportAnalyticsPDFFromDOM } from '@/lib/moderationExport';
@@ -40,7 +40,7 @@ export default function ModerationAnalytics({ community }) {
 
   const { data, isLoading } = useQuery({
     queryKey: ['moderation-analytics', community.id, range, dateFrom, dateTo],
-    queryFn: async () => (await base44.functions.invoke('getModerationAnalytics', {
+    queryFn: async () => (await mist.functions.invoke('getModerationAnalytics', {
       community_id: community.id, range, date_from: dateFrom || undefined, date_to: dateTo || undefined,
     })).data,
     refetchInterval: active ? 15000 : false, // paused when idle/hidden

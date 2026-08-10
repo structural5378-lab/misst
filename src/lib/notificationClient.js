@@ -1,5 +1,4 @@
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 // Emit a notification event to the MIST Notification Service.
 //
 // Features call this instead of implementing their own notification logic.
@@ -17,6 +16,6 @@ import { base44 } from "@/api/base44Client";
 //     related_object_type: "conversation",
 //   });
 export async function emitNotification(event) {
-  const res = await base44.functions.invoke("notify", event);
+  const res = await mist.functions.invoke("notify", event);
   return res.data;
 }

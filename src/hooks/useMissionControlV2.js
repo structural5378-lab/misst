@@ -68,7 +68,7 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
   // --- Weather (repeater coords or default) ---
   const { data: weather } = useQuery({
     queryKey: ["mcv-weather", effectiveNetId],
-    queryFn: async () => { const r = await base44.functions.invoke("getWeatherData", { lat: repeater?.latitude, lon: repeater?.longitude }); return r.data; },
+    queryFn: async () => { const r = await mist.functions.invoke("getWeatherData", { lat: repeater?.latitude, lon: repeater?.longitude }); return r.data; },
     enabled: !!activeSession,
     staleTime: 10 * 60 * 1000,
   });

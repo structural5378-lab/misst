@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import AdminSection from "@/components/platform/AdminSection";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ export default function PlatformAdminBackup() {
   const doRestore = async () => {
     setRestoring(true);
     try {
-      const res = await base44.functions.invoke("adminBackup", { action: "restore", snapshot: restorePreview.snapshot });
+      const res = await mist.functions.invoke("adminBackup", { action: "restore", snapshot: restorePreview.snapshot });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: "Restore complete", description: `${res.data.totalCreated} records created` });
       setRestorePreview(null);
@@ -54,7 +54,7 @@ export default function PlatformAdminBackup() {
 
   const { data: inventory = {}, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-backup-inventory"],
-    queryFn: async () => (await base44.functions.invoke("adminBackup", { action: "inventory" }))?.data?.inventory || {},
+    queryFn: async () => (await mist.functions.invoke("adminBackup", { action: "inventory" }))?.data?.inventory || {},
     staleTime: 60000,
   });
 
@@ -66,7 +66,7 @@ export default function PlatformAdminBackup() {
     if (!entities.length) return toast({ title: "Select at least one entity", variant: "destructive" });
     setExporting(true);
     try {
-      const res = await base44.functions.invoke("adminBackup", { action: "snapshot", entities });
+      const res = await mist.functions.invoke("adminBackup", { action: "snapshot", entities });
       const snap = res.data?.snapshot || {};
       const blob = new Blob([JSON.stringify({ exported_at: res.data?.exported_at, exported_by: res.data?.exported_by, entities, data: snap }, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);

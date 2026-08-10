@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
@@ -17,16 +17,16 @@ export default function PlatformAdminChat() {
 
   const { data: messages = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-chat", communityFilter],
-    queryFn: async () => (await base44.functions.invoke("adminEntityAdmin", { action: "list", entity: "ChatMessage", community_id: communityFilter || undefined }))?.data?.rows || [],
+    queryFn: async () => (await mist.functions.invoke("adminEntityAdmin", { action: "list", entity: "ChatMessage", community_id: communityFilter || undefined }))?.data?.rows || [],
   });
   const { data: communities = [] } = useQuery({
     queryKey: ["admin-communities-mini"],
-    queryFn: async () => (await base44.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
   });
 
   const del = async (id) => {
     try {
-      const res = await base44.functions.invoke("adminEntityAdmin", { action: "delete", entity: "ChatMessage", id });
+      const res = await mist.functions.invoke("adminEntityAdmin", { action: "delete", entity: "ChatMessage", id });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: "Message deleted" });
       qc.invalidateQueries({ queryKey: ["admin-chat"] });
@@ -37,7 +37,7 @@ export default function PlatformAdminChat() {
 
   const bulkDel = async (rows) => {
     try {
-      const res = await base44.functions.invoke("adminEntityAdmin", { action: "bulk_delete", entity: "ChatMessage", ids: rows.map((r) => r.id) });
+      const res = await mist.functions.invoke("adminEntityAdmin", { action: "bulk_delete", entity: "ChatMessage", ids: rows.map((r) => r.id) });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: `${rows.length} messages deleted` });
       qc.invalidateQueries({ queryKey: ["admin-chat"] });

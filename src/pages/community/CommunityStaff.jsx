@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, Crown, Shield, Radio, Star, Users } from 'lucide-react';
 import { format } from 'date-fns';
@@ -20,7 +20,7 @@ export default function CommunityStaff() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['community-staff', community.id],
-    queryFn: async () => (await base44.functions.invoke('listCommunityStaff', { community_id: community.id })).data,
+    queryFn: async () => (await mist.functions.invoke('listCommunityStaff', { community_id: community.id })).data,
   });
 
   const grouped = data?.grouped || {};

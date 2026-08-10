@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import AdminSection from "@/components/platform/AdminSection";
 import RepeaterTable from "@/components/platform/radioscope/RepeaterTable";
@@ -30,11 +30,11 @@ export default function PlatformAdminRepeaters() {
 
   const { data: repeaters = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-repeaters"],
-    queryFn: async () => (await base44.functions.invoke("adminManageRepeater", { action: "list" }))?.data?.repeaters || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageRepeater", { action: "list" }))?.data?.repeaters || [],
   });
   const { data: communities = [] } = useQuery({
     queryKey: ["admin-communities-mini"],
-    queryFn: async () => (await base44.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageCommunity", { action: "list" }))?.data?.communities || [],
   });
 
   const filtered = useMemo(() => {
@@ -58,11 +58,11 @@ export default function PlatformAdminRepeaters() {
 
   const save = async (data) => {
     if (editing) {
-      const res = await base44.functions.invoke("adminManageRepeater", { action: "update", repeater_id: editing.id, fields: data });
+      const res = await mist.functions.invoke("adminManageRepeater", { action: "update", repeater_id: editing.id, fields: data });
       if (!res.data?.success) throw new Error(res.data?.error || "Update failed");
       toast({ title: "Repeater updated", description: data.callsign });
     } else {
-      const res = await base44.functions.invoke("adminManageRepeater", { action: "create", fields: data });
+      const res = await mist.functions.invoke("adminManageRepeater", { action: "create", fields: data });
       if (!res.data?.success) throw new Error(res.data?.error || "Create failed");
       toast({ title: "Repeater created", description: data.callsign });
     }
@@ -73,12 +73,12 @@ export default function PlatformAdminRepeaters() {
   const doDelete = async () => {
     try {
       if (confirm?.type === "bulk") {
-        const res = await base44.functions.invoke("adminManageRepeater", { action: "bulk_delete", repeater_ids: selectedIds });
+        const res = await mist.functions.invoke("adminManageRepeater", { action: "bulk_delete", repeater_ids: selectedIds });
         if (!res.data?.success) throw new Error(res.data?.error);
         toast({ title: `${selectedIds.length} repeaters deleted` });
         setSelectedIds([]);
       } else if (confirm?.repeater) {
-        const res = await base44.functions.invoke("adminManageRepeater", { action: "delete", repeater_id: confirm.repeater.id });
+        const res = await mist.functions.invoke("adminManageRepeater", { action: "delete", repeater_id: confirm.repeater.id });
         if (!res.data?.success) throw new Error(res.data?.error);
         toast({ title: "Repeater deleted", description: confirm.repeater.callsign });
       }

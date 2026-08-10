@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { format } from 'date-fns';
 import { X, Shield, Clock, MessageSquare, Heart, Flag, Megaphone, StickyNote, FileText, Activity } from 'lucide-react';
 import MemberHistoryTab from './MemberHistoryTab';
@@ -34,7 +34,7 @@ export default function MemberModerationProfile({ community, target, onClose }) 
   const [tab, setTab] = useState('overview');
   const { data, isLoading } = useQuery({
     queryKey: ['member-mod-profile', community.id, target.user_id],
-    queryFn: async () => (await base44.functions.invoke('getMemberModerationProfile', { community_id: community.id, target_user_id: target.user_id })).data,
+    queryFn: async () => (await mist.functions.invoke('getMemberModerationProfile', { community_id: community.id, target_user_id: target.user_id })).data,
   });
 
   const member = data?.member || target;

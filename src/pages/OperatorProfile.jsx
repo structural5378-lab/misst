@@ -61,7 +61,7 @@ export default function OperatorProfile() {
   const { data: stats = {} } = useQuery({
     queryKey: ["profile-stats", isSelf ? "me" : targetId],
     queryFn: async () => {
-      if (isSelf && mybbUser?.uid) { const res = await base44.functions.invoke("syncUserStats", { uid: mybbUser.uid }); return res.data?.stats || {}; }
+      if (isSelf && mybbUser?.uid) { const res = await mist.functions.invoke("syncUserStats", { uid: mybbUser.uid }); return res.data?.stats || {}; }
       const list = await mist.entities.UserStats.filter({ user_id: targetId });
       return list?.[0] || {};
     },

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { VolumeX, Search } from "lucide-react";
 import { useRoomMessages } from "@/hooks/useRoomMessages";
 import { useToast } from "@/components/ui/use-toast";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { formatDayLabel, isSameDay, presenceStatus, isTypingNow } from "@/lib/chatV2/chatV2Utils";
 import PremiumChannelHeader from "@/components/chatV2/PremiumChannelHeader";
 import RoomIcon from "@/components/chatV2/community/RoomIcon";
@@ -92,7 +92,7 @@ export default function ChannelWindow({
 
   const moderateUser = async (action, message, extra = {}) => {
     try {
-      await base44.functions.invoke("manageCommunityMembership", {
+      await mist.functions.invoke("manageCommunityMembership", {
         action, community_id: community.id, target_user_id: message.sender_id, ...extra,
       });
       toast({ title: "Action complete", description: `${action} applied to ${message.sender_name}.` });

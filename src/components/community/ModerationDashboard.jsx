@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Shield, Users, Ban, UserX, Megaphone, Lock, Trash2, AlertTriangle, Activity, Loader2, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 // ModerationDashboard — community-scoped moderation overview for community
 // admins. Aggregated server-side by getModerationStats. Shows counts + recent
 // moderation activity with quick links to members, audit log, and chat rooms.
@@ -66,7 +65,7 @@ export default function ModerationDashboard({ community }) {
     let active = true;
     (async () => {
       try {
-        const res = await base44.functions.invoke("getModerationStats", { community_id: community.id });
+        const res = await mist.functions.invoke("getModerationStats", { community_id: community.id });
         if (active) setData(res?.data || res || null);
       } catch { /* ignore */ }
       finally { if (active) setLoading(false); }

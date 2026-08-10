@@ -57,7 +57,7 @@ export default function PlatformAdminNotificationLogs() {
   }, [deliveries, statusFilter, userMap, commMap, notifMap]);
 
   const retry = useMutation({
-    mutationFn: (id) => base44.functions.invoke("adminNotifications", { action: "retry", delivery_id: id }),
+    mutationFn: (id) => mist.functions.invoke("adminNotifications", { action: "retry", delivery_id: id }),
     onSuccess: (res) => {
       const d = res?.data;
       toast({ title: d?.ok ? `Retry ${d.status}` : "Retry failed", description: d?.errors?.[0] || "", duration: 2500 });

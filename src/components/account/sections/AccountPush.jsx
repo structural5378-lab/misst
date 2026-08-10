@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { SectionCard } from "../ui";
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ export default function AccountPush() {
     setBusy(false);
     if (r?.ok) {
       await load();
-      try { await base44.functions.invoke("sendTestNotification", {}); } catch { /* ignore */ }
+      try { await mist.functions.invoke("sendTestNotification", {}); } catch { /* ignore */ }
       toast({ title: "Push enabled", description: "A test notification is on its way." });
     } else if (r?.reason === "no-vapid-key") {
       toast({ title: "Not configured", description: "The FCM Web Push VAPID key isn't set.", variant: "destructive" });
@@ -104,7 +104,7 @@ export default function AccountPush() {
   };
 
   const handleSendTest = async () => {
-    try { await base44.functions.invoke("sendTestNotification", {}); toast({ title: "Test notification sent" }); }
+    try { await mist.functions.invoke("sendTestNotification", {}); toast({ title: "Test notification sent" }); }
     catch (e) { toast({ title: "Failed", description: String(e?.message || e), variant: "destructive" }); }
   };
 

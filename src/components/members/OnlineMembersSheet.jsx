@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMistUser } from "@/hooks/useMistUser";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { X, MessageSquare, Navigation, Shield, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -31,7 +31,7 @@ export default function OnlineMembersSheet({ members, onClose }) {
   const handleMessage = async (member) => {
     setStarting(member.uid);
     try {
-      const res = await base44.functions.invoke("searchUsers", { query: member.username });
+      const res = await mist.functions.invoke("searchUsers", { query: member.username });
       const found = (res.data?.users || []).find((u) => u.mybb_username === member.username);
       if (found) {
         const params = new URLSearchParams({

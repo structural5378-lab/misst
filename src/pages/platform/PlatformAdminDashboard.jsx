@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -23,7 +23,7 @@ export default function PlatformAdminDashboard() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("getAdminStats", {});
+      const res = await mist.functions.invoke("getAdminStats", {});
       return res.data?.stats || {};
     },
     refetchInterval: 30000,

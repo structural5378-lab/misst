@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from "@tanstack/react-query";
@@ -69,7 +69,7 @@ export default function Dashboard() {
   const { data: onlineMembers } = useQuery({
     queryKey: ["onlineMembers"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("fetchMyBBForums", { action: "online_users" });
+      const res = await mist.functions.invoke("fetchMyBBForums", { action: "online_users" });
       return res.data?.users || [];
     },
     initialData: [],
@@ -79,7 +79,7 @@ export default function Dashboard() {
   const { data: forumMembers } = useQuery({
     queryKey: ["forum-members"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("fetchMyBBForums", { action: "members" });
+      const res = await mist.functions.invoke("fetchMyBBForums", { action: "members" });
       return res.data?.members || [];
     },
     staleTime: 60000,
@@ -89,7 +89,7 @@ export default function Dashboard() {
   const { data: platformData } = useQuery({
     queryKey: ["platform-roles-dashboard"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("getPlatformRoles", {});
+      const res = await mist.functions.invoke("getPlatformRoles", {});
       return res.data;
     },
   });
@@ -98,7 +98,7 @@ export default function Dashboard() {
   const { data: syncData } = useQuery({
     queryKey: ["operator-card-stats"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("syncUserStats", { uid: mybbUser?.uid || mistUser?.id });
+      const res = await mist.functions.invoke("syncUserStats", { uid: mybbUser?.uid || mistUser?.id });
       return res.data;
     },
     enabled: !!mybbUser?.uid || !!mistUser?.id,

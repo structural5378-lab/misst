@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Search, Download, Trash2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 
@@ -25,7 +25,7 @@ export default function DeletedMessagesViewer({ community }) {
   const load = useCallback(async (p = 1) => {
     setLoading(true);
     try {
-      const res = await base44.functions.invoke("listDeletedMessages", {
+      const res = await mist.functions.invoke("listDeletedMessages", {
         community_id: community.id, search, room_id: roomId || undefined,
         date_from: dateFrom || undefined, date_to: dateTo || undefined, page: p, limit,
       });

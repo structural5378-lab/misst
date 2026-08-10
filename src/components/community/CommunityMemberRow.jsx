@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { ChevronDown, Crown, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import MemberRoleManager from './MemberRoleManager';
@@ -36,7 +36,7 @@ export default function CommunityMemberRow({ member, communityId, onChanged, onO
   const act = async (action, extra = {}) => {
     setBusy(true);
     try {
-      await base44.functions.invoke('manageCommunityMembership', {
+      await mist.functions.invoke('manageCommunityMembership', {
         action, community_id: communityId, target_user_id: member.user_id, ...extra,
       });
       setOpen(false);
@@ -51,7 +51,7 @@ export default function CommunityMemberRow({ member, communityId, onChanged, onO
   const setRole = async (role) => {
     setBusy(true);
     try {
-      await base44.functions.invoke('manageCommunityMembership', {
+      await mist.functions.invoke('manageCommunityMembership', {
         action: 'set_role', community_id: communityId, target_user_id: member.user_id, role,
       });
       setOpen(false);

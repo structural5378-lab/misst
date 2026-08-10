@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { ChevronRight, Building, ExternalLink, Megaphone, PauseCircle, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,7 @@ export default function PlatformAdminCommunityDetail() {
   const { data: audit = [] } = useQuery({
     queryKey: ["admin-community-detail", "audit", id],
     queryFn: async () => {
-      const res = await base44.functions.invoke("adminManageCommunity", { action: "audit_list", community_id: id });
+      const res = await mist.functions.invoke("adminManageCommunity", { action: "audit_list", community_id: id });
       return res.data?.logs || [];
     },
     enabled: !!id,

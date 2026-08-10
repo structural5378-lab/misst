@@ -1,14 +1,13 @@
 import React, { createContext, useContext, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-
+import { mist } from '@/api/mist';
 export const CommunityContext = createContext(null);
 
 export function CommunityProvider({ slug, children }) {
   const { data: communityData, isLoading: communityLoading, error: communityError } = useQuery({
     queryKey: ['community-by-slug', slug],
     queryFn: async () => {
-      const res = await base44.functions.invoke('getCommunityBySlug', { slug });
+      const res = await mist.functions.invoke('getCommunityBySlug', { slug });
       return res.data;
     },
     staleTime: 60 * 1000,
@@ -18,7 +17,7 @@ export function CommunityProvider({ slug, children }) {
   const { data: permissionsData, isLoading: permLoading } = useQuery({
     queryKey: ['community-permissions', slug],
     queryFn: async () => {
-      const res = await base44.functions.invoke('resolvePermissions', { community_slug: slug });
+      const res = await mist.functions.invoke('resolvePermissions', { community_slug: slug });
       return res.data;
     },
     staleTime: 30 * 1000,

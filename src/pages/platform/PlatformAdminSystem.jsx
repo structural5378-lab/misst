@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import AdminSection from "@/components/platform/AdminSection";
 import { Server, RefreshCw, Activity, Database, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,12 @@ const INVENTORY = ['Community', 'CommunityMember', 'User', 'Repeater', 'Net', 'F
 export default function PlatformAdminSystem() {
   const { data: inventory = {}, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-backup-inventory"],
-    queryFn: async () => (await base44.functions.invoke("adminBackup", { action: "inventory" }))?.data?.inventory || {},
+    queryFn: async () => (await mist.functions.invoke("adminBackup", { action: "inventory" }))?.data?.inventory || {},
     staleTime: 60000,
   });
   const { data: env } = useQuery({
     queryKey: ["app-environment"],
-    queryFn: async () => (await base44.functions.invoke("getAppEnvironment"))?.data || {},
+    queryFn: async () => (await mist.functions.invoke("getAppEnvironment"))?.data || {},
     staleTime: 60000,
   });
 

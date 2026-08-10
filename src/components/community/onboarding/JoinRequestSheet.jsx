@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { X, Loader2, KeyRound, MessageSquare, Lock, Check } from "lucide-react";
@@ -26,7 +26,7 @@ export default function JoinRequestSheet({ community, onClose, onJoined }) {
       if (reason.trim()) payload.reason = reason.trim();
       if (withCode && code.trim()) payload.invite_code = code.trim();
 
-      const res = await base44.functions.invoke("manageCommunityMembership", payload);
+      const res = await mist.functions.invoke("manageCommunityMembership", payload);
       if (res.data?.success) {
         if (res.data.status === "active") {
           toast({ title: "Welcome aboard!", description: `You joined ${community.name}.` });

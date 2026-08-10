@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, Users } from 'lucide-react';
 import CommunityMemberRow from './CommunityMemberRow';
@@ -16,7 +16,7 @@ export default function CommunityMemberManager() {
   const { data, isLoading } = useQuery({
     queryKey: ['community-admin-members', community.id, query],
     queryFn: async () =>
-      (await base44.functions.invoke('listCommunityMembers', { community_id: community.id, admin_view: true, query })).data,
+      (await mist.functions.invoke('listCommunityMembers', { community_id: community.id, admin_view: true, query })).data,
     refetchInterval: 30000,
   });
 

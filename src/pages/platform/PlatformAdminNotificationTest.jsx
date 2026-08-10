@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { Send, Copy, Eye, EyeOff, Loader2, CheckCircle, XCircle, Radio } from "lucide-react";
@@ -38,7 +38,7 @@ export default function PlatformAdminNotificationTest() {
     setSending(true);
     setResult(null);
     try {
-      const res = await base44.functions.invoke("adminNotifications", { action: "send", ...form });
+      const res = await mist.functions.invoke("adminNotifications", { action: "send", ...form });
       setResult(res?.data || { error: "No response" });
       toast({ title: res?.data?.ok ? "Sent" : "Failed", description: `Created ${res?.data?.created ?? 0} notification(s)`, duration: 2500 });
     } catch (e) {

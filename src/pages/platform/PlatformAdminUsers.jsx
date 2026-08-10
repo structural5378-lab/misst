@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
@@ -14,7 +14,7 @@ export default function PlatformAdminUsers() {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("adminManageUser", { action: "list" });
+      const res = await mist.functions.invoke("adminManageUser", { action: "list" });
       return res.data?.users || [];
     },
   });

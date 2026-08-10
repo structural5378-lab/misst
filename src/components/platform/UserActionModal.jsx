@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { X, Ban, CircleSlash, BadgeCheck, ShieldOff, ShieldCheck, RotateCcw, Award, ImageOff, Edit, Save, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ export default function UserActionModal({ user, onClose, onAction }) {
   const act = async (action, extra = {}) => {
     setLoading(action);
     try {
-      await base44.functions.invoke("adminManageUser", { action, target_user_id: user.id, ...extra });
+      await mist.functions.invoke("adminManageUser", { action, target_user_id: user.id, ...extra });
       onAction();
       onClose();
     } catch (e) {
@@ -31,7 +31,7 @@ export default function UserActionModal({ user, onClose, onAction }) {
   const saveProfile = async () => {
     setLoading("update_profile");
     try {
-      await base44.functions.invoke("adminManageUser", { action: "update_profile", target_user_id: user.id, fields: form });
+      await mist.functions.invoke("adminManageUser", { action: "update_profile", target_user_id: user.id, fields: form });
       onAction();
       onClose();
     } catch (e) {

@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Radio, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -43,7 +43,7 @@ export default function PropagationGauge() {
   const { data: weather, isLoading: loading } = useQuery({
     queryKey: ["weather-data"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("getWeatherData", {});
+      const res = await mist.functions.invoke("getWeatherData", {});
       return res.data;
     },
     staleTime: 15 * 60 * 1000,

@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-
+import { mist } from '@/api/mist';
 // useActiveBadge — fetches a user's active premium badge (public display data
 // via the getActiveBadge backend function). Cached 60s per user; react-query
 // dedupes concurrent calls for the same user so many ActiveBadge instances for
@@ -10,7 +9,7 @@ export function useActiveBadge(userId) {
     queryKey: ['active-badge', userId],
     queryFn: async () => {
       if (!userId) return null;
-      const res = await base44.functions.invoke('getActiveBadge', { user_id: userId });
+      const res = await mist.functions.invoke('getActiveBadge', { user_id: userId });
       return res?.data?.badge || null;
     },
     enabled: !!userId,
@@ -28,7 +27,7 @@ export function useActiveBadges(userIds) {
     queryFn: async () => {
       const ids = (userIds || []).filter(Boolean);
       if (!ids.length) return {};
-      const res = await base44.functions.invoke('getActiveBadge', { user_ids: ids });
+      const res = await mist.functions.invoke('getActiveBadge', { user_ids: ids });
       return res?.data?.badges || {};
     },
     enabled: !!key,

@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ export default function PlatformAdminRadioScope() {
   const { data: repeaters = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-repeaters"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("adminManageRepeater", { action: "list" });
+      const res = await mist.functions.invoke("adminManageRepeater", { action: "list" });
       console.log("[RadioScope] list returned", res.data?.repeaters?.length || 0);
       return res.data?.repeaters || [];
     },
@@ -50,7 +50,7 @@ export default function PlatformAdminRadioScope() {
   const { data: communities = [] } = useQuery({
     queryKey: ["admin-communities-mini"],
     queryFn: async () => {
-      const res = await base44.functions.invoke("adminManageCommunity", { action: "list" });
+      const res = await mist.functions.invoke("adminManageCommunity", { action: "list" });
       return res.data?.communities || [];
     },
   });
@@ -61,7 +61,7 @@ export default function PlatformAdminRadioScope() {
   });
   const { data: geofences = [], refetch: refetchGeofences } = useQuery({
     queryKey: ["admin-geofences"],
-    queryFn: async () => (await base44.functions.invoke("adminManageGeofence", { action: "list" }))?.data?.geofences || [],
+    queryFn: async () => (await mist.functions.invoke("adminManageGeofence", { action: "list" }))?.data?.geofences || [],
     staleTime: 30000,
   });
 
@@ -70,7 +70,7 @@ export default function PlatformAdminRadioScope() {
     if (!name) return;
     try {
       const geo = shape.shape === "circle" ? { center: shape.center, radius_m: shape.radius_m } : shape.geo;
-      const res = await base44.functions.invoke("adminManageGeofence", {
+      const res = await mist.functions.invoke("adminManageGeofence", {
         action: "create",
         fields: { name, shape: shape.shape, geo: JSON.stringify(geo), color: shape.shape === "circle" ? "#06B6D4" : "#8B5CF6" },
       });
@@ -84,7 +84,7 @@ export default function PlatformAdminRadioScope() {
   const deleteGeofence = async (g) => {
     if (!window.confirm(`Delete geofence "${g.name}"?`)) return;
     try {
-      const res = await base44.functions.invoke("adminManageGeofence", { action: "delete", geofence_id: g.id });
+      const res = await mist.functions.invoke("adminManageGeofence", { action: "delete", geofence_id: g.id });
       if (!res.data?.success) throw new Error(res.data?.error);
       toast({ title: "Geofence deleted" });
       refetchGeofences();
@@ -122,11 +122,11 @@ export default function PlatformAdminRadioScope() {
 
   const save = async (data) => {
     if (editing) {
-      const res = await base44.functions.invoke("adminManageRepeater", { action: "update", repeater_id: editing.id, fields: data });
+      const res = await mist.functions.invoke("adminManageRepeater", { action: "update", repeater_id: editing.id, fields: data });
       if (!res.data?.success) throw new Error(res.data?.error || "Update failed");
       toast({ title: "Repeater updated", description: data.callsign });
     } else {
-      const res = await base44.functions.invoke("adminManageRepeater", { action: "create", fields: data });
+      const res = await mist.functions.invoke("adminManageRepeater", { action: "create", fields: data });
       if (!res.data?.success) throw new Error(res.data?.error || "Create failed");
       toast({ title: "Repeater created", description: data.callsign });
     }
@@ -138,12 +138,12 @@ export default function PlatformAdminRadioScope() {
   const doDelete = async () => {
     try {
       if (confirm?.type === "bulk") {
-        const res = await base44.functions.invoke("adminManageRepeater", { action: "bulk_delete", repeater_ids: selectedIds });
+        const res = await mist.functions.invoke("adminManageRepeater", { action: "bulk_delete", repeater_ids: selectedIds });
         if (!res.data?.success) throw new Error(res.data?.error);
         toast({ title: `${selectedIds.length} repeaters deleted` });
         setSelectedIds([]);
       } else if (confirm?.repeater) {
-        const res = await base44.functions.invoke("adminManageRepeater", { action: "delete", repeater_id: confirm.repeater.id });
+        const res = await mist.functions.invoke("adminManageRepeater", { action: "delete", repeater_id: confirm.repeater.id });
         if (!res.data?.success) throw new Error(res.data?.error);
         toast({ title: "Repeater deleted", description: confirm.repeater.callsign });
       }
@@ -188,7 +188,7 @@ export default function PlatformAdminRadioScope() {
         const [lon, lat] = ft.geometry?.coordinates || [];
         if (lat == null || lon == null) continue;
         const p = ft.properties || {};
-        const res = await base44.functions.invoke("adminManageRepeater", {
+        const res = await mist.functions.invoke("adminManageRepeater", {
           action: "create",
           fields: { callsign: p.callsign || p.name || `Waypoint ${ok + 1}`, frequency: p.frequency, offset: p.offset, tone: p.tone, band: p.band || "GMRS", status: p.status || "online", location: p.location, owner_callsign: p.owner_callsign, community_name: p.community, latitude: lat, longitude: lon, coverage_radius: p.coverage_radius, coverage_color: p.coverage_color },
         });

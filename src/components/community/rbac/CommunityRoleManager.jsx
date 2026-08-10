@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useToast } from '@/components/ui/use-toast';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Plus, Copy, Pencil, Trash2, Download, Upload, RotateCcw, Sparkles, GripVertical, Loader2, Crown, Users } from 'lucide-react';
@@ -53,7 +53,7 @@ export default function CommunityRoleManager({ community }) {
 
   const { data, isLoading } = useQuery({
     queryKey: ['community-roles', community.id],
-    queryFn: async () => (await base44.functions.invoke('listCommunityRoles', { community_id: community.id })).data,
+    queryFn: async () => (await mist.functions.invoke('listCommunityRoles', { community_id: community.id })).data,
   });
 
   const roles = data?.roles || [];
@@ -67,12 +67,12 @@ export default function CommunityRoleManager({ community }) {
     const [moved] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, moved);
     const order = reordered.map((r) => r.id);
-    try { await base44.functions.invoke('manageCommunityRole', { action: 'reorder', community_id: community.id, order }); invalidate(); }
+    try { await mist.functions.invoke('manageCommunityRole', { action: 'reorder', community_id: community.id, order }); invalidate(); }
     catch (e) { toast({ title: 'Reorder failed', description: e?.message, variant: 'destructive' }); }
   };
 
   const quick = async (action, extra = {}, label) => {
-    try { await base44.functions.invoke('manageCommunityRole', { action, community_id: community.id, ...extra }); toast({ title: label }); invalidate(); }
+    try { await mist.functions.invoke('manageCommunityRole', { action, community_id: community.id, ...extra }); toast({ title: label }); invalidate(); }
     catch (e) { toast({ title: 'Failed', description: e?.response?.data?.error || e?.message, variant: 'destructive' }); }
   };
   const onDuplicate = (r) => quick('duplicate', { role_id: r.id }, 'Role duplicated');
@@ -81,7 +81,7 @@ export default function CommunityRoleManager({ community }) {
 
   const exportRoles = async () => {
     try {
-      const res = await base44.functions.invoke('manageCommunityRole', { action: 'export', community_id: community.id });
+      const res = await mist.functions.invoke('manageCommunityRole', { action: 'export', community_id: community.id });
       const blob = new Blob([JSON.stringify(res.data?.roles || [], null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = `roles-${community.slug}.json`; a.click(); URL.revokeObjectURL(url);
@@ -95,14 +95,14 @@ export default function CommunityRoleManager({ community }) {
       const parsed = JSON.parse(text);
       const arr = Array.isArray(parsed) ? parsed : parsed.roles;
       if (!Array.isArray(arr)) throw new Error('Invalid roles JSON');
-      await base44.functions.invoke('manageCommunityRole', { action: 'import', community_id: community.id, roles: arr });
+      await mist.functions.invoke('manageCommunityRole', { action: 'import', community_id: community.id, roles: arr });
       toast({ title: 'Roles imported' }); invalidate();
     } catch (err) { toast({ title: 'Import failed', description: err.message, variant: 'destructive' }); }
     finally { if (fileRef.current) fileRef.current.value = ''; }
   };
 
   const applyTemplate = async (t) => {
-    try { await base44.functions.invoke('manageCommunityRole', { action: 'apply_template', community_id: community.id, roles: t.roles }); toast({ title: `Applied ${t.label} template` }); setShowTemplates(false); invalidate(); }
+    try { await mist.functions.invoke('manageCommunityRole', { action: 'apply_template', community_id: community.id, roles: t.roles }); toast({ title: `Applied ${t.label} template` }); setShowTemplates(false); invalidate(); }
     catch (e) { toast({ title: 'Failed', description: e?.response?.data?.error || e?.message, variant: 'destructive' }); }
   };
 

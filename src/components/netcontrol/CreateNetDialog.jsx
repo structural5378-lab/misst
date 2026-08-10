@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -55,9 +55,9 @@ export default function CreateNetDialog({ open, editing, onClose, onSaved }) {
       const payload = { ...form, days: JSON.stringify(form.days), frequency: form.frequency === "" ? "" : Number(form.frequency) };
       if (form.expected_duration_minutes !== "") payload.expected_duration_minutes = Number(form.expected_duration_minutes);
       if (editing?.id) {
-        await base44.functions.invoke("manageNet", { action: "update", id: editing.id, ...payload });
+        await mist.functions.invoke("manageNet", { action: "update", id: editing.id, ...payload });
       } else {
-        await base44.functions.invoke("manageNet", { action: "create", ...payload });
+        await mist.functions.invoke("manageNet", { action: "create", ...payload });
       }
       onSaved?.();
     } catch (e) { console.error(e); }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,7 +27,7 @@ export default function GiftBadgeDialog({ badge, onClose, onConfirm }) {
     queryKey: ['gift-user-search', query],
     queryFn: async () => {
       if (!query.trim()) return [];
-      const res = await base44.functions.invoke('searchUsers', { query });
+      const res = await mist.functions.invoke('searchUsers', { query });
       return res?.data?.users || [];
     },
     enabled: query.trim().length >= 2,
