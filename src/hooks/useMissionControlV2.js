@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { withAiCache } from "@/lib/aiCache";
 import { useRealtimeFallback } from "./useRealtimeFallback";
@@ -96,7 +96,7 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
     // the cached summary instead of re-calling the LLM.
     const cacheKey = `mcv-summary-${sid}-${approved.length}-${incidents.length}`;
     return withAiCache(cacheKey, async () => {
-      const res = await base44.integrations.Core.InvokeLLM({
+      const res = await mist.integrations.Core.InvokeLLM({
         prompt: `You are an assistant for a GMRS net control operator. Summarize the current net session in 4-6 concise bullet points: net name, runtime, attendance breakdown, notable traffic (priority/emergency), incidents, and suggested next actions. Data: ${JSON.stringify(payload)}`,
         response_json_schema: { type: "object", properties: { summary: { type: "string" } }, required: ["summary"] },
       });

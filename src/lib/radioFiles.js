@@ -1,4 +1,3 @@
-import { base44 } from '@/api/base44Client';
 
 import { mist } from '@/api/mist';
 // Radio File Sharing System — shared client helpers, constants, and API wrappers.
@@ -76,6 +75,6 @@ export async function radioFileOps(payload) {
 }
 
 export async function uploadRadioFile(file) {
-  const res = await base44.integrations.Core.UploadFile({ file });
+  const res = await mist.integrations.Core.UploadFile({ file });
   return res.file_url;
 }

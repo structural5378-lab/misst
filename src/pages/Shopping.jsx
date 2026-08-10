@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { ShoppingBag, Plus, ExternalLink, DollarSign, Tag, User, Filter, Search, ShoppingCart, TrendingUp, Clock, Eye } from "lucide-react";
@@ -79,7 +79,7 @@ export default function Shopping() {
     if (imageFile && imageFile.size > 0) {
       setUploading(true);
       try {
-        const uploadRes = await base44.integrations.Core.UploadFile({ file: imageFile });
+        const uploadRes = await mist.integrations.Core.UploadFile({ file: imageFile });
         imageUrl = uploadRes.file_url;
       } catch (err) {
         console.error("Upload failed:", err);

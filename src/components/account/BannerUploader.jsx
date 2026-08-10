@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Camera, Image as ImageIcon, Trash2, RefreshCw, Loader2, AlertCircle, Upload } from "lucide-react";
 import { useMistUser } from "@/hooks/useMistUser";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import { validateBannerFile } from "@/lib/imageUtils";
 import BannerCropModal from "./BannerCropModal";
@@ -47,7 +47,7 @@ export default function BannerUploader() {
     const t0 = Date.now();
     logBanner({ step: "start", size: file.size, type: file.type, name: file.name });
     try {
-      const res = await base44.integrations.Core.UploadFile({ file });
+      const res = await mist.integrations.Core.UploadFile({ file });
       logBanner({ step: "upload", ok: true, fileUrl: res.file_url, ms: Date.now() - t0 });
       if (!res?.file_url) throw new Error("Upload failed: no URL returned.");
       setStage("saving");

@@ -1,3 +1,4 @@
+import { mist } from '@/api/mist';
 // aiCache.js — reduces Base44 integration credit consumption.
 // AI responses are cached (24h default) and rapid repeat requests are
 // deduped (30s window) so the same question never triggers two integration
@@ -5,7 +6,7 @@
 //
 // Usage:
 //   const answer = await withAiCache(`summary-${id}-${count}`, async () => {
-//     const res = await base44.integrations.Core.InvokeLLM({ prompt });
+//     const res = await mist.integrations.Core.InvokeLLM({ prompt });
 //     return res.summary;
 //   });
 

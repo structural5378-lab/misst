@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import {
   Bold, Italic, Strikethrough, Code, Heading, Link as LinkIcon, ImagePlus,
   Quote, List, AtSign, Hash, Smile, BarChart3, Eye, EyeOff, Paperclip, X, Loader2, Send,
@@ -92,7 +92,7 @@ export default function MistComposer({
     if (!file || !file.type.startsWith("image/")) return;
     setBusy(true);
     try {
-      const res = await base44.integrations.Core.UploadFile({ file });
+      const res = await mist.integrations.Core.UploadFile({ file });
       insert(`![${file.name || "image"}](${res.file_url})\n`);
       onImageUploaded?.(res.file_url);
     } catch {}

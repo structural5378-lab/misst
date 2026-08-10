@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useAuth } from "@/lib/AuthContext";
 
@@ -350,14 +350,14 @@ export function useMistMessaging() {
       let last_message_type = "text";
 
       if (imageFile) {
-        const res = await base44.integrations.Core.UploadFile({ file: imageFile });
+        const res = await mist.integrations.Core.UploadFile({ file: imageFile });
         image_url = res.file_url;
         last_message_type = "image";
         setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, image_url } : m)));
       }
 
       if (fileAttachment) {
-        const res = await base44.integrations.Core.UploadFile({ file: fileAttachment });
+        const res = await mist.integrations.Core.UploadFile({ file: fileAttachment });
         file_url = res.file_url;
         file_name = fileAttachment.name;
         file_size = fileAttachment.size;

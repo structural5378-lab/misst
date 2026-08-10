@@ -2,8 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-
+import { mist } from '@/api/mist';
 const PRESET_COLORS = [
   '#8B5CF6', '#3B82F6', '#06B6D4', '#10B981',
   '#F59E0B', '#EF4444', '#EC4899', '#8B5CF6',
@@ -22,7 +21,7 @@ function ImageUploader({ label, value, onChange, aspectClass }) {
     setUploading(true);
     setError('');
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
+      const response = await mist.integrations.Core.UploadFile({ file });
       onChange(response.file_url);
     } catch (err) {
       setError('Failed to upload image');

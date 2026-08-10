@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, Image as ImageIcon, Users, Calendar, Pin, FileText, VolumeX } from "lucide-react";
 import { useRoomMessages } from "@/hooks/useRoomMessages";
 import { useToast } from "@/components/ui/use-toast";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { formatDayLabel, isSameDay, presenceStatus, isTypingNow } from "@/lib/chatV2/chatV2Utils";
 import MessageBubbleV2 from "@/components/chatV2/MessageBubbleV2";
 import MessageComposerV2 from "@/components/chatV2/MessageComposerV2";
@@ -92,7 +92,7 @@ export default function CommunityConversation({ community, room, mistUser, membe
     let attachmentMeta = null;
     if (attachment?.file) {
       try {
-        const res = await base44.integrations.Core.UploadFile({ file: attachment.file });
+        const res = await mist.integrations.Core.UploadFile({ file: attachment.file });
         attachmentMeta = { url: res.file_url, name: attachment.name, type: attachment.type, size: attachment.size };
       } catch (e) {
         toast({ title: "Attachment upload failed", description: e?.message || "Please try again", variant: "destructive" });

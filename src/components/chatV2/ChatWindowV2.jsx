@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, CheckCheck, Flag, PanelRight } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useChatV2 } from "@/hooks/useChatV2";
 import { otherParticipant } from "@/lib/chatV2/chatV2Api";
 import { formatDayLabel, isSameDay, isTypingNow } from "@/lib/chatV2/chatV2Utils";
@@ -98,7 +98,7 @@ export default function ChatWindowV2({
     let attachmentMeta = null;
     if (attachment?.file) {
       try {
-        const res = await base44.integrations.Core.UploadFile({ file: attachment.file });
+        const res = await mist.integrations.Core.UploadFile({ file: attachment.file });
         attachmentMeta = { url: res.file_url, name: attachment.name, type: attachment.type, size: attachment.size };
       } catch (e) {
         console.error("[chat] attachment upload failed", e);

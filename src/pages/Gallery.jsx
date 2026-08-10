@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -96,7 +96,7 @@ function UploadModal({ onClose, onSuccess, uploaderName }) {
     setUploading(true);
     try {
       for (let i = 0; i < files.length; i++) {
-        const res = await base44.integrations.Core.UploadFile({ file: files[i] });
+        const res = await mist.integrations.Core.UploadFile({ file: files[i] });
         await mist.entities.GatheringPhoto.create({
           photo_url: res.file_url,
           caption: files.length === 1 ? caption : "",

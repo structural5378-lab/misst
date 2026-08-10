@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Lock, Pin, PinOff, LockOpen, Star, Trash2, FolderInput, Check } from "lucide-react";
@@ -133,7 +133,7 @@ export default function CommunityThread() {
 
   const handleImage = async (file) => {
     try {
-      const res = await base44.integrations.Core.UploadFile({ file });
+      const res = await mist.integrations.Core.UploadFile({ file });
       setImageUrl(res.file_url);
       showToast("Image attached");
     } catch {}

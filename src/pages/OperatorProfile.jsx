@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
@@ -143,7 +143,7 @@ export default function OperatorProfile() {
     setUploadingAvatar(true); setAvatarError("");
     try {
       const fileObj = new File([avatarFile.blob], avatarFile.name || "avatar.jpg", { type: "image/jpeg" });
-      const res = await base44.integrations.Core.UploadFile({ file: fileObj });
+      const res = await mist.integrations.Core.UploadFile({ file: fileObj });
       await updateProfile({ avatar_url: res.file_url });
       setAvatarPreview(null); setAvatarFile(null);
     } catch (e) { setAvatarError("Upload failed: " + e.message); }

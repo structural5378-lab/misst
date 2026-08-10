@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
 
 import { mist } from '@/api/mist';
 export function useChat(mybbUser) {
@@ -151,7 +150,7 @@ export function useChat(mybbUser) {
       try {
         let image_url;
         if (imageFile) {
-          const res = await base44.integrations.Core.UploadFile({ file: imageFile });
+          const res = await mist.integrations.Core.UploadFile({ file: imageFile });
           image_url = res.file_url;
           // Update optimistic message with image
           setMessages((prev) =>

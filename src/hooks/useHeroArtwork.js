@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 const TTL = 45 * 24 * 3600 * 1000; // 45-day cache per artwork seed
 
 /** Deterministic, slowly-changing seed so each user gets a unique-but-stable artwork. */
@@ -54,7 +53,7 @@ export function useHeroArtwork(seed, prompt) {
   const regenerate = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await base44.integrations.Core.GenerateImage({ prompt });
+      const res = await mist.integrations.Core.GenerateImage({ prompt });
       if (res?.url) {
         setUrl(res.url);
         try { localStorage.setItem(`mist-hero-${seed}`, JSON.stringify({ url: res.url, ts: Date.now() })); } catch {}

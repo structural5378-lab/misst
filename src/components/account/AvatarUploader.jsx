@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Camera, Image as ImageIcon, Trash2, RefreshCw, Loader2, AlertCircle } from "lucide-react";
 import { useMistUser } from "@/hooks/useMistUser";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import { validateAvatarFile } from "@/lib/imageUtils";
 import AvatarCropModal from "./AvatarCropModal";
@@ -46,7 +46,7 @@ export default function AvatarUploader({ size = 96 }) {
     const t0 = Date.now();
     logUpload({ step: "start", size: file.size, type: file.type, name: file.name });
     try {
-      const res = await base44.integrations.Core.UploadFile({ file });
+      const res = await mist.integrations.Core.UploadFile({ file });
       logUpload({ step: "upload", ok: true, fileUrl: res.file_url, ms: Date.now() - t0 });
       if (!res?.file_url) throw new Error("Upload failed: no URL returned.");
       setStage("saving");
