@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X, Hash, Radio, Image as ImageIcon, Info, Shield, Wifi, Calendar, Activity, CloudLightning, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { otherParticipant } from "@/lib/chatV2/chatV2Api";
 import { presenceStatus, lastSeenLabel } from "@/lib/chatV2/chatV2Utils";
 
@@ -203,7 +204,7 @@ function NetTab({ community }) {
     if (!community?.id) return;
     let alive = true;
     setLoading(true);
-    base44.entities.Net.filter({ community_id: community.id, status: "active" }, "-created_date", 20)
+    mist.entities.Net.filter({ community_id: community.id, status: "active" }, "-created_date", 20)
       .then((r) => { if (alive) setNets(r || []); })
       .catch(() => {})
       .finally(() => { if (alive) setLoading(false); });
@@ -268,7 +269,7 @@ function EventsTab({ community }) {
     if (!community?.id) return;
     let alive = true;
     setLoading(true);
-    base44.entities.Event.filter({ community_id: community.id }, "-created_date", 20)
+    mist.entities.Event.filter({ community_id: community.id }, "-created_date", 20)
       .then((r) => { if (alive) setEvents(r || []); })
       .catch(() => {})
       .finally(() => { if (alive) setLoading(false); });

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useAuth } from "@/lib/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 
@@ -24,7 +25,7 @@ export function useMistUser() {
   const { data: stats = {} } = useQuery({
     queryKey: ["mist-user-stats", user?.id],
     queryFn: async () => {
-      const list = await base44.entities.UserStats.filter({ user_id: user.id });
+      const list = await mist.entities.UserStats.filter({ user_id: user.id });
       return list?.[0] || {};
     },
     enabled: !!user?.id,

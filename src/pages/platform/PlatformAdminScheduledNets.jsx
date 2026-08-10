@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Plus, Copy, Trash2 } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
@@ -39,7 +39,7 @@ export default function PlatformAdminScheduledNets() {
 
   const { data: nets = [] } = useQuery({
     queryKey: ["admin-all-nets"],
-    queryFn: () => base44.entities.Net.list("-created_date", 500),
+    queryFn: () => mist.entities.Net.list("-created_date", 500),
   });
 
   const scheduled = useMemo(() => nets.filter((n) => n.schedule || n.time), [nets]);
@@ -57,7 +57,7 @@ export default function PlatformAdminScheduledNets() {
     if (!form.name) return;
     setSaving(true);
     try {
-      await base44.entities.Net.create({
+      await mist.entities.Net.create({
         name: form.name, category: form.category,
         frequency: form.frequency ? parseFloat(form.frequency) : null,
         repeater_callsign: form.repeater_callsign, net_control: form.net_control,
@@ -70,12 +70,12 @@ export default function PlatformAdminScheduledNets() {
 
   const duplicate = async (n) => {
     const { id, created_date, updated_date, created_by_id, is_sample, ...rest } = n;
-    await base44.entities.Net.create({ ...rest, name: `${n.name} (Copy)` });
+    await mist.entities.Net.create({ ...rest, name: `${n.name} (Copy)` });
     qc.invalidateQueries({ queryKey: ["admin-all-nets"] });
   };
 
   const cancel = async (id) => {
-    await base44.entities.Net.delete(id);
+    await mist.entities.Net.delete(id);
     qc.invalidateQueries({ queryKey: ["admin-all-nets"] });
   };
 

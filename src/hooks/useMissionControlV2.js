@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { withAiCache } from "@/lib/aiCache";
 import { useRealtimeFallback } from "./useRealtimeFallback";
 import { useMissionControl } from "./useMissionControl";
@@ -19,13 +20,13 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
   const { healthy: sessionsHealthy, markEvent: markSession } = useRealtimeFallback(15000);
   const { data: allSessions = [] } = useQuery({
     queryKey: ["net-sessions-all"],
-    queryFn: () => base44.entities.NetSession.list("-started_at", 50),
+    queryFn: () => mist.entities.NetSession.list("-started_at", 50),
     enabled: !routeNetId,
     refetchInterval: sessionsHealthy ? false : 5000,
   });
   // Realtime subscription for session changes — polling is only a fallback.
   useEffect(() => {
-    const u = base44.entities.NetSession.subscribe(() => { markSession(); qc.invalidateQueries({ queryKey: ["net-sessions-all"] }); });
+    const u = mist.entities.NetSession.subscribe(() => { markSession(); qc.invalidateQueries({ queryKey: ["net-sessions-all"] }); });
     return u;
   }, [qc, markSession]);
   const autoSession = !routeNetId ? (allSessions.find((s) => s.status === "active" || s.status === "paused") || null) : null;
@@ -40,17 +41,17 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
     if (!sid) return;
     const next = activeQueue.find((q) => q.status === "waiting");
     if (!next) return;
-    await base44.entities.NetQueueEntry.update(next.id, { status: "called", called_at: new Date().toISOString() });
-    try { await base44.entities.NetTimeline.create({ session_id: sid, net_id: effectiveNetId, event_type: "note", message: `Called ${next.callsign} to speak`, actor_name: next.callsign, actor_avatar: next.avatar, actor_id: next.user_id }); } catch {}
+    await mist.entities.NetQueueEntry.update(next.id, { status: "called", called_at: new Date().toISOString() });
+    try { await mist.entities.NetTimeline.create({ session_id: sid, net_id: effectiveNetId, event_type: "note", message: `Called ${next.callsign} to speak`, actor_name: next.callsign, actor_avatar: next.avatar, actor_id: next.user_id }); } catch {}
     qc.invalidateQueries({ queryKey: ["net-queue", sid] });
   };
-  const callEntry = async (q) => { await base44.entities.NetQueueEntry.update(q.id, { status: "called", called_at: new Date().toISOString() }); qc.invalidateQueries({ queryKey: ["net-queue", sid] }); };
-  const skipEntry = async (q) => { await base44.entities.NetQueueEntry.update(q.id, { status: "skipped" }); qc.invalidateQueries({ queryKey: ["net-queue", sid] }); };
-  const removeEntry = async (q) => { await base44.entities.NetQueueEntry.update(q.id, { status: "removed" }); qc.invalidateQueries({ queryKey: ["net-queue", sid] }); };
+  const callEntry = async (q) => { await mist.entities.NetQueueEntry.update(q.id, { status: "called", called_at: new Date().toISOString() }); qc.invalidateQueries({ queryKey: ["net-queue", sid] }); };
+  const skipEntry = async (q) => { await mist.entities.NetQueueEntry.update(q.id, { status: "skipped" }); qc.invalidateQueries({ queryKey: ["net-queue", sid] }); };
+  const removeEntry = async (q) => { await mist.entities.NetQueueEntry.update(q.id, { status: "removed" }); qc.invalidateQueries({ queryKey: ["net-queue", sid] }); };
   const requestSpeak = async () => {
     if (!sid) return;
     const uid = user?.uid || user?.id;
-    await base44.entities.NetQueueEntry.create({ session_id: sid, net_id: effectiveNetId, user_id: uid || "", callsign: user?.callsign || user?.username || "Operator", name: user?.full_name || user?.username || "", avatar: user?.avatar || "", location: user?.location || "", priority: "normal", status: "waiting", requested_at: new Date().toISOString(), position: activeQueue.length + 1 });
+    await mist.entities.NetQueueEntry.create({ session_id: sid, net_id: effectiveNetId, user_id: uid || "", callsign: user?.callsign || user?.username || "Operator", name: user?.full_name || user?.username || "", avatar: user?.avatar || "", location: user?.location || "", priority: "normal", status: "waiting", requested_at: new Date().toISOString(), position: activeQueue.length + 1 });
     qc.invalidateQueries({ queryKey: ["net-queue", sid] });
   };
 
@@ -58,11 +59,11 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
   const SEV = { emergency: "critical", priority: "warning", weather: "warning", equipment_failure: "warning", repeater_offline: "critical", medical: "critical", general_note: "info" };
   const addIncident = async (category, notes) => {
     if (!sid || !notes.trim()) return;
-    await base44.entities.NetIncident.create({ session_id: sid, net_id: effectiveNetId, category, notes: notes.trim(), severity: SEV[category] || "info", operator: user?.callsign || user?.username || user?.full_name || "Net Control", operator_id: user?.uid || user?.id || "", timestamp: new Date().toISOString() });
-    try { await base44.entities.NetTimeline.create({ session_id: sid, net_id: effectiveNetId, event_type: category === "emergency" ? "emergency" : category === "priority" ? "priority" : "note", message: `${category.replace("_", " ")}: ${notes.trim()}`, actor_name: user?.callsign || user?.username || "" }); } catch {}
+    await mist.entities.NetIncident.create({ session_id: sid, net_id: effectiveNetId, category, notes: notes.trim(), severity: SEV[category] || "info", operator: user?.callsign || user?.username || user?.full_name || "Net Control", operator_id: user?.uid || user?.id || "", timestamp: new Date().toISOString() });
+    try { await mist.entities.NetTimeline.create({ session_id: sid, net_id: effectiveNetId, event_type: category === "emergency" ? "emergency" : category === "priority" ? "priority" : "note", message: `${category.replace("_", " ")}: ${notes.trim()}`, actor_name: user?.callsign || user?.username || "" }); } catch {}
     qc.invalidateQueries({ queryKey: ["net-incidents", sid] });
   };
-  const removeIncident = async (id) => { await base44.entities.NetIncident.delete(id); qc.invalidateQueries({ queryKey: ["net-incidents", sid] }); };
+  const removeIncident = async (id) => { await mist.entities.NetIncident.delete(id); qc.invalidateQueries({ queryKey: ["net-incidents", sid] }); };
 
   // --- Weather (repeater coords or default) ---
   const { data: weather } = useQuery({
@@ -83,7 +84,7 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
   // --- Roll call ---
   const rollCall = async () => {
     if (!sid) return;
-    await base44.entities.NetTimeline.create({ session_id: sid, net_id: effectiveNetId, event_type: "note", message: `Roll call initiated — ${approved.length} operators checked in`, actor_name: user?.callsign || user?.username || "Net Control" });
+    await mist.entities.NetTimeline.create({ session_id: sid, net_id: effectiveNetId, event_type: "note", message: `Roll call initiated — ${approved.length} operators checked in`, actor_name: user?.callsign || user?.username || "Net Control" });
     qc.invalidateQueries({ queryKey: ["net-timeline", sid] });
   };
 

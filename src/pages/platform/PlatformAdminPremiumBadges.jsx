@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,22 +45,22 @@ export default function PlatformAdminPremiumBadges() {
 
   const { data: badges = [], isLoading } = useQuery({
     queryKey: ['admin-premium-badges'],
-    queryFn: () => base44.entities.PremiumBadge.list('-display_priority', 100),
+    queryFn: () => mist.entities.PremiumBadge.list('-display_priority', 100),
   });
 
   const { data: owners = [] } = useQuery({
     queryKey: ['premium-badge-owners', ownersBadge?.id],
-    queryFn: () => base44.entities.PremiumBadgeOwnership.filter({ badge_id: ownersBadge.id }, '-purchased_at', 50),
+    queryFn: () => mist.entities.PremiumBadgeOwnership.filter({ badge_id: ownersBadge.id }, '-purchased_at', 50),
     enabled: !!ownersBadge,
   });
 
   const save = async () => {
     try {
       if (editing.id) {
-        await base44.entities.PremiumBadge.update(editing.id, editing);
+        await mist.entities.PremiumBadge.update(editing.id, editing);
         toast({ title: 'Badge updated' });
       } else {
-        await base44.entities.PremiumBadge.create(editing);
+        await mist.entities.PremiumBadge.create(editing);
         toast({ title: 'Badge created' });
       }
       setEditing(null);
@@ -71,12 +71,12 @@ export default function PlatformAdminPremiumBadges() {
 
   const remove = async (b) => {
     if (!confirm(`Delete "${b.name}"? This cannot be undone.`)) return;
-    try { await base44.entities.PremiumBadge.delete(b.id); qc.invalidateQueries({ queryKey: ['admin-premium-badges'] }); qc.invalidateQueries({ queryKey: ['premium-badges'] }); toast({ title: 'Badge deleted' }); }
+    try { await mist.entities.PremiumBadge.delete(b.id); qc.invalidateQueries({ queryKey: ['admin-premium-badges'] }); qc.invalidateQueries({ queryKey: ['premium-badges'] }); toast({ title: 'Badge deleted' }); }
     catch (e) { toast({ title: 'Delete failed', description: e.message, variant: 'destructive' }); }
   };
 
   const toggle = async (b) => {
-    try { await base44.entities.PremiumBadge.update(b.id, { is_enabled: !b.is_enabled }); qc.invalidateQueries({ queryKey: ['admin-premium-badges'] }); qc.invalidateQueries({ queryKey: ['premium-badges'] }); }
+    try { await mist.entities.PremiumBadge.update(b.id, { is_enabled: !b.is_enabled }); qc.invalidateQueries({ queryKey: ['admin-premium-badges'] }); qc.invalidateQueries({ queryKey: ['premium-badges'] }); }
     catch (e) { toast({ title: 'Toggle failed', description: e.message, variant: 'destructive' }); }
   };
 
@@ -85,7 +85,7 @@ export default function PlatformAdminPremiumBadges() {
       const existing = new Set(badges.map((b) => b.name));
       const toCreate = DEFAULT_BADGES.filter((b) => !existing.has(b.name));
       if (!toCreate.length) { toast({ title: 'All default badges already exist' }); return; }
-      await base44.entities.PremiumBadge.bulkCreate(toCreate);
+      await mist.entities.PremiumBadge.bulkCreate(toCreate);
       qc.invalidateQueries({ queryKey: ['admin-premium-badges'] });
       qc.invalidateQueries({ queryKey: ['premium-badges'] });
       toast({ title: `Seeded ${toCreate.length} default badges` });
@@ -97,11 +97,11 @@ export default function PlatformAdminPremiumBadges() {
       const b = grant;
       // Clear any currently-active badge for this recipient so the granted one
       // becomes their active (displayed) badge immediately.
-      const prior = await base44.entities.PremiumBadgeOwnership.filter({ user_id: grantUser.id, is_active: true });
+      const prior = await mist.entities.PremiumBadgeOwnership.filter({ user_id: grantUser.id, is_active: true });
       if (prior?.length) {
-        await base44.entities.PremiumBadgeOwnership.bulkUpdate(prior.map((o) => ({ id: o.id, is_active: false })));
+        await mist.entities.PremiumBadgeOwnership.bulkUpdate(prior.map((o) => ({ id: o.id, is_active: false })));
       }
-      await base44.entities.PremiumBadgeOwnership.create({
+      await mist.entities.PremiumBadgeOwnership.create({
         user_id: grantUser.id, user_name: grantUser.full_name || grantUser.mybb_username || '',
         badge_id: b.id, badge_name: b.name, badge_icon: b.icon, badge_artwork_url: b.artwork_url,
         badge_effect: b.effect, badge_accent_color: b.accent_color, badge_rarity: b.rarity,

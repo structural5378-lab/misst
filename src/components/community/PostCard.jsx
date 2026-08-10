@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Reply, Quote, MoreHorizontal, Edit2, Trash2, CornerDownRight, Link2, Share2, Flag, Copy, Paperclip } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { timeAgo, parseJSON } from "@/lib/forumUtils";
 import PostProfileSidebar from "./PostProfileSidebar";
 import ReactionBar from "./ReactionBar";
@@ -15,14 +15,14 @@ export default function PostCard({ post, thread, user, isOP = false, onReply, on
   const handleDelete = async () => {
     if (!confirm("Delete this post?")) return;
     try {
-      await base44.entities.ForumPost.update(post.id, { is_deleted: true, body: "[deleted]" });
+      await mist.entities.ForumPost.update(post.id, { is_deleted: true, body: "[deleted]" });
       onUpdate?.();
     } catch {}
     setShowMenu(false);
   };
 
   const handleRestore = async () => {
-    await base44.entities.ForumPost.update(post.id, { is_deleted: false });
+    await mist.entities.ForumPost.update(post.id, { is_deleted: false });
     onUpdate?.();
   };
 

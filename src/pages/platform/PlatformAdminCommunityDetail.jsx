@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { ChevronRight, Building, ExternalLink, Megaphone, PauseCircle, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -33,12 +34,12 @@ export default function PlatformAdminCommunityDetail() {
 
   const { data: community, isLoading } = useQuery({
     queryKey: ["admin-community-detail", "community", id],
-    queryFn: async () => await base44.entities.Community.get(id),
+    queryFn: async () => await mist.entities.Community.get(id),
     enabled: !!id,
   });
   const { data: members = [] } = useQuery({
     queryKey: ["admin-community-detail", "members", id],
-    queryFn: async () => (await base44.entities.CommunityMember.filter({ community_id: id }, "-joined_date", 5000)) || [],
+    queryFn: async () => (await mist.entities.CommunityMember.filter({ community_id: id }, "-joined_date", 5000)) || [],
     enabled: !!id,
   });
   const { data: audit = [] } = useQuery({

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useParsedField, DEFAULT_PRIVACY, WHO_OPTIONS } from "@/hooks/useAccountPrefs";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select";
@@ -25,13 +25,13 @@ export default function AccountPrivacy() {
 
   const { data: blocked = [], refetch } = useQuery({
     queryKey: ["blocked-users", user?.id],
-    queryFn: () => base44.entities.BlockedUser.filter({ user_id: user.id }, "-blocked_at", 100),
+    queryFn: () => mist.entities.BlockedUser.filter({ user_id: user.id }, "-blocked_at", 100),
     enabled: !!user?.id,
     staleTime: 30000,
   });
 
   const unblock = async (b) => {
-    await base44.entities.BlockedUser.delete(b.id);
+    await mist.entities.BlockedUser.delete(b.id);
     refetch();
   };
 

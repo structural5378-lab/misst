@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useMistUser } from '@/hooks/useMistUser';
 import { Crown, Sparkles } from 'lucide-react';
 import PremiumBadge from '@/components/premium/PremiumBadge';
@@ -12,7 +12,7 @@ export default function AccountPremiumBadges() {
   const { mistUser } = useMistUser();
   const { data: ownership = [] } = useQuery({
     queryKey: ['premium-badge-ownership'],
-    queryFn: () => base44.entities.PremiumBadgeOwnership.filter({ user_id: mistUser?.id, status: 'active' }),
+    queryFn: () => mist.entities.PremiumBadgeOwnership.filter({ user_id: mistUser?.id, status: 'active' }),
     enabled: !!mistUser?.id,
   });
   const active = ownership.find((o) => o.is_active);

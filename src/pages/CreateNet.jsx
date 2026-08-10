@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import PageHeader from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +31,7 @@ export default function CreateNet() {
   const handleSubmit = async () => {
     if (!form.name || !form.frequency) return;
     setSaving(true);
-    const net = await base44.entities.Net.create(form);
+    const net = await mist.entities.Net.create(form);
     // Post to forum if possible
     try {
       await base44.functions.invoke("fetchMyBBForums", {

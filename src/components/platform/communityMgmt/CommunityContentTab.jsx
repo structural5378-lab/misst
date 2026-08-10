@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import { Pin, PinOff, Lock, Unlock, Star, Trash2, MessageSquare, Radio, CalendarClock, RadioTower } from "lucide-react";
 
@@ -60,10 +61,10 @@ export default function CommunityContentTab({ community, onChanged }) {
   const changed = () => { onChanged(); qc.invalidateQueries(["community-content", community.id]); };
   return (
     <div className="grid lg:grid-cols-2 gap-4">
-      <Section title="Forum Threads" icon={MessageSquare} queryKey={["community-content", community.id, "threads"]} queryFn={async () => (await base44.entities.ForumThread.filter({ community_id: community.id }, "-created_date", 500)) || []} type="ForumThread" communityId={community.id} onChanged={changed} />
-      <Section title="Events" icon={CalendarClock} queryKey={["community-content", community.id, "events"]} queryFn={async () => (await base44.entities.Event.filter({ community_id: community.id }, "-created_date", 500)) || []} type="Event" communityId={community.id} onChanged={changed} />
-      <Section title="Repeaters" icon={RadioTower} queryKey={["community-content", community.id, "repeaters"]} queryFn={async () => (await base44.entities.Repeater.filter({ community_id: community.id }, "-created_date", 500)) || []} type="Repeater" communityId={community.id} onChanged={changed} />
-      <Section title="Nets" icon={Radio} queryKey={["community-content", community.id, "nets"]} queryFn={async () => (await base44.entities.Net.filter({ community_id: community.id }, "-created_date", 500)) || []} type="Net" communityId={community.id} onChanged={changed} />
+      <Section title="Forum Threads" icon={MessageSquare} queryKey={["community-content", community.id, "threads"]} queryFn={async () => (await mist.entities.ForumThread.filter({ community_id: community.id }, "-created_date", 500)) || []} type="ForumThread" communityId={community.id} onChanged={changed} />
+      <Section title="Events" icon={CalendarClock} queryKey={["community-content", community.id, "events"]} queryFn={async () => (await mist.entities.Event.filter({ community_id: community.id }, "-created_date", 500)) || []} type="Event" communityId={community.id} onChanged={changed} />
+      <Section title="Repeaters" icon={RadioTower} queryKey={["community-content", community.id, "repeaters"]} queryFn={async () => (await mist.entities.Repeater.filter({ community_id: community.id }, "-created_date", 500)) || []} type="Repeater" communityId={community.id} onChanged={changed} />
+      <Section title="Nets" icon={Radio} queryKey={["community-content", community.id, "nets"]} queryFn={async () => (await mist.entities.Net.filter({ community_id: community.id }, "-created_date", 500)) || []} type="Net" communityId={community.id} onChanged={changed} />
     </div>
   );
 }

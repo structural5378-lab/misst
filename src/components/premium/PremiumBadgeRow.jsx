@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import PremiumBadge from './PremiumBadge';
 
 // PremiumBadgeRow — displays ALL of a user's active premium badges in a single
@@ -12,7 +12,7 @@ export default function PremiumBadgeRow({ userId, max = 6, size = 'md' }) {
     queryKey: ['premium-badge-row', userId],
     queryFn: async () => {
       if (!userId) return [];
-      return await base44.entities.PremiumBadgeOwnership.filter({
+      return await mist.entities.PremiumBadgeOwnership.filter({
         user_id: userId,
         status: 'active',
       });

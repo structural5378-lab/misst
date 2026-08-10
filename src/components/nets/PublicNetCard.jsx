@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Radio, Users, Clock, SignalHigh, Hash, Mic, MapPin } from "lucide-react";
 import { useMistUser } from "@/hooks/useMistUser";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import NetCheckInPanel from "@/components/nets/NetCheckInPanel";
 
 // PublicNetCard — rich read-only net card for the public schedule.
@@ -15,7 +15,7 @@ export default function PublicNetCard({ net, liveSession }) {
 
   const toggleFav = async () => {
     setFavBusy(true);
-    try { await base44.entities.Net.update(net.id, { is_favorite: !net.is_favorite }); }
+    try { await mist.entities.Net.update(net.id, { is_favorite: !net.is_favorite }); }
     catch {}
     setFavBusy(false);
   };

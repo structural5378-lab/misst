@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { Trophy, ChevronRight, Shield, Save, X, Camera, Loader2, Plus, Trash2, BarChart3, Crown } from "lucide-react";
@@ -61,7 +62,7 @@ export default function OperatorProfile() {
     queryKey: ["profile-stats", isSelf ? "me" : targetId],
     queryFn: async () => {
       if (isSelf && mybbUser?.uid) { const res = await base44.functions.invoke("syncUserStats", { uid: mybbUser.uid }); return res.data?.stats || {}; }
-      const list = await base44.entities.UserStats.filter({ user_id: targetId });
+      const list = await mist.entities.UserStats.filter({ user_id: targetId });
       return list?.[0] || {};
     },
     enabled: isSelf ? !!mybbUser?.uid : !!targetId,
@@ -69,21 +70,21 @@ export default function OperatorProfile() {
   });
   const { data: otherProfile } = useQuery({
     queryKey: ["profile-user", targetId],
-    queryFn: () => base44.entities.User.get(targetId),
+    queryFn: () => mist.entities.User.get(targetId),
     enabled: !isSelf && !!targetId,
     staleTime: 60000,
   });
   const { data: achievements = [] } = useQuery({
     queryKey: ["profile-ach", isSelf ? "me" : targetId],
-    queryFn: () => (isSelf ? base44.entities.UserAchievement.list() : base44.entities.UserAchievement.filter({ user_id: targetId })),
+    queryFn: () => (isSelf ? mist.entities.UserAchievement.list() : mist.entities.UserAchievement.filter({ user_id: targetId })),
     enabled: isSelf ? !!user : !!targetId,
     staleTime: 15000,
   });
   const tid = isSelf ? user?.id : targetId;
-  const { data: threads = [] } = useQuery({ queryKey: ["profile-threads", tid], queryFn: () => base44.entities.ForumThread.filter({ author_id: tid }, "-created_date", 10), enabled: !!tid, staleTime: 30000 });
-  const { data: posts = [] } = useQuery({ queryKey: ["profile-posts", tid], queryFn: () => base44.entities.ForumPost.filter({ author_id: tid }, "-created_date", 10), enabled: !!tid, staleTime: 30000 });
-  const { data: clubs = [] } = useQuery({ queryKey: ["profile-clubs", tid], queryFn: () => base44.entities.CommunityMember.filter({ user_id: tid, is_active: true }, "-joined_date", 20), enabled: !!tid, staleTime: 60000 });
-  const { data: bookmarks = [] } = useQuery({ queryKey: ["profile-bookmarks", tid], queryFn: () => base44.entities.ForumSubscription.filter({ user_id: tid, is_bookmarked: true }, "-created_date", 10), enabled: isSelf && !!tid, staleTime: 30000 });
+  const { data: threads = [] } = useQuery({ queryKey: ["profile-threads", tid], queryFn: () => mist.entities.ForumThread.filter({ author_id: tid }, "-created_date", 10), enabled: !!tid, staleTime: 30000 });
+  const { data: posts = [] } = useQuery({ queryKey: ["profile-posts", tid], queryFn: () => mist.entities.ForumPost.filter({ author_id: tid }, "-created_date", 10), enabled: !!tid, staleTime: 30000 });
+  const { data: clubs = [] } = useQuery({ queryKey: ["profile-clubs", tid], queryFn: () => mist.entities.CommunityMember.filter({ user_id: tid, is_active: true }, "-joined_date", 20), enabled: !!tid, staleTime: 60000 });
+  const { data: bookmarks = [] } = useQuery({ queryKey: ["profile-bookmarks", tid], queryFn: () => mist.entities.ForumSubscription.filter({ user_id: tid, is_bookmarked: true }, "-created_date", 10), enabled: isSelf && !!tid, staleTime: 30000 });
 
   const displayName = isSelf ? (user?.full_name || mistUser.callsign) : (otherProfile?.full_name || "MIST Member");
   const callsign = isSelf ? mistUser.callsign : (otherProfile?.callsign || stats.user_callsign);

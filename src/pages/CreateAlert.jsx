@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import PageHeader from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
@@ -24,7 +25,7 @@ export default function CreateAlert() {
     e.preventDefault();
     if (!title.trim()) return;
     setSaving(true);
-    const alert = await base44.entities.Alert.create({
+    const alert = await mist.entities.Alert.create({
       title: title.trim(),
       message: message.trim() || undefined,
       type,

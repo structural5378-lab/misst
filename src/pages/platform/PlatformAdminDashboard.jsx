@@ -1,5 +1,6 @@
 import React from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
@@ -32,9 +33,9 @@ export default function PlatformAdminDashboard() {
     queryKey: ["admin-stats-extra"],
     queryFn: async () => {
       const [communities, sessions, nets] = await Promise.all([
-        base44.entities.Community.list("-created_date", 1000),
-        base44.entities.NetSession.filter({ status: "closed" }, "-ended_at", 500),
-        base44.entities.Net.list("-created_date", 500),
+        mist.entities.Community.list("-created_date", 1000),
+        mist.entities.NetSession.filter({ status: "closed" }, "-ended_at", 500),
+        mist.entities.Net.list("-created_date", 500),
       ]);
       const closed = sessions || [];
       const scheduled = (nets || []).filter((n) => n.schedule || n.time);

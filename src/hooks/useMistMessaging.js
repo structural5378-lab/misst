@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useAuth } from "@/lib/AuthContext";
 
 /**
@@ -43,7 +44,7 @@ export function useMistMessaging() {
     try {
       setLoading(true);
       // 1. Get my participant records
-      const myParts = await base44.entities.ConversationParticipant.filter(
+      const myParts = await mist.entities.ConversationParticipant.filter(
         { user_id: userId }, "-is_pinned", 200
       );
       if (myParts.length === 0) { setConversations([]); setLoading(false); return; }
@@ -52,8 +53,8 @@ export function useMistMessaging() {
 
       // 2. Get all conversations and all participants in parallel
       const [convRecords, allParts] = await Promise.all([
-        base44.entities.Conversation.filter({ id: { $in: convIds } }, "-last_message_at", 200),
-        base44.entities.ConversationParticipant.filter(
+        mist.entities.Conversation.filter({ id: { $in: convIds } }, "-last_message_at", 200),
+        mist.entities.ConversationParticipant.filter(
           { conversation_id: { $in: convIds } }, "-joined_at", 500
         ),
       ]);
@@ -95,7 +96,7 @@ export function useMistMessaging() {
     if (!convId) { setMessages([]); return; }
     try {
       setMessagesLoading(true);
-      const msgs = await base44.entities.DMMessage.filter(
+      const msgs = await mist.entities.DMMessage.filter(
         { conversation_id: convId }, "-created_date", 100
       );
       setMessages(msgs.reverse());
@@ -110,7 +111,7 @@ export function useMistMessaging() {
   const loadBlockedUsers = useCallback(async () => {
     if (!userId) return;
     try {
-      const blocked = await base44.entities.BlockedUser.filter({ user_id: userId }, "-blocked_at", 200);
+      const blocked = await mist.entities.BlockedUser.filter({ user_id: userId }, "-blocked_at", 200);
       setBlockedUsers(blocked);
     } catch (err) {
       console.error("Failed to load blocked users:", err);
@@ -123,15 +124,15 @@ export function useMistMessaging() {
 
     const updatePresence = async (status) => {
       try {
-        const existing = await base44.entities.UserPresence.filter({ user_id: userId });
+        const existing = await mist.entities.UserPresence.filter({ user_id: userId });
         if (existing.length > 0) {
           presenceIdRef.current = existing[0].id;
-          await base44.entities.UserPresence.update(existing[0].id, {
+          await mist.entities.UserPresence.update(existing[0].id, {
             status,
             last_active: new Date().toISOString(),
           });
         } else {
-          const rec = await base44.entities.UserPresence.create({
+          const rec = await mist.entities.UserPresence.create({
             user_id: userId,
             user_name: user.full_name || user.email || "User",
             user_avatar: user.avatar_url || "",
@@ -160,7 +161,7 @@ export function useMistMessaging() {
   useEffect(() => {
     const loadPresence = async () => {
       try {
-        const all = await base44.entities.UserPresence.list("-last_active", 200);
+        const all = await mist.entities.UserPresence.list("-last_active", 200);
         const now = Date.now();
         const online = new Set(
           all
@@ -172,7 +173,7 @@ export function useMistMessaging() {
     };
     loadPresence();
     const interval = setInterval(loadPresence, 15000);
-    const unsub = base44.entities.UserPresence.subscribe(() => {
+    const unsub = mist.entities.UserPresence.subscribe(() => {
       loadPresence();
     });
     return () => { clearInterval(interval); unsub(); };
@@ -180,7 +181,7 @@ export function useMistMessaging() {
 
   // ─── Subscribe to DMMessage events (real-time) ──────────────────────────
   useEffect(() => {
-    const unsub = base44.entities.DMMessage.subscribe((event) => {
+    const unsub = mist.entities.DMMessage.subscribe((event) => {
       const msg = event.data;
       if (!msg || !msg.conversation_id) return;
       const myId = userIdRef.current;
@@ -240,7 +241,7 @@ export function useMistMessaging() {
 
   // ─── Subscribe to ConversationParticipant events (typing, unread) ────────
   useEffect(() => {
-    const unsub = base44.entities.ConversationParticipant.subscribe((event) => {
+    const unsub = mist.entities.ConversationParticipant.subscribe((event) => {
       const part = event.data;
       if (!part) return;
 
@@ -281,7 +282,7 @@ export function useMistMessaging() {
 
   // ─── Subscribe to Conversation events (last message updates) ─────────────
   useEffect(() => {
-    const unsub = base44.entities.Conversation.subscribe((event) => {
+    const unsub = mist.entities.Conversation.subscribe((event) => {
       const conv = event.data;
       if (!conv) return;
       setConversations((prev) =>
@@ -363,7 +364,7 @@ export function useMistMessaging() {
         last_message_type = "file";
       }
 
-      const created = await base44.entities.DMMessage.create({
+      const created = await mist.entities.DMMessage.create({
         conversation_id: activeConversationId,
         sender_id: userId,
         sender_name: user.full_name || user.email || "You",
@@ -382,7 +383,7 @@ export function useMistMessaging() {
 
       // Update conversation metadata
       const preview = content?.trim() || (image_url ? "📷 Photo" : file_name || "📎 File");
-      await base44.entities.Conversation.update(activeConversationId, {
+      await mist.entities.Conversation.update(activeConversationId, {
         last_message_at: now,
         last_message_preview: preview,
         last_message_sender_name: user.full_name || user.email || "You",
@@ -391,7 +392,7 @@ export function useMistMessaging() {
       });
 
       // Increment unread for other participants
-      await base44.entities.ConversationParticipant.updateMany(
+      await mist.entities.ConversationParticipant.updateMany(
         { conversation_id: activeConversationId, user_id: { $ne: userId } },
         { $inc: { unread_count: 1 } }
       ).catch(() => {});
@@ -414,14 +415,14 @@ export function useMistMessaging() {
 
     try {
       const now = new Date().toISOString();
-      const conv = await base44.entities.Conversation.create({
+      const conv = await mist.entities.Conversation.create({
         type: "direct",
         created_by: userId,
         created_by_name: user.full_name || user.email || "You",
         last_message_at: now,
       });
 
-      await base44.entities.ConversationParticipant.bulkCreate([
+      await mist.entities.ConversationParticipant.bulkCreate([
         {
           conversation_id: conv.id,
           user_id: userId,
@@ -459,7 +460,7 @@ export function useMistMessaging() {
     if (!userId) return null;
     try {
       const now = new Date().toISOString();
-      const conv = await base44.entities.Conversation.create({
+      const conv = await mist.entities.Conversation.create({
         type: "group",
         title,
         created_by: userId,
@@ -492,7 +493,7 @@ export function useMistMessaging() {
         })),
       ];
 
-      await base44.entities.ConversationParticipant.bulkCreate(allParts);
+      await mist.entities.ConversationParticipant.bulkCreate(allParts);
       await loadConversations();
       return conv.id;
     } catch (err) {
@@ -514,7 +515,7 @@ export function useMistMessaging() {
     try {
       const myPart = conv.participants.find((p) => p.user_id === userId);
       if (myPart) {
-        await base44.entities.ConversationParticipant.update(myPart.id, {
+        await mist.entities.ConversationParticipant.update(myPart.id, {
           unread_count: 0,
           last_read_at: new Date().toISOString(),
         });
@@ -531,7 +532,7 @@ export function useMistMessaging() {
     setConversations((prev) => prev.map((c) => (c.id === convId ? { ...c, isPinned: newPinned } : c)));
     try {
       const myPart = conv.participants.find((p) => p.user_id === userId);
-      if (myPart) await base44.entities.ConversationParticipant.update(myPart.id, { is_pinned: newPinned });
+      if (myPart) await mist.entities.ConversationParticipant.update(myPart.id, { is_pinned: newPinned });
     } catch {}
   }, [userId]);
 
@@ -544,7 +545,7 @@ export function useMistMessaging() {
     setConversations((prev) => prev.map((c) => (c.id === convId ? { ...c, isArchived: newArchived } : c)));
     try {
       const myPart = conv.participants.find((p) => p.user_id === userId);
-      if (myPart) await base44.entities.ConversationParticipant.update(myPart.id, { is_archived: newArchived });
+      if (myPart) await mist.entities.ConversationParticipant.update(myPart.id, { is_archived: newArchived });
     } catch {}
   }, [userId]);
 
@@ -557,7 +558,7 @@ export function useMistMessaging() {
     setConversations((prev) => prev.map((c) => (c.id === convId ? { ...c, isMuted: newMuted } : c)));
     try {
       const myPart = conv.participants.find((p) => p.user_id === userId);
-      if (myPart) await base44.entities.ConversationParticipant.update(myPart.id, { is_muted: newMuted });
+      if (myPart) await mist.entities.ConversationParticipant.update(myPart.id, { is_muted: newMuted });
     } catch {}
   }, [userId]);
 
@@ -565,7 +566,7 @@ export function useMistMessaging() {
   const deleteMessage = useCallback(async (messageId) => {
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, is_deleted: true, content: "" } : m)));
     try {
-      await base44.entities.DMMessage.update(messageId, { is_deleted: true, content: "" });
+      await mist.entities.DMMessage.update(messageId, { is_deleted: true, content: "" });
     } catch {}
   }, []);
 
@@ -573,7 +574,7 @@ export function useMistMessaging() {
   const editMessage = useCallback(async (messageId, newContent) => {
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, content: newContent, edited_at: new Date().toISOString() } : m)));
     try {
-      await base44.entities.DMMessage.update(messageId, { content: newContent, edited_at: new Date().toISOString() });
+      await mist.entities.DMMessage.update(messageId, { content: newContent, edited_at: new Date().toISOString() });
     } catch {}
   }, []);
 
@@ -581,7 +582,7 @@ export function useMistMessaging() {
   const blockUser = useCallback(async (blockedUserId, blockedUserName, blockedUserAvatar) => {
     if (!userId) return;
     try {
-      await base44.entities.BlockedUser.create({
+      await mist.entities.BlockedUser.create({
         user_id: userId,
         blocked_user_id: blockedUserId,
         blocked_user_name: blockedUserName,
@@ -596,8 +597,8 @@ export function useMistMessaging() {
   const unblockUser = useCallback(async (blockedUserId) => {
     if (!userId) return;
     try {
-      const records = await base44.entities.BlockedUser.filter({ user_id: userId, blocked_user_id: blockedUserId });
-      await Promise.all(records.map((r) => base44.entities.BlockedUser.delete(r.id)));
+      const records = await mist.entities.BlockedUser.filter({ user_id: userId, blocked_user_id: blockedUserId });
+      await Promise.all(records.map((r) => mist.entities.BlockedUser.delete(r.id)));
       loadBlockedUsers();
     } catch {}
   }, [userId, loadBlockedUsers]);
@@ -613,7 +614,7 @@ export function useMistMessaging() {
     if (!conv) return;
     const myPart = conv.participants.find((p) => p.user_id === userId);
     if (myPart) {
-      base44.entities.ConversationParticipant.update(myPart.id, {
+      mist.entities.ConversationParticipant.update(myPart.id, {
         typing_at: new Date().toISOString(),
       }).catch(() => {});
     }
@@ -627,7 +628,7 @@ export function useMistMessaging() {
     const myPart = conv.participants.find((p) => p.user_id === userId);
     if (myPart) {
       try {
-        await base44.entities.ConversationParticipant.delete(myPart.id);
+        await mist.entities.ConversationParticipant.delete(myPart.id);
         setActiveConversationId(null);
         loadConversations();
       } catch {}

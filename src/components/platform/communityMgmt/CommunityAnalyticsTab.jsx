@@ -1,16 +1,16 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import AdminStatCard from "@/components/platform/AdminStatCard";
 import { Users, ShieldCheck, MessageSquare, CalendarClock, RadioTower, Radio } from "lucide-react";
 
 export default function CommunityAnalyticsTab({ community, members }) {
-  const { data: threads = [] } = useQuery({ queryKey: ["cm-analytics", "threads", community.id], queryFn: async () => (await base44.entities.ForumThread.filter({ community_id: community.id }, "-created_date", 500)) || [] });
-  const { data: posts = [] } = useQuery({ queryKey: ["cm-analytics", "posts", community.id], queryFn: async () => (await base44.entities.ForumPost.list("-created_date", 1000)) || [] });
-  const { data: events = [] } = useQuery({ queryKey: ["cm-analytics", "events", community.id], queryFn: async () => (await base44.entities.Event.filter({ community_id: community.id }, "-created_date", 500)) || [] });
-  const { data: repeaters = [] } = useQuery({ queryKey: ["cm-analytics", "repeaters", community.id], queryFn: async () => (await base44.entities.Repeater.filter({ community_id: community.id }, "-created_date", 500)) || [] });
-  const { data: nets = [] } = useQuery({ queryKey: ["cm-analytics", "nets", community.id], queryFn: async () => (await base44.entities.Net.filter({ community_id: community.id }, "-created_date", 500)) || [] });
+  const { data: threads = [] } = useQuery({ queryKey: ["cm-analytics", "threads", community.id], queryFn: async () => (await mist.entities.ForumThread.filter({ community_id: community.id }, "-created_date", 500)) || [] });
+  const { data: posts = [] } = useQuery({ queryKey: ["cm-analytics", "posts", community.id], queryFn: async () => (await mist.entities.ForumPost.list("-created_date", 1000)) || [] });
+  const { data: events = [] } = useQuery({ queryKey: ["cm-analytics", "events", community.id], queryFn: async () => (await mist.entities.Event.filter({ community_id: community.id }, "-created_date", 500)) || [] });
+  const { data: repeaters = [] } = useQuery({ queryKey: ["cm-analytics", "repeaters", community.id], queryFn: async () => (await mist.entities.Repeater.filter({ community_id: community.id }, "-created_date", 500)) || [] });
+  const { data: nets = [] } = useQuery({ queryKey: ["cm-analytics", "nets", community.id], queryFn: async () => (await mist.entities.Net.filter({ community_id: community.id }, "-created_date", 500)) || [] });
 
   const activeMembers = members.filter((m) => m.status === "active").length;
   const mods = members.filter((m) => m.role === "moderator" || m.role === "community_admin" || m.role === "community_owner").length;

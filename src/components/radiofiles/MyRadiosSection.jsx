@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useMistUser } from '@/hooks/useMistUser';
 import { fetchUserRadios } from '@/lib/radioFiles';
 import RadioModelSelect from './RadioModelSelect';
@@ -30,7 +30,7 @@ export default function MyRadiosSection({ userId, isSelf }) {
     if (!model.radio_model_id) return;
     setSaving(true);
     try {
-      await base44.entities.UserRadio.create({
+      await mist.entities.UserRadio.create({
         user_id: user.id,
         user_name: user.full_name || '',
         radio_model_id: model.radio_model_id,
@@ -46,7 +46,7 @@ export default function MyRadiosSection({ userId, isSelf }) {
   };
 
   const removeRadio = async (id) => {
-    try { await base44.entities.UserRadio.delete(id); qc.invalidateQueries({ queryKey: ['my-radios', userId] }); } catch (e) { console.error(e); }
+    try { await mist.entities.UserRadio.delete(id); qc.invalidateQueries({ queryKey: ['my-radios', userId] }); } catch (e) { console.error(e); }
   };
 
   return (

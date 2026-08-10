@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 
 /**
@@ -10,7 +10,7 @@ export default function AdminBadge({ size = "sm" }) {
   const { data: count = 0 } = useQuery({
     queryKey: ['admin-badge-count'],
     queryFn: async () => {
-      const alerts = await base44.entities.Alert.filter({ is_read: false });
+      const alerts = await mist.entities.Alert.filter({ is_read: false });
       return alerts.length;
     },
     refetchInterval: 60000,

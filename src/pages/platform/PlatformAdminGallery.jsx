@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Trash2, ImageOff } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
@@ -16,7 +16,7 @@ export default function PlatformAdminGallery() {
 
   const { data } = useQuery({
     queryKey: ["admin-gallery"],
-    queryFn: async () => await base44.entities.GatheringPhoto.list(200),
+    queryFn: async () => await mist.entities.GatheringPhoto.list(200),
     refetchInterval: 60000,
   });
   const rows = data || [];
@@ -25,7 +25,7 @@ export default function PlatformAdminGallery() {
     if (!toDelete) return;
     setDeleting(true);
     try {
-      await base44.entities.GatheringPhoto.delete(toDelete.id);
+      await mist.entities.GatheringPhoto.delete(toDelete.id);
       toast({ title: "Photo deleted" });
       qc.invalidateQueries(["admin-gallery"]);
     } catch (e) {
@@ -39,7 +39,7 @@ export default function PlatformAdminGallery() {
   const bulkDelete = async (selected) => {
     if (!selected.length) return;
     for (const r of selected) {
-      try { await base44.entities.GatheringPhoto.delete(r.id); } catch (e) { /* ignore */ }
+      try { await mist.entities.GatheringPhoto.delete(r.id); } catch (e) { /* ignore */ }
     }
     toast({ title: `${selected.length} photo(s) deleted` });
     qc.invalidateQueries(["admin-gallery"]);

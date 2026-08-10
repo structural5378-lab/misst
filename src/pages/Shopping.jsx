@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { ShoppingBag, Plus, ExternalLink, DollarSign, Tag, User, Filter, Search, ShoppingCart, TrendingUp, Clock, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,12 +47,12 @@ export default function Shopping() {
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["marketplaceItems"],
-    queryFn: () => base44.entities.MarketplaceItem.list("-posted_date", 50),
+    queryFn: () => mist.entities.MarketplaceItem.list("-posted_date", 50),
   });
 
   const addMutation = useMutation({
     mutationFn: async (newItem) => {
-      return base44.entities.MarketplaceItem.create({
+      return mist.entities.MarketplaceItem.create({
         ...newItem,
         posted_date: new Date().toISOString(),
       });

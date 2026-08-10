@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useMistUser } from '@/hooks/useMistUser';
 
 // useLightningProximity — fetches the current user's LightningAlertSettings
@@ -15,7 +15,7 @@ export function useLightningProximity() {
     queryKey: ['lightning-alert-settings', userId],
     queryFn: async () => {
       if (!userId) return null;
-      const rows = await base44.entities.LightningAlertSettings.filter({ user_id: userId });
+      const rows = await mist.entities.LightningAlertSettings.filter({ user_id: userId });
       return rows?.[0] || null;
     },
     enabled: !!userId,

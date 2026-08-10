@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useMistUser } from '@/hooks/useMistUser';
 import { useToast } from '@/components/ui/use-toast';
 import { ArrowLeft, Zap, Star, Gem, ShieldCheck, Crown, Lock, Bolt, RotateCcw, Sparkles, Search, Heart, Gift } from 'lucide-react';
@@ -67,11 +68,11 @@ export default function PremiumBadges() {
 
   const { data: badges = [], isLoading } = useQuery({
     queryKey: ['premium-badges'],
-    queryFn: () => base44.entities.PremiumBadge.filter({ is_enabled: true, is_hidden: false }, '-display_priority', 200),
+    queryFn: () => mist.entities.PremiumBadge.filter({ is_enabled: true, is_hidden: false }, '-display_priority', 200),
   });
   const { data: ownership = [] } = useQuery({
     queryKey: ['premium-badge-ownership'],
-    queryFn: () => base44.entities.PremiumBadgeOwnership.filter({ user_id: mistUser?.id, status: 'active' }),
+    queryFn: () => mist.entities.PremiumBadgeOwnership.filter({ user_id: mistUser?.id, status: 'active' }),
     enabled: !!mistUser?.id,
   });
 
@@ -140,8 +141,8 @@ export default function PremiumBadges() {
 
   const handleSetActive = async (ownershipId) => {
     try {
-      for (const o of ownership) if (o.is_active) await base44.entities.PremiumBadgeOwnership.update(o.id, { is_active: false });
-      await base44.entities.PremiumBadgeOwnership.update(ownershipId, { is_active: true });
+      for (const o of ownership) if (o.is_active) await mist.entities.PremiumBadgeOwnership.update(o.id, { is_active: false });
+      await mist.entities.PremiumBadgeOwnership.update(ownershipId, { is_active: true });
       qc.invalidateQueries({ queryKey: ['premium-badge-ownership'] });
       qc.invalidateQueries({ queryKey: ['active-badge'] });
       toast({ title: 'Active badge updated' });

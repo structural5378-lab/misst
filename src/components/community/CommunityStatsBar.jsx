@@ -1,17 +1,17 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { MessageSquare, FileText, Users, Wifi } from "lucide-react";
 
 export default function CommunityStatsBar({ threads = [] }) {
   const { data: members = 0 } = useQuery({
     queryKey: ["forum-member-total"],
-    queryFn: async () => (await base44.entities.User.list("-created_date", 500)).length,
+    queryFn: async () => (await mist.entities.User.list("-created_date", 500)).length,
     staleTime: 120000,
   });
   const { data: online = [] } = useQuery({
     queryKey: ["forum-online-presence"],
-    queryFn: () => base44.entities.UserPresence.filter({ status: "online" }),
+    queryFn: () => mist.entities.UserPresence.filter({ status: "online" }),
     staleTime: 15000,
   });
   const posts = threads.reduce((s, t) => s + (t.reply_count || 0), 0);

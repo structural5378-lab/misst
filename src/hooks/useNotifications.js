@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useAuth } from "@/lib/AuthContext";
 
 // useNotifications — React Query interface to the MIST Notification entity.
@@ -15,7 +15,7 @@ export function useNotifications() {
   const listQ = useQuery({
     queryKey: ["notifications", user?.id, pageSize],
     queryFn: () =>
-      base44.entities.Notification.filter({ recipient_id: user.id }, "-created_date", pageSize),
+      mist.entities.Notification.filter({ recipient_id: user.id }, "-created_date", pageSize),
     enabled: !!user?.id,
     staleTime: 15000,
   });
@@ -23,7 +23,7 @@ export function useNotifications() {
   const unreadQ = useQuery({
     queryKey: ["notifications-unread", user?.id],
     queryFn: async () => {
-      const items = await base44.entities.Notification.filter(
+      const items = await mist.entities.Notification.filter(
         { recipient_id: user.id, read: false }, "-created_date", 200
       );
       return (items || []).length;
@@ -34,7 +34,7 @@ export function useNotifications() {
 
   useEffect(() => {
     if (!user?.id) return;
-    const unsub = base44.entities.Notification.subscribe((event) => {
+    const unsub = mist.entities.Notification.subscribe((event) => {
       if (event.data?.recipient_id === user.id) {
         listQ.refetch();
         unreadQ.refetch();
@@ -61,13 +61,13 @@ export function useNotifications() {
   const loadMore = () => setPageSize((p) => p + 30);
 
   const markRead = useMutation({
-    mutationFn: (id) => base44.entities.Notification.update(id, { read: true, read_at: new Date().toISOString() }),
+    mutationFn: (id) => mist.entities.Notification.update(id, { read: true, read_at: new Date().toISOString() }),
     onSuccess: () => { qc.invalidateQueries(["notifications"]); qc.invalidateQueries(["notifications-unread"]); },
   });
 
   const markManyRead = useMutation({
     mutationFn: (ids) =>
-      base44.entities.Notification.bulkUpdate(
+      mist.entities.Notification.bulkUpdate(
         ids.map((id) => ({ id, read: true, read_at: new Date().toISOString() }))
       ),
     onSuccess: () => { qc.invalidateQueries(["notifications"]); qc.invalidateQueries(["notifications-unread"]); },
@@ -75,7 +75,7 @@ export function useNotifications() {
 
   const markAllRead = useMutation({
     mutationFn: () =>
-      base44.entities.Notification.updateMany(
+      mist.entities.Notification.updateMany(
         { recipient_id: user.id, read: false },
         { $set: { read: true, read_at: new Date().toISOString() } }
       ),
@@ -83,17 +83,17 @@ export function useNotifications() {
   });
 
   const remove = useMutation({
-    mutationFn: (id) => base44.entities.Notification.delete(id),
+    mutationFn: (id) => mist.entities.Notification.delete(id),
     onSuccess: () => { qc.invalidateQueries(["notifications"]); qc.invalidateQueries(["notifications-unread"]); },
   });
 
   const removeMany = useMutation({
-    mutationFn: async (ids) => { for (const id of ids) await base44.entities.Notification.delete(id); },
+    mutationFn: async (ids) => { for (const id of ids) await mist.entities.Notification.delete(id); },
     onSuccess: () => { qc.invalidateQueries(["notifications"]); qc.invalidateQueries(["notifications-unread"]); },
   });
 
   const deleteAll = useMutation({
-    mutationFn: () => base44.entities.Notification.deleteMany({ recipient_id: user.id }),
+    mutationFn: () => mist.entities.Notification.deleteMany({ recipient_id: user.id }),
     onSuccess: () => { qc.invalidateQueries(["notifications"]); qc.invalidateQueries(["notifications-unread"]); },
   });
 

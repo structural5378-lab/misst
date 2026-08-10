@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Radio, ChevronRight, Plus, Home } from "lucide-react";
 import CreateNetDialog from "@/components/netcontrol/CreateNetDialog";
 
@@ -12,8 +12,8 @@ export default function McvNetPicker() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
-  const { data: nets = [] } = useQuery({ queryKey: ["nets"], queryFn: () => base44.entities.Net.list("-created_date", 200) });
-  const { data: sessions = [] } = useQuery({ queryKey: ["net-sessions-all"], queryFn: () => base44.entities.NetSession.list("-started_at", 50) });
+  const { data: nets = [] } = useQuery({ queryKey: ["nets"], queryFn: () => mist.entities.Net.list("-created_date", 200) });
+  const { data: sessions = [] } = useQuery({ queryKey: ["net-sessions-all"], queryFn: () => mist.entities.NetSession.list("-started_at", 50) });
   const activeIds = new Set((sessions || []).filter((s) => s.status === "active" || s.status === "paused").map((s) => s.net_id));
   const open = (nets || []).filter((n) => n.status !== "archived");
 

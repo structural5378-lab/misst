@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +56,7 @@ export default function PlatformAdminRadioScope() {
   });
   const { data: activity = [] } = useQuery({
     queryKey: ["repeater-activity"],
-    queryFn: async () => (await base44.entities.PlatformAuditLog.filter({ target_type: "repeater" }, "-created_date", 8)) || [],
+    queryFn: async () => (await mist.entities.PlatformAuditLog.filter({ target_type: "repeater" }, "-created_date", 8)) || [],
     staleTime: 30000,
   });
   const { data: geofences = [], refetch: refetchGeofences } = useQuery({

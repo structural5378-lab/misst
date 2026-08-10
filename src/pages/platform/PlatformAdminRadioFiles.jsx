@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ShieldCheck, Star, EyeOff, Eye, Trash2, Users, Search } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatSize, fileExt } from '@/lib/radioFiles';
@@ -16,8 +16,8 @@ export default function PlatformAdminRadioFiles() {
   const [q, setQ] = useState('');
   const [mfr, setMfr] = useState('');
 
-  const { data: files = [] } = useQuery({ queryKey: ['admin-radio-files'], queryFn: () => base44.entities.RadioFile.list('-created_date', 500), staleTime: 30000 });
-  const { data: manufacturers = [] } = useQuery({ queryKey: ['radio-manufacturers'], queryFn: () => base44.entities.RadioManufacturer.list(500), staleTime: 60000 });
+  const { data: files = [] } = useQuery({ queryKey: ['admin-radio-files'], queryFn: () => mist.entities.RadioFile.list('-created_date', 500), staleTime: 30000 });
+  const { data: manufacturers = [] } = useQuery({ queryKey: ['radio-manufacturers'], queryFn: () => mist.entities.RadioManufacturer.list(500), staleTime: 60000 });
 
   const mfrName = manufacturers.find((m) => m.id === mfr)?.name || '';
   const filtered = useMemo(() => {
@@ -28,8 +28,8 @@ export default function PlatformAdminRadioFiles() {
     return list;
   }, [files, q, mfrName]);
 
-  const set = async (id, field, val) => { await base44.entities.RadioFile.update(id, { [field]: val }); qc.invalidateQueries({ queryKey: ['admin-radio-files'] }); };
-  const del = async (id) => { if (!confirm('Soft-delete this file?')) return; await base44.entities.RadioFile.update(id, { deleted: true, file_url: '' }); qc.invalidateQueries({ queryKey: ['admin-radio-files'] }); };
+  const set = async (id, field, val) => { await mist.entities.RadioFile.update(id, { [field]: val }); qc.invalidateQueries({ queryKey: ['admin-radio-files'] }); };
+  const del = async (id) => { if (!confirm('Soft-delete this file?')) return; await mist.entities.RadioFile.update(id, { deleted: true, file_url: '' }); qc.invalidateQueries({ queryKey: ['admin-radio-files'] }); };
 
   return (
     <div className="space-y-4">

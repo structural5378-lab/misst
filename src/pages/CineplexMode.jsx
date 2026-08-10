@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useMembersSearch } from "@/hooks/useMembersSearch";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -313,7 +313,7 @@ export default function CineplexMode() {
 
   const { data: repeaters = [] } = useQuery({
     queryKey: ["repeaters-map"],
-    queryFn: () => base44.entities.Repeater.list(),
+    queryFn: () => mist.entities.Repeater.list(),
     staleTime: 300000,
   });
 
@@ -327,7 +327,7 @@ export default function CineplexMode() {
     if (!sessionId) return;
 
     const joinSession = async () => {
-      const sessions = await base44.entities.LocationShare.filter({ id: sessionId });
+      const sessions = await mist.entities.LocationShare.filter({ id: sessionId });
       const s = sessions[0];
       if (!s || s.status !== "active") return;
       setSession(s);
@@ -352,7 +352,7 @@ export default function CineplexMode() {
         const field = isInitiator
           ? { initiator_lat: lat, initiator_lon: lon }
           : { target_lat: lat, target_lon: lon };
-        await base44.entities.LocationShare.update(sessionId, field);
+        await mist.entities.LocationShare.update(sessionId, field);
       },
       (err) => { console.warn("GPS error:", err.message); },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
@@ -376,7 +376,7 @@ export default function CineplexMode() {
   const prevStatusRef = useRef(null);
 
   const pollSession = async (sessionId, isInitiator) => {
-    const sessions = await base44.entities.LocationShare.filter({ id: sessionId });
+    const sessions = await mist.entities.LocationShare.filter({ id: sessionId });
     const s = sessions[0];
     if (!s) return;
     const prev = prevStatusRef.current;
@@ -399,7 +399,7 @@ export default function CineplexMode() {
 
   // Subscribe to real-time updates
   useEffect(() => {
-    const unsub = base44.entities.LocationShare.subscribe((event) => {
+    const unsub = mist.entities.LocationShare.subscribe((event) => {
       if (session && event.data?.id === session.id) {
         const next = event.data;
         const isInitiator = session.initiator_uid === myUID;
@@ -416,7 +416,7 @@ export default function CineplexMode() {
   // Check for incoming requests on mount
   useEffect(() => {
     const checkIncoming = async () => {
-      const pending = await base44.entities.LocationShare.filter({ target_uid: myUID, status: "pending" });
+      const pending = await mist.entities.LocationShare.filter({ target_uid: myUID, status: "pending" });
       if (pending.length > 0) {
         setSession(pending[0]);
         setStep("incoming");
@@ -428,7 +428,7 @@ export default function CineplexMode() {
   const handleSelect = async (member) => {
     const now = new Date();
     const expires = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString();
-    const s = await base44.entities.LocationShare.create({
+    const s = await mist.entities.LocationShare.create({
       initiator_uid: String(myUID),
       initiator_username: mistUser.displayName || mistUser.username || "MIST Member",
       initiator_avatar: mistUser.avatarUrl || "",
@@ -445,7 +445,7 @@ export default function CineplexMode() {
   };
 
   const handleAccept = async () => {
-    await base44.entities.LocationShare.update(session.id, { status: "active" });
+    await mist.entities.LocationShare.update(session.id, { status: "active" });
     setSession(prev => ({ ...prev, status: "active" }));
     setStep("live");
     startGPS(session.id, false);
@@ -453,19 +453,19 @@ export default function CineplexMode() {
   };
 
   const handleDecline = async () => {
-    await base44.entities.LocationShare.update(session.id, { status: "declined" });
+    await mist.entities.LocationShare.update(session.id, { status: "declined" });
     setSession(null);
     setStep("pick");
   };
 
   const handleCancel = async () => {
-    if (session) await base44.entities.LocationShare.update(session.id, { status: "ended" });
+    if (session) await mist.entities.LocationShare.update(session.id, { status: "ended" });
     handleEnd(false);
   };
 
   const handleEnd = (updateDB = true) => {
     if (updateDB && session) {
-      base44.entities.LocationShare.update(session.id, { status: "ended" }).catch(() => {});
+      mist.entities.LocationShare.update(session.id, { status: "ended" }).catch(() => {});
     }
     stopGPS();
     stopPolling();

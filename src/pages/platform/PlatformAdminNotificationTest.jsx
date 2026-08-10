@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { Send, Copy, Eye, EyeOff, Loader2, CheckCircle, XCircle, Radio } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
@@ -25,8 +26,8 @@ export default function PlatformAdminNotificationTest() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
 
-  const { data: users = [] } = useQuery({ queryKey: ["admin-users-test"], queryFn: () => base44.entities.User.list("-created_date", 200) });
-  const { data: communities = [] } = useQuery({ queryKey: ["admin-communities-test"], queryFn: () => base44.entities.Community.list("-created_date", 200) });
+  const { data: users = [] } = useQuery({ queryKey: ["admin-users-test"], queryFn: () => mist.entities.User.list("-created_date", 200) });
+  const { data: communities = [] } = useQuery({ queryKey: ["admin-communities-test"], queryFn: () => mist.entities.Community.list("-created_date", 200) });
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const meta = NOTIF_FILTERS.find((f) => f.id === form.type) || {};

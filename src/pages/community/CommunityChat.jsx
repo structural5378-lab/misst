@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCommunity } from '@/contexts/CommunityContext';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useCommunityContent } from '@/hooks/useCommunityContent';
 import { Send } from 'lucide-react';
 
@@ -39,13 +39,13 @@ export default function CommunityChat() {
     const sync = async () => {
       try {
         const now = new Date().toISOString();
-        const mine = await base44.entities.ChatPresence.filter({ user_uid: uid }, "-last_active", 5);
+        const mine = await mist.entities.ChatPresence.filter({ user_uid: uid }, "-last_active", 5);
         if (mine.length) {
-          await base44.entities.ChatPresence.update(mine[0].id, { active_chat_community_id: community.id, last_active: now, status: "online" });
+          await mist.entities.ChatPresence.update(mine[0].id, { active_chat_community_id: community.id, last_active: now, status: "online" });
         } else {
-          await base44.entities.ChatPresence.create({ user_uid: uid, user_name: permissions.user?.full_name || "User", active_chat_community_id: community.id, last_active: now, status: "online" });
+          await mist.entities.ChatPresence.create({ user_uid: uid, user_name: permissions.user?.full_name || "User", active_chat_community_id: community.id, last_active: now, status: "online" });
         }
-        await base44.entities.Notification.updateMany(
+        await mist.entities.Notification.updateMany(
           { recipient_id: uid, type: "community_chat", community_id: community.id, read: false },
           { $set: { read: true, read_at: now } }
         );
@@ -59,9 +59,9 @@ export default function CommunityChat() {
       clearInterval(heartbeat);
       (async () => {
         try {
-          const mine = await base44.entities.ChatPresence.filter({ user_uid: uid }, "-last_active", 5);
+          const mine = await mist.entities.ChatPresence.filter({ user_uid: uid }, "-last_active", 5);
           if (mine.length && mine[0].active_chat_community_id === community.id) {
-            await base44.entities.ChatPresence.update(mine[0].id, { active_chat_community_id: "" });
+            await mist.entities.ChatPresence.update(mine[0].id, { active_chat_community_id: "" });
           }
         } catch { /* best-effort */ }
       })();
@@ -78,7 +78,7 @@ export default function CommunityChat() {
     const content = input.trim();
     setInput('');
     try {
-      await base44.entities.ChatMessage.create({
+      await mist.entities.ChatMessage.create({
         sender_uid: permissions.user?.id,
         sender_name: permissions.user?.full_name || permissions.user?.email,
         community_id: community.id,

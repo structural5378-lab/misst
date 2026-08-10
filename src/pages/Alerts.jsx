@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Info, AlertTriangle, Radio, Settings, Trash2 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
@@ -29,7 +29,7 @@ export default function Alerts() {
   const { data: alerts, isLoading } = useQuery({
     queryKey: ["alerts"],
     queryFn: async () => {
-      const all = await base44.entities.Alert.list("-created_date", 50);
+      const all = await mist.entities.Alert.list("-created_date", 50);
       return all.filter(a => !a.title?.startsWith("__"));
     },
     initialData: [],
@@ -37,7 +37,7 @@ export default function Alerts() {
 
   const handleMarkAllRead = async () => {
     const unread = alerts.filter(a => !a.is_read);
-    await Promise.all(unread.map(a => base44.entities.Alert.update(a.id, { is_read: true })));
+    await Promise.all(unread.map(a => mist.entities.Alert.update(a.id, { is_read: true })));
     queryClient.invalidateQueries({ queryKey: ["alerts"] });
     queryClient.invalidateQueries({ queryKey: ["unread-alerts-badge"] });
   };
@@ -46,7 +46,7 @@ export default function Alerts() {
     if (deletingIds.has(id)) return;
     setDeletingIds(prev => new Set(prev).add(id));
     try {
-      await base44.entities.Alert.delete(id);
+      await mist.entities.Alert.delete(id);
       queryClient.invalidateQueries({ queryKey: ["alerts"] });
     } catch {
       setDeletingIds(prev => { const s = new Set(prev); s.delete(id); return s; });

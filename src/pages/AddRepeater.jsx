@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PageHeader from "@/components/layout/PageHeader";
@@ -44,7 +44,7 @@ export default function AddRepeater() {
     e.preventDefault();
     if (!form.callsign || !form.frequency) return;
     setSaving(true);
-    await base44.entities.Repeater.create({
+    await mist.entities.Repeater.create({
       ...form,
       frequency: parseFloat(form.frequency),
       latitude: form.latitude ? parseFloat(form.latitude) : undefined,

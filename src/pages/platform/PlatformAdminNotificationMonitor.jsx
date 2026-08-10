@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { usePollingGate } from "@/hooks/usePollingGate";
 import { Activity, Zap, AlertTriangle, RotateCw, Cpu, Radio, Gauge, Loader2 } from "lucide-react";
@@ -31,12 +32,12 @@ export default function PlatformAdminNotificationMonitor() {
   useEffect(() => {
     (async () => {
       try {
-        const seed = await base44.entities.NotificationDelivery.filter({}, "-created_date", 30);
+        const seed = await mist.entities.NotificationDelivery.filter({}, "-created_date", 30);
         feedRef.current = seed || [];
         setFeed([...feedRef.current]);
       } catch { /* ignore */ }
     })();
-    const unsub = base44.entities.NotificationDelivery.subscribe((event) => {
+    const unsub = mist.entities.NotificationDelivery.subscribe((event) => {
       const d = event.data;
       if (!d) return;
       feedRef.current = [d, ...feedRef.current].slice(0, 60);

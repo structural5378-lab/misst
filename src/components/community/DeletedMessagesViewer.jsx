@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Search, Download, Trash2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 
 // DeletedMessagesViewer — admin-only viewer for soft-deleted community chat
@@ -39,7 +40,7 @@ export default function DeletedMessagesViewer({ community }) {
   }, [community.id, search, roomId, dateFrom, dateTo, toast]);
 
   useEffect(() => {
-    base44.entities.ChatV2Room.filter({ community_id: community.id }, "order", 200)
+    mist.entities.ChatV2Room.filter({ community_id: community.id }, "order", 200)
       .then((r) => setRooms(r || [])).catch(() => {});
   }, [community.id]);
 

@@ -6,7 +6,7 @@ import { useChatV2Presence } from "@/hooks/useChatV2Presence";
 import { useConversationsV2 } from "@/hooks/useConversationsV2";
 import { useActiveCommunity } from "@/hooks/useActiveCommunity";
 import { useCommunityRooms } from "@/hooks/useCommunityRooms";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import CommunityList from "@/components/messages/v3/CommunityList";
 import CommunityConversation from "@/components/messages/v3/CommunityConversation";
 import CommunitySections from "@/components/messages/v3/CommunitySections";
@@ -40,7 +40,7 @@ export default function Messages() {
     if (!community?.id || !mistUser?.id) { setMembers([]); setMyMember(null); return; }
     let active = true;
     (async () => {
-      const m = await base44.entities.CommunityMember.filter({ community_id: community.id, status: "active" }, "-joined_date", 500).catch(() => []);
+      const m = await mist.entities.CommunityMember.filter({ community_id: community.id, status: "active" }, "-joined_date", 500).catch(() => []);
       if (!active) return;
       setMembers(m || []);
       setMyMember((m || []).find((x) => x.user_id === mistUser.id) || null);
@@ -126,7 +126,7 @@ export default function Messages() {
             user={mistUser} presenceByUser={presence.presenceByUser} setTyping={presence.setTyping}
             setActiveConversation={presence.setActiveConversation} online={presence.online} reconnecting={presence.reconnecting}
             onBack={() => setMobileList(true)}
-            onToggleMute={async () => { try { await base44.entities.ChatV2Participant.update(dmEntry.participant.id, { muted: !dmEntry.participant.muted }); } catch {} }}
+            onToggleMute={async () => { try { await mist.entities.ChatV2Participant.update(dmEntry.participant.id, { muted: !dmEntry.participant.muted }); } catch {} }}
             forceBack
           />
         ) : (

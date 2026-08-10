@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMistUser } from "@/hooks/useMistUser";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { toast } from "@/components/ui/use-toast";
 import { Signal, Check, X } from "lucide-react";
 
@@ -16,7 +16,7 @@ export default function SimplexRequestPoller() {
     const myUID = String(mybbUser.uid || mybbUser.username || "");
 
     const check = async () => {
-      const pending = await base44.entities.LocationShare.filter({ target_uid: myUID, status: "pending" });
+      const pending = await mist.entities.LocationShare.filter({ target_uid: myUID, status: "pending" });
       for (const req of pending) {
         if (shownRef.current.has(req.id)) continue;
         shownRef.current.add(req.id);
@@ -39,7 +39,7 @@ export default function SimplexRequestPoller() {
                 <button
                   onClick={async () => {
                     dismiss();
-                    await base44.entities.LocationShare.update(req.id, { status: "active" });
+                    await mist.entities.LocationShare.update(req.id, { status: "active" });
                     navigate(`/cineplex?session=${req.id}&role=target`);
                   }}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold transition-colors"
@@ -50,7 +50,7 @@ export default function SimplexRequestPoller() {
                   onClick={async () => {
                     dismiss();
                     shownRef.current.delete(req.id);
-                    await base44.entities.LocationShare.update(req.id, { status: "declined" });
+                    await mist.entities.LocationShare.update(req.id, { status: "declined" });
                   }}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground text-xs font-semibold transition-colors"
                 >

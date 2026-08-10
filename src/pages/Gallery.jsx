@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, Upload, X, ChevronLeft, ChevronRight, Plus, ImageIcon } from "lucide-react";
@@ -96,7 +97,7 @@ function UploadModal({ onClose, onSuccess, uploaderName }) {
     try {
       for (let i = 0; i < files.length; i++) {
         const res = await base44.integrations.Core.UploadFile({ file: files[i] });
-        await base44.entities.GatheringPhoto.create({
+        await mist.entities.GatheringPhoto.create({
           photo_url: res.file_url,
           caption: files.length === 1 ? caption : "",
           gathering_label: gatheringLabel,
@@ -190,7 +191,7 @@ export default function Gallery() {
 
   const { data: photos = [], isLoading } = useQuery({
     queryKey: ["gallery-photos"],
-    queryFn: () => base44.entities.GatheringPhoto.list("-created_date", 200),
+    queryFn: () => mist.entities.GatheringPhoto.list("-created_date", 200),
   });
 
   // Group by gathering_label

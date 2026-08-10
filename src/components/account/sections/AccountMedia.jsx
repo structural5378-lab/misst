@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useMistUser } from "@/hooks/useMistUser";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "../ui";
 import AvatarUploader from "../AvatarUploader";
@@ -12,7 +12,7 @@ export default function AccountMedia() {
   const { user } = useMistUser();
   const { data: gallery = [] } = useQuery({
     queryKey: ["account-gallery", user?.id],
-    queryFn: () => base44.entities.GatheringPhoto.filter({ created_by_id: user.id }, "-created_date", 1),
+    queryFn: () => mist.entities.GatheringPhoto.filter({ created_by_id: user.id }, "-created_date", 1),
     enabled: !!user?.id,
     staleTime: 60000,
   });

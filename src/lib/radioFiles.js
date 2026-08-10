@@ -1,5 +1,6 @@
 import { base44 } from '@/api/base44Client';
 
+import { mist } from '@/api/mist';
 // Radio File Sharing System — shared client helpers, constants, and API wrappers.
 // File-type validation mirrors the backend allowlist (base44/functions/radioFileOps).
 
@@ -36,17 +37,17 @@ export function parseJSON(v, fb) {
 }
 
 // ── API wrappers ────────────────────────────────────────────────────────
-export const fetchManufacturers = () => base44.entities.RadioManufacturer.list(500);
-export const fetchModels = () => base44.entities.RadioModel.list(1000);
+export const fetchManufacturers = () => mist.entities.RadioManufacturer.list(500);
+export const fetchModels = () => mist.entities.RadioModel.list(1000);
 export const fetchUserRadios = (userId) =>
-  base44.entities.UserRadio.filter({ user_id: userId }, '-created_date', 200);
+  mist.entities.UserRadio.filter({ user_id: userId }, '-created_date', 200);
 export const fetchPublicFilesByUser = (userId) =>
-  base44.entities.RadioFile.filter({ uploader_id: userId, visibility: 'public', deleted: false }, '-created_date', 100);
+  mist.entities.RadioFile.filter({ uploader_id: userId, visibility: 'public', deleted: false }, '-created_date', 100);
 export const fetchMyUploads = (userId) =>
-  base44.entities.RadioFile.filter({ uploader_id: userId, deleted: false }, '-created_date', 200);
+  mist.entities.RadioFile.filter({ uploader_id: userId, deleted: false }, '-created_date', 200);
 export const fetchAllPublicFiles = () =>
-  base44.entities.RadioFile.filter({ visibility: 'public', deleted: false }, '-created_date', 500);
-export const fetchFile = (id) => base44.entities.RadioFile.get(id);
+  mist.entities.RadioFile.filter({ visibility: 'public', deleted: false }, '-created_date', 500);
+export const fetchFile = (id) => mist.entities.RadioFile.get(id);
 
 // Files compatible with a user's radios (matched by radio_model_id).
 export async function fetchCompatibleFiles(modelIds) {

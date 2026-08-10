@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Bell, Calendar, Radio, X } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
@@ -15,26 +15,26 @@ export default function PlatformAdminContent() {
 
   const { data: alerts = [] } = useQuery({
     queryKey: ["admin-alerts"],
-    queryFn: async () => await base44.entities.Alert.list("-created_date", 50),
+    queryFn: async () => await mist.entities.Alert.list("-created_date", 50),
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ["admin-events"],
-    queryFn: async () => await base44.entities.Event.list("-created_date", 50),
+    queryFn: async () => await mist.entities.Event.list("-created_date", 50),
   });
 
   const { data: repeaters = [] } = useQuery({
     queryKey: ["admin-repeaters"],
-    queryFn: async () => await base44.entities.Repeater.list("-created_date", 50),
+    queryFn: async () => await mist.entities.Repeater.list("-created_date", 50),
   });
 
   const toggleFeatured = async (r) => {
-    await base44.entities.Repeater.update(r.id, { is_favorite: !r.is_favorite });
+    await mist.entities.Repeater.update(r.id, { is_favorite: !r.is_favorite });
     queryClient.invalidateQueries(["admin-repeaters"]);
   };
 
-  const deleteAlert = async (id) => { await base44.entities.Alert.delete(id); queryClient.invalidateQueries(["admin-alerts"]); };
-  const deleteEvent = async (id) => { await base44.entities.Event.delete(id); queryClient.invalidateQueries(["admin-events"]); };
+  const deleteAlert = async (id) => { await mist.entities.Alert.delete(id); queryClient.invalidateQueries(["admin-alerts"]); };
+  const deleteEvent = async (id) => { await mist.entities.Event.delete(id); queryClient.invalidateQueries(["admin-events"]); };
 
   return (
     <AdminSection title="Content Manager" description="Manage alerts, events, and featured content across the platform">
@@ -127,9 +127,9 @@ function CreateModal({ type, onClose, onCreated }) {
     setSaving(true);
     try {
       if (type === "alert") {
-        await base44.entities.Alert.create({ title: form.title || "Untitled", message: form.message || "", type: form.type || "info", community_id: "platform", community_name: "MIST Platform" });
+        await mist.entities.Alert.create({ title: form.title || "Untitled", message: form.message || "", type: form.type || "info", community_id: "platform", community_name: "MIST Platform" });
       } else {
-        await base44.entities.Event.create({ title: form.title || "Untitled", description: form.description || "", event_time: form.event_time || new Date().toISOString(), location: form.location || "", community_id: "platform", community_name: "MIST Platform" });
+        await mist.entities.Event.create({ title: form.title || "Untitled", description: form.description || "", event_time: form.event_time || new Date().toISOString(), location: form.location || "", community_id: "platform", community_name: "MIST Platform" });
       }
       onCreated();
       onClose();

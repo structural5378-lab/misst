@@ -3,8 +3,7 @@ import { Radio, Users, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useMistUser } from "@/hooks/useMistUser";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 export default function NetCard({ net, onDeleted }) {
   const { mybbUser } = useMistUser();
   const canControl = mybbUser?.role === "admin" || mybbUser?.role === "moderator";
@@ -13,7 +12,7 @@ export default function NetCard({ net, onDeleted }) {
 
   const handleDelete = async () => {
     setDeleting(true);
-    await base44.entities.Net.delete(net.id);
+    await mist.entities.Net.delete(net.id);
     onDeleted?.();
   };
   return (

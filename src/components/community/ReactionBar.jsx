@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Smile, Plus } from "lucide-react";
 import { parseJSON, REACTION_EMOJIS } from "@/lib/forumUtils";
 
@@ -18,7 +18,7 @@ export default function ReactionBar({ post, user, onUpdate }) {
     else list.push(user.id);
     updated[type] = list;
     try {
-      await base44.entities.ForumPost.update(post.id, { reactions: JSON.stringify(updated) });
+      await mist.entities.ForumPost.update(post.id, { reactions: JSON.stringify(updated) });
       onUpdate?.();
     } catch {}
     setOpen(false);

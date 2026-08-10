@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Trash2, EyeOff, CheckCircle2 } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
@@ -16,14 +16,14 @@ export default function PlatformAdminMarketplace() {
 
   const { data } = useQuery({
     queryKey: ["admin-marketplace"],
-    queryFn: async () => await base44.entities.MarketplaceItem.list(200),
+    queryFn: async () => await mist.entities.MarketplaceItem.list(200),
     refetchInterval: 60000,
   });
   const rows = data || [];
 
   const toggleAvail = async (r) => {
     try {
-      await base44.entities.MarketplaceItem.update(r.id, { is_available: !r.is_available });
+      await mist.entities.MarketplaceItem.update(r.id, { is_available: !r.is_available });
       toast({ title: r.is_available ? "Listing disabled" : "Listing enabled" });
       qc.invalidateQueries(["admin-marketplace"]);
     } catch (e) {
@@ -35,7 +35,7 @@ export default function PlatformAdminMarketplace() {
     if (!toDelete) return;
     setDeleting(true);
     try {
-      await base44.entities.MarketplaceItem.delete(toDelete.id);
+      await mist.entities.MarketplaceItem.delete(toDelete.id);
       toast({ title: "Listing deleted" });
       qc.invalidateQueries(["admin-marketplace"]);
     } catch (e) {
@@ -49,7 +49,7 @@ export default function PlatformAdminMarketplace() {
   const bulkDelete = async (selected) => {
     if (!selected.length) return;
     for (const r of selected) {
-      try { await base44.entities.MarketplaceItem.delete(r.id); } catch (e) { /* ignore */ }
+      try { await mist.entities.MarketplaceItem.delete(r.id); } catch (e) { /* ignore */ }
     }
     toast({ title: `${selected.length} listing(s) deleted` });
     qc.invalidateQueries(["admin-marketplace"]);

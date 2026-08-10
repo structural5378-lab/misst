@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useCommunityOnlineMembers } from "@/hooks/useCommunityOnlineMembers";
 import {
   MessageSquare, Reply, Users, Pin, Flame, Activity, ChevronDown,
@@ -27,12 +27,12 @@ function Widget({ id, title, icon: Icon, collapsed, onToggle, children }) {
 export function StatsWidget({ collapsed, onToggle, communityId }) {
   const { data: threads = [] } = useQuery({
     queryKey: ["forum-threads"],
-    queryFn: () => base44.entities.ForumThread.filter({ is_deleted: false }, "-last_reply_date", 100),
+    queryFn: () => mist.entities.ForumThread.filter({ is_deleted: false }, "-last_reply_date", 100),
     staleTime: 30000,
   });
   const { data: categories = [] } = useQuery({
     queryKey: ["forum-categories"],
-    queryFn: () => base44.entities.ForumCategory.list("sort_order", 50),
+    queryFn: () => mist.entities.ForumCategory.list("sort_order", 50),
     staleTime: 60000,
   });
   // Community-scoped online count (UserPresence INTERSECT CommunityMember).
@@ -90,7 +90,7 @@ export function OnlineWidget({ collapsed, onToggle, communityId }) {
 export function TrendingWidget({ collapsed, onToggle }) {
   const { data: threads = [] } = useQuery({
     queryKey: ["forum-threads"],
-    queryFn: () => base44.entities.ForumThread.filter({ is_deleted: false }, "-last_reply_date", 50),
+    queryFn: () => mist.entities.ForumThread.filter({ is_deleted: false }, "-last_reply_date", 50),
     staleTime: 30000,
   });
   const trending = [...threads]
@@ -120,7 +120,7 @@ export function TrendingWidget({ collapsed, onToggle }) {
 export function PinnedWidget({ collapsed, onToggle }) {
   const { data: threads = [] } = useQuery({
     queryKey: ["forum-threads"],
-    queryFn: () => base44.entities.ForumThread.filter({ is_announcement: true }, "-created_date", 10),
+    queryFn: () => mist.entities.ForumThread.filter({ is_announcement: true }, "-created_date", 10),
     staleTime: 60000,
   });
   const pinned = (threads || []).filter((t) => !t.is_deleted).slice(0, 3);

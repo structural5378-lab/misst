@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ export default function ThreadComposer({ categories, user, onSubmitted, onCancel
       const cat = categories.find((c) => c.id === categoryId);
       const imgMatch = body.match(/!\[[^\]]*\]\(([^)]+)\)/);
       const validPoll = poll.question.trim() && poll.options.filter((o) => o.trim()).length >= 2;
-      await base44.entities.ForumThread.create({
+      await mist.entities.ForumThread.create({
         title: title.trim(),
         body,
         category_id: categoryId,

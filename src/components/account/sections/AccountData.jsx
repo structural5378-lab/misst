@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMistUser } from "@/hooks/useMistUser";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -30,9 +30,9 @@ export default function AccountData() {
     setExporting(true);
     try {
       const [threads, posts, stats] = await Promise.allSettled([
-        base44.entities.ForumThread.filter({ author_id: user.id }),
-        base44.entities.ForumPost.filter({ author_id: user.id }),
-        base44.entities.UserStats.filter({ user_id: user.id }),
+        mist.entities.ForumThread.filter({ author_id: user.id }),
+        mist.entities.ForumPost.filter({ author_id: user.id }),
+        mist.entities.UserStats.filter({ user_id: user.id }),
       ]);
       const payload = {
         exported_at: new Date().toISOString(),

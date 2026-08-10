@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 export function useCommunity() {
   const [communityId, setCommunityId] = useState("");
   const [communityName, setCommunityName] = useState("");
@@ -20,7 +19,7 @@ export function useCommunity() {
     setCommunityName(cname || "");
 
     // Fetch community details
-    base44.entities.Community.get(cid)
+    mist.entities.Community.get(cid)
       .then((c) => {
         setCommunity(c);
         setLoading(false);

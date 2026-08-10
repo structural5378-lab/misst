@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { Radar, Radio, Users, MapPin } from "lucide-react";
 import { haversine, formatDistance } from "@/lib/geoUtils";
@@ -21,12 +21,12 @@ export default function RadioScopeTile() {
 
   const { data: repeaters = [] } = useQuery({
     queryKey: ["repeaters"],
-    queryFn: () => base44.entities.Repeater.list("-created_date", 200),
+    queryFn: () => mist.entities.Repeater.list("-created_date", 200),
   });
 
   const { data: presence = [] } = useQuery({
     queryKey: ["chat-presence"],
-    queryFn: () => base44.entities.ChatPresence.list("-last_active", 100),
+    queryFn: () => mist.entities.ChatPresence.list("-last_active", 100),
     refetchInterval: active ? 30000 : false,
   });
 

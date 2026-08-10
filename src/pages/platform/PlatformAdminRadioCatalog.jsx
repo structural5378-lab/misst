@@ -4,7 +4,7 @@ import { Plus, Trash2, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { fetchManufacturers, fetchModels } from '@/lib/radioFiles';
 
 // PlatformAdminRadioCatalog — admin management of the radio manufacturer &
@@ -23,19 +23,19 @@ export default function PlatformAdminRadioCatalog() {
   const addMfr = async () => {
     if (!mfrName.trim()) return;
     setSaving(true);
-    try { await base44.entities.RadioManufacturer.create({ name: mfrName.trim() }); setMfrName(''); qc.invalidateQueries({ queryKey: ['radio-manufacturers'] }); } catch (e) { alert(e.message); }
+    try { await mist.entities.RadioManufacturer.create({ name: mfrName.trim() }); setMfrName(''); qc.invalidateQueries({ queryKey: ['radio-manufacturers'] }); } catch (e) { alert(e.message); }
     setSaving(false);
   };
-  const delMfr = async (id) => { if (!confirm('Delete manufacturer? Existing models remain.')) return; await base44.entities.RadioManufacturer.delete(id); qc.invalidateQueries({ queryKey: ['radio-manufacturers'] }); };
+  const delMfr = async (id) => { if (!confirm('Delete manufacturer? Existing models remain.')) return; await mist.entities.RadioManufacturer.delete(id); qc.invalidateQueries({ queryKey: ['radio-manufacturers'] }); };
 
   const addModel = async () => {
     if (!modelMfr || !modelName.trim()) return;
     setSaving(true);
     const mfr = manufacturers.find((m) => m.id === modelMfr);
-    try { await base44.entities.RadioModel.create({ manufacturer_id: modelMfr, manufacturer_name: mfr?.name || '', model_name: modelName.trim() }); setModelName(''); qc.invalidateQueries({ queryKey: ['radio-models'] }); } catch (e) { alert(e.message); }
+    try { await mist.entities.RadioModel.create({ manufacturer_id: modelMfr, manufacturer_name: mfr?.name || '', model_name: modelName.trim() }); setModelName(''); qc.invalidateQueries({ queryKey: ['radio-models'] }); } catch (e) { alert(e.message); }
     setSaving(false);
   };
-  const delModel = async (id) => { if (!confirm('Delete model?')) return; await base44.entities.RadioModel.delete(id); qc.invalidateQueries({ queryKey: ['radio-models'] }); };
+  const delModel = async (id) => { if (!confirm('Delete model?')) return; await mist.entities.RadioModel.delete(id); qc.invalidateQueries({ queryKey: ['radio-models'] }); };
 
   return (
     <div className="space-y-6">

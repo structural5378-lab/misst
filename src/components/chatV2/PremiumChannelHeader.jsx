@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, Search, Info, Bell, BellOff, Pin, Settings2, Radio, Users, Siren, Wifi, Activity } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import RoomIcon from "@/components/chatV2/community/RoomIcon";
 
 // PremiumChannelHeader — an intelligent communications dashboard for a channel.
@@ -17,7 +17,7 @@ export default function PremiumChannelHeader({
   useEffect(() => {
     let alive = true;
     if (!community?.id) return;
-    base44.entities.Net.filter({ community_id: community.id, status: "active" })
+    mist.entities.Net.filter({ community_id: community.id, status: "active" })
       .then((rows) => { if (alive) setActiveNet(rows && rows[0] ? rows[0] : null); })
       .catch(() => {});
     return () => { alive = false; };

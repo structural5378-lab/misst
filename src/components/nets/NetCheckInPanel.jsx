@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Radio, CheckCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ export default function NetCheckInPanel({ net }) {
 
   const { data: checkIns = [] } = useQuery({
     queryKey: ["checkins", net.id],
-    queryFn: () => base44.entities.NetCheckIn.filter({ net_id: net.id }),
+    queryFn: () => mist.entities.NetCheckIn.filter({ net_id: net.id }),
     refetchInterval: 15000, // live refresh every 15s
   });
 
@@ -31,7 +32,7 @@ export default function NetCheckInPanel({ net }) {
       const callsign = mybbUser?.username || user?.callsign || "UNKNOWN";
       const location = user?.location || mybbUser?.location || "";
       // Save check-in record
-      await base44.entities.NetCheckIn.create({
+      await mist.entities.NetCheckIn.create({
         net_id: net.id,
         net_name: net.name,
         user_id: user?.id,
@@ -57,7 +58,7 @@ export default function NetCheckInPanel({ net }) {
   });
 
   const checkOutMutation = useMutation({
-    mutationFn: () => base44.entities.NetCheckIn.delete(myCheckIn.id),
+    mutationFn: () => mist.entities.NetCheckIn.delete(myCheckIn.id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["checkins", net.id] }),
   });
 

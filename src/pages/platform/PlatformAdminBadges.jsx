@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
@@ -35,7 +36,7 @@ export default function PlatformAdminBadges() {
   });
   const { data: users = [] } = useQuery({
     queryKey: ["admin-users-mini"],
-    queryFn: async () => (await base44.entities.User.list("-created_date", 500)) || [],
+    queryFn: async () => (await mist.entities.User.list("-created_date", 500)) || [],
   });
 
   const rows = rarityFilter ? awards.filter((a) => a.rarity === rarityFilter) : awards;

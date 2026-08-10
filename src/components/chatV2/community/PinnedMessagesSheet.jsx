@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { X, Pin } from "lucide-react";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 // PinnedMessagesSheet — slide-over listing pinned messages in a room. Tap
 // "Jump to message" to scroll the room view to it; admins can unpin.
 export default function PinnedMessagesSheet({ room, onClose, onJump, onUnpin }) {
@@ -10,7 +9,7 @@ export default function PinnedMessagesSheet({ room, onClose, onJump, onUnpin }) 
 
   useEffect(() => {
     (async () => {
-      const list = await base44.entities.ChatV2RoomMessage
+      const list = await mist.entities.ChatV2RoomMessage
         .filter({ room_id: room.id, pinned: true, deleted: false }, "-pinned_at", 50)
         .catch(() => []);
       setPinned(list || []);

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, VolumeX } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useChatV2Presence } from "@/hooks/useChatV2Presence";
@@ -53,12 +54,12 @@ export default function CommunityChatV2() {
     if (!slug) return;
     let active = true;
     (async () => {
-      const list = await base44.entities.Community.filter({ slug }, "-created_date", 1).catch(() => []);
+      const list = await mist.entities.Community.filter({ slug }, "-created_date", 1).catch(() => []);
       const c = (list || [])[0];
       if (!active) return;
       setCommunity(c);
       if (c) {
-        const m = await base44.entities.CommunityMember.filter({ community_id: c.id, status: "active" }, "-joined_date", 500).catch(() => []);
+        const m = await mist.entities.CommunityMember.filter({ community_id: c.id, status: "active" }, "-joined_date", 500).catch(() => []);
         if (!active) return;
         setMembers(m || []);
         const me = (m || []).find((x) => x.user_id === mistUser?.id);

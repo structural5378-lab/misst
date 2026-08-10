@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
+import { mist } from '@/api/mist';
 export function useChat(mybbUser) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +21,7 @@ export function useChat(mybbUser) {
   // Load initial messages
   useEffect(() => {
     let mounted = true;
-    base44.entities.ChatMessage.list("-created_date", 100).then((msgs) => {
+    mist.entities.ChatMessage.list("-created_date", 100).then((msgs) => {
       if (mounted) {
         setMessages(msgs.reverse());
         setLoading(false);
@@ -31,7 +32,7 @@ export function useChat(mybbUser) {
 
   // Subscribe to message events
   useEffect(() => {
-    const unsub = base44.entities.ChatMessage.subscribe((event) => {
+    const unsub = mist.entities.ChatMessage.subscribe((event) => {
       if (event.type === "create") {
         if (String(event.data?.sender_uid || "") === myUidRef.current) return;
         setMessages((prev) =>
@@ -56,20 +57,20 @@ export function useChat(mybbUser) {
     const updatePresence = async (status) => {
       try {
         if (presenceIdRef.current) {
-          await base44.entities.ChatPresence.update(presenceIdRef.current, {
+          await mist.entities.ChatPresence.update(presenceIdRef.current, {
             status,
             last_active: new Date().toISOString(),
           });
         } else {
-          const existing = await base44.entities.ChatPresence.filter({ user_uid: uid });
+          const existing = await mist.entities.ChatPresence.filter({ user_uid: uid });
           if (existing.length > 0) {
             presenceIdRef.current = existing[0].id;
-            await base44.entities.ChatPresence.update(existing[0].id, {
+            await mist.entities.ChatPresence.update(existing[0].id, {
               status,
               last_active: new Date().toISOString(),
             });
           } else {
-            const rec = await base44.entities.ChatPresence.create({
+            const rec = await mist.entities.ChatPresence.create({
               user_uid: uid,
               user_name: mybbUser.username,
               user_avatar: mybbUser.avatar || "",
@@ -101,7 +102,7 @@ export function useChat(mybbUser) {
   useEffect(() => {
     const loadPresence = async () => {
       try {
-        const all = await base44.entities.ChatPresence.list("-last_active", 100);
+        const all = await mist.entities.ChatPresence.list("-last_active", 100);
         const now = Date.now();
         const active = all.filter(
           (p) =>
@@ -115,7 +116,7 @@ export function useChat(mybbUser) {
     };
     loadPresence();
     const interval = setInterval(loadPresence, 15000);
-    const unsub = base44.entities.ChatPresence.subscribe(() => {
+    const unsub = mist.entities.ChatPresence.subscribe(() => {
       clearTimeout(presenceDebounceRef.current);
       presenceDebounceRef.current = setTimeout(loadPresence, 800);
     });
@@ -157,7 +158,7 @@ export function useChat(mybbUser) {
             prev.map((m) => (m.id === tempId ? { ...m, image_url } : m))
           );
         }
-        const created = await base44.entities.ChatMessage.create({
+        const created = await mist.entities.ChatMessage.create({
           sender_uid: String(mybbUser.uid),
           sender_name: mybbUser.username,
           sender_avatar: mybbUser.avatar || "",
@@ -184,7 +185,7 @@ export function useChat(mybbUser) {
   // Delete message
   const deleteMessage = useCallback(async (id) => {
     setMessages((prev) => prev.filter((m) => m.id !== id));
-    try { await base44.entities.ChatMessage.delete(id); } catch {}
+    try { await mist.entities.ChatMessage.delete(id); } catch {}
   }, []);
 
   // Toggle reaction
@@ -208,7 +209,7 @@ export function useChat(mybbUser) {
     }));
 
     try {
-      await base44.entities.ChatMessage.update(messageId, { reactions: newReactionsStr });
+      await mist.entities.ChatMessage.update(messageId, { reactions: newReactionsStr });
     } catch {}
   }, [mybbUser]);
 
@@ -219,13 +220,13 @@ export function useChat(mybbUser) {
     if (now - lastTypingRef.current < 3000) return;
     lastTypingRef.current = now;
     if (presenceIdRef.current) {
-      base44.entities.ChatPresence.update(presenceIdRef.current, {
+      mist.entities.ChatPresence.update(presenceIdRef.current, {
         status: "typing",
         last_active: new Date().toISOString(),
       }).catch(() => {});
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => {
-        base44.entities.ChatPresence.update(presenceIdRef.current, {
+        mist.entities.ChatPresence.update(presenceIdRef.current, {
           status: "online",
           last_active: new Date().toISOString(),
         }).catch(() => {});

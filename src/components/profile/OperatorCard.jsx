@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery } from '@tanstack/react-query';
@@ -51,7 +52,7 @@ export default function OperatorCard({ onLogout }) {
 
   const { data: achievements = [] } = useQuery({
     queryKey: ['operator-card-achievements'],
-    queryFn: async () => await base44.entities.UserAchievement.list(),
+    queryFn: async () => await mist.entities.UserAchievement.list(),
     staleTime: 15000,
   });
 

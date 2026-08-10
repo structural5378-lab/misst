@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { initializeApp, getApps } from "firebase/app";
 import { getMessaging, getToken, deleteToken, onMessage } from "firebase/messaging";
 
@@ -86,9 +87,9 @@ function markRefresh() {
 async function registerToken(token) {
   if (!token) return null;
   try {
-    const existing = await base44.entities.DeviceToken.filter({ token, is_active: true });
+    const existing = await mist.entities.DeviceToken.filter({ token, is_active: true });
     if (existing && existing.length > 0) {
-      await base44.entities.DeviceToken.update(existing[0].id, {
+      await mist.entities.DeviceToken.update(existing[0].id, {
         last_seen: new Date().toISOString(),
         is_active: true,
       });
@@ -96,7 +97,7 @@ async function registerToken(token) {
       return existing[0];
     }
     const me = await base44.auth.me();
-    await base44.entities.DeviceToken.create({
+    await mist.entities.DeviceToken.create({
       user_id: me.id,
       token,
       platform: "web",
@@ -122,8 +123,8 @@ async function persistToken(token) {
     // inspect token format (e.g. colon presence) to judge validity; format is not
     // guaranteed. Stale tokens naturally fail at send time and are cleaned up there.
     try {
-      const stale = await base44.entities.DeviceToken.filter({ token: old });
-      for (const t of stale || []) await base44.entities.DeviceToken.update(t.id, { is_active: false }).catch(() => {});
+      const stale = await mist.entities.DeviceToken.filter({ token: old });
+      for (const t of stale || []) await mist.entities.DeviceToken.update(t.id, { is_active: false }).catch(() => {});
     } catch { /* ignore */ }
   }
 }
@@ -216,8 +217,8 @@ export async function unsubscribeFcm() {
     }
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
-      const existing = await base44.entities.DeviceToken.filter({ token });
-      for (const t of existing || []) await base44.entities.DeviceToken.delete(t.id).catch(() => {});
+      const existing = await mist.entities.DeviceToken.filter({ token });
+      for (const t of existing || []) await mist.entities.DeviceToken.delete(t.id).catch(() => {});
     }
   } catch { /* ignore */ }
   try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(LAST_REFRESH_KEY); } catch { /* ignore */ }
@@ -227,13 +228,13 @@ export async function unsubscribeFcm() {
 export async function listMyDevices() {
   try {
     const me = await base44.auth.me();
-    const list = await base44.entities.DeviceToken.filter({ user_id: me.id, is_active: true }, "-last_seen", 50);
+    const list = await mist.entities.DeviceToken.filter({ user_id: me.id, is_active: true }, "-last_seen", 50);
     return list || [];
   } catch { return []; }
 }
 
 export async function removeDeviceById(id) {
-  await base44.entities.DeviceToken.delete(id);
+  await mist.entities.DeviceToken.delete(id);
 }
 
 // Foreground message hook for components that want live in-app toasts.

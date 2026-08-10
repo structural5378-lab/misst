@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Send, CheckCircle, XCircle, Clock, Eye, Smartphone, Radio, Inbox, Bell, TrendingUp, Activity, Users } from "lucide-react";
@@ -39,7 +40,7 @@ export default function PlatformAdminNotifications() {
   const [range, setRange] = useState("all");
   const [platform, setPlatform] = useState("");
 
-  const { data: communities = [] } = useQuery({ queryKey: ["admin-communities-list"], queryFn: () => base44.entities.Community.list("-created_date", 200) });
+  const { data: communities = [] } = useQuery({ queryKey: ["admin-communities-list"], queryFn: () => mist.entities.Community.list("-created_date", 200) });
 
   const { data, isLoading } = useQuery({
     queryKey: ["notif-analytics", communityId, category, range, platform],

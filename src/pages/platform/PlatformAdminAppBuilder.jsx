@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import AdminSection from "@/components/platform/AdminSection";
 import { LayoutTemplate, ExternalLink, FileCode, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -36,7 +36,7 @@ const GROUPS = ["Core", "Radio", "Social", "Content", "People", "Tools", "Profil
 export default function PlatformAdminAppBuilder() {
   const { data: flags = [] } = useQuery({
     queryKey: ["admin-feature-flags-mini"],
-    queryFn: async () => (await base44.entities.FeatureFlag.list("-created_date", 200)) || [],
+    queryFn: async () => (await mist.entities.FeatureFlag.list("-created_date", 200)) || [],
   });
 
   return (

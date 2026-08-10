@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useAuth } from "@/lib/AuthContext";
 import { showInAppNotification } from "@/components/notifications/InAppNotificationCenter";
 import { isViewingCommunity, isViewingConversation } from "@/lib/activeChatView";
@@ -27,7 +27,7 @@ export default function ChatNotificationListener() {
 
   useEffect(() => {
     if (!user?.id) return;
-    const unsub = base44.entities.Notification.subscribe((event) => {
+    const unsub = mist.entities.Notification.subscribe((event) => {
       if (event.type !== "create") return;
       const n = event.data;
       if (!n || n.recipient_id !== user.id) return;
@@ -49,7 +49,7 @@ export default function ChatNotificationListener() {
       // Active-viewer suppression: don't banner a message the user is reading.
       if (n.type === "community_chat" && meta.community_id && isViewingCommunity(meta.community_id)) {
         // User is in this community's chat — auto-mark read, no banner.
-        if (nid) base44.entities.Notification.update(nid, { read: true, read_at: new Date().toISOString() }).catch(() => {});
+        if (nid) mist.entities.Notification.update(nid, { read: true, read_at: new Date().toISOString() }).catch(() => {});
         return;
       }
       if (n.type === "direct_message" && n.related_object_id && isViewingConversation(n.related_object_id)) {

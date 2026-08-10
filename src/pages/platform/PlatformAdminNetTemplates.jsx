@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, LayoutTemplate, Radio } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
@@ -15,7 +15,7 @@ export default function PlatformAdminNetTemplates() {
 
   const { data: templates = [] } = useQuery({
     queryKey: ["net-templates"],
-    queryFn: () => base44.entities.NetTemplate.list("-created_date", 200),
+    queryFn: () => mist.entities.NetTemplate.list("-created_date", 200),
   });
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -24,7 +24,7 @@ export default function PlatformAdminNetTemplates() {
     if (!form.name) return;
     setSaving(true);
     try {
-      await base44.entities.NetTemplate.create({
+      await mist.entities.NetTemplate.create({
         ...form,
         frequency: form.frequency ? parseFloat(form.frequency) : null,
       });
@@ -34,7 +34,7 @@ export default function PlatformAdminNetTemplates() {
   };
 
   const remove = async (id) => {
-    await base44.entities.NetTemplate.delete(id);
+    await mist.entities.NetTemplate.delete(id);
     qc.invalidateQueries({ queryKey: ["net-templates"] });
   };
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, ShieldCheck, Star, Users, AlertTriangle, Edit, Trash2, Eye, EyeOff, Plus, Loader2, Zap, FileText } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useMistUser } from '@/hooks/useMistUser';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import PageHeader from '@/components/layout/PageHeader';
@@ -51,15 +51,15 @@ export default function RadioFileDetail() {
   };
 
   const toggleVisibility = async () => {
-    await base44.entities.RadioFile.update(file.id, { visibility: file.visibility === 'public' ? 'private' : 'public' });
+    await mist.entities.RadioFile.update(file.id, { visibility: file.visibility === 'public' ? 'private' : 'public' });
     qc.invalidateQueries({ queryKey: ['radio-file', id] });
   };
   const softDelete = async () => {
     if (!confirm('Delete this file? Downloads will be blocked but the record is preserved for auditing.')) return;
-    await base44.entities.RadioFile.update(file.id, { deleted: true, file_url: '' });
+    await mist.entities.RadioFile.update(file.id, { deleted: true, file_url: '' });
     navigate('/radio-files');
   };
-  const adminSet = async (field, val) => { await base44.entities.RadioFile.update(file.id, { [field]: val }); qc.invalidateQueries({ queryKey: ['radio-file', id] }); };
+  const adminSet = async (field, val) => { await mist.entities.RadioFile.update(file.id, { [field]: val }); qc.invalidateQueries({ queryKey: ['radio-file', id] }); };
 
   const addVersion = async () => {
     if (!verFile) return;

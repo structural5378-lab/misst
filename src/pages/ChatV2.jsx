@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Plus, MessageSquare, Users } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useCommunity } from "@/hooks/useCommunity";
 import { useChatV2Presence } from "@/hooks/useChatV2Presence";
@@ -38,7 +38,7 @@ export default function ChatV2() {
   const toggleMute = async () => {
     if (!activeParticipant) return;
     try {
-      await base44.entities.ChatV2Participant.update(activeParticipant.id, { muted: !activeParticipant.muted });
+      await mist.entities.ChatV2Participant.update(activeParticipant.id, { muted: !activeParticipant.muted });
     } catch {}
   };
 

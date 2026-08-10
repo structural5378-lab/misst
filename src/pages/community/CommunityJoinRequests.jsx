@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useCommunity } from "@/contexts/CommunityContext";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -130,7 +131,7 @@ export default function CommunityJoinRequests() {
       return;
     }
     try {
-      await base44.entities.CommunitySettings.update(settings.id, { auto_approve: !settings.auto_approve });
+      await mist.entities.CommunitySettings.update(settings.id, { auto_approve: !settings.auto_approve });
       await qc.invalidateQueries({ queryKey: ["community-settings", community.id] });
       toast({ title: `Auto-approve ${!settings.auto_approve ? "enabled" : "disabled"}` });
     } catch (e) {

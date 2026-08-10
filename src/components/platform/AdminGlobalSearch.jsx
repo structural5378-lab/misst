@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, User, Radio } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 
@@ -20,8 +20,8 @@ export default function AdminGlobalSearch() {
   const { data } = useQuery({
     queryKey: ["admin-global-search", query],
     queryFn: async () => {
-      const users = await base44.entities.User.list(100);
-      const repeaters = await base44.entities.Repeater.list(100);
+      const users = await mist.entities.User.list(100);
+      const repeaters = await mist.entities.Repeater.list(100);
       const q = query.toLowerCase();
       return {
         users: (users || []).filter((u) => (u.full_name || "").toLowerCase().includes(q) || (u.email || "").toLowerCase().includes(q)).slice(0, 6),

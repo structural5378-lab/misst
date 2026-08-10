@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, MessageSquare, MessageCircle, Plus, Shield, Radio } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useAuth } from "@/lib/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useNetControlAccess } from "@/hooks/useNetControlAccess";
@@ -35,8 +35,8 @@ export default function BottomNav() {
     const loadUnread = async () => {
       try {
         const [parts, rooms] = await Promise.all([
-          base44.entities.ChatV2Participant.filter({ user_id: user.id }),
-          base44.entities.ChatV2RoomMembership.filter({ user_id: user.id }),
+          mist.entities.ChatV2Participant.filter({ user_id: user.id }),
+          mist.entities.ChatV2RoomMembership.filter({ user_id: user.id }),
         ]);
         const dm = (parts || []).reduce((s, p) => s + (p.unread_count || 0), 0);
         const room = (rooms || []).reduce((s, m) => s + (m.unread_count || 0), 0);
@@ -44,8 +44,8 @@ export default function BottomNav() {
       } catch {}
     };
     loadUnread();
-    const unsubA = base44.entities.ChatV2Participant.subscribe((e) => { if (e.data?.user_id === user.id) loadUnread(); });
-    const unsubB = base44.entities.ChatV2RoomMembership.subscribe((e) => { if (e.data?.user_id === user.id) loadUnread(); });
+    const unsubA = mist.entities.ChatV2Participant.subscribe((e) => { if (e.data?.user_id === user.id) loadUnread(); });
+    const unsubB = mist.entities.ChatV2RoomMembership.subscribe((e) => { if (e.data?.user_id === user.id) loadUnread(); });
     return () => { unsubA(); unsubB(); };
   }, [user?.id]);
 
@@ -54,13 +54,13 @@ export default function BottomNav() {
     if (!user?.id) return;
     const loadForumUnread = async () => {
       try {
-        const subs = await base44.entities.ForumSubscription.filter({ user_id: user.id });
+        const subs = await mist.entities.ForumSubscription.filter({ user_id: user.id });
         const total = subs.reduce((sum, s) => sum + (s.unread_count || 0), 0);
         setForumUnreadCount(total);
       } catch {}
     };
     loadForumUnread();
-    const unsub = base44.entities.ForumSubscription.subscribe((event) => {
+    const unsub = mist.entities.ForumSubscription.subscribe((event) => {
       if (event.data?.user_id === user.id) loadForumUnread();
     });
     return unsub;

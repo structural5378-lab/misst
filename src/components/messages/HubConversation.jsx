@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import ChatWindowV2 from "@/components/chatV2/ChatWindowV2";
 import ChannelWindow from "@/components/messages/ChannelWindow";
 
@@ -28,7 +28,7 @@ export default function HubConversation({
         onBack={onBack}
         onToggleMute={async () => {
           try {
-            await base44.entities.ChatV2Participant.update(entry.participant.id, { muted: !entry.participant.muted });
+            await mist.entities.ChatV2Participant.update(entry.participant.id, { muted: !entry.participant.muted });
           } catch {}
         }}
         onOpenInfo={onOpenContext}

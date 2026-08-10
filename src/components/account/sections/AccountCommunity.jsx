@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { Link } from "react-router-dom";
 import { SectionCard } from "../ui";
@@ -19,16 +19,16 @@ export default function AccountCommunity() {
   const uid = user?.id;
 
   const { data: threads = [] } = useQuery({
-    queryKey: ["account-threads", uid], queryFn: () => base44.entities.ForumThread.filter({ author_id: uid }, "-created_date", 50), enabled: !!uid, staleTime: 30000,
+    queryKey: ["account-threads", uid], queryFn: () => mist.entities.ForumThread.filter({ author_id: uid }, "-created_date", 50), enabled: !!uid, staleTime: 30000,
   });
   const { data: posts = [] } = useQuery({
-    queryKey: ["account-posts", uid], queryFn: () => base44.entities.ForumPost.filter({ author_id: uid }, "-created_date", 50), enabled: !!uid, staleTime: 30000,
+    queryKey: ["account-posts", uid], queryFn: () => mist.entities.ForumPost.filter({ author_id: uid }, "-created_date", 50), enabled: !!uid, staleTime: 30000,
   });
   const { data: stats = {} } = useQuery({
-    queryKey: ["mist-user-stats", uid], queryFn: async () => (await base44.entities.UserStats.filter({ user_id: uid }))?.[0] || {}, enabled: !!uid, staleTime: 30000,
+    queryKey: ["mist-user-stats", uid], queryFn: async () => (await mist.entities.UserStats.filter({ user_id: uid }))?.[0] || {}, enabled: !!uid, staleTime: 30000,
   });
   const { data: subs = [] } = useQuery({
-    queryKey: ["account-subs", uid], queryFn: () => base44.entities.ForumSubscription.filter({ user_id: uid }, "-created_date", 100), enabled: !!uid, staleTime: 30000,
+    queryKey: ["account-subs", uid], queryFn: () => mist.entities.ForumSubscription.filter({ user_id: uid }, "-created_date", 100), enabled: !!uid, staleTime: 30000,
   });
 
   const likes = [...threads, ...posts].reduce((s, p) => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, Radio, Users, Info, AlertTriangle, Settings, MessageSquare, ChevronRight, MapPin, Sun, Wrench, Globe, Camera, UserCircle2, ShoppingBag, SignalHigh, Trophy, Shield } from "lucide-react";
@@ -52,14 +53,14 @@ export default function Dashboard() {
 
   const { data: nets = [] } = useQuery({
     queryKey: ["nets"],
-    queryFn: () => base44.entities.Net.list("-created_date", 10),
+    queryFn: () => mist.entities.Net.list("-created_date", 10),
     initialData: [],
   });
 
   const { data: alerts } = useQuery({
     queryKey: ["alerts"],
     queryFn: async () => {
-      const all = await base44.entities.Alert.list("-created_date", 10);
+      const all = await mist.entities.Alert.list("-created_date", 10);
       return all.filter((a) => !a.title?.startsWith("__")).slice(0, 3);
     },
     initialData: [],

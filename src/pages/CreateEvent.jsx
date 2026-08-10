@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useToast } from "@/components/ui/use-toast";
 import PageHeader from "@/components/layout/PageHeader";
@@ -32,7 +33,7 @@ export default function CreateEvent() {
         ? new Date(baseTime.getTime() + 30 * 60 * 1000).toISOString()
         : baseTime.toISOString();
 
-      const event = await base44.entities.Event.create({
+      const event = await mist.entities.Event.create({
         title,
         description,
         location,

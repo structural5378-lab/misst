@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { RotateCw, Eye, Clock } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
@@ -32,10 +33,10 @@ export default function PlatformAdminNotificationLogs() {
   const [statusFilter, setStatusFilter] = useState("");
   const [viewRow, setViewRow] = useState(null);
 
-  const { data: deliveries = [] } = useQuery({ queryKey: ["notif-deliveries"], queryFn: () => base44.asServiceRole?.entities?.NotificationDelivery ? base44.asServiceRole.entities.NotificationDelivery.filter({}, "-created_date", 2000) : base44.entities.NotificationDelivery.filter({}, "-created_date", 2000) });
-  const { data: users = [] } = useQuery({ queryKey: ["notif-users"], queryFn: () => base44.entities.User.list("-created_date", 500) });
-  const { data: communities = [] } = useQuery({ queryKey: ["notif-communities"], queryFn: () => base44.entities.Community.list("-created_date", 500) });
-  const { data: notifications = [] } = useQuery({ queryKey: ["notif-records"], queryFn: () => base44.entities.Notification.list("-created_date", 2000) });
+  const { data: deliveries = [] } = useQuery({ queryKey: ["notif-deliveries"], queryFn: () => base44.asServiceRole?.entities?.NotificationDelivery ? base44.asServiceRole.entities.NotificationDelivery.filter({}, "-created_date", 2000) : mist.entities.NotificationDelivery.filter({}, "-created_date", 2000) });
+  const { data: users = [] } = useQuery({ queryKey: ["notif-users"], queryFn: () => mist.entities.User.list("-created_date", 500) });
+  const { data: communities = [] } = useQuery({ queryKey: ["notif-communities"], queryFn: () => mist.entities.Community.list("-created_date", 500) });
+  const { data: notifications = [] } = useQuery({ queryKey: ["notif-records"], queryFn: () => mist.entities.Notification.list("-created_date", 2000) });
 
   const userMap = useMemo(() => new Map((users || []).map((u) => [u.id, u.full_name || u.email || u.id])), [users]);
   const commMap = useMemo(() => new Map((communities || []).map((c) => [c.id, c.name])), [communities]);

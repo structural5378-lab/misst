@@ -5,6 +5,7 @@ import {
   ShieldAlert, Radio, ChevronDown, ChevronUp, Home,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useCommunity } from "@/hooks/useCommunity";
@@ -63,7 +64,7 @@ async function runStep(step, ctx, log) {
         return;
       }
       const s = await withTimeout(
-        base44.entities.CommunitySettings.filter({ community_id: ctx.communityId }),
+        mist.entities.CommunitySettings.filter({ community_id: ctx.communityId }),
         5000,
         "settings"
       );
@@ -72,7 +73,7 @@ async function runStep(step, ctx, log) {
     }
     case "database": {
       const ping = await withTimeout(
-        base44.entities.Community.list(null, 1),
+        mist.entities.Community.list(null, 1),
         5000,
         "database"
       );
@@ -81,7 +82,7 @@ async function runStep(step, ctx, log) {
     }
     case "repeaters": {
       const reps = await withTimeout(
-        base44.entities.Repeater.list("-created_date", 1),
+        mist.entities.Repeater.list("-created_date", 1),
         5000,
         "repeaters"
       );
@@ -148,7 +149,7 @@ export default function RadioScopeStartup({ children }) {
   const writeAudit = useCallback(
     async (action, payload) => {
       try {
-        await base44.entities.PlatformAuditLog.create({
+        await mist.entities.PlatformAuditLog.create({
           admin_id: user?.id || "radioscope",
           admin_email: user?.email || "",
           action,

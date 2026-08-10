@@ -3,6 +3,7 @@ import { Radio, Satellite, CloudLightning, Wifi, Siren, ChevronUp, ChevronDown, 
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 
+import { mist } from '@/api/mist';
 // MissionControlDock — MISST's signature slim realtime status dock. Sits at
 // the bottom of the messaging hub and surfaces connected repeater, GPS,
 // weather, nearest lightning, active net, battery, and an emergency button.
@@ -47,7 +48,7 @@ export default function MissionControlDock({ community }) {
   useEffect(() => {
     if (!community?.location_lat) return;
     let alive = true;
-    base44.entities.LightningStrike.list("-strike_time", 12)
+    mist.entities.LightningStrike.list("-strike_time", 12)
       .then((rows) => {
         if (!alive || !rows || !rows.length) return;
         let min = Infinity;
@@ -65,7 +66,7 @@ export default function MissionControlDock({ community }) {
   useEffect(() => {
     if (!community?.id) return;
     let alive = true;
-    base44.entities.Net.filter({ community_id: community.id, status: "active" })
+    mist.entities.Net.filter({ community_id: community.id, status: "active" })
       .then((rows) => { if (alive) setActiveNet(rows && rows[0] ? rows[0] : null); })
       .catch(() => {});
     return () => { alive = false; };

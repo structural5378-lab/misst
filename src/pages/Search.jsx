@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import {
   Search as SearchIcon, X, Clock, ArrowLeft, Hash, MessageSquare, Radio, Calendar, Users, ShoppingBag, User,
 } from "lucide-react";
@@ -42,13 +42,13 @@ export default function Search() {
   }, []);
 
   const enabled = !!debounced;
-  const threads = useQuery({ queryKey: ["gsearch-threads"], queryFn: () => base44.entities.ForumThread.filter({}, "-last_reply_date", 100), enabled, staleTime: 60000 });
-  const posts = useQuery({ queryKey: ["gsearch-posts"], queryFn: () => base44.entities.ForumPost.filter({}, "-created_date", 100), enabled, staleTime: 60000 });
-  const members = useQuery({ queryKey: ["gsearch-members"], queryFn: () => base44.entities.UserStats.list("-created_date", 100), enabled, staleTime: 60000 });
-  const repeaters = useQuery({ queryKey: ["gsearch-repeaters"], queryFn: () => base44.entities.Repeater.list("-created_date", 100), enabled, staleTime: 120000 });
-  const events = useQuery({ queryKey: ["gsearch-events"], queryFn: () => base44.entities.Event.list("-created_date", 50), enabled, staleTime: 120000 });
-  const clubs = useQuery({ queryKey: ["gsearch-clubs"], queryFn: () => base44.entities.Community.list("-created_date", 50), enabled, staleTime: 120000 });
-  const equipment = useQuery({ queryKey: ["gsearch-equip"], queryFn: () => base44.entities.MarketplaceItem.list("-created_date", 50), enabled, staleTime: 120000 });
+  const threads = useQuery({ queryKey: ["gsearch-threads"], queryFn: () => mist.entities.ForumThread.filter({}, "-last_reply_date", 100), enabled, staleTime: 60000 });
+  const posts = useQuery({ queryKey: ["gsearch-posts"], queryFn: () => mist.entities.ForumPost.filter({}, "-created_date", 100), enabled, staleTime: 60000 });
+  const members = useQuery({ queryKey: ["gsearch-members"], queryFn: () => mist.entities.UserStats.list("-created_date", 100), enabled, staleTime: 60000 });
+  const repeaters = useQuery({ queryKey: ["gsearch-repeaters"], queryFn: () => mist.entities.Repeater.list("-created_date", 100), enabled, staleTime: 120000 });
+  const events = useQuery({ queryKey: ["gsearch-events"], queryFn: () => mist.entities.Event.list("-created_date", 50), enabled, staleTime: 120000 });
+  const clubs = useQuery({ queryKey: ["gsearch-clubs"], queryFn: () => mist.entities.Community.list("-created_date", 50), enabled, staleTime: 120000 });
+  const equipment = useQuery({ queryKey: ["gsearch-equip"], queryFn: () => mist.entities.MarketplaceItem.list("-created_date", 50), enabled, staleTime: 120000 });
 
   const match = useCallback((text) => text && text.toLowerCase().includes(debounced), [debounced]);
 

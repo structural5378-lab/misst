@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Flag } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
@@ -29,17 +29,17 @@ export default function PlatformAdminFeatureFlags() {
 
   const { data: flags = [] } = useQuery({
     queryKey: ["feature-flags"],
-    queryFn: async () => await base44.entities.FeatureFlag.list("-created_date", 200),
+    queryFn: async () => await mist.entities.FeatureFlag.list("-created_date", 200),
   });
 
   const toggle = async (flag) => {
-    await base44.entities.FeatureFlag.update(flag.id, { is_enabled: !flag.is_enabled });
+    await mist.entities.FeatureFlag.update(flag.id, { is_enabled: !flag.is_enabled });
     queryClient.invalidateQueries(["feature-flags"]);
   };
 
   const createFlag = async () => {
     if (!newFlag.key || !newFlag.label) return;
-    await base44.entities.FeatureFlag.create({ ...newFlag, is_enabled: true });
+    await mist.entities.FeatureFlag.create({ ...newFlag, is_enabled: true });
     queryClient.invalidateQueries(["feature-flags"]);
     setShowCreate(false);
     setNewFlag({ key: "", label: "", description: "", category: "General" });

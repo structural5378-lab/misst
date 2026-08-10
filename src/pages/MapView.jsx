@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import PageHeader from "@/components/layout/PageHeader";
@@ -22,7 +23,7 @@ export default function MapView() {
   // Local DB repeaters
   const { data: dbRepeaters = [] } = useQuery({
     queryKey: ["repeaters"],
-    queryFn: () => base44.entities.Repeater.list("-created_date", 100),
+    queryFn: () => mist.entities.Repeater.list("-created_date", 100),
   });
 
   // Live RepeaterBook data

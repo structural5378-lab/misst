@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { SectionCard } from "../ui";
 import { Switch } from "@/components/ui/switch";
@@ -18,11 +18,11 @@ export default function AccountWeather() {
     if (!user?.id) return;
     (async () => {
       try {
-        const rows = await base44.entities.LightningAlertSettings.filter({ user_id: user.id });
+        const rows = await mist.entities.LightningAlertSettings.filter({ user_id: user.id });
         if (rows && rows.length > 0) {
           setSettings(rows[0]);
         } else {
-          const created = await base44.entities.LightningAlertSettings.create({
+          const created = await mist.entities.LightningAlertSettings.create({
             user_id: user.id,
             enabled: false,
             radius_miles: 10,
@@ -44,7 +44,7 @@ export default function AccountWeather() {
     const next = { ...patch, updated_at: new Date().toISOString() };
     setSettings({ ...settings, ...next });
     try {
-      await base44.entities.LightningAlertSettings.update(settings.id, next);
+      await mist.entities.LightningAlertSettings.update(settings.id, next);
       toast({ title: "Lightning preferences saved", duration: 1500 });
     } catch {
       toast({ title: "Could not save preferences", variant: "destructive", duration: 1500 });

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useToast } from "@/components/ui/use-toast";
 import {
   Rocket, Users, Search, MapPin, Radio, Globe, Lock, Loader2, ArrowRight, Sparkles, SkipForward, SlidersHorizontal, Database,
@@ -62,7 +63,7 @@ export default function CommunityOnboarding() {
     queryFn: async () => {
       const u = await base44.auth.me().catch(() => null);
       if (!u) return [];
-      return await base44.entities.CommunityMember.filter({ user_id: u.id });
+      return await mist.entities.CommunityMember.filter({ user_id: u.id });
     },
     staleTime: 15000,
   });

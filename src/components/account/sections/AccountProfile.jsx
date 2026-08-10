@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,13 +38,13 @@ export default function AccountProfile() {
 
   const { data: stats = {} } = useQuery({
     queryKey: ["mist-user-stats", user?.id],
-    queryFn: async () => (await base44.entities.UserStats.filter({ user_id: user.id }))?.[0] || {},
+    queryFn: async () => (await mist.entities.UserStats.filter({ user_id: user.id }))?.[0] || {},
     enabled: !!user?.id,
     staleTime: 30000,
   });
   const { data: achievements = [] } = useQuery({
     queryKey: ["user-achievements", user?.id],
-    queryFn: () => base44.entities.UserAchievement.filter({ user_id: user.id }, "-created_date", 12),
+    queryFn: () => mist.entities.UserAchievement.filter({ user_id: user.id }, "-created_date", 12),
     enabled: !!user?.id,
     staleTime: 30000,
   });

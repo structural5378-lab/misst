@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 // useConversationsV2 — loads the current user's conversations (via their
 // ChatV2Participant rows joined to ChatV2Conversation), kept live through
 // entity subscriptions: new message -> backend bumps unread + last_message ->
@@ -13,12 +12,12 @@ export function useConversationsV2(userId) {
   const load = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
-    const myParts = await base44.entities.ChatV2Participant
+    const myParts = await mist.entities.ChatV2Participant
       .filter({ user_id: userId, left: false }, "-joined_at", 200)
       .catch(() => []);
     setParticipants(myParts || []);
     const ids = [...new Set((myParts || []).map((p) => p.conversation_id).filter(Boolean))];
-    const convs = await Promise.all(ids.map((id) => base44.entities.ChatV2Conversation.get(id).catch(() => null)));
+    const convs = await Promise.all(ids.map((id) => mist.entities.ChatV2Conversation.get(id).catch(() => null)));
     const map = {};
     for (const c of convs) if (c) map[c.id] = c;
     setConversations(map);
@@ -34,7 +33,7 @@ export function useConversationsV2(userId) {
   // Real-time: react to unread bumps and last-message updates.
   useEffect(() => {
     if (!userId) return;
-    const unsubP = base44.entities.ChatV2Participant.subscribe((event) => {
+    const unsubP = mist.entities.ChatV2Participant.subscribe((event) => {
       const p = event.data;
       if (!p || p.user_id !== userId) return;
       setParticipants((prev) => {
@@ -44,7 +43,7 @@ export function useConversationsV2(userId) {
         return [...prev, p];
       });
     });
-    const unsubC = base44.entities.ChatV2Conversation.subscribe((event) => {
+    const unsubC = mist.entities.ChatV2Conversation.subscribe((event) => {
       const c = event.data;
       if (!c) return;
       setConversations((prev) => {

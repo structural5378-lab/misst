@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Trash2, Mail, MessageSquare } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
 import AdminDataTable from "@/components/platform/AdminDataTable";
@@ -12,15 +12,15 @@ export default function PlatformAdminPrivateMessages() {
   const { toast } = useToast();
   const qc = useQueryClient();
 
-  const { data: convos } = useQuery({ queryKey: ["admin-pm-convos"], queryFn: async () => await base44.entities.Conversation.list(300), refetchInterval: 60000 });
-  const { data: messages } = useQuery({ queryKey: ["admin-pm-messages"], queryFn: async () => await base44.entities.DMMessage.list(200), refetchInterval: 60000 });
+  const { data: convos } = useQuery({ queryKey: ["admin-pm-convos"], queryFn: async () => await mist.entities.Conversation.list(300), refetchInterval: 60000 });
+  const { data: messages } = useQuery({ queryKey: ["admin-pm-messages"], queryFn: async () => await mist.entities.DMMessage.list(200), refetchInterval: 60000 });
 
   const convRows = convos || [];
   const totalMsgs = (messages || []).length;
 
   const deleteConvo = async (id) => {
     try {
-      await base44.entities.Conversation.delete(id);
+      await mist.entities.Conversation.delete(id);
       toast({ title: "Conversation removed" });
       qc.invalidateQueries(["admin-pm-convos"]);
     } catch (e) {
@@ -31,7 +31,7 @@ export default function PlatformAdminPrivateMessages() {
   const bulkDelete = async (selected) => {
     if (!selected.length) return;
     for (const r of selected) {
-      try { await base44.entities.Conversation.delete(r.id); } catch (e) { /* ignore */ }
+      try { await mist.entities.Conversation.delete(r.id); } catch (e) { /* ignore */ }
     }
     toast({ title: `${selected.length} conversation(s) removed` });
     qc.invalidateQueries(["admin-pm-convos"]);

@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import ThreadComposer from "@/components/community/ThreadComposer";
@@ -13,7 +13,7 @@ export default function CommunityNewThread() {
 
   const { data: categories = [] } = useQuery({
     queryKey: ["forum-categories"],
-    queryFn: () => base44.entities.ForumCategory.list("sort_order", 50),
+    queryFn: () => mist.entities.ForumCategory.list("sort_order", 50),
     staleTime: 60000,
   });
 

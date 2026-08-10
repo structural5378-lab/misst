@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Lock, Pin, PinOff, LockOpen, Star, Trash2, FolderInput, Check } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
@@ -34,18 +35,18 @@ export default function CommunityThread() {
 
   const { data: thread } = useQuery({
     queryKey: ["forum-thread", id],
-    queryFn: async () => (await base44.entities.ForumThread.filter({ id }))[0],
+    queryFn: async () => (await mist.entities.ForumThread.filter({ id }))[0],
     enabled: !!id,
   });
   const { data: posts = [], refetch: refetchPosts } = useQuery({
     queryKey: ["forum-posts", id],
-    queryFn: () => base44.entities.ForumPost.filter({ thread_id: id }, "created_date", 200),
+    queryFn: () => mist.entities.ForumPost.filter({ thread_id: id }, "created_date", 200),
     enabled: !!id,
     staleTime: 10000,
   });
   const { data: sub } = useQuery({
     queryKey: ["forum-sub", user?.id, id],
-    queryFn: async () => (await base44.entities.ForumSubscription.filter({ user_id: user.id, thread_id: id }))[0],
+    queryFn: async () => (await mist.entities.ForumSubscription.filter({ user_id: user.id, thread_id: id }))[0],
     enabled: !!user?.id && !!id,
   });
 
@@ -59,13 +60,13 @@ export default function CommunityThread() {
   useEffect(() => {
     if (thread && !viewIncremented.current) {
       viewIncremented.current = true;
-      base44.entities.ForumThread.update(thread.id, { view_count: (thread.view_count || 0) + 1 }).catch(() => {});
+      mist.entities.ForumThread.update(thread.id, { view_count: (thread.view_count || 0) + 1 }).catch(() => {});
     }
   }, [thread]);
 
   useEffect(() => {
     if (user?.id && thread && sub?.unread_count > 0) {
-      base44.entities.ForumSubscription.update(sub.id, { unread_count: 0, last_read_date: new Date().toISOString() })
+      mist.entities.ForumSubscription.update(sub.id, { unread_count: 0, last_read_date: new Date().toISOString() })
         .then(() => queryClient.invalidateQueries({ queryKey: ["forum-subs", user.id] }))
         .catch(() => {});
     }
@@ -95,7 +96,7 @@ export default function CommunityThread() {
       } else if (quotePost) {
         body = `> **${quotePost.author_name} said:**\n> ${(quotePost.body || "").slice(0, 200)}\n\n${reply}`;
       }
-      await base44.entities.ForumPost.create({
+      await mist.entities.ForumPost.create({
         thread_id: id,
         thread_title: thread.title,
         body,
@@ -110,7 +111,7 @@ export default function CommunityThread() {
         quote_of_body: quotePost?.body?.slice(0, 200) || "",
         image_url: imageUrl,
       });
-      await base44.entities.ForumThread.update(thread.id, {
+      await mist.entities.ForumThread.update(thread.id, {
         reply_count: (thread.reply_count || 0) + 1,
         last_reply_date: new Date().toISOString(),
         last_reply_author: user.full_name || "Anonymous",
@@ -164,9 +165,9 @@ export default function CommunityThread() {
     const newVal = !subscribed;
     setSubscribed(newVal);
     try {
-      if (sub) await base44.entities.ForumSubscription.update(sub.id, { is_subscribed: newVal });
+      if (sub) await mist.entities.ForumSubscription.update(sub.id, { is_subscribed: newVal });
       else
-        await base44.entities.ForumSubscription.create({
+        await mist.entities.ForumSubscription.create({
           user_id: user.id, thread_id: id, thread_title: thread.title, category_name: thread.category_name,
           is_subscribed: newVal, is_bookmarked: false, unread_count: 0,
         });
@@ -177,9 +178,9 @@ export default function CommunityThread() {
     const newVal = !bookmarked;
     setBookmarked(newVal);
     try {
-      if (sub) await base44.entities.ForumSubscription.update(sub.id, { is_bookmarked: newVal });
+      if (sub) await mist.entities.ForumSubscription.update(sub.id, { is_bookmarked: newVal });
       else
-        await base44.entities.ForumSubscription.create({
+        await mist.entities.ForumSubscription.create({
           user_id: user.id, thread_id: id, thread_title: thread.title, category_name: thread.category_name,
           is_subscribed: false, is_bookmarked: newVal, unread_count: 0,
         });
@@ -187,24 +188,24 @@ export default function CommunityThread() {
   };
   const togglePin = async () => {
     if (!thread) return;
-    await base44.entities.ForumThread.update(thread.id, { is_pinned: !thread.is_pinned });
+    await mist.entities.ForumThread.update(thread.id, { is_pinned: !thread.is_pinned });
     queryClient.invalidateQueries({ queryKey: ["forum-thread", id] });
     queryClient.invalidateQueries({ queryKey: ["forum-threads"] });
   };
   const toggleLock = async () => {
     if (!thread) return;
-    await base44.entities.ForumThread.update(thread.id, { is_locked: !thread.is_locked });
+    await mist.entities.ForumThread.update(thread.id, { is_locked: !thread.is_locked });
     queryClient.invalidateQueries({ queryKey: ["forum-thread", id] });
   };
   const toggleFeature = async () => {
     if (!thread) return;
-    await base44.entities.ForumThread.update(thread.id, { is_featured: !thread.is_featured });
+    await mist.entities.ForumThread.update(thread.id, { is_featured: !thread.is_featured });
     queryClient.invalidateQueries({ queryKey: ["forum-thread", id] });
     queryClient.invalidateQueries({ queryKey: ["forum-threads"] });
   };
   const deleteThread = async () => {
     if (!thread || !confirm("Delete this entire thread?")) return;
-    await base44.entities.ForumThread.update(thread.id, { is_deleted: true });
+    await mist.entities.ForumThread.update(thread.id, { is_deleted: true });
     navigate("/community-forum");
   };
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import {
   Zap, CloudLightning, Trash2, RefreshCw, Activity, CheckCircle2, XCircle,
   Gauge, Clock, AlertTriangle, TrendingUp, Bell,
@@ -20,8 +21,8 @@ export default function PlatformAdminLightning() {
     setLoading(true);
     try {
       const [rows, stateRows] = await Promise.all([
-        base44.entities.LightningStrike.list("-strike_time", 100),
-        base44.entities.LightningProviderState.list("-created_date", 1).catch(() => []),
+        mist.entities.LightningStrike.list("-strike_time", 100),
+        mist.entities.LightningProviderState.list("-created_date", 1).catch(() => []),
       ]);
       setStrikes(rows || []);
       setState((stateRows && stateRows[0]) || null);

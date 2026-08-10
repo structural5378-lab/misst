@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { milesBetween } from '@/lib/lightning/lightningSeverity';
 import { SCOPE_RADIUS_MI } from '@/lib/lightning/proximityConfig';
 
@@ -39,7 +39,7 @@ export function useRealtimeLightningStrikes({
   useEffect(() => {
     // Clear realtime cache on community / scope change.
     setRealtimeStrikes([]);
-    const unsub = base44.entities.LightningStrike.subscribe((evt) => {
+    const unsub = mist.entities.LightningStrike.subscribe((evt) => {
       if (!evt || evt.type !== 'create' || !evt.data) return;
       const s = evt.data;
       if (s.latitude == null || s.longitude == null) return;

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Search, X, RefreshCw, Megaphone, Pin, Flame, Star, Inbox,
@@ -46,19 +46,19 @@ export default function Community() {
 
   const { data: categories = [], isLoading: catLoading } = useQuery({
     queryKey: ["forum-categories"],
-    queryFn: () => base44.entities.ForumCategory.list("sort_order", 50),
+    queryFn: () => mist.entities.ForumCategory.list("sort_order", 50),
     staleTime: 60000,
   });
 
   const { data: threads = [], isLoading: threadsLoading, refetch } = useQuery({
     queryKey: ["forum-threads"],
-    queryFn: () => base44.entities.ForumThread.filter({}, "-last_reply_date", 100),
+    queryFn: () => mist.entities.ForumThread.filter({}, "-last_reply_date", 100),
     staleTime: 30000,
   });
 
   const { data: subscriptions = [] } = useQuery({
     queryKey: ["forum-subs", user?.id],
-    queryFn: () => base44.entities.ForumSubscription.filter({ user_id: user.id }, "-created_date", 200),
+    queryFn: () => mist.entities.ForumSubscription.filter({ user_id: user.id }, "-created_date", 200),
     enabled: !!user?.id,
     staleTime: 15000,
   });
@@ -66,7 +66,7 @@ export default function Community() {
   const { data: memberCount = 0 } = useQuery({
     queryKey: ["forum-member-count"],
     queryFn: async () => {
-      const users = await base44.entities.UserStats.list("-created_date", 1);
+      const users = await mist.entities.UserStats.list("-created_date", 1);
       return users.length > 0 ? 100 : 0; // placeholder; real count from admin stats
     },
     staleTime: 300000,

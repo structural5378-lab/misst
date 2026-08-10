@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { usePollingGate } from "@/hooks/usePollingGate";
 import PageHeader from "@/components/layout/PageHeader";
@@ -16,11 +16,11 @@ export default function Nets() {
 
   const { data: nets = [], isLoading } = useQuery({
     queryKey: ["nets"],
-    queryFn: () => base44.entities.Net.list("-created_date", 200),
+    queryFn: () => mist.entities.Net.list("-created_date", 200),
   });
   const { data: sessions = [] } = useQuery({
     queryKey: ["net-sessions-active"],
-    queryFn: () => base44.entities.NetSession.list("-started_at", 200),
+    queryFn: () => mist.entities.NetSession.list("-started_at", 200),
     refetchInterval: active ? 15000 : false,
   });
 

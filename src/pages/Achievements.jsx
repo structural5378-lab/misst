@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trophy, Search, BarChart3 } from 'lucide-react';
@@ -41,7 +42,7 @@ export default function Achievements() {
     queryKey: ['user-achievements', user?.id],
     queryFn: async () => {
       const u = user || await base44.auth.me();
-      return await base44.entities.UserAchievement.list();
+      return await mist.entities.UserAchievement.list();
     },
     enabled: !!user,
     staleTime: 15000,
@@ -58,7 +59,7 @@ export default function Achievements() {
   const handleTogglePin = async (achievement) => {
     const ua = unlockedMap[achievement.id];
     if (!ua) return;
-    await base44.entities.UserAchievement.update(ua.id, { is_pinned: !ua.is_pinned });
+    await mist.entities.UserAchievement.update(ua.id, { is_pinned: !ua.is_pinned });
     queryClient.invalidateQueries(['user-achievements', user?.id]);
     setSelectedBadge(null);
   };

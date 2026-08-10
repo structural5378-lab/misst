@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Radio, Calendar, Pin, Image as ImageIcon, FileText, Users, Wifi } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { presenceStatus } from "@/lib/chatV2/chatV2Utils";
 import { Badge, roleBadge } from "./badges";
 
@@ -54,7 +55,7 @@ export function EventsView({ community }) {
   useEffect(() => {
     if (!community?.id) return;
     let a = true; setLoading(true);
-    base44.entities.Event.filter({ community_id: community.id }, "-created_date", 20).then((r) => a && setEvents(r || [])).catch(() => {}).finally(() => a && setLoading(false));
+    mist.entities.Event.filter({ community_id: community.id }, "-created_date", 20).then((r) => a && setEvents(r || [])).catch(() => {}).finally(() => a && setLoading(false));
     return () => { a = false; };
   }, [community?.id]);
   if (loading) return <Spinner />;
@@ -79,7 +80,7 @@ export function NetsView({ community }) {
   useEffect(() => {
     if (!community?.id) return;
     let a = true; setLoading(true);
-    base44.entities.Net.filter({ community_id: community.id, status: "active" }, "-created_date", 20).then((r) => a && setNets(r || [])).catch(() => {}).finally(() => a && setLoading(false));
+    mist.entities.Net.filter({ community_id: community.id, status: "active" }, "-created_date", 20).then((r) => a && setNets(r || [])).catch(() => {}).finally(() => a && setLoading(false));
     return () => { a = false; };
   }, [community?.id]);
   if (loading) return <Spinner />;

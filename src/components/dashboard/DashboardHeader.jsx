@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, Radio } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useMistUser } from '@/hooks/useMistUser';
 
 // DashboardHeader — compact top bar: brand mark, notification bell, profile avatar.
@@ -13,7 +13,7 @@ export default function DashboardHeader() {
   const { data: alerts = [] } = useQuery({
     queryKey: ['dashboard-header-alerts'],
     queryFn: async () => {
-      const all = await base44.entities.Alert.list('-created_date', 12);
+      const all = await mist.entities.Alert.list('-created_date', 12);
       return all.filter((a) => !a.title?.startsWith('__') && !a.is_read);
     },
     staleTime: 30000,

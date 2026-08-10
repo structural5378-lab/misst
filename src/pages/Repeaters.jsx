@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ export default function Repeaters() {
 
   const { data: repeaters, isLoading } = useQuery({
     queryKey: ["repeaters"],
-    queryFn: () => base44.entities.Repeater.list("-created_date", 50),
+    queryFn: () => mist.entities.Repeater.list("-created_date", 50),
     initialData: [],
   });
 

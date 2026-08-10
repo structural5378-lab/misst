@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Radio, MapPin, Star, Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
@@ -40,7 +40,7 @@ export default function RepeaterDetail() {
   const { data: repeater, isLoading } = useQuery({
     queryKey: ["repeater", id],
     queryFn: async () => {
-      const list = await base44.entities.Repeater.filter({ id });
+      const list = await mist.entities.Repeater.filter({ id });
       return list[0];
     },
   });
@@ -54,7 +54,7 @@ export default function RepeaterDetail() {
 
   const handleSave = async () => {
     setSaving(true);
-    await base44.entities.Repeater.update(id, {
+    await mist.entities.Repeater.update(id, {
       ...form,
       frequency: parseFloat(form.frequency),
       latitude: form.latitude ? parseFloat(form.latitude) : null,
@@ -69,13 +69,13 @@ export default function RepeaterDetail() {
   const handleDelete = async () => {
     if (!window.confirm("Delete this repeater?")) return;
     setDeleting(true);
-    await base44.entities.Repeater.delete(id);
+    await mist.entities.Repeater.delete(id);
     queryClient.invalidateQueries({ queryKey: ["repeaters"] });
     navigate("/repeaters");
   };
 
   const handleFavorite = async () => {
-    await base44.entities.Repeater.update(id, { is_favorite: !repeater.is_favorite });
+    await mist.entities.Repeater.update(id, { is_favorite: !repeater.is_favorite });
     queryClient.invalidateQueries({ queryKey: ["repeater", id] });
     queryClient.invalidateQueries({ queryKey: ["repeaters"] });
   };

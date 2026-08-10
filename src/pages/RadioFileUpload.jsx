@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Upload, Loader2, Save } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,7 +69,7 @@ export default function RadioFileUpload() {
     if (editId) {
       setSaving(true);
       try {
-        await base44.entities.RadioFile.update(editId, {
+        await mist.entities.RadioFile.update(editId, {
           radio_model_id: model.radio_model_id, manufacturer_name: model.manufacturer_name, model_name: model.model_name,
           file_name: fileName, description, notes, visibility, tags: JSON.stringify(tags),
         });

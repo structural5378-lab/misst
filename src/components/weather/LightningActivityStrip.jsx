@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useUserCommunities } from '@/hooks/useUserCommunities';
 import { usePollingGate } from '@/hooks/usePollingGate';
 import { useRealtimeLightningStrikes } from '@/hooks/useRealtimeLightningStrikes';
@@ -44,7 +44,7 @@ export default function LightningActivityStrip() {
     queryKey: ['lightning-activity-base', community?.id],
     queryFn: async () => {
       if (!center) return [];
-      const rows = await base44.entities.LightningStrike.list('-strike_time', 100);
+      const rows = await mist.entities.LightningStrike.list('-strike_time', 100);
       return (rows || []).filter((s) => s.latitude != null && s.longitude != null);
     },
     enabled: !!center,

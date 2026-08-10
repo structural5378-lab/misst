@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { base44 } from "@/api/base44Client";
-
+import { mist } from '@/api/mist';
 // useChatV2Presence — owns the current user's presence row (heartbeat + lifecycle)
 // and subscribes to every other user's presence for live status + typing indicators.
 //
@@ -25,7 +24,7 @@ export function useChatV2Presence(user) {
     if (!user?.id) return;
     const now = new Date().toISOString();
     try {
-      const mine = await base44.entities.ChatV2Presence
+      const mine = await mist.entities.ChatV2Presence
         .filter({ user_id: user.id }, "-last_heartbeat", 5)
         .catch(() => []);
       const data = {
@@ -38,9 +37,9 @@ export function useChatV2Presence(user) {
       };
       if (mine && mine.length) {
         presenceIdRef.current = mine[0].id;
-        await base44.entities.ChatV2Presence.update(mine[0].id, data);
+        await mist.entities.ChatV2Presence.update(mine[0].id, data);
       } else {
-        const created = await base44.entities.ChatV2Presence.create(data);
+        const created = await mist.entities.ChatV2Presence.create(data);
         presenceIdRef.current = created?.id || null;
       }
       setReconnecting(false);
@@ -55,12 +54,12 @@ export function useChatV2Presence(user) {
     let mounted = true;
     let unsub = null;
     (async () => {
-      const all = await base44.entities.ChatV2Presence.list("-last_heartbeat", 500).catch(() => []);
+      const all = await mist.entities.ChatV2Presence.list("-last_heartbeat", 500).catch(() => []);
       if (!mounted) return;
       const map = {};
       for (const p of all || []) if (p.user_id) map[p.user_id] = p;
       setPresenceByUser(map);
-      unsub = base44.entities.ChatV2Presence.subscribe((event) => {
+      unsub = mist.entities.ChatV2Presence.subscribe((event) => {
         const p = event.data;
         if (!p || !p.user_id) return;
         setPresenceByUser((prev) => {
@@ -81,7 +80,7 @@ export function useChatV2Presence(user) {
       const now = new Date().toISOString();
       try {
         if (presenceIdRef.current) {
-          await base44.entities.ChatV2Presence.update(presenceIdRef.current, {
+          await mist.entities.ChatV2Presence.update(presenceIdRef.current, {
             last_heartbeat: now,
             status: document.visibilityState === "visible" ? "online" : "away",
           });
@@ -94,7 +93,7 @@ export function useChatV2Presence(user) {
       const now = new Date().toISOString();
       const status = document.visibilityState === "visible" ? "online" : "away";
       if (presenceIdRef.current) {
-        base44.entities.ChatV2Presence.update(presenceIdRef.current, { status, last_heartbeat: now, last_seen: now }).catch(() => {});
+        mist.entities.ChatV2Presence.update(presenceIdRef.current, { status, last_heartbeat: now, last_seen: now }).catch(() => {});
       }
     };
     const onOnline = () => { setOnline(true); setReconnecting(false); ensurePresence(); };
@@ -102,7 +101,7 @@ export function useChatV2Presence(user) {
     const onUnload = () => {
       const now = new Date().toISOString();
       if (presenceIdRef.current) {
-        base44.entities.ChatV2Presence.update(presenceIdRef.current, { status: "offline", last_seen: now }).catch(() => {});
+        mist.entities.ChatV2Presence.update(presenceIdRef.current, { status: "offline", last_seen: now }).catch(() => {});
       }
     };
     document.addEventListener("visibilitychange", onVis);
@@ -123,7 +122,7 @@ export function useChatV2Presence(user) {
   const setTyping = useCallback((conversationId, isTyping) => {
     if (!presenceIdRef.current) return;
     const now = new Date().toISOString();
-    base44.entities.ChatV2Presence.update(presenceIdRef.current, {
+    mist.entities.ChatV2Presence.update(presenceIdRef.current, {
       typing_conversation_id: isTyping ? conversationId : "",
       typing_at: isTyping ? now : "",
     }).catch(() => {});
@@ -131,7 +130,7 @@ export function useChatV2Presence(user) {
 
   const setActiveConversation = useCallback((conversationId) => {
     if (!presenceIdRef.current) return;
-    base44.entities.ChatV2Presence.update(presenceIdRef.current, {
+    mist.entities.ChatV2Presence.update(presenceIdRef.current, {
       active_conversation_id: conversationId || "",
     }).catch(() => {});
   }, []);

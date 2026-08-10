@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { Link } from "react-router-dom";
 import { ArrowLeft, Layers, Crosshair, Bug } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useUserCommunities } from "@/hooks/useUserCommunities";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -100,7 +101,7 @@ export default function RadioScope() {
   // re-subscribes the new one (invalidate is scoped by community.id key). ──
   useEffect(() => {
     if (!community?.id) return;
-    const unsub = base44.entities.ChatPresence.subscribe(() => {
+    const unsub = mist.entities.ChatPresence.subscribe(() => {
       qc.invalidateQueries({ queryKey: ["radioscope", community.id] });
     });
     return unsub;

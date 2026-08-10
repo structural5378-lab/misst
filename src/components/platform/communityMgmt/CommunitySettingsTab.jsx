@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ const CATEGORIES = ["radio", "technology", "social", "gaming", "education", "spo
 export default function CommunitySettingsTab({ community, onChanged }) {
   const { data: settings } = useQuery({
     queryKey: ["community-settings", community.id],
-    queryFn: async () => (await base44.entities.CommunitySettings.filter({ community_id: community.id }))?.[0] || {},
+    queryFn: async () => (await mist.entities.CommunitySettings.filter({ community_id: community.id }))?.[0] || {},
   });
   const [f, setF] = useState({});
   const [initial, setInitial] = useState({});

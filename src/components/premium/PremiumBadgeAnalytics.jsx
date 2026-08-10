@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend } from 'recharts';
 import { DollarSign, Users, TrendingUp, Gift, Award, Search } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export default function PremiumBadgeAnalytics({ badges = [] }) {
 
   const { data: ownership = [] } = useQuery({
     queryKey: ['admin-premium-ownership-all'],
-    queryFn: () => base44.entities.PremiumBadgeOwnership.filter({ status: 'active' }, '-purchased_at', 500),
+    queryFn: () => mist.entities.PremiumBadgeOwnership.filter({ status: 'active' }, '-purchased_at', 500),
   });
 
   const activeSubs = ownership.filter((o) => o.is_active).length;

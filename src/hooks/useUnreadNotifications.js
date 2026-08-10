@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useAuth } from "@/lib/AuthContext";
 
 // Global unread notification count for the bell badge.
@@ -10,7 +10,7 @@ export function useUnreadNotifications() {
     queryKey: ["notifications-unread", user?.id],
     queryFn: async () => {
       if (!user?.id) return 0;
-      const items = await base44.entities.Notification.filter(
+      const items = await mist.entities.Notification.filter(
         { recipient_id: user.id, read: false },
         "-created_date",
         200

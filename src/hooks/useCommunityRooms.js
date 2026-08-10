@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
+import { mist } from '@/api/mist';
 // useCommunityRooms — loads a community's Chat V2 rooms (seeding defaults the
 // first time via ensureCommunityRooms), ensures the current user has a
 // ChatV2RoomMembership row for every room, and subscribes to room + membership
@@ -31,14 +32,14 @@ export function useCommunityRooms(communityId, user) {
 
   const ensureMemberships = useCallback(async (roomList) => {
     if (!user?.id || !roomList.length) return;
-    const my = await base44.entities.ChatV2RoomMembership
+    const my = await mist.entities.ChatV2RoomMembership
       .filter({ user_id: user.id, community_id: communityId }, "-created_date", 500)
       .catch(() => []);
     const map = {};
     (my || []).forEach((m) => { map[m.room_id] = m; });
     const missing = roomList.filter((r) => !map[r.id]);
     if (missing.length) {
-      const created = await base44.entities.ChatV2RoomMembership.bulkCreate(
+      const created = await mist.entities.ChatV2RoomMembership.bulkCreate(
         missing.map((r) => ({
           room_id: r.id,
           user_id: user.id,
@@ -66,7 +67,7 @@ export function useCommunityRooms(communityId, user) {
   // Live room updates (last message, renames, new rooms, deletes)
   useEffect(() => {
     if (!communityId) return;
-    const unsub = base44.entities.ChatV2Room.subscribe((event) => {
+    const unsub = mist.entities.ChatV2Room.subscribe((event) => {
       setRooms((prev) => {
         if (event.type === "delete") return prev.filter((r) => r.id !== event.id);
         const d = event.data;
@@ -82,7 +83,7 @@ export function useCommunityRooms(communityId, user) {
   // Live membership updates (unread counts, mute/favorite/pin)
   useEffect(() => {
     if (!user?.id) return;
-    const unsub = base44.entities.ChatV2RoomMembership.subscribe((event) => {
+    const unsub = mist.entities.ChatV2RoomMembership.subscribe((event) => {
       setMemberships((prev) => {
         if (event.type === "delete") { const n = { ...prev }; delete n[event.id]; return n; }
         const m = event.data;
@@ -99,7 +100,7 @@ export function useCommunityRooms(communityId, user) {
     const cur = memberships[roomId];
     if (!cur) return;
     setMemberships((p) => ({ ...p, [roomId]: { ...cur, ...patch } }));
-    try { await base44.entities.ChatV2RoomMembership.update(cur.id, patch); } catch {}
+    try { await mist.entities.ChatV2RoomMembership.update(cur.id, patch); } catch {}
   }, [memberships]);
 
   const markRead = useCallback(async (roomId, lastMessageId) => {

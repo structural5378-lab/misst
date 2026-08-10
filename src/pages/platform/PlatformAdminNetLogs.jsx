@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { ClipboardList, ChevronDown, Download } from "lucide-react";
 import AdminSection from "@/components/platform/AdminSection";
@@ -14,7 +14,7 @@ function fmtDuration(start, end) {
 function NetLogRow({ s, open, onToggle }) {
   const { data: checkins = [] } = useQuery({
     queryKey: ["admin-net-log-attendance", s.id],
-    queryFn: () => base44.entities.NetLog.filter({ session_id: s.id }, "checkin_number", 500),
+    queryFn: () => mist.entities.NetLog.filter({ session_id: s.id }, "checkin_number", 500),
     enabled: open,
   });
 
@@ -96,7 +96,7 @@ export default function PlatformAdminNetLogs() {
   const [expanded, setExpanded] = useState(null);
   const { data: logs = [] } = useQuery({
     queryKey: ["admin-net-logs"],
-    queryFn: () => base44.entities.NetSession.filter({ status: "closed" }, "-ended_at", 200),
+    queryFn: () => mist.entities.NetSession.filter({ status: "closed" }, "-ended_at", 200),
   });
 
   return (

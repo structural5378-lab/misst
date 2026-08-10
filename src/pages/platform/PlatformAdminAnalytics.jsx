@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { useQuery } from "@tanstack/react-query";
 import { BarChart, Bar, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { TrendingUp, MessageSquare, Users, Activity } from "lucide-react";
@@ -24,9 +24,9 @@ function groupByDate(items, dateField = "created_date", days = 7) {
 
 export default function PlatformAdminAnalytics() {
   const tc = useThemeColors();
-  const { data: users = [] } = useQuery({ queryKey: ["analytics-users"], queryFn: async () => await base44.entities.User.list("-created_date", 500) });
-  const { data: messages = [] } = useQuery({ queryKey: ["analytics-messages"], queryFn: async () => await base44.entities.ChatMessage.list("-created_date", 500) });
-  const { data: posts = [] } = useQuery({ queryKey: ["analytics-posts"], queryFn: async () => await base44.entities.ForumPost.list("-created_date", 500) });
+  const { data: users = [] } = useQuery({ queryKey: ["analytics-users"], queryFn: async () => await mist.entities.User.list("-created_date", 500) });
+  const { data: messages = [] } = useQuery({ queryKey: ["analytics-messages"], queryFn: async () => await mist.entities.ChatMessage.list("-created_date", 500) });
+  const { data: posts = [] } = useQuery({ queryKey: ["analytics-posts"], queryFn: async () => await mist.entities.ForumPost.list("-created_date", 500) });
 
   const userData = groupByDate(users);
   const msgData = groupByDate(messages);

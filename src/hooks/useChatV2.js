@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { cmpCreatedAsc, genTempId, isTempId, normalizeMessage, parseJSON } from "@/lib/chatV2/chatV2Utils";
 import * as queue from "@/lib/chatV2/offlineQueue";
 
@@ -28,7 +28,7 @@ export function useChatV2({ conversationId, user }) {
   const loadInitial = useCallback(async () => {
     if (!conversationId) return;
     setLoading(true);
-    const rows = await base44.entities.ChatV2Message
+    const rows = await mist.entities.ChatV2Message
       .filter({ conversation_id: conversationId }, "-created_date", PAGE)
       .catch(() => []);
     const asc = (rows || []).sort(cmpCreatedAsc).map(normalizeMessage);
@@ -45,7 +45,7 @@ export function useChatV2({ conversationId, user }) {
     setLoadingMore(true);
     const el = scrollRef.current;
     const prevHeight = el?.scrollHeight || 0;
-    const rows = await base44.entities.ChatV2Message
+    const rows = await mist.entities.ChatV2Message
       .filter({ conversation_id: conversationId, created_date: { $lt: oldestDateRef.current } }, "-created_date", PAGE)
       .catch(() => []);
     const asc = (rows || []).sort(cmpCreatedAsc).map(normalizeMessage);
@@ -61,7 +61,7 @@ export function useChatV2({ conversationId, user }) {
   // Real-time subscription + delivered receipts.
   useEffect(() => {
     if (!conversationId || !user?.id) return;
-    const unsub = base44.entities.ChatV2Message.subscribe((event) => {
+    const unsub = mist.entities.ChatV2Message.subscribe((event) => {
       const m = normalizeMessage(event.data);
       if (!m || m.conversation_id !== conversationId) return;
 
@@ -88,7 +88,7 @@ export function useChatV2({ conversationId, user }) {
       if (m.sender_id !== user.id && m.id && !isTempId(m.id)) {
         const dt = parseJSON(m.delivered_to, []);
         if (!dt.includes(user.id)) {
-          base44.entities.ChatV2Message.update(m.id, {
+          mist.entities.ChatV2Message.update(m.id, {
             delivered_to: JSON.stringify([...dt, user.id]),
             status: "delivered",
           }).catch(() => {});
@@ -126,7 +126,7 @@ export function useChatV2({ conversationId, user }) {
     };
 
     const persist = async () => {
-      const created = await base44.entities.ChatV2Message.create(payload);
+      const created = await mist.entities.ChatV2Message.create(payload);
       const norm = normalizeMessage(created);
       setMessages((prev) => prev.map((x) => (x.client_temp_id === tempId ? { ...x, ...norm, status: "sent" } : x)));
       queue.remove(tempId);
@@ -149,7 +149,7 @@ export function useChatV2({ conversationId, user }) {
     if (!item) return;
     setMessages((prev) => prev.map((x) => (x.client_temp_id === tempId ? { ...x, status: "sending" } : x)));
     try {
-      const created = await base44.entities.ChatV2Message.create(item.payload);
+      const created = await mist.entities.ChatV2Message.create(item.payload);
       const norm = normalizeMessage(created);
       setMessages((prev) => prev.map((x) => (x.client_temp_id === tempId ? { ...x, ...norm, status: "sent" } : x)));
       queue.remove(tempId);
@@ -164,7 +164,7 @@ export function useChatV2({ conversationId, user }) {
       const q = queue.getQueue().filter((x) => x.conversation_id === conversationId);
       for (const item of q) {
         try {
-          const created = await base44.entities.ChatV2Message.create(item.payload);
+          const created = await mist.entities.ChatV2Message.create(item.payload);
           const norm = normalizeMessage(created);
           setMessages((prev) => prev.map((x) => (x.client_temp_id === item.client_temp_id ? { ...x, ...norm, status: "sent" } : x)));
           queue.remove(item.client_temp_id);
@@ -180,20 +180,20 @@ export function useChatV2({ conversationId, user }) {
   // Mark conversation read (resets unread badge + writes read_by for others' messages).
   const markRead = useCallback(async () => {
     if (!conversationId || !user?.id) return;
-    const myParts = await base44.entities.ChatV2Participant
+    const myParts = await mist.entities.ChatV2Participant
       .filter({ conversation_id: conversationId, user_id: user.id }, "-joined_at", 5)
       .catch(() => []);
     const part = myParts?.[0];
     if (!part) return;
     const lastMsg = messages[messages.length - 1];
     const lastId = lastMsg && !isTempId(lastMsg.id) ? lastMsg.id : (part.last_read_message_id || "");
-    await base44.entities.ChatV2Participant.update(part.id, {
+    await mist.entities.ChatV2Participant.update(part.id, {
       unread_count: 0, last_read_message_id: lastId, last_read_at: new Date().toISOString(),
     }).catch(() => {});
     const toMark = messages.filter((m) => m.sender_id !== user.id && !(m.read_by || []).includes(user.id) && m.id && !isTempId(m.id));
     if (toMark.length) {
       const updates = toMark.map((m) => ({ id: m.id, read_by: JSON.stringify([...(m.read_by || []), user.id]) }));
-      await base44.entities.ChatV2Message.bulkUpdate(updates).catch(() => {});
+      await mist.entities.ChatV2Message.bulkUpdate(updates).catch(() => {});
       setMessages((prev) => prev.map((m) => ((m.sender_id === user.id || (m.read_by || []).includes(user.id) || isTempId(m.id)) ? m : { ...m, read_by: [...(m.read_by || []), user.id] })));
     }
   }, [conversationId, user?.id, messages]);
@@ -210,20 +210,20 @@ export function useChatV2({ conversationId, user }) {
     const next = { ...cur };
     if (nextList.length) next[emoji] = nextList; else delete next[emoji];
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, reactions: next } : m)));
-    await base44.entities.ChatV2Message.update(messageId, { reactions: JSON.stringify(next) }).catch(() => {});
+    await mist.entities.ChatV2Message.update(messageId, { reactions: JSON.stringify(next) }).catch(() => {});
   }, [messages, user?.id]);
 
   // Edit / delete (sender only).
   const editMessage = useCallback(async (messageId, newBody) => {
     if (!messageId || isTempId(messageId)) return;
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, body: newBody, edited_at: new Date().toISOString() } : m)));
-    await base44.entities.ChatV2Message.update(messageId, { body: newBody, edited_at: new Date().toISOString() }).catch(() => {});
+    await mist.entities.ChatV2Message.update(messageId, { body: newBody, edited_at: new Date().toISOString() }).catch(() => {});
   }, []);
 
   const deleteMessage = useCallback(async (messageId) => {
     if (!messageId || isTempId(messageId)) return;
     setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, deleted: true } : m)));
-    await base44.entities.ChatV2Message.update(messageId, { deleted: true, body: "" }).catch(() => {});
+    await mist.entities.ChatV2Message.update(messageId, { deleted: true, body: "" }).catch(() => {});
   }, []);
 
   return {
