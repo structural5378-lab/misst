@@ -32,6 +32,55 @@ import coreConfig from "./core/config";
 import { http, CoreApiError } from "./core/http";
 import { entitiesFacade } from "./entities";
 
+// --- Functions facade: Core-when-enabled for migrated functions, Base44 otherwise
+// Migrated community-membership functions route to MISST Core REST endpoints when
+// Core is enabled; every other function name delegates to base44.functions unchanged.
+// The Core HTTP client unwraps { success, data } → the payload, matching the shape
+// Base44 backend functions return directly, so existing callers are unaffected.
+// Each adapter returns { data: <payload> } to match the envelope Base44's
+// functions.invoke returns (callers read res.data). The Core http client already
+// unwraps { success, data } → payload, so we re-wrap here.
+const migratedFunctions = {
+  manageCommunityMembership: async (args = {}) => {
+    const { community_id, ...rest } = args;
+    const data = await http.post(`/api/communities/${community_id}/membership`, rest);
+    return { data };
+  },
+  listCommunityMembers: async (args = {}) => {
+    const { community_id, query, admin_view } = args;
+    const qs = new URLSearchParams();
+    if (query) qs.set("query", query);
+    if (admin_view) qs.set("admin_view", "true");
+    const path = `/api/communities/${community_id}/members${qs.toString() ? "?" + qs : ""}`;
+    const data = await http.get(path);
+    return { data };
+  },
+  listCommunityStaff: async (args = {}) => {
+    const { community_id } = args;
+    const data = await http.get(`/api/communities/${community_id}/staff`);
+    return { data };
+  },
+  getCommunityAdminStats: async (args = {}) => {
+    const { community_id } = args;
+    const data = await http.get(`/api/communities/${community_id}/admin-stats`);
+    return { data };
+  },
+};
+
+const functionsFacade = new Proxy(base44.functions, {
+  get(target, prop) {
+    if (prop === "invoke") {
+      return (name, args) => {
+        if (isCoreEnabled() && migratedFunctions[name]) {
+          return migratedFunctions[name](args || {});
+        }
+        return target.invoke(name, args);
+      };
+    }
+    return target[prop];
+  },
+});
+
 // --- Auth facade: Core-when-enabled, Base44 fallback -------------------------
 const authFacade = {
   async me() {
@@ -113,7 +162,9 @@ export const mist = {
 
   // Entities — Core-when-enabled (generic entity API), Base44 fallback otherwise
   entities: entitiesFacade,
-  functions: base44.functions,
+  // Functions — Core-when-enabled for migrated community-membership functions,
+  // Base44 fallback for all others (Proxy preserves the full base44.functions surface).
+  functions: functionsFacade,
   integrations: base44.integrations,
   users: base44.users,
   analytics: base44.analytics,

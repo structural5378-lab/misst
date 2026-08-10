@@ -63,8 +63,13 @@ const request = async (path, options = {}) => {
   }
 
   if (!response.ok) {
+    // Core error envelope is { success, error: { code, message } }; extract the
+    // readable message. Fall back through legacy shapes (message/detail/string
+    // error) so non-Core-style error bodies still surface a usable string.
+    const errObj = payload && payload.error;
     const message =
-      (payload && (payload.message || payload.detail || payload.error)) ||
+      (payload && (payload.message || payload.detail)) ||
+      (errObj && typeof errObj === "object" ? errObj.message : errObj) ||
       response.statusText ||
       "Request failed";
     throw new CoreApiError(message, response.status, payload);
