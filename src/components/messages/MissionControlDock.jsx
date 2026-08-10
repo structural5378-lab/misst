@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Radio, Satellite, CloudLightning, Wifi, Siren, ChevronUp, ChevronDown, Activity, Crosshair, Battery, BatteryCharging, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-
 import { mist } from '@/api/mist';
 // MissionControlDock — MISST's signature slim realtime status dock. Sits at
 // the bottom of the messaging hub and surfaces connected repeater, GPS,
@@ -38,7 +36,7 @@ export default function MissionControlDock({ community }) {
   useEffect(() => {
     if (!community?.id) return;
     let alive = true;
-    base44.functions
+    mist.functions
       .invoke("getWeatherData", { community_id: community.id, lat: community.location_lat, lon: community.location_lon })
       .then((r) => { if (alive) setWeather(r); })
       .catch(() => {});
