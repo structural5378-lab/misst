@@ -4,7 +4,7 @@
  * Never returns HTTP responses.
  */
 
-import { UserRepository } from '../repositories/user.repository';
+import { UserRepository, sanitizeUser } from '../repositories/user.repository';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { SessionRepository } from '../repositories/session.repository';
 import { jwtService } from '../auth/jwt.service';
@@ -12,6 +12,7 @@ import { passwordService } from '../auth/password.service';
 import { otpService } from '../auth/otp.service';
 import { emailChannel } from '../notifications/channels/email.channel';
 import { AppError } from '../utils/errors';
+import { getPool } from '../db';
 
 export class AuthService {
   constructor(
@@ -162,7 +163,7 @@ export class AuthService {
   async getCurrentUser(userId: string) {
     const user = await this.userRepo.findById(userId);
     if (!user) throw new AppError('USER_NOT_FOUND', 'User not found', 404);
-    return user;
+    return sanitizeUser(user);
   }
 
   async getOAuthUrl(provider: string) {
@@ -174,3 +175,30 @@ export class AuthService {
     throw new AppError('NOT_IMPLEMENTED', 'OAuth not yet implemented', 501);
   }
 }
+
+/**
+ * Lazy singleton wiring — repositories are created from the initialized DB
+ * pool on first use (after initializeDatabase() runs in bootstrap). The
+ * controller imports `authService` and calls its methods; by the time any
+ * request arrives, the pool is ready.
+ */
+let _instance: AuthService | null = null;
+function getAuthServiceInstance(): AuthService {
+  if (!_instance) {
+    const pool = getPool();
+    _instance = new AuthService(
+      new UserRepository(pool),
+      new ProfileRepository(pool),
+      new SessionRepository(pool),
+    );
+  }
+  return _instance;
+}
+
+export const authService: AuthService = new Proxy({} as AuthService, {
+  get(_target, prop) {
+    const svc = getAuthServiceInstance();
+    const value = Reflect.get(svc, prop);
+    return typeof value === 'function' ? (value as Function).bind(svc) : value;
+  },
+});

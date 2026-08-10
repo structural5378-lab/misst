@@ -56,7 +56,7 @@ export const authController = {
   async logout(req: Request, res: Response) {
     try {
       await authService.logout(req.body.refresh_token);
-      return sendSuccess(res, 204);
+      return sendSuccess(res, 200, { success: true });
     } catch (error) {
       return sendError(res, error);
     }

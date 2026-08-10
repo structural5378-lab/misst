@@ -4,6 +4,7 @@
 
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller';
+import { authMiddleware } from '../middleware/auth.middleware';
 import { rateLimitMiddleware } from '../middleware/rate-limit.middleware';
 import { validate } from '../middleware/validate.middleware';
 import { registerSchema, loginSchema, otpSchema, resetPasswordSchema } from '../../config/schemas/auth.schema';
@@ -20,4 +21,4 @@ authRoutes.post('/password/reset-request', rateLimitMiddleware('resetRequest'), 
 authRoutes.post('/password/reset', rateLimitMiddleware('reset'), validate(resetPasswordSchema), authController.reset);
 authRoutes.get('/oauth/:provider', authController.oauthRedirect);
 authRoutes.get('/oauth/:provider/callback', authController.oauthCallback);
-authRoutes.get('/me', authController.me);
+authRoutes.get('/me', authMiddleware, authController.me);

@@ -65,3 +65,12 @@ export class UserRepository extends BaseRepository<User> {
     );
   }
 }
+
+/**
+ * Strip sensitive fields (password_hash) before returning a user to the API.
+ */
+export function sanitizeUser(user: User | null): Omit<User, 'password_hash'> | null {
+  if (!user) return null;
+  const { password_hash: _omit, ...rest } = user as User & { password_hash?: string };
+  return rest;
+}

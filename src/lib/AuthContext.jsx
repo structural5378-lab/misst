@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
-import { mist } from '@/api/mist';
+import { mist, isCoreEnabled } from '@/api/mist';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       setAuthChecked(true);
-      
+
       if (error.status === 401 || error.status === 403) {
         setAuthError({
           type: 'auth_required',
@@ -38,11 +38,34 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const checkAppState = useCallback(async () => {
+  // --- MISST Core bootstrap (when VITE_MIST_CORE_API_URL is set) ----------
+  // No dependency on the Base44 platform /api/apps/public endpoint. If a Core
+  // access token is persisted, validate it via /api/auth/me; otherwise mark
+  // the session as unauthenticated. The Base44 fallback below is preserved
+  // unchanged for environments where Core is not yet configured.
+  const checkAppStateCore = useCallback(async () => {
+    setIsLoadingPublicSettings(true);
+    setAppPublicSettings(null);
+    setAuthError(null);
+
+    const token = mist.core.config.getCoreToken();
+    if (token) {
+      await checkUserAuth();
+    } else {
+      setIsLoadingAuth(false);
+      setIsAuthenticated(false);
+      setAuthChecked(true);
+    }
+
+    setIsLoadingPublicSettings(false);
+  }, [checkUserAuth]);
+
+  // --- Legacy Base44 bootstrap (unchanged) -------------------------------
+  const checkAppStateBase44 = useCallback(async () => {
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
-      
+
       const appClient = createAxiosClient({
         baseURL: `/api/apps/public`,
         headers: {
@@ -51,11 +74,11 @@ export const AuthProvider = ({ children }) => {
         token: appParams.token,
         interceptResponses: true
       });
-      
+
       try {
         const publicSettings = await appClient.get(`/prod/public-settings/by-id/${appParams.appId}`);
         setAppPublicSettings(publicSettings);
-        
+
         if (appParams.token) {
           await checkUserAuth();
         } else {
@@ -66,7 +89,7 @@ export const AuthProvider = ({ children }) => {
         setIsLoadingPublicSettings(false);
       } catch (appError) {
         console.error('App state check failed:', appError);
-        
+
         if (appError.status === 403 && appError.data?.extra_data?.reason) {
           const reason = appError.data.extra_data.reason;
           if (reason === 'auth_required') {
@@ -90,6 +113,10 @@ export const AuthProvider = ({ children }) => {
     }
   }, [checkUserAuth]);
 
+  const checkAppState = useCallback(async () => {
+    return isCoreEnabled() ? checkAppStateCore() : checkAppStateBase44();
+  }, [checkAppStateCore, checkAppStateBase44]);
+
   const logout = useCallback((shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
@@ -101,7 +128,13 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const navigateToLogin = useCallback(() => {
-    mist.auth.redirectToLogin(window.location.href);
+    // In Core mode there is no Base44 login redirect — route to the app's
+    // own login page. In legacy mode, defer to the Base44 SDK redirect.
+    if (isCoreEnabled()) {
+      window.location.href = '/login';
+    } else {
+      mist.auth.redirectToLogin(window.location.href);
+    }
   }, []);
 
   useEffect(() => {

@@ -1,14 +1,17 @@
 /**
  * MIST Backend — Application Entry Point
  * Initializes the server, connects dependencies, and starts listening.
+ *
+ * Phase 1 (auth foundation): the WebSocket and job-scheduler subsystems are
+ * optional and loaded lazily so the auth API can boot even before those
+ * subsystems (and their dependencies) are installed/implemented.
  */
 
+import { createServer } from 'http';
 import { createApp } from './app';
 import { config } from './config';
 import { logger } from './logging';
 import { initializeDatabase } from './db';
-import { initializeWebSocket } from './websockets';
-import { startScheduler } from './jobs';
 
 async function bootstrap() {
   try {
@@ -18,16 +21,27 @@ async function bootstrap() {
     await initializeDatabase();
     logger.info('Database connected');
 
-    // Create Express/Fastify app
+    // Create Express app
     const app = createApp();
+    const httpServer = createServer(app);
 
-    // Initialize WebSocket server
-    const httpServer = initializeWebSocket(app);
-    logger.info('WebSocket server initialized');
+    // Optional subsystems — loaded dynamically so a missing dependency or
+    // not-yet-implemented module does not prevent the auth API from serving.
+    try {
+      const { initializeWebSocket } = await import('./websockets');
+      initializeWebSocket(httpServer);
+      logger.info('WebSocket server initialized');
+    } catch (err) {
+      logger.warn({ err }, 'WebSocket subsystem not available — running in auth-only mode');
+    }
 
-    // Start background job scheduler
-    startScheduler();
-    logger.info('Job scheduler started');
+    try {
+      const { startScheduler } = await import('./jobs');
+      startScheduler();
+      logger.info('Job scheduler started');
+    } catch (err) {
+      logger.warn({ err }, 'Job scheduler not available — running in auth-only mode');
+    }
 
     // Start HTTP server
     httpServer.listen(config.port, () => {
