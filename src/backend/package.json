@@ -9,7 +9,9 @@
     "dev": "tsx watch src/backend/main.ts",
     "build": "tsc -p src/backend/tsconfig.json",
     "serve": "node dist/backend/main.js",
-    "db:migrate": "psql \"$DATABASE_URL\" -f src/backend/db/schema.sql"
+    "db:migrate": "tsx src/backend/db/migrate.ts",
+    "db:schema": "psql \"$DATABASE_URL\" -f src/backend/db/schema.sql",
+    "gen:entities": "node scripts/generate-core-entities.cjs"
   },
   "dependencies": {
     "argon2": "^0.40.1",

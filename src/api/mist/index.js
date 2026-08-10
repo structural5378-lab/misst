@@ -30,6 +30,7 @@ import coreCommunities from "./core/communities";
 import coreMembership from "./core/membership";
 import coreConfig from "./core/config";
 import { http, CoreApiError } from "./core/http";
+import { entitiesFacade } from "./entities";
 
 // --- Auth facade: Core-when-enabled, Base44 fallback -------------------------
 const authFacade = {
@@ -110,8 +111,8 @@ export const mist = {
   // Migrated (Core-when-enabled)
   auth: authFacade,
 
-  // Not yet migrated — delegate to Base44 unchanged
-  entities: base44.entities,
+  // Entities — Core-when-enabled (generic entity API), Base44 fallback otherwise
+  entities: entitiesFacade,
   functions: base44.functions,
   integrations: base44.integrations,
   users: base44.users,

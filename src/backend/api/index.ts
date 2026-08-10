@@ -9,8 +9,10 @@
 import { Router } from 'express';
 import { authRoutes } from './routes/auth.routes';
 import { userRoutes } from './routes/user.routes';
+import { entityRoutes } from './routes/entity.routes';
 
 export const apiRouter = Router();
 
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/users', userRoutes);
+apiRouter.use('/entities', entityRoutes);
