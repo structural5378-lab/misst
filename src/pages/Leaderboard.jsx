@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { mist } from '@/api/mist';
 import { useQuery } from '@tanstack/react-query';
 import { Crown, Trophy, Star, Radio, Headphones, MapPin, MessageSquare, ShieldAlert } from 'lucide-react';
 import PageHeader from '@/components/layout/PageHeader';
@@ -21,7 +22,7 @@ export default function Leaderboard() {
   const [sortBy, setSortBy] = useState('xp');
   const [currentUserId, setCurrentUserId] = useState(null);
 
-  useEffect(() => { base44.auth.me().then(u => setCurrentUserId(u.id)).catch(() => {}); }, []);
+  useEffect(() => { mist.auth.me().then(u => setCurrentUserId(u.id)).catch(() => {}); }, []);
 
   const { data: leaderboard = [], isLoading } = useQuery({
     queryKey: ['leaderboard'],

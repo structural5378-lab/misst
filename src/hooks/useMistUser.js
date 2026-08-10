@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+
 import { mist } from '@/api/mist';
 import { useAuth } from "@/lib/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
@@ -82,7 +82,7 @@ export function useMistUser() {
   }, [user, isAdmin, roles, stats]);
 
   const updateProfile = useCallback(async (patch) => {
-    await base44.auth.updateMe(patch);
+    await mist.auth.updateMe(patch);
     await checkUserAuth();
     return user;
   }, [checkUserAuth, user]);

@@ -37,12 +37,12 @@ export default function OperatorCard({ onLogout }) {
   const [user, setUser] = useState(null);
   const [selectedBadge, setSelectedBadge] = useState(null);
 
-  useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
+  useEffect(() => { mist.auth.me().then(setUser).catch(() => {}); }, []);
 
   const { data: syncData } = useQuery({
     queryKey: ['operator-card-stats'],
     queryFn: async () => {
-      const u = user || (await base44.auth.me());
+      const u = user || (await mist.auth.me());
       const res = await base44.functions.invoke('syncUserStats', { uid: mybbUser?.uid || u?.id });
       return res.data;
     },

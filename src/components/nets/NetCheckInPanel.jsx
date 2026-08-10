@@ -16,7 +16,7 @@ export default function NetCheckInPanel({ net }) {
   const qc = useQueryClient();
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
+    mist.auth.me().then(setUser).catch(() => {});
   }, []);
 
   const { data: checkIns = [] } = useQuery({

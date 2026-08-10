@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMistUser } from "@/hooks/useMistUser";
 import { useParsedField, DEFAULT_SECURITY } from "@/hooks/useAccountPrefs";
-import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,7 +22,7 @@ export default function AccountSecurity() {
 
   const sendReset = async () => {
     setSending(true);
-    try { await base44.auth.resetPasswordRequest(user?.email || ""); setSent(true); }
+    try { await mist.auth.resetPasswordRequest(user?.email || ""); setSent(true); }
     catch {} finally { setSending(false); }
   };
 

@@ -61,7 +61,7 @@ export default function CommunityOnboarding() {
   const { data: myMemberships = [] } = useQuery({
     queryKey: ["my-memberships-all"],
     queryFn: async () => {
-      const u = await base44.auth.me().catch(() => null);
+      const u = await mist.auth.me().catch(() => null);
       if (!u) return [];
       return await mist.entities.CommunityMember.filter({ user_id: u.id });
     },
@@ -128,7 +128,7 @@ export default function CommunityOnboarding() {
     };
 
     try {
-      const me = await base44.auth.me().catch(() => null);
+      const me = await mist.auth.me().catch(() => null);
       console.log(tag, "pre-flight", {
         user_id: me?.id ?? null,
         community_id: community.id,

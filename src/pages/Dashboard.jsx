@@ -47,7 +47,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (mistUser.id) {
-      base44.auth.updateMe({ last_active: new Date().toISOString() }).catch(() => {});
+      mist.auth.updateMe({ last_active: new Date().toISOString() }).catch(() => {});
     }
   }, [mistUser.id]);
 

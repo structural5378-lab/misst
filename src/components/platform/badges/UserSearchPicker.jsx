@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { mist } from '@/api/mist';
 import { Search, X, UserCircle2 } from "lucide-react";
 
 // UserSearchPicker — searchable platform-wide member picker.
@@ -13,11 +14,11 @@ export default function UserSearchPicker({ onSelect, selected, allowSelf = false
   const [pickingMe, setPickingMe] = useState(false);
 
   // searchUsers excludes the logged-in user (DM directory), so for admin grant
-  // flows we offer a direct "Myself" pick from base44.auth.me().
+  // flows we offer a direct "Myself" pick from mist.auth.me().
   const pickMe = async () => {
     setPickingMe(true);
     try {
-      const me = await base44.auth.me();
+      const me = await mist.auth.me();
       if (me) onSelect({ id: me.id, full_name: me.full_name, email: me.email, avatar_url: me.avatar_url, callsign: me.callsign });
     } catch { /* ignore */ } finally { setPickingMe(false); }
   };

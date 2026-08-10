@@ -22,12 +22,12 @@ export default function Achievements() {
   const [search, setSearch] = useState('');
   const queryClient = useQueryClient();
 
-  useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
+  useEffect(() => { mist.auth.me().then(setUser).catch(() => {}); }, []);
 
   const { data: syncData, isLoading: syncing } = useQuery({
     queryKey: ['sync-stats'],
     queryFn: async () => {
-      const u = user || await base44.auth.me();
+      const u = user || await mist.auth.me();
       const res = await base44.functions.invoke('syncUserStats', { uid: mybbUser?.uid || u?.id });
       return res.data;
     },
@@ -41,7 +41,7 @@ export default function Achievements() {
   const { data: userAchievements = [] } = useQuery({
     queryKey: ['user-achievements', user?.id],
     queryFn: async () => {
-      const u = user || await base44.auth.me();
+      const u = user || await mist.auth.me();
       return await mist.entities.UserAchievement.list();
     },
     enabled: !!user,

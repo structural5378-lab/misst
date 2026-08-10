@@ -1,3 +1,4 @@
+import { mist } from '@/api/mist';
 import { useMemo, useCallback } from "react";
 import { useMistUser } from "./useMistUser";
 
@@ -5,7 +6,7 @@ import { useMistUser } from "./useMistUser";
  * Read/write a JSON-serialized preferences field on the MIST user entity.
  * Used by Account Center sections that store structured settings (notifications,
  * privacy, radio profile, security). Returns [value, save] where save persists
- * the full new value via base44.auth.updateMe.
+ * the full new value via mist.auth.updateMe.
  */
 export function useParsedField(field, defaultValue) {
   const { user, updateProfile } = useMistUser();

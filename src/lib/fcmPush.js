@@ -96,7 +96,7 @@ async function registerToken(token) {
       markRefresh();
       return existing[0];
     }
-    const me = await base44.auth.me();
+    const me = await mist.auth.me();
     await mist.entities.DeviceToken.create({
       user_id: me.id,
       token,
@@ -227,7 +227,7 @@ export async function unsubscribeFcm() {
 
 export async function listMyDevices() {
   try {
-    const me = await base44.auth.me();
+    const me = await mist.auth.me();
     const list = await mist.entities.DeviceToken.filter({ user_id: me.id, is_active: true }, "-last_seen", 50);
     return list || [];
   } catch { return []; }
