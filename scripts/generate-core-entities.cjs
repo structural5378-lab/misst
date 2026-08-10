@@ -1,0 +1,180 @@
+/**
+ * Entity Schema Generator — reads the real Base44 entity definitions
+ * (base44/entities/*.jsonc) and produces:
+ *   - src/backend/db/migrations/002_entities.sql  (PostgreSQL DDL for all entities)
+ *   - src/backend/entities/entitySchemas.ts        (runtime schema + RLS registry)
+ *   - src/backend/db/schema.sql                    (combined one-shot schema)
+ *
+ * Run after any entity change:
+ *   node scripts/generate-core-entities.cjs
+ *
+ * No fields are invented — every column maps to a property in the source schema.
+ */
+const fs = require('fs');
+const path = require('path');
+
+const ROOT = process.cwd();
+const ENTITIES_DIR = path.join(ROOT, 'base44', 'entities');
+const MIGRATIONS_DIR = path.join(ROOT, 'src', 'backend', 'db', 'migrations');
+const SCHEMA_SQL = path.join(ROOT, 'src', 'backend', 'db', 'schema.sql');
+const REGISTRY_TS = path.join(ROOT, 'src', 'backend', 'entities', 'entitySchemas.ts');
+
+function stripJsonc(text) {
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, '')            // block comments
+    .replace(/(^|[^:])\/\/.*$/gm, '$1')          // line comments (preserve http://)
+    .replace(/,(\s*[}\]])/g, '$1');               // trailing commas
+}
+
+function snake(name) {
+  return name
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+    .toLowerCase();
+}
+
+function sqlType(prop) {
+  if (prop.type === 'string') {
+    if (prop.format === 'date-time') return 'TIMESTAMPTZ';
+    if (prop.format === 'date') return 'DATE';
+    return 'TEXT';
+  }
+  if (prop.type === 'number') return 'DOUBLE PRECISION';
+  if (prop.type === 'integer') return 'INTEGER';
+  if (prop.type === 'boolean') return 'BOOLEAN';
+  if (prop.type === 'array' || prop.type === 'object') return 'JSONB';
+  return 'TEXT';
+}
+
+function sqlDefault(prop) {
+  if (prop.default === undefined) return null;
+  if (prop.type === 'string' || prop.enum) {
+    return `'${String(prop.default).replace(/'/g, "''")}'`;
+  }
+  if (prop.type === 'number' || prop.type === 'integer') return String(prop.default);
+  if (prop.type === 'boolean') return prop.default ? 'TRUE' : 'FALSE';
+  if (prop.default === null) return 'NULL';
+  return null;
+}
+
+function buildTable(schema) {
+  const table = snake(schema.name);
+  const cols = [
+    '  id UUID PRIMARY KEY DEFAULT gen_random_uuid()',
+    '  created_date TIMESTAMPTZ NOT NULL DEFAULT NOW()',
+    '  updated_date TIMESTAMPTZ NOT NULL DEFAULT NOW()',
+    '  created_by_id TEXT',
+  ];
+  const required = new Set(schema.required || []);
+  for (const [name, prop] of Object.entries(schema.properties || {})) {
+    const type = sqlType(prop);
+    const notNull = required.has(name) ? ' NOT NULL' : '';
+    const def = sqlDefault(prop);
+    const defClause = def !== null ? ` DEFAULT ${def}` : '';
+    let col = `  ${name} ${type}${notNull}${defClause}`;
+    if (prop.enum) {
+      const list = prop.enum.map((v) => `'${String(v).replace(/'/g, "''")}'`).join(', ');
+      col += ` CHECK (${name} IN (${list}))`;
+    }
+    cols.push(col);
+  }
+  return `CREATE TABLE IF NOT EXISTS ${table} (\n${cols.join(',\n')}\n);`;
+}
+
+function buildIndexes(schema) {
+  const table = snake(schema.name);
+  const out = [];
+  for (const name of Object.keys(schema.properties || {})) {
+    if (name.endsWith('_id')) {
+      out.push(`CREATE INDEX IF NOT EXISTS idx_${table}_${name} ON ${table}(${name});`);
+    }
+  }
+  out.push(`CREATE INDEX IF NOT EXISTS idx_${table}_created_date ON ${table}(created_date);`);
+  return out.join('\n');
+}
+
+// --- Load all entity schemas -------------------------------------------------
+const files = fs.readdirSync(ENTITIES_DIR).filter((f) => f.endsWith('.jsonc')).sort();
+const schemas = [];
+const errors = [];
+for (const f of files) {
+  try {
+    const obj = JSON.parse(stripJsonc(fs.readFileSync(path.join(ENTITIES_DIR, f), 'utf8')));
+    if (!obj.name) { errors.push(`${f}: missing "name"`); continue; }
+    schemas.push(obj);
+  } catch (e) {
+    errors.push(`${f}: ${e.message}`);
+  }
+}
+
+// --- Generate entities migration --------------------------------------------
+const header = [
+  '-- MISST Core — Migration 002: Entity tables',
+  '-- Auto-generated from base44/entities/*.jsonc. Do not edit by hand.',
+  `-- Regenerate via: node scripts/generate-core-entities.cjs`,
+  `-- ${schemas.length} entities.`,
+  '',
+].join('\n');
+
+const body = schemas.map((s) => {
+  return `-- ${s.name}\n${buildTable(s)}\n${buildIndexes(s)}\n`;
+}).join('\n');
+
+const entitiesSql = header + body;
+fs.mkdirSync(MIGRATIONS_DIR, { recursive: true });
+fs.writeFileSync(path.join(MIGRATIONS_DIR, '002_entities.sql'), entitiesSql);
+
+// --- Generate runtime registry ----------------------------------------------
+const registryData = schemas.map((s) => ({
+  name: s.name,
+  table: snake(s.name),
+  properties: s.properties || {},
+  required: s.required || [],
+  rls: s.rls || {},
+}));
+const registryTs =
+  '// AUTO-GENERATED by scripts/generate-core-entities.cjs — do not edit by hand.\n' +
+  '// Source: base44/entities/*.jsonc. Regenerate via: node scripts/generate-core-entities.cjs\n' +
+  '\n' +
+  'export interface EntitySchema {\n' +
+  '  name: string;\n' +
+  '  table: string;\n' +
+  '  properties: Record<string, any>;\n' +
+  '  required: string[];\n' +
+  '  rls: Record<string, any>;\n' +
+  '}\n' +
+  '\n' +
+  'const RAW: EntitySchema[] = ' + JSON.stringify(registryData, null, 2) + ';\n' +
+  '\n' +
+  'export const ENTITY_SCHEMAS: Record<string, EntitySchema> = Object.fromEntries(\n' +
+  '  RAW.map((s) => [s.name, s]),\n' +
+  ');\n' +
+  '\n' +
+  'export const ENTITY_NAMES: string[] = Object.keys(ENTITY_SCHEMAS);\n' +
+  '\n' +
+  'export function getEntitySchema(name: string): EntitySchema | undefined {\n' +
+  '  return ENTITY_SCHEMAS[name];\n' +
+  '}\n';
+fs.mkdirSync(path.dirname(REGISTRY_TS), { recursive: true });
+fs.writeFileSync(REGISTRY_TS, registryTs);
+
+// --- Combined schema.sql (one-shot convenience) -----------------------------
+const authPath = path.join(MIGRATIONS_DIR, '001_auth.sql');
+const authSql = fs.existsSync(authPath) ? fs.readFileSync(authPath, 'utf8') : '';
+const combined =
+  '-- MISST Core — Full schema (auth + entities)\n' +
+  '-- Convenience one-shot. The numbered migrations in ./migrations/ are the source of truth.\n' +
+  '-- Apply via: psql "$DATABASE_URL" -f src/backend/db/schema.sql\n' +
+  '\n' +
+  authSql +
+  '\n\n' +
+  entitiesSql;
+fs.writeFileSync(SCHEMA_SQL, combined);
+
+// --- Report ------------------------------------------------------------------
+console.log(JSON.stringify({
+  ok: errors.length === 0,
+  entityCount: schemas.length,
+  errors,
+  tables: schemas.map((s) => snake(s.name)),
+}, null, 2));
