@@ -307,7 +307,9 @@ body.keyboard-open [data-bottom-nav] {
 .ach-border { position: absolute; inset: 0; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); overflow: hidden; }
 .ach-border::before { content: ''; position: absolute; inset: -50%; background: var(--ach-border-grad, conic-gradient(from 0deg, #888, #ccc, #888)); animation: ach-rotate 4s linear infinite; }
 .ach-body { position: absolute; inset: 2px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: var(--ach-glow, none), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -3px 6px rgba(0,0,0,0.3); }
+.ach-body::before { content: ''; position: absolute; inset: 0; background: conic-gradient(from 0deg, transparent 0deg, var(--ach-glow-color, rgba(6,182,212,0.5)) 30deg, transparent 75deg); opacity: 0.18; animation: ach-tac-sweep 5s linear infinite; pointer-events: none; z-index: 0; }
 .ach-body::after { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(255,255,255,0.25) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.15) 100%); pointer-events: none; }
+@keyframes ach-tac-sweep { to { transform: rotate(360deg); } }
 .ach-icon { position: relative; z-index: 2; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
 .ach-badge[data-size="sm"] .ach-icon { width: 20px; height: 20px; }
 .ach-badge[data-size="md"] .ach-icon { width: 32px; height: 32px; }
@@ -397,7 +399,11 @@ body.keyboard-open [data-bottom-nav] {
 
 /* ─── Prestige Badge Showcase ─── */
 .prestige-badge { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
-.prestige-badge-icon { position: relative; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; }
+.prestige-badge-icon { position: relative; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; overflow: hidden; }
+.prestige-badge-icon::before { content: ''; position: absolute; inset: 0; background: conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.22) 30deg, transparent 70deg); opacity: 0.4; animation: prestige-tac-sweep 4s linear infinite; pointer-events: none; mix-blend-mode: screen; }
+.prestige-badge-icon::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), inset 0 0 12px rgba(0,0,0,0.4); pointer-events: none; border-radius: inherit; }
+.prestige-badge-icon > svg { position: relative; z-index: 1; }
+@keyframes prestige-tac-sweep { to { transform: rotate(360deg); } }
 .prestige-badge:active .prestige-badge-icon { transform: scale(0.9); }
 .prestige-badge-glow-common { box-shadow: 0 0 8px rgba(148,163,184,0.3); }
 .prestige-badge-glow-rare { box-shadow: 0 0 12px rgba(59,130,246,0.4); }
@@ -683,7 +689,8 @@ body.amoled-mode { background: #000; }
 }
 
 /* ─── Premium Badge Effects (GPU-accelerated transform/opacity, 60fps) ─── */
-.pbadge { position: relative; display: inline-flex; align-items: center; justify-content: center; isolation: isolate; }
+.pbadge { position: relative; display: inline-flex; align-items: center; justify-content: center; isolation: isolate; background: radial-gradient(circle at 50% 35%, rgba(255,255,255,0.04), transparent 65%), linear-gradient(165deg, rgba(12,16,24,0.96), rgba(4,6,10,0.98)); }
+.pbadge::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10), inset 0 0 14px rgba(0,0,0,0.5); }
 .pbadge-fx { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0; }
 .pbadge > .pbadge-body { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
 
@@ -752,7 +759,7 @@ body.amoled-mode { background: #000; }
 .pbadge-meteor-trail .pbadge-fx::before { content: ''; position: absolute; top: 10%; left: 0; width: 60%; height: 2px; background: linear-gradient(90deg, transparent, var(--pbadge-accent,#a855f7)); border-radius: 9999px; animation: pbadge-meteor 2s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pbadge-fx, .pbadge-fx::before, .pbadge-fx::after { animation: none !important; opacity: 0.5 !important; }
+  .pbadge-fx, .pbadge-fx::before, .pbadge-fx::after, .ach-body::before, .prestige-badge-icon::before { animation: none !important; opacity: 0.5 !important; }
 }
 
 /* ─── RadioScope Lightning Visuals (event-driven, GPU transform/opacity) ─── */
