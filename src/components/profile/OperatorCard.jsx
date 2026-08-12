@@ -89,24 +89,24 @@ export default function OperatorCard({ onLogout }) {
           )}
         </div>
 
-        {/* Hero grid — avatar emblem | identity | MISST hex emblem */}
-        <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-4 lg:gap-8 items-center">
+        {/* Hero grid — avatar | identity side-by-side on all sizes; hex emblem on desktop */}
+        <div className="relative grid grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr_auto] gap-3 sm:gap-5 lg:gap-8 items-center">
           {/* Avatar emblem */}
           <div className="flex justify-center lg:justify-start">
-            <div className="relative w-32 h-32 sm:w-44 sm:h-44 lg:w-48 lg:h-48">
+            <div className="relative w-24 h-24 sm:w-36 sm:h-36 lg:w-44 lg:h-44">
               <img src={MISST_ASSETS.MISST_AVATAR_ENERGY.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain opacity-80" style={{ mixBlendMode: 'screen' }} />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40">
+                <div className="relative w-20 h-20 sm:w-28 sm:h-28 lg:w-36 lg:h-36">
                   <PremiumAvatarFrame userId={user?.id} avatarFrame={avatarFrame} className="rounded-2xl">
                     <div className="w-full h-full rounded-2xl overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/25">
                       <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
                     </div>
                   </PremiumAvatarFrame>
-                  <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-14 h-14 sm:w-16 sm:h-16">
+                  <div className="absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 w-12 h-12 sm:w-14 sm:h-14">
                     <img src={MISST_ASSETS.MISST_LEVEL_SHIELD.url} alt="" className="w-full h-full object-contain" style={{ mixBlendMode: 'screen' }} />
                     <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
                       <span className="text-[7px] sm:text-[8px] font-bold text-violet-100 tracking-widest">LVL</span>
-                      <span className="text-base sm:text-lg font-black text-white">{level}</span>
+                      <span className="text-sm sm:text-lg font-black text-white">{level}</span>
                     </div>
                   </div>
                 </div>
@@ -115,19 +115,19 @@ export default function OperatorCard({ onLogout }) {
           </div>
 
           {/* Identity hierarchy */}
-          <div className="min-w-0 text-center lg:text-left">
-            <div className="flex items-center justify-center lg:justify-start gap-2">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight break-words">{displayName}</h2>
+          <div className="min-w-0 text-left">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight tracking-tight break-words">{displayName}</h2>
               <span className="relative flex h-2.5 w-2.5 shrink-0">
                 <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-75 animate-ping" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
               </span>
             </div>
             {callsign && callsign !== displayName && (
-              <p className="text-base sm:text-lg font-semibold text-violet-300/90 tracking-wider mt-1 break-words">{callsign}</p>
+              <p className="text-sm sm:text-base font-semibold text-violet-300/90 tracking-wider mt-1 break-words">{callsign}</p>
             )}
             <p className="text-[11px] font-medium text-white/40 mt-1.5 tracking-[0.15em] uppercase">GMRS Operator</p>
-            <div className="mt-2.5 flex items-center justify-center lg:justify-start gap-2 flex-wrap">
+            <div className="mt-2.5 flex items-center gap-2 flex-wrap">
               {isAdmin && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-violet-500/10 border border-violet-400/20">
                   <Shield className="w-3.5 h-3.5 text-violet-300" />
@@ -139,25 +139,6 @@ export default function OperatorCard({ onLogout }) {
                 <span className="text-[11px] font-bold text-amber-200 tracking-wide">Premium Operator</span>
               </div>
             </div>
-            <div className="mt-3 flex justify-center lg:justify-start">
-              <PremiumBadgeRow userId={user?.id} max={6} size="md" />
-            </div>
-
-            {/* Stats — clean inline row, no box */}
-            <div className="mt-4 flex items-center justify-center lg:justify-start gap-6 sm:gap-8">
-              {STATS.map((s) => {
-                const Icon = s.icon;
-                return (
-                  <div key={s.key} className="flex items-center gap-2">
-                    <Icon className={`w-4 h-4 ${s.color} shrink-0`} />
-                    <div className="flex flex-col leading-none">
-                      <span className="text-xl font-black text-white tabular-nums" style={{ textShadow: `0 0 14px ${s.accent}44` }}>{stats[s.key] ?? 0}</span>
-                      <span className="text-[9px] text-white/40 uppercase tracking-wider mt-1">{s.label}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           </div>
 
           {/* MISST hexagonal emblem — prominent on desktop, hidden on mobile */}
@@ -166,6 +147,27 @@ export default function OperatorCard({ onLogout }) {
               <img src={MISST_ASSETS.MISST_IDENTITY_ENERGY.url} alt="" className="w-full h-full object-contain" style={{ mixBlendMode: 'screen' }} />
             </div>
           </div>
+        </div>
+
+        {/* Premium badge row — full-width strip below hero */}
+        <div className="relative mt-4 flex justify-center lg:justify-start">
+          <PremiumBadgeRow userId={user?.id} max={6} size="md" />
+        </div>
+
+        {/* Stats — full-width strip */}
+        <div className="relative mt-4 flex items-center justify-center lg:justify-start gap-6 sm:gap-8">
+          {STATS.map((s) => {
+            const Icon = s.icon;
+            return (
+              <div key={s.key} className="flex items-center gap-2">
+                <Icon className={`w-4 h-4 ${s.color} shrink-0`} />
+                <div className="flex flex-col leading-none">
+                  <span className="text-xl font-black text-white tabular-nums" style={{ textShadow: `0 0 14px ${s.accent}44` }}>{stats[s.key] ?? 0}</span>
+                  <span className="text-[9px] text-white/40 uppercase tracking-wider mt-1">{s.label}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Groups + achievement showcase (existing systems) */}
