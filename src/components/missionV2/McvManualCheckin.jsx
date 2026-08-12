@@ -7,8 +7,13 @@ const STATUSES = ["late", "checked_in", "mobile", "base", "visitor", "priority",
 
 export default function McvManualCheckin({ onSubmit, onClose }) {
   const [form, setForm] = useState({ callsign: "", name: "", location: "", status: "late", signal_report: "", notes: "" });
+  const [busy, setBusy] = useState(false);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-  const submit = () => { if (!form.callsign.trim()) return; onSubmit(form); };
+  const submit = async () => {
+    if (!form.callsign.trim() || busy) return;
+    setBusy(true);
+    try { await onSubmit(form); } catch {} finally { setBusy(false); }
+  };
   return (
     <div className="fixed inset-0 z-[90] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-2xl bg-card border border-border p-5" onClick={(e) => e.stopPropagation()}>
@@ -29,7 +34,9 @@ export default function McvManualCheckin({ onSubmit, onClose }) {
             </select>
           </div>
           <textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={2} placeholder="Notes" className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:border-primary outline-none" />
-          <button onClick={submit} disabled={!form.callsign.trim()} className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold disabled:opacity-40">Add Check-In</button>
+          <button onClick={submit} disabled={!form.callsign.trim() || busy} className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold disabled:opacity-40 flex items-center justify-center gap-2">
+            {busy ? <><span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" /> Saving…</> : "Add Check-In"}
+          </button>
         </div>
       </div>
     </div>

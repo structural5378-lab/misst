@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Radio, Play, X } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import { useMissionControlV2 } from "@/hooks/useMissionControlV2";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import McvNetPicker from "@/components/missionV2/McvNetPicker";
@@ -23,6 +24,7 @@ import McvMobile from "@/components/missionV3/McvMobile";
 export default function MissionControlV2() {
   const { netId } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [xpToast, setXpToast] = useState(null);
   const [unlock, setUnlock] = useState(null);
   const [showManual, setShowManual] = useState(false);
@@ -55,7 +57,15 @@ export default function MissionControlV2() {
   }
 
   const onEnd = async () => { if (!window.confirm("End the net and generate the after-action report?")) return; const r = await endNet(); if (r) setReport(r); };
-  const onManual = (data) => { v2.manualCheckin(data); setShowManual(false); };
+  const onManual = async (data) => {
+    try {
+      await v2.manualCheckin(data);
+      setShowManual(false);
+      toast({ title: "Check-in added", description: `${data.callsign} logged successfully` });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Check-in failed", description: e?.message || "Could not add check-in" });
+    }
+  };
   const onEmergency = () => v2.addIncident("emergency", "Emergency traffic declared");
   const onSettings = () => setShowSettings(true);
 
