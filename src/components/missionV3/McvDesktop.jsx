@@ -121,7 +121,7 @@ export default function McvDesktop({ v2, onEmergency, onSettings, onEnd, onManua
       <main className="flex-1 min-h-0 p-1.5">
         <PanelGroup direction="horizontal" autoSaveId="mcv-v3-main" className="h-full">
           {/* LEFT SIDEBAR */}
-          <RPanel ref={leftRef} collapsible collapsedSize={0} defaultSize={20} minSize={15} maxSize={30} onCollapse={setLeftCollapsed}>
+          <RPanel ref={leftRef} collapsible collapsedSize={0} defaultSize={20} minSize={15} maxSize={30} onCollapse={() => setLeftCollapsed(true)} onExpand={() => setLeftCollapsed(false)}>
             <div className="h-full flex flex-col gap-2 pr-1 min-h-0">
               <McvPanelChrome title={`Check-ins (${approved.length})`} scroll bodyClass="p-2" className="flex-1 min-h-0">
                 <McvCheckins checkins={sortedCheckins} isOperator={isOperator} onApprove={v2.approveCheckin} onEditStatus={setEditing} />
@@ -142,7 +142,7 @@ export default function McvDesktop({ v2, onEmergency, onSettings, onEnd, onManua
           <Handle onReset={resetMain} />
 
           {/* RIGHT SIDEBAR */}
-          <RPanel ref={rightRef} collapsible collapsedSize={0} defaultSize={25} minSize={18} maxSize={34} onCollapse={setRightCollapsed}>
+          <RPanel ref={rightRef} collapsible collapsedSize={0} defaultSize={25} minSize={18} maxSize={34} onCollapse={() => setRightCollapsed(true)} onExpand={() => setRightCollapsed(false)}>
             <div className="h-full flex flex-col gap-2 pl-1 min-h-0 overflow-y-auto">
               <McvIncidents v2={v2} />
               <FsWrap active={fullscreen === "weather"} title="Weather" onClose={closeFs} inactiveClass="">
