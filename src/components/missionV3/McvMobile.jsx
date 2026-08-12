@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Radio, Siren, LayoutGrid, Map as MapIcon, List, CloudRain, Sparkles } from "lucide-react";
+import { Radio, Siren, LayoutGrid, Map as MapIcon, List, CloudRain, Sparkles, UserPlus } from "lucide-react";
 import { fmtRuntime } from "../missionV2/runtime";
 import McvV3Panel from "./McvV3Panel";
 import McvMissionStats from "./McvMissionStats";
@@ -38,6 +38,7 @@ export default function McvMobile({ v2, onEmergency, onSettings, onManual, setEd
           <p className="text-[10px] text-muted-foreground truncate">{activeSession?.community_name || net?.community_name || ""} · {fmtRuntime(runtimeMs)}</p>
         </div>
         <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${paused ? "bg-amber-500/20 text-amber-300" : "bg-emerald-500/20 text-emerald-300"}`}>{paused ? "PAUSED" : "LIVE"}</span>
+        {isOperator && activeSession && <button onClick={onManual} aria-label="Log user" className="p-2 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0"><UserPlus className="w-4 h-4" /></button>}
         <button onClick={onEmergency} className="p-2 rounded-lg bg-rose-500/15 text-rose-300 border border-rose-500/30 shrink-0"><Siren className="w-4 h-4" /></button>
       </header>
 

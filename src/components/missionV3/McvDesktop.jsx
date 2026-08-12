@@ -114,7 +114,7 @@ export default function McvDesktop({ v2, onEmergency, onSettings, onEnd, onManua
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <McvCommandBar v2={v2} onEmergency={onEmergency} onSettings={onSettings} onEnd={onEnd} containerRef={containerRef}
+      <McvCommandBar v2={v2} onEmergency={onEmergency} onSettings={onSettings} onEnd={onEnd} onManual={onManual} containerRef={containerRef}
         leftCollapsed={leftCollapsed} rightCollapsed={rightCollapsed} bottomCollapsed={bottomCollapsed}
         onToggleLeft={toggleLeft} onToggleRight={toggleRight} onToggleBottom={toggleBottom} onResetLayout={resetMain} />
 

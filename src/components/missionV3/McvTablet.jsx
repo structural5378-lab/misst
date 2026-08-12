@@ -18,7 +18,7 @@ export default function McvTablet({ v2, onEmergency, onSettings, onEnd, onManual
   const { sortedCheckins, approved, isOperator } = v2;
   return (
     <div className="h-full flex flex-col">
-      <McvCommandBar v2={v2} onEmergency={onEmergency} onSettings={onSettings} onEnd={onEnd} containerRef={containerRef} />
+      <McvCommandBar v2={v2} onEmergency={onEmergency} onSettings={onSettings} onEnd={onEnd} onManual={onManual} containerRef={containerRef} />
       <main className="flex-1 min-h-0 p-2">
         <PanelGroup direction="horizontal" className="h-full">
           <RPanel defaultSize={42} minSize={30}>

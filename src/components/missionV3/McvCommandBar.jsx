@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Radio, Play, Pause, Square, Siren, Settings, Maximize2, RefreshCw, Circle, PanelLeft, PanelRight, PanelBottom, RotateCcw } from "lucide-react";
+import { Radio, Play, Pause, Square, Siren, Settings, Maximize2, RefreshCw, Circle, PanelLeft, PanelRight, PanelBottom, RotateCcw, UserPlus } from "lucide-react";
 import { fmtRuntime } from "../missionV2/runtime";
 import { useNow } from "./mcvV3Utils";
 
@@ -21,7 +21,7 @@ function Pill({ color, label, value, dot, pulse }) {
   return <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${PILL[color]}`}>{dot && <span className={`w-1.5 h-1.5 rounded-full bg-current ${pulse ? "animate-ping" : ""}`} />}{label}{value != null && <span className="opacity-80 tabular-nums">{value}</span>}</span>;
 }
 
-export default function McvCommandBar({ v2, onEmergency, onSettings, onEnd, containerRef, leftCollapsed, rightCollapsed, bottomCollapsed, onToggleLeft, onToggleRight, onToggleBottom, onResetLayout }) {
+export default function McvCommandBar({ v2, onEmergency, onSettings, onEnd, onManual, containerRef, leftCollapsed, rightCollapsed, bottomCollapsed, onToggleLeft, onToggleRight, onToggleBottom, onResetLayout }) {
   const { net, activeSession, approved, activeQueue, incidents, runtimeMs, isOperator, startNet, pauseNet, resumeNet, refresh } = v2;
   const paused = activeSession?.status === "paused";
   const [recording, setRecording] = useState(false);
@@ -64,6 +64,7 @@ export default function McvCommandBar({ v2, onEmergency, onSettings, onEnd, cont
         <div className="ml-auto flex items-center gap-1.5 shrink-0">
           {isOperator && (activeSession ? (
             <>
+              <Ctrl onClick={onManual} icon={UserPlus} label="Log User" color="bg-amber-500/15 text-amber-300 border-amber-500/30" />
               <Ctrl onClick={paused ? resumeNet : pauseNet} icon={paused ? Play : Pause} label={paused ? "Resume" : "Pause"} color="bg-emerald-500/15 text-emerald-300 border-emerald-500/30" />
               <Ctrl onClick={onEnd} icon={Square} label="End" color="bg-rose-500/15 text-rose-300 border-rose-500/30" />
             </>
