@@ -15,7 +15,7 @@ export default function McvManualCheckin({ onSubmit, onClose }) {
     try { await onSubmit(form); } catch {} finally { setBusy(false); }
   };
   return (
-    <div className="fixed inset-0 z-[90] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[2000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-2xl bg-card border border-border p-5" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-bold">Late / Manual Check-In</h3>
