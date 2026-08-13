@@ -1,8 +1,9 @@
-import React, { useRef, useEffect, useState, useMemo, useCallback } from "react";
+import React, { useRef, useEffect, useLayoutEffect, useState, useMemo, useCallback } from "react";
 import { format } from "date-fns";
 import { ChevronLeft, Info, Search, X, Users, Phone } from "lucide-react";
 import MistMessageBubble from "./MistMessageBubble";
 import MistChatComposer from "./MistChatComposer";
+import { scrollToBottom } from "@/lib/chatV2/scrollToBottom";
 
 function DateSeparator({ date }) {
   return (
@@ -23,8 +24,8 @@ export default function MistChatView({
   const [editTarget, setEditTarget] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
   const scrollRef = useRef(null);
+  const bottomRef = useRef(null);
   const isNearBottomRef = useRef(true);
-  const prevConvRef = useRef(null);
 
   // Track scroll position to detect if user is reading older messages
   const handleScroll = useCallback(() => {
@@ -33,24 +34,18 @@ export default function MistChatView({
     isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 120;
   }, []);
 
-  // Smart auto-scroll: force scroll to bottom on conversation change;
-  // on new messages, only scroll if user is near the bottom
+  // Smart auto-scroll: force scroll to bottom on conversation change (before
+  // paint so there's no flash at the top); on new messages, only scroll if the
+  // user is near the bottom. Uses a bottom sentinel + scrollToBottom for
+  // reliability across async content layout.
+  useLayoutEffect(() => {
+    if (messagesLoading) return;
+    isNearBottomRef.current = true;
+    scrollToBottom(scrollRef.current, bottomRef.current);
+  }, [conversation?.id, messagesLoading]);
   useEffect(() => {
-    const convChanged = prevConvRef.current !== conversation?.id;
-    prevConvRef.current = conversation?.id;
-
-    if (convChanged) {
-      isNearBottomRef.current = true;
-    }
-
-    if (isNearBottomRef.current || convChanged) {
-      requestAnimationFrame(() => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-      });
-    }
-  }, [messages.length, conversation?.id, messagesLoading]);
+    if (isNearBottomRef.current) scrollToBottom(scrollRef.current, bottomRef.current);
+  }, [messages.length]);
 
   // Clear reply/edit when switching conversations
   useEffect(() => {
@@ -189,6 +184,7 @@ export default function MistChatView({
             )
           )
         )}
+        <div ref={bottomRef} aria-hidden="true" />
       </div>
 
       {/* Composer */}

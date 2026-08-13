@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, CheckCheck, Flag, PanelRight } from "lucide-react";
 import { mist } from '@/api/mist';
 import { useChatV2 } from "@/hooks/useChatV2";
@@ -29,6 +29,7 @@ export default function ChatWindowV2({
   const [searchQ, setSearchQ] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
   const [highlightId, setHighlightId] = useState(null);
+  const bottomRef = useRef(null);
 
   const other = conversation ? otherParticipant(conversation, user.id) : null;
   const name = conversation?.is_group ? (conversation?.name || "Group") : (other?.name || "Unknown");
@@ -57,7 +58,7 @@ export default function ChatWindowV2({
   useEffect(() => {
     if (!scrollRef.current) return;
     if (atBottom && messages.length > lastLenRef.current) {
-      scrollToBottom(scrollRef.current);
+      scrollToBottom(scrollRef.current, bottomRef.current);
     }
     lastLenRef.current = messages.length;
     if (atBottom && messages.length) {
@@ -67,10 +68,10 @@ export default function ChatWindowV2({
   }, [messages, atBottom, markRead, user.id]);
 
   // Force scroll to bottom on conversation open (after messages finish loading).
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (loading) return;
     setAtBottom(true);
-    scrollToBottom(scrollRef.current);
+    scrollToBottom(scrollRef.current, bottomRef.current);
   }, [conversationId, loading, setAtBottom]);
 
   const onScroll = (e) => {
@@ -221,6 +222,7 @@ export default function ChatWindowV2({
             <ArrowDown className="w-3.5 h-3.5" /> Latest
           </button>
         )}
+        <div ref={bottomRef} aria-hidden="true" />
       </div>
 
       {typingNames.length > 0 && <TypingIndicatorV2 names={typingNames} />}

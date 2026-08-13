@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, Image as ImageIcon, Users, Calendar, Pin, FileText, VolumeX } from "lucide-react";
 import { useRoomMessages } from "@/hooks/useRoomMessages";
 import { useToast } from "@/components/ui/use-toast";
@@ -32,6 +32,7 @@ export default function CommunityConversation({ community, room, mistUser, membe
   const [replyTo, setReplyTo] = useState(null);
   const [highlightId, setHighlightId] = useState(null);
   const atBottomRef = useRef(true);
+  const bottomRef = useRef(null);
 
   const memberByUser = useMemo(() => { const m = {}; (members || []).forEach((x) => { m[x.user_id] = x; }); return m; }, [members]);
   const msgs = useRoomMessages({ roomId: room?.id, user: mistUser, community });
@@ -46,18 +47,19 @@ export default function CommunityConversation({ community, room, mistUser, membe
 
   // Auto-scroll to the latest message on room open (after messages load), on
   // new messages (when already pinned to the bottom), and when the composer is
-  // focused (keyboard opening). scrollToBottom scrolls now, on the next frame,
-  // and after a short timeout so async content (images/markdown) never leaves
-  // the view stuck above the newest message.
-  useEffect(() => {
+  // focused (keyboard opening). Uses useLayoutEffect on open so the user never
+  // sees a flash at the top; scrollToBottom pins to a bottom sentinel now, next
+  // frame, and after a timeout so async content never leaves the view stuck
+  // above the newest message.
+  useLayoutEffect(() => {
     if (msgs.loading) return;
     atBottomRef.current = true;
-    scrollToBottom(msgs.scrollRef.current);
+    scrollToBottom(msgs.scrollRef.current, bottomRef.current);
   }, [room?.id, msgs.loading]);
   useEffect(() => {
-    if (atBottomRef.current) scrollToBottom(msgs.scrollRef.current);
+    if (atBottomRef.current) scrollToBottom(msgs.scrollRef.current, bottomRef.current);
   }, [msgs.messages.length]);
-  const scrollToEnd = () => scrollToBottom(msgs.scrollRef.current);
+  const scrollToEnd = () => scrollToBottom(msgs.scrollRef.current, bottomRef.current);
 
   const isAdmin = ["community_owner", "community_admin"].includes(myRole);
   const canModerate = ["community_owner", "community_admin", "moderator"].includes(myRole);
@@ -158,6 +160,7 @@ export default function CommunityConversation({ community, room, mistUser, membe
                 </div>
               );
             })}
+            <div ref={bottomRef} aria-hidden="true" />
           </div>
           {canPost ? (
             <>
