@@ -26,6 +26,7 @@ export default function MistChatView({
   const scrollRef = useRef(null);
   const bottomRef = useRef(null);
   const isNearBottomRef = useRef(true);
+  const initialScrollDoneRef = useRef(false);
 
   // Track scroll position to detect if user is reading older messages
   const handleScroll = useCallback(() => {
@@ -38,10 +39,23 @@ export default function MistChatView({
   // paint so there's no flash at the top); on new messages, only scroll if the
   // user is near the bottom. Uses a bottom sentinel + scrollToBottom for
   // reliability across async content layout.
+  // Force scroll to bottom on conversation open. Pin before paint (no flash),
+  // then re-pin on rAF and staggered timeouts so async content (images/markdown)
+  // never leaves the view stuck above the newest message.
   useLayoutEffect(() => {
     if (messagesLoading) return;
+    initialScrollDoneRef.current = false;
     isNearBottomRef.current = true;
-    scrollToBottom(scrollRef.current, bottomRef.current);
+    const el = scrollRef.current;
+    const sentinel = bottomRef.current;
+    const scroll = () => scrollToBottom(el, sentinel);
+    scroll();
+    requestAnimationFrame(scroll);
+    const t1 = setTimeout(scroll, 50);
+    const t2 = setTimeout(scroll, 150);
+    const t3 = setTimeout(scroll, 350);
+    const t4 = setTimeout(() => { initialScrollDoneRef.current = true; }, 700);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, [conversation?.id, messagesLoading]);
   useEffect(() => {
     if (isNearBottomRef.current) scrollToBottom(scrollRef.current, bottomRef.current);

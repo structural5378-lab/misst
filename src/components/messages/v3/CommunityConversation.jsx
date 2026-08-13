@@ -33,6 +33,7 @@ export default function CommunityConversation({ community, room, mistUser, membe
   const [highlightId, setHighlightId] = useState(null);
   const atBottomRef = useRef(true);
   const bottomRef = useRef(null);
+  const initialScrollDoneRef = useRef(false);
 
   const memberByUser = useMemo(() => { const m = {}; (members || []).forEach((x) => { m[x.user_id] = x; }); return m; }, [members]);
   const msgs = useRoomMessages({ roomId: room?.id, user: mistUser, community });
@@ -45,16 +46,25 @@ export default function CommunityConversation({ community, room, mistUser, membe
     return () => clearActiveChatView();
   }, [community?.id, room?.id]);
 
-  // Auto-scroll to the latest message on room open (after messages load), on
-  // new messages (when already pinned to the bottom), and when the composer is
-  // focused (keyboard opening). Uses useLayoutEffect on open so the user never
-  // sees a flash at the top; scrollToBottom pins to a bottom sentinel now, next
-  // frame, and after a timeout so async content never leaves the view stuck
-  // above the newest message.
+  // On open: pin to the bottom before paint (no flash), then re-pin on rAF
+  // and staggered timeouts so async content (images/markdown) that shifts
+  // layout never leaves the view stuck above the newest message. loadMore is
+  // gated until the initial scroll settles so the infinite-scroll can't yank
+  // the view away from the bottom during this window.
   useLayoutEffect(() => {
     if (msgs.loading) return;
+    initialScrollDoneRef.current = false;
     atBottomRef.current = true;
-    scrollToBottom(msgs.scrollRef.current, bottomRef.current);
+    const el = msgs.scrollRef.current;
+    const sentinel = bottomRef.current;
+    const scroll = () => scrollToBottom(el, sentinel);
+    scroll();
+    requestAnimationFrame(scroll);
+    const t1 = setTimeout(scroll, 50);
+    const t2 = setTimeout(scroll, 150);
+    const t3 = setTimeout(scroll, 350);
+    const t4 = setTimeout(() => { initialScrollDoneRef.current = true; }, 700);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, [room?.id, msgs.loading]);
   useEffect(() => {
     if (atBottomRef.current) scrollToBottom(msgs.scrollRef.current, bottomRef.current);
@@ -96,7 +106,7 @@ export default function CommunityConversation({ community, room, mistUser, membe
     const bottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
     atBottomRef.current = bottom;
     msgs.setAtBottom(bottom);
-    if (el.scrollTop < 80 && msgs.hasMore && !msgs.loadingMore) msgs.loadMore();
+    if (initialScrollDoneRef.current && el.scrollTop < 80 && msgs.hasMore && !msgs.loadingMore) msgs.loadMore();
     if (bottom && room?.id) { const last = msgs.messages[msgs.messages.length - 1]; if (last && last.sender_id !== mistUser?.id) markRead?.(room.id, last.id); }
   };
   const handleSend = async (body, attachment) => {
