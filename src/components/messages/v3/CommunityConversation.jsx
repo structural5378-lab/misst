@@ -4,6 +4,7 @@ import { useRoomMessages } from "@/hooks/useRoomMessages";
 import { useToast } from "@/components/ui/use-toast";
 import { mist } from '@/api/mist';
 import { formatDayLabel, isSameDay, presenceStatus, isTypingNow } from "@/lib/chatV2/chatV2Utils";
+import { scrollToBottom } from "@/lib/chatV2/scrollToBottom";
 import MessageBubbleV2 from "@/components/chatV2/MessageBubbleV2";
 import MessageComposerV2 from "@/components/chatV2/MessageComposerV2";
 import CommunityHeader from "./CommunityHeader";
@@ -43,12 +44,20 @@ export default function CommunityConversation({ community, room, mistUser, membe
     return () => clearActiveChatView();
   }, [community?.id, room?.id]);
 
-  // Auto-scroll to the latest message on room open, on new messages (when
-  // already pinned to the bottom), and when the composer is focused (keyboard
-  // opening) — so the user never has to manually drag the chat upward.
-  useEffect(() => { if (msgs.scrollRef.current) msgs.scrollRef.current.scrollTop = msgs.scrollRef.current.scrollHeight; /* eslint-disable-next-line */ }, [room?.id]);
-  useEffect(() => { if (atBottomRef.current && msgs.scrollRef.current) msgs.scrollRef.current.scrollTop = msgs.scrollRef.current.scrollHeight; }, [msgs.messages.length]);
-  const scrollToEnd = () => { requestAnimationFrame(() => { if (msgs.scrollRef.current) msgs.scrollRef.current.scrollTop = msgs.scrollRef.current.scrollHeight; }); };
+  // Auto-scroll to the latest message on room open (after messages load), on
+  // new messages (when already pinned to the bottom), and when the composer is
+  // focused (keyboard opening). scrollToBottom scrolls now, on the next frame,
+  // and after a short timeout so async content (images/markdown) never leaves
+  // the view stuck above the newest message.
+  useEffect(() => {
+    if (msgs.loading) return;
+    atBottomRef.current = true;
+    scrollToBottom(msgs.scrollRef.current);
+  }, [room?.id, msgs.loading]);
+  useEffect(() => {
+    if (atBottomRef.current) scrollToBottom(msgs.scrollRef.current);
+  }, [msgs.messages.length]);
+  const scrollToEnd = () => scrollToBottom(msgs.scrollRef.current);
 
   const isAdmin = ["community_owner", "community_admin"].includes(myRole);
   const canModerate = ["community_owner", "community_admin", "moderator"].includes(myRole);

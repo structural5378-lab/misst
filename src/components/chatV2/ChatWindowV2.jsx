@@ -4,6 +4,7 @@ import { mist } from '@/api/mist';
 import { useChatV2 } from "@/hooks/useChatV2";
 import { otherParticipant } from "@/lib/chatV2/chatV2Api";
 import { formatDayLabel, isSameDay, isTypingNow } from "@/lib/chatV2/chatV2Utils";
+import { scrollToBottom } from "@/lib/chatV2/scrollToBottom";
 import ChatHeaderV2 from "./ChatHeaderV2";
 import MessageBubbleV2 from "./MessageBubbleV2";
 import MessageComposerV2 from "./MessageComposerV2";
@@ -56,7 +57,7 @@ export default function ChatWindowV2({
   useEffect(() => {
     if (!scrollRef.current) return;
     if (atBottom && messages.length > lastLenRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollToBottom(scrollRef.current);
     }
     lastLenRef.current = messages.length;
     if (atBottom && messages.length) {
@@ -64,6 +65,13 @@ export default function ChatWindowV2({
       if (last.sender_id !== user.id) markRead();
     }
   }, [messages, atBottom, markRead, user.id]);
+
+  // Force scroll to bottom on conversation open (after messages finish loading).
+  useEffect(() => {
+    if (loading) return;
+    setAtBottom(true);
+    scrollToBottom(scrollRef.current);
+  }, [conversationId, loading, setAtBottom]);
 
   const onScroll = (e) => {
     const el = e.currentTarget;
