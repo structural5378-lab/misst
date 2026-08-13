@@ -31,6 +31,7 @@ export default function ChatWindowV2({
   const [highlightId, setHighlightId] = useState(null);
   const bottomRef = useRef(null);
   const initialScrollDoneRef = useRef(false);
+  const atBottomRef = useRef(true);
 
   const other = conversation ? otherParticipant(conversation, user.id) : null;
   const name = conversation?.is_group ? (conversation?.name || "Group") : (other?.name || "Unknown");
@@ -59,7 +60,7 @@ export default function ChatWindowV2({
   useEffect(() => {
     if (!scrollRef.current) return;
     if (atBottom && messages.length > lastLenRef.current) {
-      scrollToBottom(scrollRef.current, bottomRef.current);
+      scrollToBottom(scrollRef.current);
     }
     lastLenRef.current = messages.length;
     if (atBottom && messages.length) {
@@ -68,30 +69,37 @@ export default function ChatWindowV2({
     }
   }, [messages, atBottom, markRead, user.id]);
 
-  // Force scroll to bottom on conversation open. Pin before paint (no flash),
-  // then re-pin on rAF and staggered timeouts so async content (images/markdown)
-  // never leaves the view stuck above the newest message. loadMore is gated
-  // until the initial scroll settles so infinite-scroll can't yank the view
-  // away from the bottom during this window.
+  // Force scroll to bottom on conversation open. Pin to the bottom, then keep
+  // pinning every animation frame until the content height stops changing.
+  // This catches every async layout shift (images, markdown, flex/dvh height
+  // settling) that a fixed-timeout approach can miss. loadMore is gated until
+  // the loop ends so infinite-scroll can't yank the view away from the bottom.
   useLayoutEffect(() => {
     if (loading) return;
     initialScrollDoneRef.current = false;
+    atBottomRef.current = true;
     setAtBottom(true);
     const el = scrollRef.current;
-    const sentinel = bottomRef.current;
-    const scroll = () => scrollToBottom(el, sentinel);
-    scroll();
-    requestAnimationFrame(scroll);
-    const t1 = setTimeout(scroll, 50);
-    const t2 = setTimeout(scroll, 150);
-    const t3 = setTimeout(scroll, 350);
-    const t4 = setTimeout(() => { initialScrollDoneRef.current = true; }, 700);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+    if (!el) return;
+    scrollToBottom(el);
+    let lastH = el.scrollHeight;
+    let raf;
+    const tick = () => {
+      if (atBottomRef.current && el.scrollHeight !== lastH) {
+        lastH = el.scrollHeight;
+        scrollToBottom(el);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    const t = setTimeout(() => { initialScrollDoneRef.current = true; cancelAnimationFrame(raf); }, 1500);
+    return () => { cancelAnimationFrame(raf); clearTimeout(t); };
   }, [conversationId, loading, setAtBottom]);
 
   const onScroll = (e) => {
     const el = e.currentTarget;
     const bottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+    atBottomRef.current = bottom;
     setAtBottom(bottom);
     if (initialScrollDoneRef.current && el.scrollTop < 80 && hasMore && !loadingMore) loadMore();
   };

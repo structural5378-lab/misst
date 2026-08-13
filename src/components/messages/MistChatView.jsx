@@ -35,30 +35,33 @@ export default function MistChatView({
     isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 120;
   }, []);
 
-  // Smart auto-scroll: force scroll to bottom on conversation change (before
-  // paint so there's no flash at the top); on new messages, only scroll if the
-  // user is near the bottom. Uses a bottom sentinel + scrollToBottom for
-  // reliability across async content layout.
-  // Force scroll to bottom on conversation open. Pin before paint (no flash),
-  // then re-pin on rAF and staggered timeouts so async content (images/markdown)
-  // never leaves the view stuck above the newest message.
+  // Force scroll to bottom on conversation open. Pin to the bottom, then keep
+  // pinning every animation frame until the content height stops changing.
+  // This catches every async layout shift (images, markdown, flex/dvh height
+  // settling) that a fixed-timeout approach can miss — the most reliable way
+  // to guarantee the chat opens at the latest message every time.
   useLayoutEffect(() => {
     if (messagesLoading) return;
     initialScrollDoneRef.current = false;
     isNearBottomRef.current = true;
     const el = scrollRef.current;
-    const sentinel = bottomRef.current;
-    const scroll = () => scrollToBottom(el, sentinel);
-    scroll();
-    requestAnimationFrame(scroll);
-    const t1 = setTimeout(scroll, 50);
-    const t2 = setTimeout(scroll, 150);
-    const t3 = setTimeout(scroll, 350);
-    const t4 = setTimeout(() => { initialScrollDoneRef.current = true; }, 700);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+    if (!el) return;
+    scrollToBottom(el);
+    let lastH = el.scrollHeight;
+    let raf;
+    const tick = () => {
+      if (isNearBottomRef.current && el.scrollHeight !== lastH) {
+        lastH = el.scrollHeight;
+        scrollToBottom(el);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    const t = setTimeout(() => { initialScrollDoneRef.current = true; cancelAnimationFrame(raf); }, 1500);
+    return () => { cancelAnimationFrame(raf); clearTimeout(t); };
   }, [conversation?.id, messagesLoading]);
   useEffect(() => {
-    if (isNearBottomRef.current) scrollToBottom(scrollRef.current, bottomRef.current);
+    if (isNearBottomRef.current) scrollToBottom(scrollRef.current);
   }, [messages.length]);
 
   // Clear reply/edit when switching conversations
