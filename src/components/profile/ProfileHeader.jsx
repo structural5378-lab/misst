@@ -6,7 +6,7 @@ import LicenseBadge from "./LicenseBadge";
 import { heroSeed, heroTheme, heroPrompt } from "@/hooks/useHeroArtwork";
 
 export default function ProfileHeader({
-  banner, avatar, displayName, callsign, role, groups, avatarFrame,
+  banner, avatar, displayName, callsign, role, groups,
   location, joinDate, level, reputation, isSelf, onEdit, onMessage, onFollow, onSignOut,
 }) {
   const roleBadge =
@@ -29,7 +29,7 @@ export default function ProfileHeader({
 
         {/* Identity + actions aligned at the top of the banner image */}
         <div className="absolute top-0 left-0 right-0 p-3 flex items-start gap-3">
-          <div className={`avatar-frame avatar-frame-${avatarFrame || "common"} shrink-0`}>
+          <div className="shrink-0">
             <div className="w-20 h-20 rounded-2xl overflow-hidden bg-violet-950/50 flex items-center justify-center">
               {avatar ? (
                 <img src={avatar} alt="" className="w-full h-full object-cover" />
@@ -92,7 +92,6 @@ export default function ProfileHeader({
         <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
           {location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{location}</span>}
           {joinDate && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Joined {new Date(joinDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>}
-          <span className="flex items-center gap-1 text-yellow-400"><Star className="w-3 h-3" />Lv {level}</span>
           <span className="flex items-center gap-1 text-emerald-400"><Award className="w-3 h-3" />{reputation} rep</span>
         </div>
       </div>

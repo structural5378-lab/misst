@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Radio, Users, Info, AlertTriangle, Settings, MessageSquare, ChevronRight, MapPin, Sun, Wrench, Globe, Camera, UserCircle2, ShoppingBag, SignalHigh, Trophy, Shield } from "lucide-react";
+import { Bell, Radio, Users, Info, AlertTriangle, Settings, MessageSquare, ChevronRight, MapPin, Sun, Wrench, Globe, Camera, UserCircle2, ShoppingBag, SignalHigh, Shield } from "lucide-react";
 import { format } from "date-fns";
 import StormTracker from "@/components/weather/StormTracker";
 import LightningActivityStrip from "@/components/weather/LightningActivityStrip";
@@ -13,7 +13,6 @@ import { useNetControlAccess } from "@/hooks/useNetControlAccess";
 import OnlineMembersSheet from "@/components/members/OnlineMembersSheet";
 import RadioScopeTile from "@/components/radioscope/RadioScopeTile";
 import OperatorCard from "@/components/profile/OperatorCard";
-import XPLevelCard from "@/components/dashboard/XPLevelCard";
 import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
 import DashboardCommandCenter from "@/components/dashboard/DashboardCommandCenter";
 import NextNetCard from "@/components/dashboard/NextNetCard";
@@ -35,7 +34,6 @@ const quickItems = [
   { icon: SignalHigh, label: "Simplex", path: "/cineplex", color: "text-success", bg: "bg-success/10" },
   { icon: MessageSquare, label: "Chat", path: "/messages", color: "text-fuchsia-400", bg: "bg-fuchsia-500/10" },
   { icon: Radio, label: "Radio Files", path: "/radio-files", color: "text-violet-400", bg: "bg-violet-500/10" },
-  { icon: Trophy, label: "Trophies", path: "/achievements", color: "text-yellow-400", bg: "bg-yellow-500/10" },
   { icon: Settings, label: "Settings", path: "/account", color: "text-muted-foreground", bg: "bg-muted/40" },
   { icon: Shield, label: "Admin", path: "/platform/admin", color: "text-rose-400", bg: "bg-rose-500/10", adminOnly: true },
 ];
@@ -125,9 +123,6 @@ export default function Dashboard() {
         <div className="mt-4 sm:mt-6">
           <OperatorCard onLogout={signOut} />
         </div>
-
-        {/* XP / LEVEL — identity progression, directly under avatar block */}
-        <XPLevelCard xp={stats.xp || 0} level={stats.level} />
 
         {/* NEXT NET — compact operational strip */}
         <div className="mt-5 sm:mt-6">

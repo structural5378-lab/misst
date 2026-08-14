@@ -1,6 +1,5 @@
 import React from "react";
 import { Shield, Radio, Award } from "lucide-react";
-import ActiveBadge from "@/components/premium/ActiveBadge";
 
 // Role + GMRS badges shown beside sender names and in member lists.
 export function roleBadge(role) {
@@ -34,7 +33,6 @@ export function SenderBadges({ member }) {
   if (gb) out.push(gb);
   return (
     <span className="inline-flex items-center gap-1">
-      <ActiveBadge userId={member.user_id} size="inline" />
       {out.map((b, i) => <Badge key={i} badge={b} />)}
     </span>
   );

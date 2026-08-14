@@ -12,7 +12,7 @@ import { useMissionControl } from "./useMissionControl";
 // queue mutations, incident mutations, weather, runtime clock, roll call,
 // AI summary, and PDF export. When opened without a netId it auto-detects the
 // first active/paused session across all nets.
-export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
+export function useMissionControlV2(routeNetId) {
   const qc = useQueryClient();
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
@@ -32,7 +32,7 @@ export function useMissionControlV2(routeNetId, { onXp, onUnlock } = {}) {
   const autoSession = !routeNetId ? (allSessions.find((s) => s.status === "active" || s.status === "paused") || null) : null;
   const effectiveNetId = routeNetId || autoSession?.net_id || null;
 
-  const mc = useMissionControl(effectiveNetId, { onXp, onUnlock });
+  const mc = useMissionControl(effectiveNetId);
   const { net, activeSession, approved, activeQueue, incidents, timeline, repeater, metrics, isOperator, user } = mc;
   const sid = activeSession?.id;
 

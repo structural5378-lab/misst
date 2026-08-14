@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { Award, Radio, Flame } from "lucide-react";
+import { Radio, Flame } from "lucide-react";
 import LoginStreakModal from "./LoginStreakModal";
 
 const MILESTONES = [7, 30, 100, 365];
 
 const SIMPLE_CARDS = [
-  { icon: Award, label: "Score", key: "achievement_score", color: "text-violet-400", bg: "bg-violet-500/10" },
   { icon: Radio, label: "Check-ins", key: "net_checkins", color: "text-emerald-400", bg: "bg-emerald-500/10" },
 ];
 
@@ -16,7 +15,7 @@ export default function StatsGrid({ stats = {} }) {
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {SIMPLE_CARDS.map((c, i) => {
           const Icon = c.icon;
           return (

@@ -2,24 +2,20 @@ import React, { useState, useEffect } from 'react';
 
 import { mist } from '@/api/mist';
 import { useQuery } from '@tanstack/react-query';
-import { Crown, Trophy, Star, Radio, Headphones, MapPin, MessageSquare, ShieldAlert } from 'lucide-react';
+import { Trophy, Star, Radio, Headphones, MapPin, MessageSquare, ShieldAlert } from 'lucide-react';
 import PageHeader from '@/components/layout/PageHeader';
-import { calcLevel } from '@/components/achievements/LevelBar';
-import ActiveBadge from '@/components/premium/ActiveBadge';
 
 const SORT_OPTIONS = [
-  { key: 'xp', label: 'XP', icon: Crown },
   { key: 'net_checkins', label: 'Check-ins', icon: Radio },
   { key: 'net_control_sessions', label: 'Net Control', icon: Headphones },
   { key: 'miles_traveled', label: 'Distance', icon: MapPin },
-  { key: 'achievement_score', label: 'Achievements', icon: Trophy },
   { key: 'reputation', label: 'Reputation', icon: Star },
   { key: 'emergency_activations', label: 'Emergency', icon: ShieldAlert },
   { key: 'forum_posts', label: 'Forum', icon: MessageSquare },
 ];
 
 export default function Leaderboard() {
-  const [sortBy, setSortBy] = useState('xp');
+  const [sortBy, setSortBy] = useState('net_checkins');
   const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => { mist.auth.me().then(u => setCurrentUserId(u.id)).catch(() => {}); }, []);
@@ -79,7 +75,6 @@ export default function Leaderboard() {
         <div className="space-y-2">
           {sorted.slice(0, 50).map((entry, i) => {
             const isMe = entry.user_id === currentUserId;
-            const level = calcLevel(entry.xp || 0);
             const rankColors = ['text-amber-400', 'text-slate-300', 'text-orange-400'];
             return (
               <div key={entry.id || i}
@@ -92,9 +87,8 @@ export default function Leaderboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate flex items-center gap-1">
-                    {entry.user_name || 'Operator'} {isMe && <span className="text-violet-400">(You)</span>} <ActiveBadge userId={entry.user_id} size="inline" className="shrink-0" />
+                    {entry.user_name || 'Operator'} {isMe && <span className="text-violet-400">(You)</span>}
                   </p>
-                  <p className="text-xs text-muted-foreground">Level {level}</p>
                 </div>
                 <div className="text-right">
                   <span className="text-lg font-bold text-foreground">{(entry[sortBy] || 0).toLocaleString()}</span>

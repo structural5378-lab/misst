@@ -1,8 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Radio, Users, Star, Bookmark, MessageSquare, Hash, Trophy } from "lucide-react";
-import LevelBar from "@/components/achievements/LevelBar";
-import PrestigeStats from "@/components/profile/PrestigeStats";
+import { Radio, Users, Star, Bookmark, MessageSquare, Hash } from "lucide-react";
 import { timeAgo } from "@/lib/forumUtils";
 
 export function Section({ title, icon: Icon, children, action }) {
@@ -14,15 +12,6 @@ export function Section({ title, icon: Icon, children, action }) {
         {action && <div className="ml-auto">{action}</div>}
       </div>
       {children}
-    </div>
-  );
-}
-
-export function ProfileStats({ stats }) {
-  return (
-    <div className="space-y-3">
-      <LevelBar xp={stats.xp || 0} />
-      <PrestigeStats stats={stats} />
     </div>
   );
 }
@@ -111,17 +100,16 @@ export function ProfileMediaGallery({ threads, posts }) {
   );
 }
 
-export function ProfileTimeline({ threads, posts, achievements }) {
+export function ProfileTimeline({ threads, posts }) {
   const items = [
     ...threads.map((t) => ({ type: "thread", time: t.created_date, title: t.title, id: t.id, icon: Hash })),
     ...posts.map((p) => ({ type: "reply", time: p.created_date, title: (p.body || "").slice(0, 60), id: p.thread_id, icon: MessageSquare })),
-    ...achievements.map((a) => ({ type: "award", time: a.unlocked_date, title: a.achievement_name || a.achievement_id, id: a.id, icon: Trophy })),
   ].filter((i) => i.time).sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 12);
   if (!items.length) return <p className="text-sm text-muted-foreground">No activity yet.</p>;
   return (
     <div className="space-y-2">
       {items.map((it, i) => (
-        <Link key={i} to={it.type === "award" ? "/achievements" : `/community/thread/${it.id}`} className="flex items-center gap-2 text-xs">
+        <Link key={i} to={`/community/thread/${it.id}`} className="flex items-center gap-2 text-xs">
           <it.icon className="w-3 h-3 text-primary shrink-0" />
           <span className="text-foreground truncate flex-1">{it.title}</span>
           <span className="text-muted-foreground/60 shrink-0">{timeAgo(it.time)}</span>

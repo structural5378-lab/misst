@@ -55,12 +55,10 @@ import CommunityOnboarding from '@/pages/CommunityOnboarding';
 import MyCommunities from '@/pages/MyCommunities';
 import OnboardingProtectedRoute from '@/components/OnboardingProtectedRoute';
 import RadioScope from '@/pages/RadioScope';
-import PremiumBadges from '@/pages/PremiumBadges';
 import RadioFiles from '@/pages/RadioFiles';
 import RadioFileDetail from '@/pages/RadioFileDetail';
 import RadioFileUpload from '@/pages/RadioFileUpload';
 // Net Control merged into MissionControlV2
-import Achievements from '@/pages/Achievements';
 import Leaderboard from '@/pages/Leaderboard';
 import Settings from '@/pages/Settings';
 import AccountCenter from '@/pages/AccountCenter';
@@ -87,7 +85,6 @@ import PlatformAdminNotificationLogs from '@/pages/platform/PlatformAdminNotific
 import PlatformAdminNotificationTest from '@/pages/platform/PlatformAdminNotificationTest';
 import PlatformAdminNotificationMonitor from '@/pages/platform/PlatformAdminNotificationMonitor';
 import PlatformAdminContent from '@/pages/platform/PlatformAdminContent';
-import PlatformAdminBadges from '@/pages/platform/PlatformAdminBadges';
 const PlatformAdminRadioScope = lazy(() => import('@/pages/platform/PlatformAdminRadioScope'));
 import PlatformAdminForum from '@/pages/platform/PlatformAdminForum';
 import PlatformAdminChat from '@/pages/platform/PlatformAdminChat';
@@ -110,7 +107,6 @@ import PlatformAdminNetTemplates from '@/pages/platform/PlatformAdminNetTemplate
 import PlatformAdminScheduledNets from '@/pages/platform/PlatformAdminScheduledNets';
 import PlatformAdminNetLogs from '@/pages/platform/PlatformAdminNetLogs';
 import PlatformAdminLightning from '@/pages/platform/PlatformAdminLightning';
-import PlatformAdminPremiumBadges from '@/pages/platform/PlatformAdminPremiumBadges';
 import PlatformAdminRadioFiles from '@/pages/platform/PlatformAdminRadioFiles';
 import PlatformAdminRadioCatalog from '@/pages/platform/PlatformAdminRadioCatalog';
 
@@ -200,8 +196,6 @@ const AuthenticatedApp = () => {
         <Route path="/radio-files" element={<RadioFiles />} />
         <Route path="/radio-files/upload" element={<RadioFileUpload />} />
         <Route path="/radio-files/:id" element={<RadioFileDetail />} />
-        <Route path="/premium-badges" element={<PremiumBadges />} />
-        <Route path="/achievements" element={<Achievements />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/account" element={<AccountCenter />} />
@@ -246,7 +240,6 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/notifications/test" element={<PlatformAdminNotificationTest />} />
           <Route path="/platform/admin/notifications/monitor" element={<PlatformAdminNotificationMonitor />} />
           <Route path="/platform/admin/content" element={<PlatformAdminContent />} />
-          <Route path="/platform/admin/badges" element={<PlatformAdminBadges />} />
           <Route path="/platform/admin/radioscope" element={<PlatformAdminRadioScope />} />
           <Route path="/platform/admin/forum" element={<PlatformAdminForum />} />
           <Route path="/platform/admin/chat" element={<PlatformAdminChat />} />
@@ -269,7 +262,6 @@ const AuthenticatedApp = () => {
           <Route path="/platform/admin/scheduled-nets" element={<PlatformAdminScheduledNets />} />
           <Route path="/platform/admin/net-logs" element={<PlatformAdminNetLogs />} />
           <Route path="/platform/admin/lightning" element={<PlatformAdminLightning />} />
-          <Route path="/platform/admin/premium-badges" element={<PlatformAdminPremiumBadges />} />
           <Route path="/platform/admin/radio-catalog" element={<PlatformAdminRadioCatalog />} />
           <Route path="/platform/admin/radio-files" element={<PlatformAdminRadioFiles />} />
         </Route>

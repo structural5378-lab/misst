@@ -5,22 +5,19 @@ import { useQuery } from "@tanstack/react-query";
 import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { Trophy, ChevronRight, Shield, Save, X, Camera, Loader2, Plus, Trash2, BarChart3, Crown } from "lucide-react";
+import { ChevronRight, Shield, Save, X, Camera, Loader2, Plus, Trash2, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import PageHeader from "@/components/layout/PageHeader";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import {
-  Section, ProfileStats, ProfileEquipment, ProfileClubs,
+  Section, ProfileEquipment, ProfileClubs,
   ProfileRecentThreads, ProfileRecentReplies, ProfileBookmarks,
   ProfileMediaGallery, ProfileTimeline,
 } from "@/components/profile/ProfileSections";
-import StatsGrid from "@/components/achievements/StatsGrid";
-import TrophyCase from "@/components/achievements/TrophyCase";
-import BadgeShowcase from "@/components/profile/BadgeShowcase";
-import PremiumBadgeCollection from "@/components/profile/PremiumBadgeCollection";
-import { deriveGroups, deriveBadges, selectBanner, getAvatarFrame } from "@/lib/profileConfig";
+import StatsGrid from "@/components/dashboard/StatsGrid";
+import { deriveGroups, selectBanner } from "@/lib/profileConfig";
 import MyRadiosSection from "@/components/radiofiles/MyRadiosSection";
 import SharedRadioFilesSection from "@/components/radiofiles/SharedRadioFilesSection";
 import { normalizeCallsign, isValidGmrsCallsign, computeLicenseStatus } from "@/lib/gmrsCallsign";
@@ -74,12 +71,6 @@ export default function OperatorProfile() {
     enabled: !isSelf && !!targetId,
     staleTime: 60000,
   });
-  const { data: achievements = [] } = useQuery({
-    queryKey: ["profile-ach", isSelf ? "me" : targetId],
-    queryFn: () => (isSelf ? mist.entities.UserAchievement.list() : mist.entities.UserAchievement.filter({ user_id: targetId })),
-    enabled: isSelf ? !!user : !!targetId,
-    staleTime: 15000,
-  });
   const tid = isSelf ? user?.id : targetId;
   const { data: threads = [] } = useQuery({ queryKey: ["profile-threads", tid], queryFn: () => mist.entities.ForumThread.filter({ author_id: tid }, "-created_date", 10), enabled: !!tid, staleTime: 30000 });
   const { data: posts = [] } = useQuery({ queryKey: ["profile-posts", tid], queryFn: () => mist.entities.ForumPost.filter({ author_id: tid }, "-created_date", 10), enabled: !!tid, staleTime: 30000 });
@@ -96,10 +87,7 @@ export default function OperatorProfile() {
   const role = isSelf ? mybbUser?.role : otherProfile?.role;
   const pseudoMybb = isSelf ? mybbUser : { role: role === "admin" ? "admin" : role === "moderator" ? "moderator" : undefined };
   const groups = deriveGroups(user, pseudoMybb, stats);
-  const badges = deriveBadges(stats, user, pseudoMybb);
   const banner = selectBanner(stats, pseudoMybb, otherProfile?.profile_banner);
-  const avatarFrame = getAvatarFrame(achievements, pseudoMybb);
-  const level = stats.level || 1;
 
   const handleSave = async () => {
     setSaving(true);
@@ -181,10 +169,8 @@ export default function OperatorProfile() {
           callsign={callsign}
           role={role}
           groups={groups}
-          avatarFrame={avatarFrame}
           location={location}
           joinDate={joinDate}
-          level={level}
           reputation={stats.reputation || 0}
           isSelf={isSelf}
           onEdit={() => setEditing(true)}
@@ -257,10 +243,7 @@ export default function OperatorProfile() {
           </div>
         ) : (
           <>
-            <PremiumBadgeCollection />
             {bio && <Section title="About"><p className="text-sm text-muted-foreground">{bio}</p></Section>}
-
-            <Section title="Level & Prestige"><ProfileStats stats={stats} /></Section>
 
             <Section title="Lifetime Statistics"><StatsGrid stats={stats} /></Section>
 
@@ -272,34 +255,19 @@ export default function OperatorProfile() {
 
             <Section title="Clubs & Repeaters"><ProfileClubs clubs={clubs} favoriteRepeater={stats.favorite_repeater} /></Section>
 
-            {badges.length > 0 && (
-              <div className="p-4 rounded-xl bg-card border border-border/60">
-                <h3 className="text-sm font-semibold text-foreground mb-2">Badges</h3>
-                <BadgeShowcase badges={badges} onBadgeClick={() => {}} />
-              </div>
-            )}
-
-            <Section title="Trophy Case" icon={Trophy}><TrophyCase achievements={achievements} onBadgeClick={() => {}} /></Section>
-
             <Section title="Recent Threads"><ProfileRecentThreads threads={threads} /></Section>
 
             <Section title="Recent Replies"><ProfileRecentReplies posts={posts} /></Section>
 
             {isSelf && <Section title="Bookmarks" icon={undefined}><ProfileBookmarks bookmarks={bookmarks} /></Section>}
 
-            <Section title="Activity Timeline"><ProfileTimeline threads={threads} posts={posts} achievements={achievements} /></Section>
+            <Section title="Activity Timeline"><ProfileTimeline threads={threads} posts={posts} /></Section>
 
             <Section title="Media Gallery"><ProfileMediaGallery threads={threads} posts={posts} /></Section>
 
             <div className="flex gap-2">
-              <Link to="/achievements" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600/20 to-purple-600/20 border border-violet-500/30 text-violet-300 text-sm font-medium">
-                <Trophy className="w-4 h-4" /> {achievements.length} Achievements
-              </Link>
               <Link to="/leaderboard" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm font-medium">
                 <BarChart3 className="w-4 h-4" /> Leaderboard
-              </Link>
-              <Link to="/premium-badges" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 text-amber-300 text-sm font-medium">
-                <Crown className="w-4 h-4" /> Premium
               </Link>
             </div>
 

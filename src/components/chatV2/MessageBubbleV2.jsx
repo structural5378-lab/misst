@@ -5,7 +5,6 @@ import MessageContextMenuV2 from "./MessageContextMenuV2";
 import ReactionPickerV2 from "./ReactionPickerV2";
 import { detectCard } from "@/lib/messageCards";
 import MessageCardRouter from "./cards/MessageCardRouter";
-import ActiveBadge from "@/components/premium/ActiveBadge";
 
 // Renders message body with URLs linkified into subtle inline links.
 function renderBody(body) {
@@ -108,7 +107,7 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
         {!isMine && showAvatar && (
           <span className="text-[11px] mb-0.5 px-1 flex items-center gap-1 flex-wrap">
             <span className="font-semibold text-[#76d6ff]">~ {message.sender_name}</span>
-            {senderBadge === undefined ? <ActiveBadge userId={message.sender_id} size="inline" /> : senderBadge}
+            {senderBadge}
           </span>
         )}
         {message.reply_to_preview && (

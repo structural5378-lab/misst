@@ -4,7 +4,6 @@ import { X, MessageSquare, UserPlus, ExternalLink, Radio, ShieldX } from "lucide
 import { CommunityContext } from "@/contexts/CommunityContext";
 import { useAuthorProfile } from "@/hooks/useAuthorProfile";
 import { getRoleBadge } from "@/lib/forumUtils";
-import ActiveBadge from "@/components/premium/ActiveBadge";
 
 function safeArr(v) {
   if (!v) return [];
@@ -63,7 +62,7 @@ export default function ProfilePopup({ authorId, role, name, onClose }) {
               </div>
             )}
             <div className="flex-1 pb-1 min-w-0">
-              <h3 className="text-base font-bold text-foreground truncate flex items-center gap-1.5">{displayName}<ActiveBadge userId={authorId} size="inline" className="shrink-0" /></h3>
+              <h3 className="text-base font-bold text-foreground truncate flex items-center gap-1.5">{displayName}</h3>
               {callsign && <p className="text-xs text-primary">{callsign}</p>}
               <span className={`mt-1 inline-flex items-center text-[9px] px-1.5 py-0.5 rounded border ${roleBadge.color}`}>{roleBadge.label}</span>
             </div>
@@ -71,8 +70,7 @@ export default function ProfilePopup({ authorId, role, name, onClose }) {
 
           {showProfile ? (
             <>
-              <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-                <Stat label="Level" value={stats.level || 1} />
+              <div className="grid grid-cols-2 gap-2 mt-3 text-center">
                 <Stat label="Rep" value={stats.reputation || 0} />
                 <Stat label="Posts" value={stats.forum_posts || 0} />
               </div>

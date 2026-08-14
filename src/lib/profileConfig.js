@@ -34,19 +34,6 @@ export const GROUPS = {
   beta_tester:       { id: 'beta_tester',       name: 'Beta Tester',         icon: 'Zap',         gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',       textColor: '#fff',    glow: '0 0 10px rgba(245,158,11,0.3)', priority: 50 },
 };
 
-export const PRESTIGE_BADGES = [
-  { id: 'founder',            name: 'Founder',            icon: 'Crown',       rarity: 'founder',   description: 'Founded a MIST community' },
-  { id: 'administrator',     name: 'Administrator',      icon: 'Shield',      rarity: 'legendary', description: 'Platform administrator' },
-  { id: 'repeater_owner',    name: 'Repeater Owner',     icon: 'RadioTower',  rarity: 'epic',      description: 'Manages a repeater' },
-  { id: 'emergency_volunteer',name: 'Emergency Volunteer',icon: 'ShieldAlert',rarity: 'epic',      description: 'Participated in emergency operations' },
-  { id: 'road_warrior',      name: 'Road Warrior',       icon: 'Car',         rarity: 'legendary', description: 'Traveled 10,000+ miles for radio' },
-  { id: 'rf_explorer',       name: 'RF Explorer',        icon: 'Radio',       rarity: 'epic',      description: 'Visited 25+ repeaters' },
-  { id: 'legendary_operator',name: 'Legendary Operator', icon: 'Zap',        rarity: 'legendary', description: 'Reached level 20+' },
-  { id: 'community_mentor',  name: 'Community Mentor',   icon: 'Sparkles',    rarity: 'rare',      description: 'Given 25+ helpful answers' },
-  { id: 'streak_365',        name: '365 Day Streak',     icon: 'Flame',       rarity: 'mythic',    description: 'Active for 365 consecutive days' },
-  { id: 'mythic_achievement',name: 'Mythic Achievement',icon: 'Star',       rarity: 'mythic',    description: 'Earned 1,000+ achievement score' },
-];
-
 export function deriveGroups(user, mybbUser, stats) {
   const groups = [];
   const s = stats || {};
@@ -67,25 +54,6 @@ export function deriveGroups(user, mybbUser, stats) {
   return groups;
 }
 
-export function deriveBadges(stats, user, mybbUser) {
-  const s = stats || {};
-  return PRESTIGE_BADGES.filter(b => {
-    switch (b.id) {
-      case 'founder':             return s.is_founder >= 1;
-      case 'administrator':       return mybbUser?.role === 'admin';
-      case 'repeater_owner':      return (s.repeaters_managed || 0) >= 1;
-      case 'emergency_volunteer': return (s.emergency_activations || 0) >= 1;
-      case 'road_warrior':        return (s.miles_traveled || 0) >= 10000;
-      case 'rf_explorer':         return (s.repeaters_visited || 0) >= 25;
-      case 'legendary_operator':  return (s.level || 1) >= 20;
-      case 'community_mentor':    return (s.helpful_answers || 0) >= 25;
-      case 'streak_365':          return (s.daily_login_streak || 0) >= 365;
-      case 'mythic_achievement':  return (s.achievement_score || 0) >= 1000;
-      default: return false;
-    }
-  });
-}
-
 export function selectBanner(stats, mybbUser, userBanner) {
   if (userBanner && BANNERS[userBanner]) return BANNERS[userBanner];
   const s = stats || {};
@@ -100,15 +68,4 @@ export function selectBanner(stats, mybbUser, userBanner) {
   if ((s.repeaters_visited || 0) >= 10) return BANNERS.radiotower;
   if ((s.forum_posts || 0) >= 100) return BANNERS.matrix;
   return BANNERS.carbon;
-}
-
-export function getAvatarFrame(achievements, mybbUser) {
-  if (!achievements || achievements.length === 0) return null;
-  const rarities = achievements.map(a => a.rarity);
-  if (rarities.includes('founder') || mybbUser?.role === 'admin') return 'founder';
-  if (rarities.includes('mythic')) return 'mythic';
-  if (rarities.includes('legendary')) return 'legendary';
-  if (rarities.includes('epic')) return 'epic';
-  if (rarities.includes('rare')) return 'rare';
-  return 'common';
 }

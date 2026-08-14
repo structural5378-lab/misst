@@ -11,7 +11,7 @@ import { useRealtimeFallback } from "./useRealtimeFallback";
  * family of interfaces (mobile MissionControl, Desktop Ops Center, Wallboard).
  * Additive — the existing MissionControl page is unchanged.
  */
-export function useMissionControl(netId, { onXp, onUnlock } = {}) {
+export function useMissionControl(netId) {
   const qc = useQueryClient();
   const { mistUser, mybbUser } = useMistUser();
   const { isAdmin } = useAdminAccess();
@@ -61,16 +61,6 @@ export function useMissionControl(netId, { onXp, onUnlock } = {}) {
   const addTimeline = async (session, event_type, message, actor = {}) => {
     try { await mist.entities.NetTimeline.create({ session_id: session.id, net_id: netId, event_type, message, actor_name: actor.name || "", actor_avatar: actor.avatar || "", actor_id: actor.id || "" }); } catch {}
   };
-  const awardXp = async (userId, userName, action) => {
-    if (!userId) return;
-    try {
-      const res = await mist.functions.invoke("awardNetXp", { user_id: userId, user_name: userName, action });
-      if (res?.data?.xpAwarded > 0) onXp?.(res.data.xpAwarded);
-      if (res?.data?.newlyUnlocked?.length) onUnlock?.(res.data.newlyUnlocked[0].id);
-    } catch {}
-  };
-  const actionFor = (status) => (status === "visitor" ? "visitor" : status === "emergency" ? "emergency" : status === "priority" ? "priority" : "check_in");
-
   const startNet = async () => {
     if (!net) return;
     const session = await mist.entities.NetSession.create({
@@ -110,7 +100,6 @@ export function useMissionControl(netId, { onXp, onUnlock } = {}) {
     };
     await mist.entities.NetSession.update(activeSession.id, counters);
     addTimeline(activeSession, "net_closed", `Net closed by ${activeSession.net_control}`, { name: activeSession.net_control });
-    awardXp(activeSession.net_control_uid, activeSession.net_control, "host_net");
     qc.invalidateQueries({ queryKey: ["net-sessions", netId] });
     return { ...activeSession, ...counters };
   };
@@ -120,7 +109,6 @@ export function useMissionControl(netId, { onXp, onUnlock } = {}) {
     await mist.entities.NetLog.update(c.id, { approved: true, checkin_number: nextNum });
     await mist.entities.NetSession.update(activeSession.id, { checkin_count: nextNum });
     addTimeline(activeSession, "checkin", `${c.callsign} checked in`, { name: c.callsign, avatar: c.avatar, id: c.user_id });
-    awardXp(c.user_id, c.name || c.callsign, actionFor(c.status));
     qc.invalidateQueries({ queryKey: ["net-log", activeSession.id] });
   };
   const editStatus = async (c, status) => {
@@ -142,7 +130,6 @@ export function useMissionControl(netId, { onXp, onUnlock } = {}) {
     });
     await mist.entities.NetSession.update(activeSession.id, { checkin_count: nextNum });
     addTimeline(activeSession, "checkin", `${data.callsign} checked in`, { name: data.callsign });
-    awardXp(data.user_id, data.name || data.callsign, actionFor(data.status));
     qc.invalidateQueries({ queryKey: ["net-log", activeSession.id] });
   };
   const selfCheckin = async (data) => {

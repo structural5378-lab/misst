@@ -8,8 +8,6 @@ import McvNetPicker from "@/components/missionV2/McvNetPicker";
 import McvManualCheckin from "@/components/missionV2/McvManualCheckin";
 import { SettingsPanel, ReportPanel } from "@/components/missionV2/McvPanels";
 import MissionStatusSheet from "@/components/mission/MissionStatusSheet";
-import XpToast from "@/components/mission/XpToast";
-import UnlockCelebration from "@/components/achievements/UnlockCelebration";
 import McvDesktop from "@/components/missionV3/McvDesktop";
 import McvTablet from "@/components/missionV3/McvTablet";
 import McvMobile from "@/components/missionV3/McvMobile";
@@ -25,14 +23,12 @@ export default function MissionControlV2() {
   const { netId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [xpToast, setXpToast] = useState(null);
-  const [unlock, setUnlock] = useState(null);
   const [showManual, setShowManual] = useState(false);
   const [editing, setEditing] = useState(null);
   const [report, setReport] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const containerRef = useRef(null);
-  const v2 = useMissionControlV2(netId, { onXp: setXpToast, onUnlock: setUnlock });
+  const v2 = useMissionControlV2(netId);
   const { effectiveNetId, activeSession, net, isOperator, endNet } = v2;
 
   const isDesktop = useMediaQuery("(min-width: 1200px)");
@@ -89,8 +85,6 @@ export default function MissionControlV2() {
           </div>
         </div>
       )}
-      <XpToast amount={xpToast} onDone={() => setXpToast(null)} />
-      {unlock && <UnlockCelebration achievementId={unlock} onClose={() => setUnlock(null)} onShare={() => setUnlock(null)} />}
     </div>
   );
 }

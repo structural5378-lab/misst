@@ -90,22 +90,6 @@
       "type": "number",
       "default": 0
     },
-    "xp": {
-      "type": "number",
-      "default": 0
-    },
-    "level": {
-      "type": "number",
-      "default": 1
-    },
-    "achievement_score": {
-      "type": "number",
-      "default": 0
-    },
-    "achievements_count": {
-      "type": "number",
-      "default": 0
-    },
     "daily_login_streak": {
       "type": "number",
       "default": 0,

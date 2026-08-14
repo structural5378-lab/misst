@@ -12,7 +12,6 @@ export const NOTIF_TYPES = [
   "net_starting",
   "net_ended",
   "emergency_alert",
-  "badge_earned",
   "community_invite",
   "system",
   "mission_control",
@@ -23,7 +22,6 @@ export const NOTIF_TYPES = [
   "forum_reply",
   "news",
   "repeater_added",
-  "achievement_unlocked",
 ];
 
 // Maps a Notification.type to the user-facing preference key in User.notif_settings
@@ -38,8 +36,6 @@ export const TYPE_TO_PREF_KEY: Record<string, string> = {
   repeater_added: "repeaters",
   news: "news",
   community_announcement: "announcements",
-  achievement_unlocked: "achievements",
-  badge_earned: "badges",
   emergency_alert: "emergency_alerts",
   community_chat: "community_chat",
   system: "system",
@@ -60,8 +56,6 @@ export const DEFAULT_NOTIF_SETTINGS = {
   repeaters: { push: false, inapp: false, sound: true, vibrate: true },
   news: { push: true, inapp: true, sound: true, vibrate: true },
   announcements: { push: true, inapp: true, sound: true, vibrate: true },
-  achievements: { push: true, inapp: true, sound: true, vibrate: true },
-  badges: { push: true, inapp: true, sound: true, vibrate: true },
   emergency_alerts: { push: true, inapp: true, sound: true, vibrate: true },
   community_chat: { push: true, inapp: true, sound: true, vibrate: true },
   system: { push: false, inapp: true, sound: false, vibrate: false },
@@ -91,14 +85,12 @@ export const NOTIF_CATEGORIES: Record<string, {
   system:                { label: "System",             color: "#64748B", icon: "Bell",           tag: "system",    sound: false,                                    requireInteraction: false },
   ai_assistant:          { label: "AI Assistant",       color: "#D946EF", icon: "Sparkles",       tag: "ai",        sound: false,                                    requireInteraction: false },
   friend_request:        { label: "Friend Requests",    color: "#22C55E", icon: "UserPlus",       tag: "friends",   sound: true,  vibrate: [100],                    requireInteraction: false },
-  badge_earned:          { label: "Badges",             color: "#F59E0B", icon: "Award",          tag: "badge",     sound: true,  vibrate: [80, 40, 80, 40, 80],    requireInteraction: false },
   community_invite:      { label: "Invites",            color: "#8B5CF6", icon: "UserCheck",      tag: "invite",    sound: true,  vibrate: [100],                    requireInteraction: false },
   user_mention:          { label: "Mentions",           color: "#06B6D4", icon: "AtSign",         tag: "mention",   sound: true,  vibrate: [80, 40, 80],             requireInteraction: false },
   event_reminder:        { label: "Event Reminders",   color: "#F97316", icon: "CalendarClock",  tag: "event",     sound: true,  vibrate: [150, 80, 150],          requireInteraction: false },
   forum_reply:           { label: "Forum Replies",      color: "#8B5CF6", icon: "MessageSquare",  tag: "forum",     sound: true,  vibrate: [100, 50, 100],          requireInteraction: false },
   news:                  { label: "News",               color: "#0EA5E9", icon: "Newspaper",     tag: "news",      sound: true,  vibrate: [100],                    requireInteraction: false },
   repeater_added:        { label: "Repeaters",          color: "#10B981", icon: "Radio",          tag: "repeater",  sound: true,  vibrate: [120, 60, 120],          requireInteraction: false },
-  achievement_unlocked:  { label: "Achievements",       color: "#F59E0B", icon: "Award",          tag: "achievement",sound: true,  vibrate: [80, 40, 80, 40, 80],    requireInteraction: false },
 };
 
 export function getCategoryMeta(type: string) {

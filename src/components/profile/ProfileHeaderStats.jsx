@@ -1,12 +1,11 @@
 import React from "react";
-import { Award, Radio, Flame } from "lucide-react";
+import { Radio, Flame } from "lucide-react";
 
-// ProfileHeaderStats — compact horizontal stats (Score, Check-ins, Login
-// Streak) integrated into the OperatorCard header. Small glassmorphism cards
-// with subtle neon glow on hover/touch. Responsive: cards size down on narrow
+// ProfileHeaderStats — compact horizontal stats (Check-ins, Login Streak)
+// integrated into the OperatorCard header. Small glassmorphism cards with
+// subtle neon glow on hover/touch. Responsive: cards size down on narrow
 // phones and the row wraps below the name when space is tight.
 const STATS = [
-  { icon: Award, label: "Score", key: "achievement_score", color: "text-violet-400", bg: "bg-violet-500/15" },
   { icon: Radio, label: "Check-ins", key: "net_checkins", color: "text-emerald-400", bg: "bg-emerald-500/15" },
   { icon: Flame, label: "Streak", key: "daily_login_streak", color: "text-orange-400", bg: "bg-orange-500/15" },
 ];
