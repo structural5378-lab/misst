@@ -30,6 +30,7 @@ import FeedlineCalculator from '@/pages/tools/FeedlineCalculator';
 import PLToneLookup from '@/pages/tools/PLToneLookup';
 import FrequencyReference from '@/pages/tools/FrequencyReference';
 import RepeaterSpacing from '@/pages/tools/RepeaterSpacing';
+import GmrsCallSignReminder from '@/pages/tools/GmrsCallSignReminder';
 import OperatorProfile from '@/pages/OperatorProfile';
 import AddContent from '@/pages/AddContent';
 import Community from '@/pages/Community';
@@ -168,6 +169,7 @@ const AuthenticatedApp = () => {
         <Route path="/tools/pl-tones" element={<PLToneLookup />} />
         <Route path="/tools/frequencies" element={<FrequencyReference />} />
         <Route path="/tools/repeater-spacing" element={<RepeaterSpacing />} />
+        <Route path="/tools/gmrs-reminder" element={<GmrsCallSignReminder />} />
         <Route path="/profile" element={<OperatorProfile />} />
         <Route path="/add" element={<AddContent />} />
         <Route element={<CommunityDesktopShell />}>
