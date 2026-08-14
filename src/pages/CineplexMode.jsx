@@ -215,7 +215,7 @@ function LiveMap({ session, myUID, onEnd, onPing, repeaters }) {
   const center = hasMyPos ? [myLat, myLon] : [28.5, -81.4];
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100dvh - 11rem)" }}>
+    <div className="flex flex-col h-full">
       {/* Distance bar */}
       <div className="px-4 py-3 bg-card border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -476,15 +476,20 @@ export default function CineplexMode() {
   useEffect(() => () => { stopGPS(); stopPolling(); }, []); // eslint-disable-line
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-background">
       <PageHeader title="Simplex Mode" showBack />
-      {step === "pick" && <UserPicker onSelect={handleSelect} />}
-      {step === "waiting" && session && <WaitingScreen session={session} onCancel={handleCancel} />}
-      {step === "incoming" && session && (
-        <IncomingRequest session={session} onAccept={handleAccept} onDecline={handleDecline} />
-      )}
-      {step === "live" && session && (
-        <LiveMap session={session} myUID={myUID} onEnd={() => handleEnd(true)} onPing={() => pingGPS(session.id, session.initiator_uid === myUID)} repeaters={repeaters} />
+      {step === "live" && session ? (
+        <div className="flex-1 min-h-0">
+          <LiveMap session={session} myUID={myUID} onEnd={() => handleEnd(true)} onPing={() => pingGPS(session.id, session.initiator_uid === myUID)} repeaters={repeaters} />
+        </div>
+      ) : (
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {step === "pick" && <UserPicker onSelect={handleSelect} />}
+          {step === "waiting" && session && <WaitingScreen session={session} onCancel={handleCancel} />}
+          {step === "incoming" && session && (
+            <IncomingRequest session={session} onAccept={handleAccept} onDecline={handleDecline} />
+          )}
+        </div>
       )}
     </div>
   );
