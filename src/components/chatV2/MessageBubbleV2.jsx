@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Check, CheckCheck, Clock, AlertCircle, RotateCcw, Smile, CornerUpRight, Pin, Megaphone, Shield } from "lucide-react";
+import { Check, CheckCheck, Clock, AlertCircle, RotateCcw, Smile, Pin, Megaphone, Shield } from "lucide-react";
 import { formatTime, isTempId } from "@/lib/chatV2/chatV2Utils";
 import MessageContextMenuV2 from "./MessageContextMenuV2";
 import ReactionPickerV2 from "./ReactionPickerV2";
@@ -52,7 +52,7 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
   if (message.deleted) {
     return (
       <div className={`flex ${isMine ? "justify-end" : "justify-start"} px-3 my-0.5`}>
-        <div className={`max-w-[78%] px-3.5 py-2 rounded-2xl text-sm italic text-muted-foreground bg-muted/40 ${isMine ? "rounded-br-md" : "rounded-bl-md"}`}>
+        <div className={`max-w-[78%] px-3 py-2 text-sm italic text-muted-foreground bg-[#1e1e1e]/60 ${isMine ? "rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm" : "rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm"}`}>
           This message was deleted.
         </div>
       </div>
@@ -104,19 +104,23 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
         </div>
       )}
       {!isMine && (showAvatar ? <Avatar name={message.sender_name} avatar={message.sender_avatar} /> : <div className="w-8" />)}
-      <div className={`max-w-[78%] flex flex-col ${isMine ? "items-end" : "items-start"}`}>
+      <div className={`max-w-[80%] flex flex-col ${isMine ? "items-end" : "items-start"}`}>
         {!isMine && showAvatar && (
           <span className="text-[11px] mb-0.5 px-1 flex items-center gap-1 flex-wrap">
-            <span className="font-semibold text-foreground/90">{message.sender_name}</span>
+            <span className="font-semibold text-[#76d6ff]">~ {message.sender_name}</span>
             {senderBadge === undefined ? <ActiveBadge userId={message.sender_id} size="inline" /> : senderBadge}
           </span>
         )}
         {message.reply_to_preview && (
           <button
             onClick={selectMode ? undefined : () => onReplyJump?.(message.reply_to_message_id)}
-            className={`text-[11px] px-2.5 py-1 rounded-lg mb-0.5 border-l-2 max-w-full truncate text-left ${isMine ? "border-primary-foreground/50 bg-primary/20" : "border-primary/50 bg-primary/10"} text-muted-foreground hover:brightness-125`}
+            className="flex gap-2 w-full max-w-full mb-0.5 text-left rounded-lg overflow-hidden bg-white/5"
           >
-            <CornerUpRight className="w-3 h-3 inline mr-1" />{message.reply_to_preview}
+            <span className="w-1 shrink-0 bg-orange-300/70" />
+            <span className="min-w-0 py-1 pr-2">
+              <span className="block text-[11px] font-semibold text-[#76d6ff] truncate">{message.reply_to_sender_name || "Original"}</span>
+              <span className="block text-[11px] text-muted-foreground truncate">{message.reply_to_preview}</span>
+            </span>
           </button>
         )}
         {editing ? (
@@ -148,30 +152,36 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
                   </div>
                 );
               }
+              const shape = isMine ? "rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm" : "rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm";
+              const color = isMine
+                ? "bg-[#1a3d52] text-foreground"
+                : message.is_announcement ? "bg-amber-500/15 text-foreground border border-amber-500/40"
+                : message.is_official ? "bg-violet-500/10 text-foreground border border-violet-500/40"
+                : "bg-[#1e1e1e] text-foreground";
               return (
-                <div className={`px-3.5 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words shadow-sm ${
-                  isMine ? "bg-primary text-primary-foreground rounded-br-md"
-                  : message.is_announcement ? "bg-amber-500/15 text-foreground border border-amber-500/40 rounded-bl-md"
-                  : message.is_official ? "bg-violet-500/10 text-foreground border border-violet-500/40 rounded-bl-md"
-                  : "bg-secondary text-secondary-foreground rounded-bl-md"
-                }`}>
-                  {renderBody(message.body)}
+                <div className={`relative px-3 py-2 text-sm whitespace-pre-wrap break-words shadow-sm ${shape} ${color}`}>
+                  <div>{renderBody(message.body)}</div>
+                  <div className="flex items-center gap-1 justify-end mt-0.5">
+                    {message.edited_at && !editing && <span className="text-[10px] text-[#a0a0a0]">edited</span>}
+                    <span className="text-[10px] text-[#a0a0a0]">{formatTime(message.created_date)}</span>
+                    {isMine && !editing && <StatusIcon status={message.status} onRetry={() => onRetry?.(message.client_temp_id || message.id)} />}
+                  </div>
                 </div>
               );
             })()}
           </>
         )}
 
-        {/* Reactions */}
+        {/* Reactions — small circular badges */}
         {reactionEntries.length > 0 && (
-          <div className={`flex flex-wrap gap-1 mt-1 ${isMine ? "justify-end" : "justify-start"}`}>
+          <div className={`flex flex-wrap gap-1 -mt-1.5 ${isMine ? "justify-end mr-1" : "justify-start ml-2"}`}>
             {reactionEntries.map(([emoji, users]) => {
               const mine = users.includes(myId);
               return (
                 <button
                   key={emoji}
                   onClick={selectMode ? undefined : () => onReact?.(message.id, emoji)}
-                  className={`mist-reaction-burst flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border ${mine ? "border-primary bg-primary/15 text-primary" : "border-border bg-secondary/60 text-secondary-foreground"}`}
+                  className={`mist-reaction-burst flex items-center gap-0.5 px-1.5 h-6 rounded-full text-xs border shadow-sm ${mine ? "border-primary bg-primary/20 text-primary" : "border-border bg-[#2a2a2a] text-foreground"}`}
                 >
                   <span>{emoji}</span>
                   {users.length > 1 && <span className="text-[10px] font-semibold">{users.length}</span>}
@@ -180,13 +190,6 @@ export default function MessageBubbleV2({ message, isMine, showAvatar, myId, onR
             })}
           </div>
         )}
-
-        {/* Meta: timestamp + edited + status. Shown on hover, or always for last-in-group. */}
-        <div className={`flex items-center gap-1.5 mt-0.5 px-1 ${isMine ? "flex-row-reverse" : ""} ${(hover || showAvatar) ? "opacity-100" : "opacity-0 group-hover:opacity-100"} transition-opacity`}>
-          {message.edited_at && !editing && <span className="text-[10px] text-muted-foreground">edited</span>}
-          <span className="text-[10px] text-muted-foreground">{formatTime(message.created_date)}</span>
-          {isMine && !editing && <StatusIcon status={message.status} onRetry={() => onRetry?.(message.client_temp_id || message.id)} />}
-        </div>
       </div>
 
       {/* Quick react button (desktop hover) */}

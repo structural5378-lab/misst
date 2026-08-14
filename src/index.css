@@ -607,6 +607,13 @@ body.amoled-mode { background: #000; }
 .mist-safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 8px); }
 .mist-safe-top { padding-top: env(safe-area-inset-top); }
 
+/* ─── Chat Background Pattern (line-art radio icons, low opacity) ─── */
+.mist-chat-pattern {
+  background-color: hsl(var(--background));
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><g fill='none' stroke='%23ffffff' stroke-width='1' opacity='0.05'><path d='M20 140 L36 28 L52 140 M28 82 L44 82 M24 112 L48 112'/><path d='M124 36 a16 16 0 0 1 0 32 M130 30 a24 24 0 0 1 0 44'/><circle cx='80' cy='80' r='14'/><path d='M66 80 h28 M80 66 v28'/><path d='M136 140 L136 104 M130 110 L142 110'/><path d='M26 52 a6 6 0 0 1 12 0 c0 4-6 10-6 10 s-6-6-6-10 z'/></g></svg>");
+  background-repeat: repeat;
+}
+
 /* ─── MISST Premium Messaging Micro-animations ─── */
 @keyframes msg-card-in { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
 .msg-card-in { animation: msg-card-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }

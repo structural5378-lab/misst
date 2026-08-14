@@ -149,7 +149,7 @@ export default function CommunityConversation({ community, room, mistUser, membe
 
       {tab === "chat" ? (
         <>
-          <div ref={msgs.scrollRef} onScroll={onScroll} className="flex-1 min-h-0 overflow-y-auto py-3">
+          <div ref={msgs.scrollRef} onScroll={onScroll} className="flex-1 min-h-0 overflow-y-auto py-3 mist-chat-pattern">
             {msgs.loadingMore && <div className="flex justify-center py-2"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}
             {msgs.loading ? (
               <div className="flex justify-center py-10"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>

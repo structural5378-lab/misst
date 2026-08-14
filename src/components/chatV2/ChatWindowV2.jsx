@@ -201,7 +201,7 @@ export default function ChatWindowV2({
       <ConnectionBannerV2 online={online} reconnecting={reconnecting} />
 
       {/* Messages */}
-      <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto py-3 relative">
+      <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto py-3 relative mist-chat-pattern">
         {loadingMore && (
           <div className="flex justify-center py-2"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
         )}
