@@ -1,10 +1,12 @@
 import React from "react";
-import { ChevronLeft, RadioTower, MoreVertical, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft, RadioTower, MoreVertical, Check, Home } from "lucide-react";
 
 // CommunityHeader — compact premium header shown above the conversation.
-// Back · circular group icon · name · online count · linked-repeater badge · menu.
+// Back · circular group icon · name · online count · linked-repeater badge · home · menu.
 // Tapping the body opens the community info panel.
 export default function CommunityHeader({ community, memberCount, onlineCount, repeaterLinked, onOpenInfo, onBack }) {
+  const navigate = useNavigate();
   return (
     <header className="shrink-0 flex items-center gap-2.5 px-3 h-14 border-b border-border bg-background/70 backdrop-blur-xl">
       {onBack && (
@@ -36,6 +38,9 @@ export default function CommunityHeader({ community, memberCount, onlineCount, r
             </span>
           )}
         </div>
+        <button onClick={() => navigate("/")} className="p-2 rounded-lg hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-colors" aria-label="Back to dashboard" title="Back to dashboard">
+          <Home className="w-5 h-5" />
+        </button>
         <button onClick={onOpenInfo} className="p-2 rounded-lg hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-colors" aria-label="More">
           <MoreVertical className="w-5 h-5" />
         </button>
