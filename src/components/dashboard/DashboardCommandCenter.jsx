@@ -22,7 +22,7 @@ export default function DashboardCommandCenter() {
           <span className="text-[8px] font-bold text-cyan-300/80 tracking-[0.25em] uppercase">Live</span>
         </div>
         {/* operator art — blended into the viewport */}
-        <img src={MISST_ASSETS.MISST_COMMAND_OPERATOR.url} alt="" className="absolute bottom-0 right-0 w-28 h-28 sm:w-36 sm:h-36 object-contain" style={{ mixBlendMode: 'screen', filter: 'drop-shadow(0 0 18px rgba(6,182,212,0.45))' }} />
+        <img src={MISST_ASSETS.MISST_COMMAND_OPERATOR.url} alt="" className="absolute bottom-0 right-0 w-28 h-28 sm:w-36 sm:h-36 object-contain hidden" style={{ mixBlendMode: 'screen', filter: 'drop-shadow(0 0 18px rgba(6,182,212,0.45))' }} />
       </div>
 
       {/* ── Right: command panel ── */}
@@ -60,6 +60,6 @@ export default function DashboardCommandCenter() {
           </div>
         </Link>
       </div>
-    </section>
-  );
+    </section>);
+
 }
