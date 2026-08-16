@@ -66,7 +66,7 @@ export const MISST_ASSETS = {
     purpose: 'Tactical operator/comms workstation art (screen blend over the environment scene)',
   },
   MISST_COMMAND_ENVIRONMENT: {
-    url: 'https://media.base44.com/images/public/6a24d788be1af31b2258fab2/e76e04d2c_generated_image.png',
+    url: 'https://media.base44.com/images/public/6a24d788be1af31b2258fab2/075ecbc90_generated_image.png',
     blend: null,
     purpose: 'Wide cinematic radio-tower/command environment scene (opaque background, no blend)',
   },
