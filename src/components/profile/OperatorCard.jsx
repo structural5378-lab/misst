@@ -67,7 +67,7 @@ export default function OperatorCard({ onLogout }) {
         {/* Identity hierarchy */}
         <div className="min-w-0 text-left">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight tracking-tight break-words">{displayName}</h2>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black leading-tight tracking-tight break-words" style={{ background: 'linear-gradient(120deg, #fff 0%, #c4b5fd 45%, #67e8f9 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 14px rgba(139,92,246,0.45))' }}>{displayName}</h2>
             <span className="relative flex h-2.5 w-2.5 shrink-0">
               <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-75 animate-ping" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
