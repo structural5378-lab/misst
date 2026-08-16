@@ -76,7 +76,7 @@ export default function OperatorCard({ onLogout }) {
             <img src={MISST_ASSETS.MISST_AVATAR_ENERGY.url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-contain opacity-80" style={{ mixBlendMode: 'screen' }} />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-20 h-20 sm:w-28 sm:h-28 lg:w-36 lg:h-36">
-                <div className="w-full h-full rounded-2xl overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/25">
+                <div className="w-full h-full rounded-2xl overflow-hidden bg-violet-950/60 ring-1 ring-violet-400/25 relative" style={{ boxShadow: '0 0 0 1px rgba(139,92,246,0.35), 0 0 18px 2px rgba(139,92,246,0.45), 0 0 36px 6px rgba(6,182,212,0.18)' }}>
                   <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.src = LOGO_URL; }} />
                 </div>
               </div>
