@@ -57,7 +57,7 @@ export default function OperatorCard({ onLogout }) {
   return (
     <section className="relative">
       {/* Minimal action cluster — top-right, subtle */}
-      <div className="relative flex justify-end gap-1 mb-3">
+      <div className="relative flex justify-end gap-1 mb-1">
         <button onClick={handleShare} className="p-1.5 rounded-lg text-white/45 hover:text-white transition-colors" title="Share profile">
           <Share2 className="w-4 h-4" />
         </button>
