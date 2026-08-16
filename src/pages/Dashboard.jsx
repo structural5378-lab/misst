@@ -120,7 +120,7 @@ export default function Dashboard() {
 
       <div className="relative z-10 px-4 sm:px-6 lg:px-8 pt-3 pb-6 max-w-6xl mx-auto">
         {/* OPERATOR HERO — identity composition on the shared environment */}
-        <div className="mt-4 sm:mt-6">
+        <div className="mt-0">
           <OperatorCard onLogout={signOut} />
         </div>
 
