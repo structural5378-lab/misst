@@ -10,7 +10,7 @@ import NotificationPrompt from "./NotificationPrompt";
 import InstallBanner from "./InstallBanner";
 import NotificationManager from "./NotificationManager";
 import Clock from "./Clock";
-import { Bell, User as UserIcon } from "lucide-react";
+import { Bell, User as UserIcon, Share2, LogOut } from "lucide-react";
 import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 import { useUserCommunities } from "@/hooks/useUserCommunities";
 import { mist } from '@/api/mist';
@@ -44,7 +44,15 @@ export default function AppLayout() {
   });
   const temp = weather?.current?.temp ?? null;
   const { data: unread = 0 } = useUnreadNotifications();
-  const { mistUser } = useMistUser();
+  const { mistUser, signOut } = useMistUser();
+
+  const handleShare = async () => {
+    const url = window.location.origin + '/profile';
+    try {
+      if (navigator.share) await navigator.share({ title: mistUser?.callsign || 'MISST', url });
+      else await navigator.clipboard?.writeText(url);
+    } catch {}
+  };
   const { data: memberships = [] } = useUserCommunities();
   const showLimitedBanner = memberships.length === 0 && localStorage.getItem("onboarding_skipped") === "1";
 
@@ -124,6 +132,12 @@ export default function AppLayout() {
           </div>
           <CommunitySelector />
           <div className="flex items-center gap-2">
+            <button onClick={handleShare} className="p-1.5 text-violet-300/80 hover:text-violet-200 transition-colors" aria-label="Share profile" title="Share profile">
+              <Share2 className="w-4 h-4" />
+            </button>
+            <button onClick={signOut} className="p-1.5 text-violet-300/80 hover:text-rose-300 transition-colors" aria-label="Sign out" title="Sign out">
+              <LogOut className="w-4 h-4" />
+            </button>
             <Link to="/members" className="relative p-1.5 text-violet-300/80 hover:text-violet-200 transition-colors" aria-label="Friends">
               <UserIcon className="w-4 h-4" />
             </Link>

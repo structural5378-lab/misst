@@ -3,7 +3,7 @@ import { mist } from '@/api/mist';
 import { useMistUser } from "@/hooks/useMistUser";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useQuery } from '@tanstack/react-query';
-import { LogOut, Share2, Shield, Radio, Flame } from 'lucide-react';
+import { Shield, Radio, Flame } from 'lucide-react';
 import GroupTag from './GroupTag';
 import { deriveGroups } from '@/lib/profileConfig';
 import { MISST_ASSETS } from '@/lib/misstAssets';
@@ -46,28 +46,8 @@ export default function OperatorCard({ onLogout }) {
   const displayName = user?.full_name || callsign;
   const avatarUrl = mybbUser?.avatar || LOGO_URL;
 
-  const handleShare = async () => {
-    const url = window.location.origin + '/profile';
-    try {
-      if (navigator.share) await navigator.share({ title: callsign, url });
-      else await navigator.clipboard?.writeText(url);
-    } catch {}
-  };
-
   return (
     <section className="relative">
-      {/* Minimal action cluster — top-right, subtle */}
-      <div className="relative flex justify-end gap-1 mb-1">
-        <button onClick={handleShare} className="p-1.5 rounded-lg text-white/45 hover:text-white transition-colors" title="Share profile">
-          <Share2 className="w-4 h-4" />
-        </button>
-        {onLogout && (
-          <button onClick={onLogout} className="p-1.5 rounded-lg text-white/45 hover:text-rose-300 transition-colors" title="Sign out">
-            <LogOut className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-
       {/* Hero grid — avatar | identity side-by-side on all sizes; hex emblem on desktop */}
       <div className="relative grid grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr_auto] gap-3 sm:gap-5 lg:gap-8 items-center">
         {/* Avatar emblem */}
