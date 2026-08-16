@@ -26,7 +26,7 @@ export default function DashboardCommandCenter() {
       </div>
 
       {/* ── Right: command panel ── */}
-      <div className="relative flex-1 flex flex-col justify-between p-4 sm:p-5 bg-gradient-to-br from-[#0c0716]/95 to-[#060309]/98">
+      <div className="relative flex-1 flex flex-col justify-between p-4 sm:p-5 pb-14 bg-gradient-to-br from-[#0c0716]/95 to-[#060309]/98">
         {/* header row */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -44,22 +44,22 @@ export default function DashboardCommandCenter() {
           <Activity className="w-4 h-4 text-cyan-300/40 shrink-0 mt-0.5" />
         </div>
 
-        {/* CTA row */}
-        <Link to="/net-control" className="group flex items-center justify-between gap-3 mt-3 active:scale-[0.99] transition-transform">
+        {/* Net Control label */}
+        <div className="mt-3 flex items-center gap-1.5">
+          <Radio className="w-3.5 h-3.5 text-cyan-300" />
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <Radio className="w-3.5 h-3.5 text-cyan-300" />
-              <p className="text-sm font-bold text-white">Net Control</p>
-            </div>
-            <p className="text-[10px] text-cyan-300/70 mt-0.5">Start or manage a net</p>
+            <p className="text-sm font-bold text-white">Net Control</p>
+            <p className="text-[10px] text-cyan-300/70">Start or manage a net</p>
           </div>
-          <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-cyan-500/15 border border-cyan-400/40 group-hover:bg-cyan-500/25 transition-colors shrink-0" style={{ boxShadow: '0 0 24px rgba(6,182,212,0.22)' }}>
-            <Mic className="w-4 h-4 text-cyan-200" />
-            <span className="text-xs font-bold text-white tracking-wide whitespace-nowrap">Enter</span>
-            <ChevronRight className="w-3.5 h-3.5 text-cyan-200" />
-          </div>
-        </Link>
+        </div>
       </div>
+
+      {/* Enter button — full-width bottom bar */}
+      <Link to="/net-control" className="group absolute bottom-0 right-0 left-[38%] sm:left-[42%] flex items-center justify-center gap-2 py-3 bg-cyan-500/15 border-t border-cyan-400/40 group-hover:bg-cyan-500/25 transition-colors active:scale-[0.99]" style={{ boxShadow: '0 0 24px rgba(6,182,212,0.22)' }}>
+        <Mic className="w-4 h-4 text-cyan-200" />
+        <span className="text-xs font-bold text-white tracking-wide">Enter</span>
+        <ChevronRight className="w-3.5 h-3.5 text-cyan-200" />
+      </Link>
     </section>);
 
 }
