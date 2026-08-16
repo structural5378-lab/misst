@@ -156,7 +156,9 @@ export default function Dashboard() {
         </div>
 
         <LightningActivityStrip />
-        <StormTracker />
+        <div className="lg:w-[calc(50%-0.5rem)]">
+          <StormTracker />
+        </div>
 
         {/* Alerts + Online (side by side on desktop) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
