@@ -156,7 +156,7 @@ export default function Dashboard() {
         </div>
 
         <LightningActivityStrip />
-        <div className="lg:w-[calc(50%-0.5rem)]">
+        <div className="lg:w-[calc(50%-0.5rem)] mt-4">
           <StormTracker />
         </div>
 
