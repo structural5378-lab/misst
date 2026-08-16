@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { mist } from '@/api/mist';
-import { Radio, RefreshCw } from "lucide-react";
+import { Radio, RefreshCw, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 /**
@@ -52,6 +52,18 @@ export default function PropagationGauge() {
   const score = weather?.current ? calcPropScore(weather.current) : null;
   const meta = score !== null ? scoreToLabel(score) : null;
 
+  const handleShare = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (score === null) return;
+    const text = `📡 RF Propagation conditions: ${meta.label} (${score}/100) on MISST`;
+    const url = window.location.origin + "/weather";
+    try {
+      if (navigator.share) await navigator.share({ title: "MISST RF Propagation", text, url });
+      else await navigator.clipboard?.writeText(`${text} ${url}`);
+    } catch {}
+  };
+
   // Arc gauge: 180° semicircle
   const radius = 44;
   const circumference = Math.PI * radius; // half circle
@@ -65,7 +77,19 @@ export default function PropagationGauge() {
             <Radio className="w-4 h-4 text-violet-400" />
             <span className="text-sm font-semibold text-foreground">RF Propagation</span>
           </div>
-          {loading && <RefreshCw className="w-3.5 h-3.5 text-muted-foreground animate-spin" />}
+          <div className="flex items-center gap-1.5">
+            {score !== null && (
+              <button
+                onClick={handleShare}
+                className="p-1 rounded-md text-muted-foreground hover:text-violet-300 transition-colors"
+                aria-label="Share RF propagation"
+                title="Share to social media"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+            {loading && <RefreshCw className="w-3.5 h-3.5 text-muted-foreground animate-spin" />}
+          </div>
         </div>
 
         <div className="flex items-center gap-5">
