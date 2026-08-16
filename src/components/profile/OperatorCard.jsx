@@ -116,7 +116,7 @@ export default function OperatorCard({ onLogout }) {
       </div>
 
       {/* Stats — full-width strip */}
-      <div className="relative mt-4 flex items-center justify-center lg:justify-start gap-6 sm:gap-8">
+      <div className="relative mt-4 flex items-center justify-start gap-6 sm:gap-8">
         {STATS.map((s) => {
           const Icon = s.icon;
           return (
