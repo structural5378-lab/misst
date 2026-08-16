@@ -1,56 +1,64 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mic, ChevronRight, ShieldCheck, Radio } from 'lucide-react';
+import { Mic, ChevronRight, ShieldCheck, Radio, Activity } from 'lucide-react';
 import { MISST_ASSETS } from '@/lib/misstAssets';
 
-// DashboardCommandCenter — the cinematic command-center centerpiece. The
-// environment artwork fills the entire section; the operator artwork is
-// integrated via screen blend on the right; the Net Control control is
-// overlaid on the scene. Decorative only — NOT wired to weather/lightning.
-// Route unchanged (/net-control).
+// DashboardCommandCenter — compact cinematic command bar. Environment art is
+// framed as a contained tactical viewport on the left; the right panel carries
+// identity, access status, and the Net Control CTA. Decorative only — NOT wired
+// to weather/lightning. Route unchanged (/net-control).
 export default function DashboardCommandCenter() {
   return (
-    <section className="relative rounded-2xl overflow-hidden min-h-[360px] sm:min-h-[420px]">
-      {/* environment scene — fills the section */}
-      <img src={MISST_ASSETS.MISST_COMMAND_ENVIRONMENT.url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/55 to-black/30" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/25" />
-      {/* tactical grid texture */}
-      <div className="absolute inset-0 opacity-[0.10] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(6,182,212,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.4) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+    <section className="relative rounded-2xl overflow-hidden border border-white/[0.06] min-h-[200px] sm:min-h-[224px] flex">
+      {/* ── Left: contained environment viewport ── */}
+      <div className="relative w-[38%] sm:w-[42%] shrink-0 overflow-hidden">
+        <img src={MISST_ASSETS.MISST_COMMAND_ENVIRONMENT.url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-[#0a0612]" />
+        {/* tactical grid */}
+        <div className="absolute inset-0 opacity-[0.12] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(6,182,212,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.5) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+        {/* corner reticle */}
+        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mist-pulse-soft" />
+          <span className="text-[8px] font-bold text-cyan-300/80 tracking-[0.25em] uppercase">Live</span>
+        </div>
+        {/* operator art — blended into the viewport */}
+        <img src={MISST_ASSETS.MISST_COMMAND_OPERATOR.url} alt="" className="absolute bottom-0 right-0 w-28 h-28 sm:w-36 sm:h-36 object-contain" style={{ mixBlendMode: 'screen', filter: 'drop-shadow(0 0 18px rgba(6,182,212,0.45))' }} />
+      </div>
 
-      <div className="relative z-10 h-full flex flex-col justify-between p-6 sm:p-8 min-h-[360px] sm:min-h-[420px]">
-        {/* header — left */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-bold text-cyan-300/80 tracking-[0.3em] uppercase">MISST</p>
-            <p className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1" style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9)' }}>Command Center</p>
-            <p className="text-xs text-white/55 mt-1.5 max-w-xs">Take control. Run the net. Lead the mission.</p>
-            <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-md bg-emerald-500/10 border border-emerald-400/25">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-              <span className="text-[10px] font-bold text-emerald-200 tracking-wider uppercase">Net Control Access</span>
+      {/* ── Right: command panel ── */}
+      <div className="relative flex-1 flex flex-col justify-between p-4 sm:p-5 bg-gradient-to-br from-[#0c0716]/95 to-[#060309]/98">
+        {/* header row */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-[9px] font-bold text-cyan-300/80 tracking-[0.3em] uppercase">MISST</p>
+              <span className="h-3 w-px bg-white/15" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-400/25">
+                <ShieldCheck className="w-3 h-3 text-emerald-300" />
+                <span className="text-[8px] font-bold text-emerald-200 tracking-wider uppercase">Net Control</span>
+              </span>
             </div>
+            <p className="text-xl sm:text-2xl font-black text-white tracking-tight mt-1.5 leading-none" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9)' }}>Command Center</p>
+            <p className="text-[11px] text-white/50 mt-1 truncate">Take control. Run the net. Lead the mission.</p>
           </div>
+          <Activity className="w-4 h-4 text-cyan-300/40 shrink-0 mt-0.5" />
         </div>
 
-        {/* operator art + CTA — bottom */}
-        <div className="flex items-end justify-between gap-4">
-          <img src={MISST_ASSETS.MISST_COMMAND_OPERATOR.url} alt="" className="hidden sm:block w-40 h-40 lg:w-48 lg:h-48 object-contain" style={{ mixBlendMode: 'screen', filter: 'drop-shadow(0 0 24px rgba(6,182,212,0.4))' }} />
-          <Link to="/net-control" className="group flex flex-col items-end gap-3 active:scale-95 transition-transform">
-            <div className="text-right">
-              <div className="flex items-center justify-end gap-2">
-                <Radio className="w-4 h-4 text-cyan-300" />
-                <p className="text-lg font-bold text-white">Net Control</p>
-              </div>
-              <p className="text-sm text-cyan-300/80">Start or manage a net</p>
-              <p className="text-[11px] text-white/40 mt-0.5">You're ready to take control.</p>
+        {/* CTA row */}
+        <Link to="/net-control" className="group flex items-center justify-between gap-3 mt-3 active:scale-[0.99] transition-transform">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <Radio className="w-3.5 h-3.5 text-cyan-300" />
+              <p className="text-sm font-bold text-white">Net Control</p>
             </div>
-            <div className="flex items-center gap-2.5 px-5 py-3 rounded-xl bg-cyan-500/15 border border-cyan-400/40 group-hover:bg-cyan-500/25 transition-colors" style={{ boxShadow: '0 0 30px rgba(6,182,212,0.25)' }}>
-              <Mic className="w-5 h-5 text-cyan-200" />
-              <span className="text-sm font-bold text-white tracking-wide">Enter Net Control</span>
-              <ChevronRight className="w-4 h-4 text-cyan-200" />
-            </div>
-          </Link>
-        </div>
+            <p className="text-[10px] text-cyan-300/70 mt-0.5">Start or manage a net</p>
+          </div>
+          <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-cyan-500/15 border border-cyan-400/40 group-hover:bg-cyan-500/25 transition-colors shrink-0" style={{ boxShadow: '0 0 24px rgba(6,182,212,0.22)' }}>
+            <Mic className="w-4 h-4 text-cyan-200" />
+            <span className="text-xs font-bold text-white tracking-wide whitespace-nowrap">Enter</span>
+            <ChevronRight className="w-3.5 h-3.5 text-cyan-200" />
+          </div>
+        </Link>
       </div>
     </section>
   );
