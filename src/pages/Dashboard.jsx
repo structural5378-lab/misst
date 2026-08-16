@@ -124,6 +124,11 @@ export default function Dashboard() {
           <OperatorCard onLogout={signOut} />
         </div>
 
+        {/* OPERATOR DATA — subtle metadata, under avatar block */}
+        <div className="mt-4 sm:mt-5">
+          <DashboardMetadata />
+        </div>
+
         {/* NEXT NET — compact operational strip */}
         <div className="mt-5 sm:mt-6">
           <NextNetCard net={nets[0]} />
@@ -137,11 +142,6 @@ export default function Dashboard() {
         {/* COMMAND CENTER — cinematic */}
         <div className="mt-6 sm:mt-8">
           <DashboardCommandCenter />
-        </div>
-
-        {/* OPERATOR DATA — subtle metadata */}
-        <div className="mt-6 sm:mt-8">
-          <DashboardMetadata />
         </div>
 
         {/* RADIO FILES — library + compatible files */}

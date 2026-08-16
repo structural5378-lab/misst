@@ -40,8 +40,6 @@ export const DEFAULT_NOTIFS = {
   repeaters: { push: false, inapp: false, sound: true, vibrate: true },
   news: { push: true, inapp: true, sound: true, vibrate: true },
   announcements: { push: true, inapp: true, sound: true, vibrate: true },
-  achievements: { push: true, inapp: true, sound: true, vibrate: true },
-  badges: { push: true, inapp: true, sound: true, vibrate: true },
   emergency_alerts: { push: true, inapp: true, sound: true, vibrate: true },
   community_chat: { push: true, inapp: true, sound: true, vibrate: true },
   system: { push: false, inapp: true, sound: false, vibrate: false },
