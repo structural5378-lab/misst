@@ -9,21 +9,21 @@ import { MISST_ASSETS } from '@/lib/misstAssets';
 // Dark glass with a subtle per-tile accent glow (restrained — no heavy borders).
 // Mobile: 2×2. Desktop: 4-column row. Routes unchanged.
 const MODULES = [
-  { art: MISST_ASSETS.MISST_TILE_CHAT, title: 'Chat', subtitle: 'Conversations', path: '/messages', live: true, status: '2 Unread', glow: 'rgba(139,92,246,0.22)', ring: 'rgba(139,92,246,0.35)' },
-  { art: MISST_ASSETS.MISST_TILE_TOOLS, title: 'Tools', subtitle: 'Utilities & gear', path: '/tools', status: 'Active', glow: 'rgba(6,182,212,0.20)', ring: 'rgba(6,182,212,0.30)' },
-  { art: MISST_ASSETS.MISST_TILE_ACTIVITY, title: 'Activity', subtitle: 'Live operator ops', path: '/alerts', live: true, status: 'Live', glow: 'rgba(34,197,94,0.20)', ring: 'rgba(34,197,94,0.30)' },
-  { art: MISST_ASSETS.MISST_TILE_RANKINGS, title: 'Rankings', subtitle: 'Leaderboard', path: '/leaderboard', status: 'Top 25%', glow: 'rgba(245,158,11,0.20)', ring: 'rgba(245,158,11,0.30)' },
-];
+{ art: MISST_ASSETS.MISST_TILE_CHAT, title: 'Chat', subtitle: 'Conversations', path: '/messages', live: true, status: '2 Unread', glow: 'rgba(139,92,246,0.22)', ring: 'rgba(139,92,246,0.35)' },
+{ art: MISST_ASSETS.MISST_TILE_TOOLS, title: 'Tools', subtitle: 'Utilities & gear', path: '/tools', status: 'Active', glow: 'rgba(6,182,212,0.20)', ring: 'rgba(6,182,212,0.30)' },
+{ art: MISST_ASSETS.MISST_TILE_ACTIVITY, title: 'Activity', subtitle: 'Live operator ops', path: '/alerts', live: true, status: 'Live', glow: 'rgba(34,197,94,0.20)', ring: 'rgba(34,197,94,0.30)' },
+{ art: MISST_ASSETS.MISST_TILE_RANKINGS, title: 'Rankings', subtitle: 'Leaderboard', path: '/leaderboard', status: 'Top 25%', glow: 'rgba(245,158,11,0.20)', ring: 'rgba(245,158,11,0.30)' }];
+
 
 export default function DashboardQuickActions() {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {MODULES.map((m) => (
-        <Link
-          key={m.title}
-          to={m.path}
-          className="group relative rounded-2xl overflow-hidden bg-black/30 backdrop-blur-md min-h-[220px] flex flex-col active:scale-[0.98] transition-transform border border-white/[0.04] hover:border-white/[0.10]"
-        >
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 hidden">
+      {MODULES.map((m) =>
+      <Link
+        key={m.title}
+        to={m.path}
+        className="group relative rounded-2xl overflow-hidden bg-black/30 backdrop-blur-md min-h-[220px] flex flex-col active:scale-[0.98] transition-transform border border-white/[0.04] hover:border-white/[0.10]">
+        
           {/* subtle per-tile accent glow */}
           <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full pointer-events-none opacity-80" style={{ background: `radial-gradient(circle, ${m.glow}, transparent 70%)` }} />
           {/* status indicator — top-right */}
@@ -46,7 +46,7 @@ export default function DashboardQuickActions() {
             </div>
           </div>
         </Link>
-      ))}
-    </div>
-  );
+      )}
+    </div>);
+
 }
