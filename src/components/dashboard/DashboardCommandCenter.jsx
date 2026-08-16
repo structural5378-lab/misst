@@ -26,7 +26,7 @@ export default function DashboardCommandCenter() {
       </div>
 
       {/* ── Right: command panel ── */}
-      <div className="relative flex-1 flex flex-col justify-between p-4 sm:p-5 pb-14 bg-gradient-to-br from-[#0c0716]/95 to-[#060309]/98">
+      <div className="relative flex-1 flex flex-col p-4 sm:p-5 pb-14 bg-gradient-to-br from-[#0c0716]/95 to-[#060309]/98">
         {/* header row */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -45,7 +45,7 @@ export default function DashboardCommandCenter() {
         </div>
 
         {/* Net Control label */}
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="mt-2 flex items-center gap-1.5">
           <Radio className="w-3.5 h-3.5 text-cyan-300" />
           <div className="min-w-0">
             <p className="text-sm font-bold text-white">Net Control</p>
