@@ -5,7 +5,6 @@
 
 import { Server as HttpServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
-import { config } from '../config';
 import { logger } from '../logging';
 import { ConnectionManager } from './connection-manager';
 import { authenticateWs } from './middleware/auth.ws-middleware';
@@ -37,7 +36,7 @@ export function initializeWebSocket(server: HttpServer) {
     });
 
     ws.on('error', (error) => {
-      logger.error(`WebSocket error for user ${user.id}`, error);
+      logger.error({ err: error }, `WebSocket error for user ${user.id}`);
       connectionManager.remove(user.id, connectionId);
     });
   });

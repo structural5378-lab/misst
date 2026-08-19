@@ -8,7 +8,7 @@ import { sendSuccess, sendError } from '../../utils/response';
 export const userController = {
   async getMe(req: Request, res: Response) {
     try {
-      const user = await userService.getMe(req.user.id);
+      const user = await userService.getMe(req.user!.id);
       return sendSuccess(res, 200, user);
     } catch (error) {
       return sendError(res, error);
@@ -17,7 +17,7 @@ export const userController = {
 
   async updateMe(req: Request, res: Response) {
     try {
-      const user = await userService.updateMe(req.user.id, req.body);
+      const user = await userService.updateMe(req.user!.id, req.body);
       return sendSuccess(res, 200, user);
     } catch (error) {
       return sendError(res, error);

@@ -9,11 +9,9 @@
  */
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { initializeDatabase, getPool } from './index';
 import { logger } from '../logging';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS_DIR = path.join(__dirname, 'migrations');
 
 async function main() {

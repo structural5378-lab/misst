@@ -92,7 +92,7 @@ export const authController = {
 
   async me(req: Request, res: Response) {
     try {
-      const user = await authService.getCurrentUser(req.user.id);
+      const user = await authService.getCurrentUser(req.user!.id);
       return sendSuccess(res, 200, user);
     } catch (error) {
       return sendError(res, error);

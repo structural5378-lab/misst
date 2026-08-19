@@ -9,12 +9,15 @@ import { BaseRepository } from './base.repository';
 export interface User {
   id: string;
   email: string;
+  password_hash: string;
   full_name: string;
   callsign: string | null;
   role: string;
   status: string;
+  email_verified: boolean;
   avatar_url: string | null;
   community_id: string | null;
+  last_active_at: Date | null;
   created_at: Date;
   updated_at: Date;
 }

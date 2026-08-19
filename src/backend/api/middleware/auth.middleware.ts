@@ -19,9 +19,9 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
   try {
     const payload = await jwtService.verify(token);
     req.user = {
-      id: payload.sub,
-      email: payload.email,
-      role: payload.role,
+      id: String(payload.sub),
+      email: String(payload.email || ''),
+      role: String(payload.role || 'member'),
     };
     next();
   } catch {

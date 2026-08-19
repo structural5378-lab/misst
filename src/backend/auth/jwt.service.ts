@@ -2,7 +2,7 @@
  * JWT Service — Signs and verifies access tokens.
  */
 
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { config } from '../config';
 
 export const jwtService = {
@@ -11,7 +11,7 @@ export const jwtService = {
       jwt.sign(
         { ...payload, iss: 'mist', iat: Math.floor(Date.now() / 1000) },
         config.jwt.secret,
-        { expiresIn: config.jwt.expiresIn },
+        { expiresIn: config.jwt.expiresIn as SignOptions['expiresIn'] },
         (err, token) => {
           if (err) reject(err);
           else resolve(token!);

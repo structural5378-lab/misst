@@ -5,7 +5,7 @@
  * DB never holds the raw secret. Codes are single-use and expire after
  * OTP_TTL_MIN minutes; reset tokens after RESET_TTL_MIN minutes.
  */
-import { randomInt, createHmac } from 'crypto';
+import { randomInt, randomBytes, createHmac } from 'crypto';
 import { getPool } from '../db';
 import { config } from '../config';
 

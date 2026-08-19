@@ -227,7 +227,7 @@ export class EntityRepository {
         if (this.columns.has(k)) sets.push(`"${k}" = NULL`);
       }
       else if (op === '$rename') for (const [k, v] of Object.entries(fields as any)) {
-        if (this.columns.has(k) && this.columns.has(v)) sets.push(`"${v}" = "${k}"`, `"${k}" = NULL`);
+        if (this.columns.has(k) && this.columns.has(String(v))) sets.push(`"${v}" = "${k}"`, `"${k}" = NULL`);
       }
       else if (op === '$currentDate') for (const k of (fields as any[])) {
         if (this.columns.has(k)) sets.push(`"${k}" = NOW()`);
