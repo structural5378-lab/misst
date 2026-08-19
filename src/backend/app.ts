@@ -10,7 +10,6 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 
 import { config } from './config';
-import { logger } from './logging';
 import { requestIdMiddleware } from './api/middleware/request-id.middleware';
 import { requestLogger } from './logging/request-logger';
 import { errorHandler } from './api/middleware/error.middleware';

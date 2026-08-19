@@ -2,7 +2,7 @@
  * Database — Connection pool initialization.
  */
 
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import { config } from '../config';
 import { logger } from '../logging';
 
@@ -18,7 +18,7 @@ export function initializeDatabase(): Promise<void> {
   });
 
   pool.on('error', (err) => {
-    logger.error('Unexpected database pool error', err);
+    logger.error({ err }, 'Unexpected database pool error');
   });
 
   // Test connection
@@ -50,5 +50,3 @@ export async function withTransaction<T>(callback: (client: PoolClient) => Promi
     client.release();
   }
 }
-
-import { PoolClient } from 'pg';

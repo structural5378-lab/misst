@@ -38,11 +38,12 @@ export function sendPaginated(res: Response, data: unknown[], pagination: {
   });
 }
 
-export function sendError(res: Response, error: AppErrorLike | Error) {
-  const code = (error as AppErrorLike).code || 'INTERNAL_ERROR';
-  const message = error.message || 'An unexpected error occurred';
-  const status = (error as AppErrorLike).status || 500;
-  const details = (error as AppErrorLike).details;
+export function sendError(res: Response, error: AppErrorLike | Error | unknown) {
+  const err = (error ?? {}) as AppErrorLike & Error;
+  const code = err.code || 'INTERNAL_ERROR';
+  const message = err.message || 'An unexpected error occurred';
+  const status = err.status || 500;
+  const details = err.details;
 
   return res.status(status).json({
     success: false,

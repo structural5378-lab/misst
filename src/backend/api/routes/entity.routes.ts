@@ -21,7 +21,7 @@ entityRoutes.get('/:name', async (req: Request, res: Response) => {
     const { sort, limit, offset } = req.query;
     const rows = await entityService.list(
       req.params.name,
-      req.user,
+      req.user!,
       sort as string | undefined,
       limit ? Number(limit) : undefined,
       offset ? Number(offset) : undefined,
@@ -45,7 +45,7 @@ entityRoutes.get('/:name/schema', async (req: Request, res: Response) => {
 entityRoutes.post('/:name/filter', async (req: Request, res: Response) => {
   try {
     const { query, sort, limit } = req.body || {};
-    const rows = await entityService.filter(req.params.name, req.user, query, sort, limit);
+    const rows = await entityService.filter(req.params.name, req.user!, query, sort, limit);
     return sendSuccess(res, 200, rows);
   } catch (e) {
     return sendError(res, e);
@@ -56,7 +56,7 @@ entityRoutes.post('/:name/filter', async (req: Request, res: Response) => {
 entityRoutes.post('/:name/bulk', async (req: Request, res: Response) => {
   try {
     const items = req.body?.items || [];
-    return sendSuccess(res, 201, await entityService.bulkCreate(req.params.name, req.user, items));
+    return sendSuccess(res, 201, await entityService.bulkCreate(req.params.name, req.user!, items));
   } catch (e) {
     return sendError(res, e);
   }
@@ -66,7 +66,7 @@ entityRoutes.post('/:name/bulk', async (req: Request, res: Response) => {
 entityRoutes.patch('/:name/bulk', async (req: Request, res: Response) => {
   try {
     const items = req.body?.items || [];
-    return sendSuccess(res, 200, await entityService.bulkUpdate(req.params.name, req.user, items));
+    return sendSuccess(res, 200, await entityService.bulkUpdate(req.params.name, req.user!, items));
   } catch (e) {
     return sendError(res, e);
   }
@@ -76,7 +76,7 @@ entityRoutes.patch('/:name/bulk', async (req: Request, res: Response) => {
 entityRoutes.patch('/:name/update-many', async (req: Request, res: Response) => {
   try {
     const { query, update } = req.body || {};
-    return sendSuccess(res, 200, await entityService.updateMany(req.params.name, req.user, query || {}, update || {}));
+    return sendSuccess(res, 200, await entityService.updateMany(req.params.name, req.user!, query || {}, update || {}));
   } catch (e) {
     return sendError(res, e);
   }
@@ -86,7 +86,7 @@ entityRoutes.patch('/:name/update-many', async (req: Request, res: Response) => 
 entityRoutes.post('/:name/delete-many', async (req: Request, res: Response) => {
   try {
     const { query } = req.body || {};
-    return sendSuccess(res, 200, await entityService.deleteMany(req.params.name, req.user, query || {}));
+    return sendSuccess(res, 200, await entityService.deleteMany(req.params.name, req.user!, query || {}));
   } catch (e) {
     return sendError(res, e);
   }
@@ -95,7 +95,7 @@ entityRoutes.post('/:name/delete-many', async (req: Request, res: Response) => {
 // Single-record operations (after specific routes)
 entityRoutes.get('/:name/:id', async (req: Request, res: Response) => {
   try {
-    return sendSuccess(res, 200, await entityService.get(req.params.name, req.user, req.params.id));
+    return sendSuccess(res, 200, await entityService.get(req.params.name, req.user!, req.params.id));
   } catch (e) {
     return sendError(res, e);
   }
@@ -103,7 +103,7 @@ entityRoutes.get('/:name/:id', async (req: Request, res: Response) => {
 
 entityRoutes.post('/:name', async (req: Request, res: Response) => {
   try {
-    return sendSuccess(res, 201, await entityService.create(req.params.name, req.user, req.body));
+    return sendSuccess(res, 201, await entityService.create(req.params.name, req.user!, req.body));
   } catch (e) {
     return sendError(res, e);
   }
@@ -111,7 +111,7 @@ entityRoutes.post('/:name', async (req: Request, res: Response) => {
 
 entityRoutes.patch('/:name/:id', async (req: Request, res: Response) => {
   try {
-    return sendSuccess(res, 200, await entityService.update(req.params.name, req.user, req.params.id, req.body));
+    return sendSuccess(res, 200, await entityService.update(req.params.name, req.user!, req.params.id, req.body));
   } catch (e) {
     return sendError(res, e);
   }
@@ -119,7 +119,7 @@ entityRoutes.patch('/:name/:id', async (req: Request, res: Response) => {
 
 entityRoutes.delete('/:name/:id', async (req: Request, res: Response) => {
   try {
-    await entityService.delete(req.params.name, req.user, req.params.id);
+    await entityService.delete(req.params.name, req.user!, req.params.id);
     return sendSuccess(res, 200, { success: true });
   } catch (e) {
     return sendError(res, e);

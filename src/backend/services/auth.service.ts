@@ -160,13 +160,25 @@ export class AuthService {
     await this.sessionRepo.revokeAllForUser(userId);
   }
 
+  async resendOtp(email: string) {
+    const user = await this.userRepo.findByEmail(email);
+    if (!user) return { sent: true };
+    const otpCode = await otpService.generate(user.id);
+    await emailChannel.send({
+      to: user.email,
+      subject: 'MIST — Verify Your Account',
+      body: `Your verification code is: ${otpCode}`,
+    });
+    return { sent: true };
+  }
+
   async getCurrentUser(userId: string) {
     const user = await this.userRepo.findById(userId);
     if (!user) throw new AppError('USER_NOT_FOUND', 'User not found', 404);
     return sanitizeUser(user);
   }
 
-  async getOAuthUrl(provider: string) {
+  async getOAuthUrl(_provider: string): Promise<string> {
     // Delegate to OAuth service
     throw new AppError('NOT_IMPLEMENTED', 'OAuth not yet implemented', 501);
   }

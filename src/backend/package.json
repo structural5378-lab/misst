@@ -2,16 +2,16 @@
   "name": "mist-core-backend",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "description": "MISST Core — self-hosted backend (auth/users foundation).",
   "scripts": {
-    "start": "tsx src/backend/main.ts",
-    "dev": "tsx watch src/backend/main.ts",
-    "build": "tsc -p src/backend/tsconfig.json",
-    "serve": "node dist/backend/main.js",
-    "db:migrate": "tsx src/backend/db/migrate.ts",
-    "db:schema": "psql \"$DATABASE_URL\" -f src/backend/db/schema.sql",
-    "gen:entities": "node scripts/generate-core-entities.cjs"
+    "start": "tsx main.ts",
+    "dev": "tsx watch main.ts",
+    "build": "tsc -p tsconfig.json",
+    "serve": "node dist/main.js",
+    "db:migrate": "tsx db/migrate.ts",
+    "db:schema": "psql \"$DATABASE_URL\" -f db/schema.sql",
+    "gen:entities": "node ../../scripts/generate-core-entities.cjs"
   },
   "dependencies": {
     "argon2": "^0.40.1",

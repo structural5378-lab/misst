@@ -48,7 +48,7 @@ async function bootstrap() {
       logger.info(`MIST backend running on port ${config.port}`);
     });
   } catch (error) {
-    logger.error('Failed to start server', error);
+    logger.error({ err: error }, 'Failed to start server');
     process.exit(1);
   }
 }
